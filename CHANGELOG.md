@@ -9,11 +9,21 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Planned
-- File upload for assignment submissions (Supabase Storage)
-- Email notifications on grade posting (Edge Function + Resend)
-- Course prerequisites enforcement (min_required_level gate)
-- Discussion reply editing and deletion
+---
+
+## [0.8.0] — 2026-06-14
+
+### Added
+- **Course prerequisites enforcement** — `enrollSelf` validates `min_required_level` vs student level and `prerequisite_course_id` completion server-side before inserting enrollment row; course detail page shows "Level X+ required" badge and prerequisite course name; `EnrollButton` renders a locked state with reason text when student doesn't qualify
+- **Discussion reply editing** — own replies show Edit/Delete actions; `edit_discussion_reply(submission_id, text)` SECURITY DEFINER RPC with ownership + length validation; edited replies show "(edited)" label
+- **Discussion reply deletion** — `delete_discussion_reply(submission_id)` SECURITY DEFINER RPC with ownership check; soft-deletes the submission row (consistent with `is_deleted` pattern)
+- **Assignment file uploads** — `assignment-files` private Supabase Storage bucket (10 MB limit, PDF/Word/image types); file picker in AssignmentPlayer with name/size display, 30-day signed URL stored in submission `content` JSONB; file previewed in submitted and graded states; staff can read all files (RLS policy)
+- **Email notifications on grade posting** — when `RESEND_API_KEY` is set, `gradeSubmission` sends a transactional grade email via Resend to the student's address; failure is silently caught so grading is never blocked by email errors
+- Migration 032: `edit_discussion_reply`, `delete_discussion_reply`, `assignment-files` storage bucket + RLS
+
+### Changed
+- `EnrollButton` now accepts `locked` and `lockReason` props
+- `.env.example` documents `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `NEXT_PUBLIC_SITE_URL`
 
 ---
 

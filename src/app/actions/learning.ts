@@ -21,11 +21,38 @@ export async function enrollSelf(courseId: string): Promise<{ error?: string }> 
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('uid')
+    .select('uid, current_level')
     .eq('auth_id', user.id)
     .single()
 
   if (!profile) return { error: 'Profile not found' }
+
+  // Server-side prerequisite validation
+  const { data: course } = await supabase
+    .from('courses')
+    .select('min_required_level, prerequisite_course_id')
+    .eq('id', courseId)
+    .single()
+
+  if (course) {
+    const studentLevel = (profile as any).current_level ?? 1
+    const requiredLevel = course.min_required_level ?? 1
+    if (studentLevel < requiredLevel) {
+      return { error: `Level ${requiredLevel} required — you are level ${studentLevel}` }
+    }
+    if (course.prerequisite_course_id) {
+      const { data: prereq } = await supabase
+        .from('enrollments')
+        .select('transit_status')
+        .eq('user_id', profile.uid)
+        .eq('course_id', course.prerequisite_course_id)
+        .eq('transit_status', 'completed')
+        .maybeSingle()
+      if (!prereq) {
+        return { error: 'You must complete the prerequisite course first' }
+      }
+    }
+  }
 
   const { error } = await supabase
     .from('enrollments')
@@ -106,9 +133,11 @@ export async function markBlockViewed(
 // ── Submit an assignment block ────────────────────────────────────────────────
 
 export async function submitAssignment(
-  blockId:  string,
-  body:     string,
-  maxScore: number,
+  blockId:   string,
+  body:      string,
+  maxScore:  number,
+  fileUrl?:  string,
+  fileName?: string,
 ): Promise<{ error?: string; submissionId?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -142,13 +171,17 @@ export async function submitAssignment(
 
   const attemptNumber = existing ? 2 : 1
 
+  const contentPayload: Record<string, unknown> = { text: trimmed }
+  if (fileUrl)  contentPayload.file_url  = fileUrl
+  if (fileName) contentPayload.file_name = fileName
+
   const { data: sub, error } = await supabase
     .from('block_submissions')
     .insert({
       block_id:       blockId,
       user_id:        profile.uid,
       status:         'submitted',
-      content:        { text: trimmed },
+      content:        contentPayload,
       max_score:      maxScore,
       submitted_at:   new Date().toISOString(),
       attempt_number: attemptNumber,
@@ -288,7 +321,7 @@ export async function gradeSubmission(
     }
   }
 
-  // Notify student
+  // Notify student (in-app)
   const service = createServiceClient()
   await service
     .from('notifications')
@@ -300,6 +333,45 @@ export async function gradeSubmission(
       link:    null,
     })
     .throwOnError()
+
+  // Email notification via Resend (optional — skipped if RESEND_API_KEY is not set)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const { data: studentProfile } = await service
+        .from('profiles')
+        .select('email, display_name')
+        .eq('uid', sub.user_id)
+        .single()
+
+      if (studentProfile?.email) {
+        const { Resend } = await import('resend')
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        const pct = sub.max_score ? Math.round((score / sub.max_score) * 100) : null
+        const fromEmail = process.env.RESEND_FROM_EMAIL ?? 'ChurchCore LMS <noreply@churchcore.app>'
+        await resend.emails.send({
+          from:    fromEmail,
+          to:      studentProfile.email,
+          subject: `Your assignment has been graded — ${score}/${sub.max_score ?? '?'}`,
+          html: `
+<p>Hi ${studentProfile.display_name ?? 'there'},</p>
+<p>Your assignment submission has been graded.</p>
+<table style="border-collapse:collapse;margin:16px 0">
+  <tr><td style="padding:4px 12px 4px 0;color:#64748b;font-size:14px">Score</td>
+      <td style="padding:4px 0;font-weight:600;font-size:14px">${score} / ${sub.max_score ?? '?'}${pct !== null ? ` (${pct}%)` : ''}</td></tr>
+  ${feedback ? `<tr><td style="padding:4px 12px 4px 0;color:#64748b;font-size:14px;vertical-align:top">Feedback</td>
+      <td style="padding:4px 0;font-size:14px">${feedback}</td></tr>` : ''}
+</table>
+<p style="margin-top:24px">
+  <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/courses" style="background:#6366f1;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+    View your courses →
+  </a>
+</p>`,
+        })
+      }
+    } catch {
+      // Email failure must never break the grading action
+    }
+  }
 
   revalidatePath('/courses/[id]/submissions', 'page')
   return {}

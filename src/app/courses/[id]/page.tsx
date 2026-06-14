@@ -16,11 +16,11 @@ export default async function CoursePage({
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  let profile: { uid: string; role: string } | null = null
+  let profile: { uid: string; role: string; current_level: number } | null = null
   if (user) {
     const { data } = await supabase
       .from('profiles')
-      .select('uid, role')
+      .select('uid, role, current_level')
       .eq('auth_id', user.id)
       .single()
     profile = data
@@ -29,7 +29,7 @@ export default async function CoursePage({
   const isStaff = ['admin', 'manager', 'teacher'].includes(profile?.role ?? '')
 
   const [courseResult, blocksResult] = await Promise.all([
-    supabase.from('courses').select('*').eq('id', courseId).single(),
+    supabase.from('courses').select('*, prereq:prerequisite_course_id(id,title)').eq('id', courseId).single(),
     supabase
       .from('course_blocks')
       .select('id, title, block_type_id, parent_block_id, sort_order, is_published, gamification')
@@ -67,6 +67,33 @@ export default async function CoursePage({
   }
 
   const isEnrolled = !!enrollment || isStaff
+
+  // Prerequisite eligibility (students only)
+  let enrollLocked    = false
+  let enrollLockReason: string | undefined
+  if (profile && !isStaff && !isEnrolled) {
+    const requiredLevel = (course as any).min_required_level ?? 1
+    const studentLevel  = profile.current_level ?? 1
+    if (studentLevel < requiredLevel) {
+      enrollLocked     = true
+      enrollLockReason = `Level ${requiredLevel} required — you are level ${studentLevel}`
+    } else if ((course as any).prerequisite_course_id) {
+      const { data: prereqDone } = await supabase
+        .from('enrollments')
+        .select('transit_status')
+        .eq('user_id',   profile.uid)
+        .eq('course_id', (course as any).prerequisite_course_id)
+        .eq('transit_status', 'completed')
+        .maybeSingle()
+      if (!prereqDone) {
+        enrollLocked     = true
+        const prereqTitle = ((course as any).prereq as { title: string } | null)?.title
+        enrollLockReason = prereqTitle
+          ? `Complete "${prereqTitle}" first`
+          : 'Complete the prerequisite course first'
+      }
+    }
+  }
 
   // Build module groups
   const moduleHeaders = allBlocks.filter(
@@ -132,6 +159,16 @@ export default async function CoursePage({
                   {moduleHeaders.length > 0 && (
                     <span>{moduleHeaders.length} module{moduleHeaders.length !== 1 ? 's' : ''}</span>
                   )}
+                  {(course as any).min_required_level > 1 && (
+                    <span className="inline-flex items-center gap-1 text-amber-600 font-semibold bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5 text-xs">
+                      ⚡ Level {(course as any).min_required_level}+ required
+                    </span>
+                  )}
+                  {(course as any).prereq && (
+                    <span className="inline-flex items-center gap-1 text-slate-500 text-xs">
+                      Requires: <span className="font-medium text-slate-700">{((course as any).prereq as { title: string }).title}</span>
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -161,7 +198,7 @@ export default async function CoursePage({
                     )}
                   </>
                 ) : !isStaff && user ? (
-                  <EnrollButton courseId={courseId} />
+                  <EnrollButton courseId={courseId} locked={enrollLocked} lockReason={enrollLockReason} />
                 ) : !user ? (
                   <Link
                     href="/auth/login"
