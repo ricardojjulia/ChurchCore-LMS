@@ -17,6 +17,16 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.7.1] — 2026-06-14
+
+### Security
+
+- **`v_unified_calendar`** — recreated with `security_invoker = true`. The prior default (`SECURITY DEFINER`) caused the view to run with the view owner's permissions, silently bypassing RLS on `calendar_events` for querying users.
+- **`block_types`** — enabled RLS and added a read-only `FOR SELECT` policy for `authenticated`. Previously any authenticated user could INSERT, UPDATE, or DELETE block type registry entries. Write operations are now blocked by default at the RLS layer; only the service role can mutate the table.
+- Migration 030
+
+---
+
 ## [0.7.0] — 2026-06-14
 
 ### Added
