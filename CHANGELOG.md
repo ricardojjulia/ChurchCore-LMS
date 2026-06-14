@@ -17,6 +17,24 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.7.2] — 2026-06-14
+
+### Security
+
+- **Next.js upgraded to 16.2.9** — resolves 3 high-severity CVEs (DoS via Image Optimizer, HTTP request smuggling in rewrites, middleware/proxy cache poisoning) and 2 moderate CVEs resolved
+- **DB: `function_search_path_mutable`** — added `SET search_path = public` to 6 functions that lacked it: `handle_xp_level_escalation`, `handle_new_user`, `handle_updated_at`, `generate_student_id`, `assign_student_id`, `calculate_level`
+- **DB: `materialized_view_in_api`** — revoked direct `SELECT` on `mv_academic_performance` from `anon` and `authenticated`; data is accessible only through SECURITY DEFINER accessor functions
+- **DB: `anon_security_definer_function_executable`** — revoked `EXECUTE` from `anon` on all 24 SECURITY DEFINER functions; unauthenticated callers had no legitimate use for any RPC
+- **DB: `authenticated_security_definer_function_executable`** (partial) — revoked `EXECUTE` from `authenticated` on all trigger-only functions (`handle_new_user`, `handle_xp_level_escalation`, `handle_updated_at`, `assign_student_id`, `sync_profile_roles`, `update_thread_on_message`, `generate_student_id`, `refresh_academic_performance`) that should only be invoked by database triggers, never via `/rest/v1/rpc/`
+- Migration 031
+
+### Fixed
+- `searchParams` and `params` in page components updated to async `Promise<>` type (Next.js 15+ breaking change)
+- `cookies()` in auth callback and `createClient` server util made async
+- `ReturnType<typeof createClient>` changed to `Awaited<ReturnType<typeof createClient>>` in server action helpers
+
+---
+
 ## [0.7.1] — 2026-06-14
 
 ### Security

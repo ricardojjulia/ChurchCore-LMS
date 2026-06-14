@@ -19,7 +19,7 @@ interface SearchParams {
 export default async function AdminUsersPage({
   searchParams,
 }: {
-  searchParams: SearchParams
+  searchParams: Promise<SearchParams>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -33,10 +33,12 @@ export default async function AdminUsersPage({
 
   if (me?.role !== 'admin') redirect('/dashboard')
 
+  const sp = await searchParams
+
   // Parse filters
-  const q        = (searchParams.q ?? '').trim().toLowerCase()
-  const roleFilter = searchParams.role ?? ''
-  const page     = Math.max(1, parseInt(searchParams.page ?? '1', 10))
+  const q        = (sp.q ?? '').trim().toLowerCase()
+  const roleFilter = sp.role ?? ''
+  const page     = Math.max(1, parseInt(sp.page ?? '1', 10))
   const from     = (page - 1) * PAGE_SIZE
   const to       = from + PAGE_SIZE - 1
 

@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import CourseForm from '@/components/courses/CourseForm'
 
-export default async function EditCoursePage({ params }: { params: { id: string } }) {
+export default async function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const {
     data: { user },
@@ -23,7 +24,7 @@ export default async function EditCoursePage({ params }: { params: { id: string 
     supabase
       .from('courses')
       .select('id, title, description, status, min_required_level, prerequisite_course_id, owner_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single(),
     supabase
       .from('courses')
@@ -42,7 +43,7 @@ export default async function EditCoursePage({ params }: { params: { id: string 
         <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6">
           <Link href="/courses" className="hover:text-indigo-600 transition-colors font-medium">Courses</Link>
           <span>/</span>
-          <Link href={`/courses/${params.id}`} className="hover:text-indigo-600 transition-colors font-medium truncate">{course.title}</Link>
+          <Link href={`/courses/${id}`} className="hover:text-indigo-600 transition-colors font-medium truncate">{course.title}</Link>
           <span>/</span>
           <span className="text-slate-700 font-semibold">Edit</span>
         </nav>

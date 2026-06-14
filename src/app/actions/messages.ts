@@ -23,7 +23,7 @@ function stripHtml(input: string): string {
   return input.replace(/<[^>]*>/g, '').trim()
 }
 
-async function checkRateLimit(supabase: ReturnType<typeof createClient>, uid: string): Promise<boolean> {
+async function checkRateLimit(supabase: Awaited<ReturnType<typeof createClient>>, uid: string): Promise<boolean> {
   const since = new Date(Date.now() - 60_000).toISOString()
   const { count } = await supabase
     .from('messages')
@@ -35,7 +35,7 @@ async function checkRateLimit(supabase: ReturnType<typeof createClient>, uid: st
 }
 
 // ── Get existing direct thread between two users ─────────────────────
-async function findDirectThread(supabase: ReturnType<typeof createClient>, myUid: string, otherUid: string) {
+async function findDirectThread(supabase: Awaited<ReturnType<typeof createClient>>, myUid: string, otherUid: string) {
   // Threads where both users are participants and type=direct
   const { data } = await supabase.rpc('find_direct_thread', {
     uid_a: myUid,

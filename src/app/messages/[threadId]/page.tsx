@@ -5,8 +5,8 @@ import MessageThread from './MessageThread'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ThreadPage({ params }: { params: { threadId: string } }) {
-  const { threadId } = params
+export default async function ThreadPage({ params }: { params: Promise<{ threadId: string }> }) {
+  const { threadId } = await params
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()

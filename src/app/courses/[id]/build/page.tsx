@@ -4,7 +4,8 @@ import { createClient } from '@/utils/supabase/server'
 import CourseBuilder from '@/components/builder/CourseBuilder'
 import type { CourseBlock } from '@/types/blocks'
 
-export default async function BuildCoursePage({ params }: { params: { id: string } }) {
+export default async function BuildCoursePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const {
     data: { user },
@@ -24,12 +25,12 @@ export default async function BuildCoursePage({ params }: { params: { id: string
     supabase
       .from('courses')
       .select('id, title, owner_id, status')
-      .eq('id', params.id)
+      .eq('id', id)
       .single(),
     supabase
       .from('course_blocks')
       .select('*')
-      .eq('course_id', params.id)
+      .eq('course_id', id)
       .order('sort_order', { ascending: true }),
   ])
 
@@ -44,7 +45,7 @@ export default async function BuildCoursePage({ params }: { params: { id: string
       <header className="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-4">
           <Link
-            href={`/courses/${params.id}`}
+            href={`/courses/${id}`}
             className="text-slate-400 hover:text-white transition-colors text-sm font-medium"
           >
             ← {course.title}
@@ -63,7 +64,7 @@ export default async function BuildCoursePage({ params }: { params: { id: string
             {course.status.charAt(0).toUpperCase() + course.status.slice(1)}
           </span>
           <Link
-            href={`/courses/${params.id}/edit`}
+            href={`/courses/${id}/edit`}
             className="text-xs text-slate-400 hover:text-white transition-colors font-medium"
           >
             Edit Settings
@@ -71,7 +72,7 @@ export default async function BuildCoursePage({ params }: { params: { id: string
         </div>
       </header>
 
-      <CourseBuilder courseId={params.id} initialBlocks={initialBlocks} />
+      <CourseBuilder courseId={id} initialBlocks={initialBlocks} />
     </div>
   )
 }
