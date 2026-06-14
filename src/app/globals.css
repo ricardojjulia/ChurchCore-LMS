@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── ChurchCore Brand Tokens ───────────────────────────────────────────── */
+    /* slate-50 ≈ #f8fafc — keeps the existing page background feel */
+    --background:         210 40% 98%;
+    --foreground:         220 20% 10%;
+
+    --card:               0 0% 100%;
+    --card-foreground:    220 20% 10%;
+
+    --popover:            0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+
+    /* Deep ministry blue */
+    --primary:            220 65% 32%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary:          220 14% 96%;
+    --secondary-foreground: 220 20% 15%;
+
+    --muted:              220 14% 95%;
+    --muted-foreground:   220 10% 46%;
+
+    --accent:             220 14% 95%;
+    --accent-foreground:  220 20% 15%;
+
+    --destructive:        0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --success:            142 72% 29%;
+    --success-foreground: 0 0% 98%;
+
+    --warning:            38 92% 50%;
+    --warning-foreground: 220 85% 10%;
+
+    --border:             220 13% 91%;
+    --input:              220 13% 91%;
+    --ring:               220 65% 32%;
+
+    --radius:             0.5rem;
+
+    --chart-1:            220 65% 32%;
+    --chart-2:            142 72% 29%;
+    --chart-3:            38 92% 50%;
+    --chart-4:            280 65% 45%;
+    --chart-5:            340 75% 50%;
+  }
+
+  .dark {
+    --background:         220 25% 7%;
+    --foreground:         220 14% 95%;
+
+    --card:               220 20% 10%;
+    --card-foreground:    220 14% 95%;
+
+    --popover:            220 20% 10%;
+    --popover-foreground: 220 14% 95%;
+
+    --primary:            220 65% 55%;
+    --primary-foreground: 220 25% 7%;
+
+    --secondary:          220 15% 18%;
+    --secondary-foreground: 220 14% 90%;
+
+    --muted:              220 15% 18%;
+    --muted-foreground:   220 10% 60%;
+
+    --accent:             220 15% 18%;
+    --accent-foreground:  220 14% 90%;
+
+    --destructive:        0 62% 45%;
+    --destructive-foreground: 0 0% 98%;
+
+    --success:            142 60% 35%;
+    --success-foreground: 0 0% 98%;
+
+    --warning:            38 80% 45%;
+    --warning-foreground: 220 25% 7%;
+
+    --border:             220 15% 20%;
+    --input:              220 15% 20%;
+    --ring:               220 65% 55%;
+
+    --chart-1:            220 65% 55%;
+    --chart-2:            142 60% 40%;
+    --chart-3:            38 80% 55%;
+    --chart-4:            280 65% 60%;
+    --chart-5:            340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* WCAG 2.1 AA — visible focus ring for keyboard navigation */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Mobile safe-area support for bottom nav */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

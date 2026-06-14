@@ -1,0 +1,29 @@
+{
+  "agents": {
+    "planner": {
+      "name": "Claude Planner",
+      "command": "claude",
+      "args": ["--print"]
+    },
+    "implementer": {
+      "name": "Claude Implementer",
+      "command": "claude",
+      "args": ["--print"]
+    },
+    "tester": {
+      "name": "Claude Tester",
+      "command": "claude",
+      "args": ["--print"]
+    }
+  },
+  "git": {
+    "requireGitRepo": true,
+    "requireGitHubRemote": false,
+    "requireGitHubCliAuth": false,
+    "remoteName": "origin"
+  },
+  "locks": {
+    "enabled": true,
+    "staleAfterMinutes": 120
+  }
+}

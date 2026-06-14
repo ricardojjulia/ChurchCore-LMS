@@ -1,0 +1,195 @@
+# ChurchCore LMS
+
+> A fast, secure, ministry-ready Learning Management System built for churches and faith communities.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss)](https://tailwindcss.com)
+
+---
+
+## Overview
+
+ChurchCore LMS is a full-stack learning platform purpose-built for church organizations. It supports multi-role users (students, teachers, managers, admins), a block-based course builder, a full gamification system, AI-powered weekly summaries, and WCAG 2.1 AA accessibility — all backed by Row Level Security in PostgreSQL.
+
+**This is not a generic LMS wrapper.** Every feature was designed around the specific needs of ministry education: volunteer training, discipleship programs, leadership development, and pastoral continuing education.
+
+---
+
+## Features
+
+### Learning Experience
+- **Block-based course builder** — pages, videos, quizzes, assignments, file resources, external links, and discussion threads
+- **Interactive learning shell** — collapsible module sidebar, prev/next navigation, block-level progress tracking
+- **Auto-graded quizzes** — MCQ with per-question point values and instant feedback
+- **Assignment submission** — text submissions with instructor grading and feedback
+- **Discussion threads** — per-block discussion boards visible to all enrolled students
+- **Video embedding** — YouTube, Vimeo, or native HTML5 video
+
+### Gamification
+- **XP system** — awarded on block completion, quiz submission (grade-scaled), assignment grading, and course completion
+- **10-level progression** — automatic level-up via `calculate_level()` SQL function
+- **Leaderboard** — top 50 students with podium, level bars, and personal rank
+- **Certificates** — auto-issued on course completion with letter grade and certificate number
+
+### Communication
+- **Threaded messaging** — direct and group message threads with real-time unread counts
+- **Announcements** — staff-authored with audience targeting
+- **Notifications** — in-app bell with full `/notifications` page, type icons, and dismiss
+- **AI weekly summary** — Claude-powered personalized learning summary for students
+
+### Administration
+- **Role system** — `admin`, `manager`, `teacher`, `student` with ENUM enforcement
+- **User management** — paginated admin panel with role assignment and XP/level display
+- **Bulk enrollment** — staff search and enroll/unenroll students per course
+- **Course analytics** — per-course class stats, at-risk detection, CSV export
+- **Grading queue** — `/submissions` with status filters and inline grade + feedback forms
+
+### Infrastructure
+- **Row Level Security** — all tables secured at DB layer; `current_user_uid()` and `current_user_role()` SECURITY DEFINER helpers prevent RLS recursion
+- **Materialized view** — `mv_academic_performance` with SECURITY DEFINER access functions
+- **Global search** — ⌘K modal searching courses, announcements, and people
+- **Mobile bottom nav** — 5-tab fixed nav with message badges, iOS safe-area insets
+- **WCAG 2.1 AA** — skip link, `aria-expanded`, `role="dialog"`, `aria-live`, `:focus-visible`
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript 5 |
+| Database | Supabase (PostgreSQL 15) |
+| Auth | Supabase Auth (magic link + email/password) |
+| ORM | Supabase JS client (PostgREST) |
+| Styling | Tailwind CSS 3 + shadcn/ui |
+| AI | Anthropic Claude (claude-haiku-4-5) |
+| Deployment | Vercel (recommended) |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+- An [Anthropic](https://anthropic.com) API key (for AI features)
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/ricardojjulia/ChurchCore-LMS.git
+cd ChurchCore-LMS
+npm install
+```
+
+### 2. Environment variables
+
+Copy `.env.example` to `.env.local` and fill in your values:
+
+```bash
+cp .env.example .env.local
+```
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key   # never committed, never client-side
+ANTHROPIC_API_KEY=your-anthropic-key               # server-side only
+```
+
+> **Security:** `SUPABASE_SERVICE_ROLE_KEY` and `ANTHROPIC_API_KEY` are server-side only. They must never be prefixed with `NEXT_PUBLIC_` and must never appear in client components. All AI calls are proxied through `/api/ai`.
+
+### 3. Apply database migrations
+
+```bash
+npx supabase db push
+```
+
+This runs all 29 migrations in order, creating tables, RLS policies, helper functions, triggers, and the academic performance materialized view.
+
+### 4. Run locally
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/login/          # Auth pages
+│   ├── actions/               # Server actions (learning, enrollment, messages, …)
+│   ├── api/                   # API routes (ai proxy, search, calendar)
+│   ├── courses/[id]/
+│   │   ├── build/             # Course builder
+│   │   ├── learn/             # Learning shell
+│   │   ├── complete/          # Completion + certificate page
+│   │   ├── enroll/            # Staff bulk enrollment
+│   │   ├── analytics/         # Instructor analytics
+│   │   └── submissions/       # Grading queue
+│   ├── dashboard/             # Role-aware dashboard
+│   ├── leaderboard/           # XP leaderboard
+│   ├── notifications/         # Full notification center
+│   ├── performance/           # Student GPA + progress
+│   └── certificates/          # Earned certificates
+├── components/
+│   ├── dashboard/             # StudentDashboard, InstructorDashboard, AdminDashboard
+│   ├── layout/                # Navbar, GlobalSearch, MobileBottomNav, NotificationBell
+│   └── learning/              # LearningShell, BlockPlayer, QuizPlayer, DiscussionPlayer, …
+├── types/                     # Shared TypeScript interfaces
+└── utils/supabase/            # Supabase client helpers (client / server / service)
+supabase/migrations/           # 29 ordered SQL migrations
+```
+
+---
+
+## Architecture Decisions
+
+### RLS and Identity
+
+All authorization is enforced at the database layer via Row Level Security. Two SECURITY DEFINER helper functions break the recursion that would occur if policies directly queried `public.profiles`:
+
+```sql
+current_user_uid()   -- returns profiles.uid for the authenticated user
+current_user_role()  -- returns profiles.role enum value
+```
+
+These helpers read from `public.profile_roles`, a lightweight lookup table populated by a trigger on `profiles`, rather than querying `profiles` directly.
+
+### Server vs. Client Components
+
+- **Server Components** (default): data fetching, auth checks, page shells
+- **Client Components** (`'use client'`): interactivity — QuizPlayer, DiscussionPlayer, GlobalSearch, MobileBottomNav, NotificationBell
+- **Server Actions** (`'use server'`): mutations — all writes go through `src/app/actions/`
+
+### XP and Level System
+
+XP is awarded atomically via the `award_xp(uid, amount)` SECURITY DEFINER function, which increments `profiles.xp_points` and recomputes `profiles.current_level` using `calculate_level(xp)` in a single transaction. Level thresholds: 1→100→250→500→1000→2000→4000→8000→15000→30000 XP.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for commit conventions, branch naming, PR requirements, and code discipline procedures.
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for a full version history.
+
+---
+
+## License
+
+[MIT](./LICENSE) © 2026 Ricardo Julia
