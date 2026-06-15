@@ -11,6 +11,7 @@ interface Props {
   blockId:       string
   instructions:  string
   maxPoints:     number
+  onComplete?:   (xpAwarded: number) => void
   existingSub?: {
     status:    string
     content:   { text?: string; file_url?: string; file_name?: string }
@@ -21,7 +22,7 @@ interface Props {
   } | null
 }
 
-export default function AssignmentPlayer({ blockId, instructions, maxPoints, existingSub }: Props) {
+export default function AssignmentPlayer({ blockId, instructions, maxPoints, existingSub, onComplete }: Props) {
   const [body,    setBody]    = useState(existingSub?.content?.text ?? '')
   const [file,    setFile]    = useState<File | null>(null)
   const [fileErr, setFileErr] = useState<string | null>(null)
@@ -83,6 +84,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, exi
         setResult({ error: res.error })
       } else {
         setResult({ done: true })
+        onComplete?.(res.xpAwarded ?? 0)
       }
     })
   }

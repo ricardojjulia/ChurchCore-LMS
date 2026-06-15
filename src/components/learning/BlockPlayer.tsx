@@ -1,7 +1,9 @@
+import { tiptapToHtml } from '@/utils/tiptap'
 import VideoPlayer from './VideoPlayer'
 import AssignmentPlayer from './AssignmentPlayer'
 import QuizPlayer from './QuizPlayer'
 import DiscussionPlayer from './DiscussionPlayer'
+import LiveSessionPlayer from './LiveSessionPlayer'
 import type { CourseBlock, QuizQuestion } from '@/types/blocks'
 
 interface Submission {
@@ -16,18 +18,20 @@ interface Submission {
 interface Props {
   block:       CourseBlock
   submission?: Submission | null
+  onComplete?: (xpAwarded: number) => void
 }
 
-export default function BlockPlayer({ block, submission }: Props) {
+export default function BlockPlayer({ block, submission, onComplete }: Props) {
   const content = block.content as Record<string, unknown>
 
   // ── Page ───────────────────────────────────────────────────────────
   if (block.block_type_id === 'page') {
-    const body = content.body as string | undefined
+    const body = content.body as string | object | undefined
+    const html = tiptapToHtml(body)
     return (
       <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
-        {body ? (
-          <div dangerouslySetInnerHTML={{ __html: body }} />
+        {html ? (
+          <div dangerouslySetInnerHTML={{ __html: html }} />
         ) : (
           <p className="italic text-muted-foreground">No content yet.</p>
         )}
@@ -112,6 +116,7 @@ export default function BlockPlayer({ block, submission }: Props) {
           instructions={instructions ?? ''}
           maxPoints={maxPoints}
           existingSub={submission as any}
+          onComplete={onComplete}
         />
       </div>
     )
@@ -137,8 +142,26 @@ export default function BlockPlayer({ block, submission }: Props) {
           questions={questions}
           blockXp={(block.gamification as any)?.base_xp_reward ?? 0}
           existingSub={submission as any}
+          onComplete={onComplete}
         />
       </div>
+    )
+  }
+
+  // ── Live Session ───────────────────────────────────────────────────
+  if (block.block_type_id === 'live_session') {
+    const meetingUrl   = content.meeting_url as string | undefined
+    if (!meetingUrl) return <p className="text-muted-foreground italic">Meeting URL not configured.</p>
+    return (
+      <LiveSessionPlayer
+        title={block.title}
+        meetingUrl={meetingUrl}
+        scheduledFor={content.scheduled_for as string | null | undefined}
+        durationMin={content.duration_min as number | null | undefined}
+        provider={content.provider as string | null | undefined}
+        recordingUrl={content.recording_url as string | null | undefined}
+        description={content.description as string | null | undefined}
+      />
     )
   }
 

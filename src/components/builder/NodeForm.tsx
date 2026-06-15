@@ -8,6 +8,7 @@ import UrlForm from './node-forms/UrlForm'
 import AssignmentForm from './node-forms/AssignmentForm'
 import QuizForm from './node-forms/QuizForm'
 import DiscussionForm from './node-forms/DiscussionForm'
+import LiveSessionForm from './node-forms/LiveSessionForm'
 
 interface Props {
   blockTypeId: BlockTypeId
@@ -33,6 +34,7 @@ export default function NodeForm({ blockTypeId, initial, onSave, onCancel }: Pro
     case 'assignment':    return <AssignmentForm {...props} />
     case 'quiz':          return <QuizForm {...props} />
     case 'discussion':    return <DiscussionForm {...props} />
+    case 'live_session':  return <LiveSessionForm {...props} />
     default:              return null
   }
 }

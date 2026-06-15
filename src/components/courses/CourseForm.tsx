@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import BlueprintSelector from '@/components/courses/BlueprintSelector'
 
 type CourseStatus = 'draft' | 'published' | 'archived' | 'suspended'
 
@@ -13,15 +14,22 @@ interface ExistingCourse {
   title: string
 }
 
+interface Blueprint {
+  id:    string
+  title: string
+}
+
 interface Props {
   userId: string
   existingCourses: ExistingCourse[]
+  blueprints?: Blueprint[]
   courseId?: string
   initialTitle?: string
   initialDescription?: string
   initialLevel?: number
   initialPrerequisiteId?: string | null
   initialStatus?: CourseStatus
+  initialBlueprintId?: string | null
 }
 
 const STATUS_CONFIG: Record<CourseStatus, { label: string; active: string }> = {
@@ -41,12 +49,14 @@ const STATUS_DESCRIPTIONS: Record<CourseStatus, string> = {
 export default function CourseForm({
   userId,
   existingCourses,
+  blueprints = [],
   courseId,
   initialTitle = '',
   initialDescription = '',
   initialLevel = 1,
   initialPrerequisiteId = null,
   initialStatus = 'draft',
+  initialBlueprintId = null,
 }: Props) {
   const isEdit = !!courseId
 
@@ -54,6 +64,7 @@ export default function CourseForm({
   const [description, setDescription]   = useState(initialDescription)
   const [minLevel, setMinLevel]         = useState(initialLevel)
   const [prerequisiteId, setPrerequisiteId] = useState(initialPrerequisiteId ?? '')
+  const [blueprintId, setBlueprintId]   = useState<string | null>(initialBlueprintId)
   const [status, setStatus]             = useState<CourseStatus>(initialStatus)
   const [saving, setSaving]             = useState(false)
   const [deleting, setDeleting]         = useState(false)
@@ -72,6 +83,7 @@ export default function CourseForm({
       description: description.trim() || null,
       min_required_level: minLevel,
       prerequisite_course_id: prerequisiteId || null,
+      blueprint_id: blueprintId || null,
       status,
     }
 
@@ -141,6 +153,25 @@ export default function CourseForm({
           className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition resize-none"
         />
       </div>
+
+      {/* Blueprint (edit only — only admins/managers assign blueprints) */}
+      {isEdit && (
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1">
+            Course Blueprint
+            <span className="ml-2 text-xs font-normal text-muted-foreground">(optional)</span>
+          </label>
+          <BlueprintSelector
+            blueprints={blueprints}
+            value={blueprintId}
+            onChange={setBlueprintId}
+            disabled={saving}
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Links this course to an academic blueprint for section enrollment.
+          </p>
+        </div>
+      )}
 
       {/* Min Level + Prerequisite */}
       <div className="grid grid-cols-2 gap-4">

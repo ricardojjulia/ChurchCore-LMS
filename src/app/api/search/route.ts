@@ -23,12 +23,13 @@ export async function GET(req: NextRequest) {
   const isStaff = ['admin', 'manager', 'teacher'].includes(profile?.role ?? '')
 
   const [coursesResult, announcementsResult, peopleResult] = await Promise.all([
-    // Courses: published (or all for staff)
+    // Courses: published only — uses status column, RLS scopes further
     supabase
       .from('courses')
-      .select('id, title, description, is_published')
+      .select('id, title, description, status, course_blueprints ( course_code, title )')
       .or(`title.ilike.${pattern},description.ilike.${pattern}`)
-      .eq('is_published', true)
+      .eq('status', 'published')
+      .order('title', { ascending: true })
       .limit(5),
 
     // Announcements
@@ -49,9 +50,16 @@ export async function GET(req: NextRequest) {
       : Promise.resolve({ data: [] }),
   ])
 
+  const courses       = (coursesResult.data      ?? []).slice(0, 5)
+  const announcements = (announcementsResult.data ?? []).slice(0, 4)
+  const people        = (peopleResult.data        ?? []).slice(0, 4)
+
   return NextResponse.json({
-    courses:       (coursesResult.data       ?? []).slice(0, 5),
-    announcements: (announcementsResult.data  ?? []).slice(0, 4),
-    people:        (peopleResult.data         ?? []).slice(0, 4),
+    courses,
+    announcements,
+    people,
+    ...(courses.length === 0
+      ? { message: 'No courses found for your search. Try different keywords.' }
+      : {}),
   })
 }

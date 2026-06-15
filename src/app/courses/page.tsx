@@ -24,14 +24,14 @@ export default async function CoursesPage() {
   // Course query: admins/managers see all; teachers see their own; students see published
   let coursesQuery = supabase
     .from('courses')
-    .select('id, title, description, is_published, min_required_level, owner_id')
+    .select('id, title, description, status, min_required_level, owner_id')
     .order('created_at', { ascending: false })
 
   if (role === 'teacher') {
     coursesQuery = coursesQuery.eq('owner_id', uid)
   } else if (!isStaff) {
     // students
-    coursesQuery = coursesQuery.eq('is_published', true)
+    coursesQuery = coursesQuery.eq('status', 'published')
   }
   // admin / manager: no extra filter → see all
 
@@ -109,7 +109,13 @@ export default async function CoursesPage() {
               ) : null
 
               const staffActions = isStaff ? (
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
+                  <Link
+                    href={`/courses/${course.id}/edit`}
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Edit
+                  </Link>
                   <Link
                     href={`/courses/${course.id}/build`}
                     className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
@@ -137,7 +143,7 @@ export default async function CoursesPage() {
                   id={course.id}
                   title={course.title}
                   description={course.description}
-                  status={course.is_published ? 'published' : 'draft'}
+                  status={(course as any).status ?? 'draft'}
                   minRequiredLevel={course.min_required_level}
                   showStatus={isStaff}
                   actions={staffActions}

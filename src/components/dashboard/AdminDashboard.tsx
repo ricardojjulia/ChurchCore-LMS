@@ -8,7 +8,49 @@ import DashboardAnnouncementsPreview from './DashboardAnnouncementsPreview'
 import DashboardUpcomingEvents from './DashboardUpcomingEvents'
 import InstructorActionPanel from './InstructorActionPanel'
 import type { DashboardContext } from '@/lib/dashboard/context'
+import type { SystemHealthCheck } from '@/types/health'
 import { cn } from '@/lib/utils'
+
+function HealthWidget({ checks }: { checks: SystemHealthCheck[] }) {
+  const errorCount   = checks.filter((c) => c.status === 'error').length
+  const warningCount = checks.filter((c) => c.status === 'warning').length
+  const hasIssues    = errorCount > 0 || warningCount > 0
+
+  return (
+    <Link
+      href="/admin/health"
+      className={cn(
+        'flex items-center justify-between rounded-xl border px-5 py-4 transition-all hover:shadow-sm',
+        errorCount > 0
+          ? 'bg-rose-50 border-rose-200 hover:border-rose-300'
+          : warningCount > 0
+            ? 'bg-amber-50 border-amber-200 hover:border-amber-300'
+            : 'bg-emerald-50 border-emerald-200 hover:border-emerald-300'
+      )}
+    >
+      <div>
+        <p className="text-sm font-bold text-foreground">System Health</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {checks.length === 0
+            ? 'No checks run yet'
+            : hasIssues
+              ? `${errorCount > 0 ? `${errorCount} error${errorCount > 1 ? 's' : ''}` : ''}${errorCount > 0 && warningCount > 0 ? ', ' : ''}${warningCount > 0 ? `${warningCount} warning${warningCount > 1 ? 's' : ''}` : ''}`
+              : 'All systems operational'}
+        </p>
+      </div>
+      {hasIssues && (
+        <span className={cn(
+          'text-xs font-bold px-2.5 py-1 rounded-full',
+          errorCount > 0
+            ? 'bg-rose-500 text-white'
+            : 'bg-amber-400 text-white'
+        )}>
+          {errorCount > 0 ? `${errorCount} error${errorCount > 1 ? 's' : ''}` : `${warningCount} warn`}
+        </span>
+      )}
+    </Link>
+  )
+}
 
 function StatCard({
   label,
@@ -34,13 +76,24 @@ function StatCard({
   return href ? <Link href={href}>{inner}</Link> : inner
 }
 
-export default function AdminDashboard({ ctx }: { ctx: DashboardContext }) {
+export default function AdminDashboard({
+  ctx,
+  healthChecks = [],
+}: {
+  ctx:           DashboardContext
+  healthChecks?: SystemHealthCheck[]
+}) {
   const stats = ctx.stats
 
   return (
     <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <SmartSummaryCard ctx={ctx} />
+
+        {/* System health widget */}
+        <section className="mb-6">
+          <HealthWidget checks={healthChecks} />
+        </section>
 
         {/* Institution stats */}
         {stats && (

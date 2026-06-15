@@ -16,9 +16,10 @@ interface Props {
     max_score: number | null
     content:   { answers?: Array<{ questionId: string; selectedIndex: number }> }
   } | null
+  onComplete?:  (xpAwarded: number) => void
 }
 
-export default function QuizPlayer({ blockId, questions, blockXp = 0, existingSub }: Props) {
+export default function QuizPlayer({ blockId, questions, blockXp = 0, existingSub, onComplete }: Props) {
   const maxScore = questions.reduce((s, q) => s + q.points, 0)
 
   // Map prior answers if graded
@@ -55,6 +56,9 @@ export default function QuizPlayer({ blockId, questions, blockXp = 0, existingSu
         blockXp,
       )
       setResult(res)
+      if (!res.error) {
+        onComplete?.(res.xpAwarded ?? 0)
+      }
     })
   }
 
@@ -129,7 +133,7 @@ export default function QuizPlayer({ blockId, questions, blockXp = 0, existingSu
                   key={oi}
                   type="button"
                   role="radio"
-                  aria-checked={selected}
+                  aria-checked={selected ? 'true' : 'false'}
                   onClick={() => selectAnswer(q.id, oi)}
                   className={cn(
                     'w-full flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm border text-left transition-all',

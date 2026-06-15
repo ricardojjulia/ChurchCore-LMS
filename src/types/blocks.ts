@@ -25,7 +25,7 @@ export const BLOCK_TYPE_META: Record<BlockTypeId, BlockTypeMeta> = {
   resource_file: { label: 'File',         icon: '📎', category: 'content',   color: 'teal',    description: 'PDF, slide deck, or downloadable file', is_active: true  },
   external_url:  { label: 'External URL', icon: '🔗', category: 'content',   color: 'slate',   description: 'Link to an external website',          is_active: true  },
   scorm:         { label: 'SCORM',        icon: '📦', category: 'content',   color: 'slate',   description: 'SCORM-compatible package',             is_active: false },
-  live_session:  { label: 'Live Session', icon: '🎙️', category: 'content',   color: 'violet',  description: 'Zoom, Meet, or live class link',       is_active: false },
+  live_session:  { label: 'Live Session', icon: '🎙️', category: 'content',   color: 'violet',  description: 'Zoom, Meet, or live class link',       is_active: true  },
   // Activity
   assignment:    { label: 'Assignment',   icon: '📝', category: 'activity',  color: 'emerald', description: 'Written or file submission task',      is_active: true  },
   quiz:          { label: 'Quiz',         icon: '🧠', category: 'activity',  color: 'violet',  description: 'Auto-graded knowledge check',          is_active: true  },

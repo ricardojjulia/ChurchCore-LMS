@@ -48,15 +48,25 @@ export default async function AnnouncementsPage() {
     .order('publish_at', { ascending: false })
     .limit(50)
 
-  // Staff also see their own drafts
-  const { data: drafts } = isStaff
-    ? await supabase
-        .from('announcements')
-        .select('id, title, priority, scope, publish_at, is_published, created_at')
-        .eq('created_by', profile.uid)
-        .eq('is_published', false)
-        .order('created_at', { ascending: false })
-    : { data: [] }
+  // Staff also see their own drafts and scheduled announcements
+  const [{ data: drafts }, { data: scheduled }] = await Promise.all([
+    isStaff
+      ? supabase
+          .from('announcements')
+          .select('id, title, priority, scope, publish_at, is_published, created_at')
+          .eq('created_by', profile.uid)
+          .eq('is_published', false)
+          .order('created_at', { ascending: false })
+      : Promise.resolve({ data: [] }),
+    isStaff
+      ? supabase
+          .from('announcements')
+          .select('id, title, priority, scope, publish_at, created_at')
+          .eq('is_published', true)
+          .gt('publish_at', new Date().toISOString())
+          .order('publish_at', { ascending: true })
+      : Promise.resolve({ data: [] }),
+  ])
 
   const items = (announcements ?? []).map((a: any) => ({
     ...a,
@@ -105,6 +115,30 @@ export default async function AnnouncementsPage() {
                   >
                     Publish
                   </Link>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Scheduled announcements (staff only) */}
+        {isStaff && (scheduled ?? []).length > 0 && (
+          <section className="mb-6">
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
+              Scheduled
+            </h2>
+            <div className="space-y-2">
+              {(scheduled ?? []).map((s: any) => (
+                <div key={s.id} className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-4">
+                  <span className="text-lg shrink-0" aria-hidden="true">🕐</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{s.title}</p>
+                    <p className="text-xs text-amber-700">
+                      Publishes {new Date(s.publish_at).toLocaleDateString('en-US', {
+                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                      })}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>

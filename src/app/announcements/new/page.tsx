@@ -22,13 +22,17 @@ export default function NewAnnouncementPage() {
   const [body, setBody]         = useState('')
   const [priority, setPriority] = useState<Priority>('normal')
   const [scope, setScope]       = useState<Scope>('global')
+  const [scheduled,   setScheduled]   = useState(false)
+  const [scheduledFor, setScheduledFor] = useState('')
   const [error, setError]       = useState<string | null>(null)
   const [isPending, start]      = useTransition()
 
-  async function handle(publish: boolean) {
+  async function handle(publish: boolean, useSchedule = false) {
     setError(null)
+    if (useSchedule && !scheduledFor) { setError('Pick a date and time to schedule.'); return }
+    const publishAt = useSchedule ? new Date(scheduledFor).toISOString() : undefined
     start(async () => {
-      const res = await createAnnouncement({ title, body, priority, scope, publish })
+      const res = await createAnnouncement({ title, body, priority, scope, publish, publishAt })
       if (res.error) { setError(res.error); return }
       router.push('/announcements')
     })
@@ -129,6 +133,44 @@ export default function NewAnnouncementPage() {
             )}
           </div>
 
+          {/* Schedule option */}
+          <div className="border border-border rounded-xl px-4 py-3 space-y-3">
+            <button
+              type="button"
+              onClick={() => setScheduled((s) => !s)}
+              className="flex items-center gap-2 text-sm font-semibold text-foreground"
+            >
+              <span
+                className={cn(
+                  'w-4 h-4 rounded border flex items-center justify-center text-xs',
+                  scheduled ? 'bg-primary border-primary text-primary-foreground' : 'border-border'
+                )}
+              >
+                {scheduled && '✓'}
+              </span>
+              Schedule for later
+            </button>
+            {scheduled && (
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  Publish at
+                </label>
+                <input
+                  type="datetime-local"
+                  value={scheduledFor}
+                  onChange={(e) => setScheduledFor(e.target.value)}
+                  min={new Date().toISOString().slice(0, 16)}
+                  title="Scheduled publish date and time"
+                  aria-label="Scheduled publish date and time"
+                  className="border border-input rounded-lg px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Audience won't see the announcement until this date and time.
+                </p>
+              </div>
+            )}
+          </div>
+
           {error && (
             <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2">
               {error}
@@ -152,13 +194,24 @@ export default function NewAnnouncementPage() {
             >
               Save Draft
             </Button>
-            <Button
-              type="button"
-              disabled={isPending || !title.trim() || !body.trim()}
-              onClick={() => handle(true)}
-            >
-              {isPending ? 'Publishing…' : 'Publish Now'}
-            </Button>
+            {scheduled ? (
+              <Button
+                type="button"
+                disabled={isPending || !title.trim() || !body.trim() || !scheduledFor}
+                onClick={() => handle(true, true)}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                {isPending ? 'Scheduling…' : 'Schedule'}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                disabled={isPending || !title.trim() || !body.trim()}
+                onClick={() => handle(true)}
+              >
+                {isPending ? 'Publishing…' : 'Publish Now'}
+              </Button>
+            )}
           </div>
         </div>
       </div>

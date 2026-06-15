@@ -93,15 +93,25 @@ export async function markBlockViewed(
     .single()
   if (!profile) return { justCompleted: false, xpAwarded: 0 }
 
-  const newProgress    = totalBlocks > 0 ? Math.round((viewedCount / totalBlocks) * 100) : 0
-  const transitStatus  = newProgress >= 100 ? 'completed' : 'in_progress'
-  const justCompleted  = transitStatus === 'completed'
+  const newProgress = totalBlocks > 0 ? Math.round((viewedCount / totalBlocks) * 100) : 0
+
+  // Never decrease progress (student may navigate back to review earlier blocks)
+  const { data: existing } = await supabase
+    .from('enrollments')
+    .select('progress_percent, transit_status')
+    .eq('user_id',   profile.uid)
+    .eq('course_id', courseId)
+    .single()
+
+  const finalProgress  = Math.max(newProgress, Number(existing?.progress_percent ?? 0))
+  const justCompleted  = finalProgress >= 100 && existing?.transit_status !== 'completed'
+  const transitStatus  = finalProgress >= 100 ? 'completed' : 'in_progress'
 
   await supabase
     .from('enrollments')
     .update({
       last_accessed_at: new Date().toISOString(),
-      progress_percent: newProgress,
+      progress_percent: finalProgress,
       transit_status:   transitStatus,
       ...(justCompleted ? { completed_at: new Date().toISOString() } : {}),
     })
@@ -115,7 +125,7 @@ export async function markBlockViewed(
     xpAwarded = blockXp
   }
 
-  // On course completion: bonus 100 XP + issue certificate
+  // On course completion: bonus 100 XP + issue certificate (only on first completion)
   if (justCompleted) {
     await tryAwardXp(supabase, profile.uid, 100)
     xpAwarded += 100
@@ -138,7 +148,7 @@ export async function submitAssignment(
   maxScore:  number,
   fileUrl?:  string,
   fileName?: string,
-): Promise<{ error?: string; submissionId?: string }> {
+): Promise<{ error?: string; submissionId?: string; xpAwarded?: number }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
@@ -154,22 +164,30 @@ export async function submitAssignment(
   if (!trimmed) return { error: 'Submission cannot be empty' }
   if (trimmed.length > 50000) return { error: 'Submission too long (max 50,000 characters)' }
 
-  // Check if already submitted and not returned
+  // Check most recent non-deleted submission for this student+block
   const { data: existing } = await supabase
     .from('block_submissions')
     .select('id, status')
-    .eq('block_id', blockId)
-    .eq('user_id',  profile.uid)
+    .eq('block_id',   blockId)
+    .eq('user_id',    profile.uid)
     .eq('is_deleted', false)
     .order('submitted_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 
-  if (existing && existing.status === 'submitted') {
+  if (existing?.status === 'submitted') {
     return { error: 'Already submitted and awaiting grading' }
   }
 
-  const attemptNumber = existing ? 2 : 1
+  // Count all prior submissions to derive the correct attempt number
+  const { count } = await supabase
+    .from('block_submissions')
+    .select('id', { count: 'exact', head: true })
+    .eq('block_id',   blockId)
+    .eq('user_id',    profile.uid)
+    .eq('is_deleted', false)
+
+  const attemptNumber = (count ?? 0) + 1
 
   const contentPayload: Record<string, unknown> = { text: trimmed }
   if (fileUrl)  contentPayload.file_url  = fileUrl
@@ -191,11 +209,27 @@ export async function submitAssignment(
 
   if (error) return { error: error.message }
 
-  // Award 10 XP for submitting an assignment
-  await tryAwardXp(supabase, profile.uid, 10)
+  const XP_ASSIGNMENT_SUBMIT = 10
+  await tryAwardXp(supabase, profile.uid, XP_ASSIGNMENT_SUBMIT)
+
+  // Mark enrollment as in_progress if still not_started
+  const { data: block } = await supabase
+    .from('course_blocks')
+    .select('course_id')
+    .eq('id', blockId)
+    .single()
+
+  if (block?.course_id) {
+    await supabase
+      .from('enrollments')
+      .update({ transit_status: 'in_progress', last_accessed_at: new Date().toISOString() })
+      .eq('user_id',         profile.uid)
+      .eq('course_id',       block.course_id)
+      .eq('transit_status',  'not_started')
+  }
 
   revalidatePath('/courses/[id]/learn', 'page')
-  return { submissionId: sub.id }
+  return { submissionId: sub.id, xpAwarded: XP_ASSIGNMENT_SUBMIT }
 }
 
 // ── Submit a quiz block (auto-graded) ────────────────────────────────────────

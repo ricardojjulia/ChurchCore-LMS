@@ -22,13 +22,14 @@ export default async function Navbar() {
     console.error('[Navbar] profile query failed:', profileError.message, '| auth_id:', user.id)
   }
 
-  const initial  = profile?.display_name?.[0]?.toUpperCase() ?? user.email?.[0]?.toUpperCase() ?? '?'
-  const isStaff  = profile?.role === 'teacher' || profile?.role === 'admin' || profile?.role === 'manager'
-  const isAdmin  = profile?.role === 'admin'
-  const uid      = profile?.uid ?? null
+  const initial    = profile?.display_name?.[0]?.toUpperCase() ?? user.email?.[0]?.toUpperCase() ?? '?'
+  const isStaff    = profile?.role === 'teacher' || profile?.role === 'admin' || profile?.role === 'manager'
+  const isAdmin    = profile?.role === 'admin' || profile?.role === 'manager'
+  const isGuardian = profile?.role === 'guardian'
+  const uid        = profile?.uid ?? null
 
-  // Fetch notification count + last 10 + unread message thread count
-  const [{ count: unreadCount }, { data: recentNotifs }, { data: msgCountRow }] = await Promise.all([
+  // Fetch notification count + last 10 + unread message thread count + health errors (admin only)
+  const [{ count: unreadCount }, { data: recentNotifs }, { data: msgCountRow }, { count: healthErrors }] = await Promise.all([
     uid
       ? supabase
           .from('notifications')
@@ -48,21 +49,30 @@ export default async function Navbar() {
     uid
       ? supabase.rpc('count_unread_message_threads')
       : Promise.resolve({ data: 0 }),
+    isAdmin
+      ? supabase
+          .from('system_health_checks')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'error')
+      : Promise.resolve({ count: 0, data: null }),
   ])
 
-  const unreadMessages = typeof msgCountRow === 'number' ? msgCountRow : 0
+  const unreadMessages   = typeof msgCountRow === 'number' ? msgCountRow : 0
+  const healthErrorCount = healthErrors ?? 0
 
   return (
     <nav className="sticky top-0 z-40 w-full bg-slate-900 border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-6 min-w-0">
+        <div className="flex items-center gap-4 flex-1 min-w-0 overflow-hidden">
           <Link
             href="/dashboard"
             className="text-white font-extrabold text-sm tracking-tight shrink-0 hover:text-indigo-300 transition-colors"
           >
-            ChurchCore
+            ChurchCore LMS
           </Link>
-          <NavLinks isStaff={isStaff} isAdmin={isAdmin} messageCount={unreadMessages} />
+          <div className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <NavLinks isStaff={isStaff} isAdmin={isAdmin} isGuardian={isGuardian} messageCount={unreadMessages} healthErrorCount={healthErrorCount} />
+          </div>
         </div>
 
         <div className="flex items-center gap-3 shrink-0">

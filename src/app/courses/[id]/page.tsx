@@ -138,9 +138,9 @@ export default async function CoursePage({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`text-xs font-bold uppercase tracking-widest ${
-                    course.is_published ? 'text-emerald-600' : 'text-amber-600'
+                    (course as any).status === 'published' ? 'text-emerald-600' : 'text-amber-600'
                   }`}>
-                    {course.is_published ? 'Published' : 'Draft'}
+                    {(course as any).status === 'published' ? 'Published' : ((course as any).status ?? 'Draft')}
                   </span>
                 </div>
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">{course.title}</h1>
@@ -233,6 +233,12 @@ export default async function CoursePage({
                       className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
                     >
                       Enrollment
+                    </Link>
+                    <Link
+                      href={`/courses/${courseId}/pages`}
+                      className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                    >
+                      Pages
                     </Link>
                   </div>
                 )}

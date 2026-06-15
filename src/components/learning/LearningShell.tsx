@@ -35,12 +35,7 @@ interface Props {
   isStaff:         boolean
 }
 
-function blockCompleted(block: CourseBlock, submissions: Submission[]): boolean {
-  if (block.block_type_id === 'assignment' || block.block_type_id === 'quiz') {
-    return submissions.some((s) => s.blockId === block.id && s.status !== 'draft')
-  }
-  return false
-}
+const CONTENT_TYPES = new Set(['page', 'video_stream', 'resource_file', 'external_url'])
 
 export default function LearningShell({
   courseId, courseTitle, modules, blocks, submissions, initialBlockId, progressPercent, isStaff,
@@ -52,9 +47,15 @@ export default function LearningShell({
     ?? publishedBlocks[0]
     ?? null
 
-  const [currentId,    setCurrentId]    = useState<string | null>(initialBlockId ?? findFirst()?.id ?? null)
-  const [sidebarOpen,  setSidebarOpen]  = useState(true)
-  const [xpToast,      setXpToast]      = useState<number | null>(null)
+  // Pre-populate completed set from server-side submission data
+  const initialCompleted = new Set(
+    submissions.filter((s) => s.status !== 'draft').map((s) => s.blockId)
+  )
+
+  const [currentId,       setCurrentId]      = useState<string | null>(initialBlockId ?? findFirst()?.id ?? null)
+  const [sidebarOpen,     setSidebarOpen]    = useState(true)
+  const [xpToast,         setXpToast]        = useState<number | null>(null)
+  const [completedIds,    setCompletedIds]   = useState<Set<string>>(initialCompleted)
   const [, startTransition] = useTransition()
   const router = useRouter()
 
@@ -76,14 +77,25 @@ export default function LearningShell({
 
   function trackCurrentBlock(viewedIndexAfter: number) {
     if (!current) return
-    const contentTypes = ['page', 'video_stream', 'resource_file', 'external_url']
-    if (contentTypes.includes(current.block_type_id)) {
+    if (CONTENT_TYPES.has(current.block_type_id)) {
       const blockXp = (current.gamification as any)?.base_xp_reward ?? 0
       startTransition(async () => {
         const res = await markBlockViewed(courseId, current.id, navBlocks.length, viewedIndexAfter, blockXp)
         if (res.xpAwarded > 0) showXpToast(res.xpAwarded)
+        setCompletedIds((prev) => new Set(prev).add(current.id))
       })
     }
+  }
+
+  // Called by QuizPlayer/AssignmentPlayer when a submission is accepted
+  function handleBlockComplete(xpAwarded: number) {
+    if (!current) return
+    setCompletedIds((prev) => new Set(prev).add(current.id))
+    if (xpAwarded > 0) showXpToast(xpAwarded)
+    // Update enrollment progress without re-awarding XP (pass blockXp=0)
+    startTransition(async () => {
+      await markBlockViewed(courseId, current.id, navBlocks.length, currentIndex + 1, 0)
+    })
   }
 
   function navigate(blockId: string) {
@@ -160,7 +172,7 @@ export default function LearningShell({
                   key={block.id}
                   block={block}
                   active={block.id === currentId}
-                  completed={blockCompleted(block, submissions)}
+                  completed={completedIds.has(block.id)}
                   onClick={() => navigate(block.id)}
                 />
               ))}
@@ -180,7 +192,7 @@ export default function LearningShell({
                       key={block.id}
                       block={block}
                       active={block.id === currentId}
-                      completed={blockCompleted(block, submissions)}
+                      completed={completedIds.has(block.id)}
                       onClick={() => navigate(block.id)}
                     />
                   ))}
@@ -241,7 +253,7 @@ export default function LearningShell({
             </div>
 
             {/* Block content */}
-            <BlockPlayer block={current} submission={currentSub as any} />
+            <BlockPlayer block={current} submission={currentSub as any} onComplete={handleBlockComplete} />
 
             {/* Navigation */}
             <div className="flex items-center justify-between mt-10 pt-6 border-t border-border">

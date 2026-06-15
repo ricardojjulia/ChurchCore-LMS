@@ -20,16 +20,20 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
 
   if (profile?.role !== 'teacher' && profile?.role !== 'admin') redirect('/dashboard')
 
-  const [courseResult, allCoursesResult] = await Promise.all([
+  const [courseResult, allCoursesResult, blueprintsResult] = await Promise.all([
     supabase
       .from('courses')
-      .select('id, title, description, status, min_required_level, prerequisite_course_id, owner_id')
+      .select('id, title, description, status, min_required_level, prerequisite_course_id, owner_id, blueprint_id')
       .eq('id', id)
       .single(),
     supabase
       .from('courses')
       .select('id, title')
       .eq('owner_id', profile?.uid)
+      .order('title', { ascending: true }),
+    supabase
+      .from('course_blueprints')
+      .select('id, title')
       .order('title', { ascending: true }),
   ])
 
@@ -58,11 +62,13 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
             userId={profile?.uid ?? ''}
             courseId={course.id}
             existingCourses={allCoursesResult.data ?? []}
+            blueprints={blueprintsResult.data ?? []}
             initialTitle={course.title}
             initialDescription={course.description ?? ''}
             initialLevel={course.min_required_level}
             initialPrerequisiteId={course.prerequisite_course_id}
             initialStatus={course.status}
+            initialBlueprintId={course.blueprint_id ?? null}
           />
         </div>
       </div>
