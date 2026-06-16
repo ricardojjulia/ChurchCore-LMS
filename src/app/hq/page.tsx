@@ -480,6 +480,16 @@ export default function HQPage() {
               <div className="agentHeader" data-agent={activeAgent}>
                 <span>{agent.emoji}</span>
                 <div><h2 className="agentTitle">{agent.name}</h2><p>{agent.role}</p></div>
+                {currentMessages.length > 0 && (
+                  <button
+                    type="button"
+                    className="clearChat"
+                    onClick={() => setMessages((prev) => ({ ...prev, [activeAgent]: [] }))}
+                    title="Clear chat history for this agent"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
               <div className="quickRow">
                 {agent.quick.map((q: string) => (
@@ -830,6 +840,8 @@ export default function HQPage() {
         .historyItemAgent{font-weight:700;color:#818cf8}
         .openInAgent{margin-left:auto;background:transparent;border:1px solid #30303a;color:#818cf8;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700}
         .openInAgent:hover{background:#18181f}
+        .clearChat{margin-left:auto;background:transparent;border:1px solid #30303a;color:#52525b;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s}
+        .clearChat:hover{border-color:#fb7185;color:#fb7185}
         .historyContent{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:20px}
         .historySection{display:flex;flex-direction:column;gap:8px}
         .historySectionHead{display:flex;align-items:center;justify-content:space-between}

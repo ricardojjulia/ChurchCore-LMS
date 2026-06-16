@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * Admin Health Page Integration Tests
  * COUNCIL-2025-005 GAP-008 — /admin/health page wiring

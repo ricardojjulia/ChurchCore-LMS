@@ -29,7 +29,13 @@ function highlight(text: string, q: string): React.ReactNode {
   )
 }
 
-export default function GlobalSearch() {
+export default function GlobalSearch({
+  variant  = 'navbar',
+  collapsed = false,
+}: {
+  variant?:  'navbar' | 'sidebar'
+  collapsed?: boolean
+}) {
   const [open,     setOpen]     = useState(false)
   const [query,    setQuery]    = useState('')
   const [results,  setResults]  = useState<SearchResults>(EMPTY)
@@ -97,15 +103,51 @@ export default function GlobalSearch() {
     <>
       {/* Trigger button */}
       <button
+        type="button"
         onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 50) }}
-        className="flex items-center gap-2 text-xs text-slate-400 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg px-3 py-1.5 transition-colors"
         aria-label="Open search"
+        className={cn(
+          variant === 'sidebar'
+            ? cn(
+                'flex items-center gap-3 w-full px-2 py-2 rounded-lg text-sm font-medium transition-colors',
+                'text-slate-400 hover:text-white hover:bg-slate-800',
+                collapsed && 'justify-center gap-0',
+              )
+            : 'flex items-center gap-2 text-xs text-slate-400 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg px-3 py-1.5 transition-colors',
+        )}
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width={variant === 'sidebar' ? 20 : 12}
+          height={variant === 'sidebar' ? 20 : 12}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={variant === 'sidebar' ? 'shrink-0' : ''}
+          aria-hidden="true"
+        >
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
-        <span className="hidden sm:inline">Search</span>
-        <kbd className="hidden sm:inline text-[10px] bg-slate-700 rounded px-1 py-0.5 text-slate-400">⌘K</kbd>
+
+        {variant === 'sidebar' ? (
+          <span className={cn(
+            'overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200',
+            collapsed ? 'max-w-0 opacity-0' : 'max-w-[100px] opacity-100',
+          )}>
+            Search
+          </span>
+        ) : (
+          <span className="hidden sm:inline">Search</span>
+        )}
+
+        {variant === 'sidebar' && !collapsed && (
+          <kbd className="ml-auto shrink-0 text-[10px] bg-slate-700 rounded px-1 py-0.5 text-slate-500">⌘K</kbd>
+        )}
+        {variant === 'navbar' && (
+          <kbd className="hidden sm:inline text-[10px] bg-slate-700 rounded px-1 py-0.5 text-slate-400">⌘K</kbd>
+        )}
       </button>
 
       {/* Modal */}
@@ -137,6 +179,7 @@ export default function GlobalSearch() {
               />
               {query && (
                 <button
+                  type="button"
                   onClick={() => { setQuery(''); setResults(EMPTY); inputRef.current?.focus() }}
                   className="text-xs text-muted-foreground hover:text-foreground"
                 >
@@ -246,6 +289,7 @@ function ResultItem({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={cn(
         'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors',

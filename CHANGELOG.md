@@ -11,6 +11,60 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.18.0] — 2026-06-16
+
+### Added
+
+- **Collapsible side navigation** — replaces the top navbar with a fixed left rail that collapses to a 56 px icon-only mode and expands to 240 px with full labels; collapse preference persisted in `localStorage`; smooth `transition-[width]` CSS animation with `max-width + opacity` label fade (no `overflow: hidden` needed, so the notification panel is never clipped); accessible via `aria-label` on the toggle button
+- **`SidebarContext`** — React context (`SidebarProvider` + `useSidebar` hook) owns the single source of truth for collapsed state and the `toggle()` mutation; exported from `src/components/layout/SidebarContext.tsx`
+- **`SidebarClient`** — `'use client'` component rendering the full sidebar UI; nav links defined with Lucide icons (`LayoutDashboard`, `BookOpen`, `BarChart3`, `Award`, `Trophy`, `MessageCircle`, `Megaphone`, `Calendar`, `Users`, `Shield`, `Zap`, `UserCog`, `Layers`, `Clock`, `FileText`, `Sparkles`, `Activity`); links grouped into Main / Guardian / Staff / Admin sections with dividers; active state via `usePathname()`; badge counts float to the icon corner when collapsed
+- **`Sidebar`** — server component that fetches user, profile, unread message count, and health error count (identical to old `Navbar` data fetching) then renders `SidebarClient`
+- **`SidebarMain`** — `'use client'` content wrapper; reads `collapsed` from context and applies `md:pl-14` / `md:pl-60` with `transition-[padding-left] duration-200`; carries `id="main-content"` for skip-nav
+- **`docs/HOWTO-sidebar-nav.md`** — customisation guide: adding links, icon choices, section grouping, persisting state to cookies instead of localStorage, and disabling the sidebar for specific routes
+- **CI/CD pipeline** (`ADR-0014 R1`) — `.github/workflows/ci.yml` (lint → typecheck → unit tests → build, Node 24, npm cache); `.github/workflows/e2e.yml` (pull-request-only, Supabase CLI, migrations + seed); `.github/workflows/release.yml` (push-to-main, reuses CI, manual approval gate via `environment: production`, optional webhook notification); `.github/CODEOWNERS` — migrations, Edge Functions, CI workflows, and Supabase utils require `@churchcore/architects` review
+- **Error boundaries** (`ADR-0014 R1`) — `src/app/error.tsx`, `src/app/admin/error.tsx`, `src/app/courses/error.tsx`, `src/app/courses/[id]/error.tsx`, `src/app/courses/[id]/learn/error.tsx`, `src/app/dashboard/error.tsx`; all `'use client'`, none expose `error.message` or `error.stack` in the DOM (only `error.digest`); `captureError()` called in `useEffect` for server-side logging
+- **`src/lib/monitoring.ts`** — `captureError(error, context)` utility; generates an 8-char error ID; logs full error in development, ID-only in production; stub comment for Sentry integration
+- **Test foundation** (`ADR-0014 R2`) — Vitest with `@testing-library/react`, `@testing-library/jest-dom`, per-directory coverage thresholds (`src/lib/**` ≥ 80 %, `src/hooks/**` ≥ 70 %, `src/utils/**` ≥ 80 %); 9 test files, 72 passing tests
+- **`src/utils/supabase/__mocks__/client.ts`** — Vitest auto-mock with fluent query builder, `mockSupabaseResponse<T>()`, and `mockSupabaseError()` helpers
+- **`src/tests/setup.ts`** — global test setup; mocks `next/navigation` (`useRouter`, `useParams`, `usePathname`, `redirect`), `@/utils/supabase/client`, and `@/utils/supabase/server`
+- **`src/lib/auth/permissions.ts`** — `isAdmin`, `isStaff`, `isLearner`, `canAccessAdminRoutes`, `canManageCourses` helpers using `Set` for O(1) role lookup; fully unit-tested
+- **`src/utils/grading.ts`** — `calculatePercentage` (returns 0 on division by zero), `calculateLetterGrade` (A/B/C/D/F), `isPassing` (configurable threshold, default 70 %); fully unit-tested
+- **`src/utils/certificate.ts`** — `formatCompletionDate` (en-US long form), `generateCertificateData` (falls back to `'Unknown Recipient'` for null/empty/whitespace names); timezone-safe tests use noon-UTC fixture dates
+- **Realtime hooks** (`ADR-0014 R3`) — `useRealtimeChannel` base hook (`src/hooks/useRealtimeChannel.ts`): `useRef<RealtimeChannel>` guarantees cleanup on unmount regardless of render order; `onData`/`onStatusChange` intentionally excluded from deps (callers use `useCallback`); `useNotifications` and `useMessages` built on top
+- **`useNotifications`** (`src/hooks/useNotifications.ts`) — fetches + realtime-subscribes to `notifications`; exposes `unreadCount`, `markAsRead`, `markAllAsRead`, and `connectionStatus`; uses `is_read` field (not `read`)
+- **`useMessages`** (`src/hooks/useMessages.ts`) — fetch + realtime for thread messages; exposes `isAtBottomRef` for scroll management
+- **Realtime DB publications** (`ADR-0014 R3`) — migration `20240601000047`: idempotent `DO $$` block adding `notifications` and `messages` to the `supabase_realtime` publication
+- **RLS audit migration** (`ADR-0014 R3`) — migration `20240601000048`: confirms existing RLS policies on `notifications` and `messages` (from migrations 023/024); no new conflicting policies added
+- **User search Edge Function** (`ADR-0014 R4`) — `supabase/functions/search-users/index.ts`: JWT verification via user-scoped client; role check (admin/manager/teacher only, 403 otherwise); 2–100 char query validation; `ILIKE` on `display_name` and `email` with GIN trigram indexes; every successful search recorded in `admin_audit_log` via service role; returns `{ id, full_name, email, avatar_url }`
+- **GIN search indexes + audit log** (`ADR-0014 R4`) — migration `20240601000049`: `pg_trgm` extension; `idx_profiles_display_name_trgm` and `idx_profiles_email_trgm`; `admin_audit_log` table with RLS (admin/manager SELECT, no client INSERT — service role only)
+- **`UserSearchCombobox`** (`ADR-0014 R4`) — `src/components/cohorts/UserSearchCombobox.tsx`; combobox ARIA pattern (`role="combobox"` on input, `role="listbox"` / `role="option"` on results, `role="status"` / `role="alert"` on status items); 300 ms debounce; direct `fetch` to Edge Function (not `supabase.functions.invoke` — GET query params not supported via invoke); keyboard: ArrowUp/Down, Enter, Escape; filters existing members from results; "Invite them?" empty-state link
+- **Cohort member search** (`ADR-0014 R4`) — `CohortMemberPanel` now embeds `UserSearchCombobox`; selecting a user calls `addCohortMember()` Server Action; success toast clears after 3 s
+- **Course catalog track classification** (`COUNCIL-2025-007`) — courses page groups by program track (from `course_blueprints → program_tracks` join); track filter chips as `<Link href="?track=id">`; grouped `<h2>` sections; "Other" group sorts last; three-case empty state (no courses / no matches / track empty)
+- **`CourseCard` blueprint code** (`COUNCIL-2025-007`) — `blueprintCode?: string` prop renders a monospace pill badge beneath the card title
+- **`docs/decisions/ADR-2025-007.md`** — ratification record for COUNCIL-2025-007 course catalog classification
+- **`docs/github-setup.md`** — branch protection settings, required secrets, status check configuration
+- **`docs/testing.md`** — complete unit/coverage/e2e guide; test user table; CI environment setup instructions
+- **`supabase/seed.test.sql`** — deterministic test seed with fixed UUIDs (auth pattern `0001-XXXXXX`, profile pattern `0002-XXXXXX`); uses `display_name` and `uid` PK
+- **`scripts/ci-setup-test-env.mjs`** — CI helper that sets test-user passwords via `supabase.auth.admin.updateUserById()`
+- **`vitest.config.ts`** — added coverage include/exclude/thresholds; `passWithNoTests: true`
+
+### Changed
+
+- **`src/app/layout.tsx`** — replaced `<Navbar>` with `<SidebarProvider> → <Sidebar> + <SidebarMain>`; `pb-16 md:pb-0` mobile padding moved into `SidebarMain`; `id="main-content"` skip-nav target now on the `SidebarMain` wrapper
+- **`NotificationBell`** — added `sidebar?: boolean` and `collapsed?: boolean` props; in sidebar mode trigger becomes a full-width nav-item-style button; notification panel opens upward (`bottom-full mb-2`) instead of downward to avoid sidebar clipping; `aria-expanded` fixed to use spread pattern (HTML validator false-positive workaround); `type="button"` added to trigger
+- **`GlobalSearch`** — added `variant: 'navbar' | 'sidebar'` and `collapsed?: boolean` props; sidebar variant renders a nav-item-style trigger with animated label; `type="button"` added to all three buttons in the component
+- **`MessageThread`** — inline `useEffect` realtime subscription replaced with `useRealtimeChannel`; dedup logic preserved for optimistic messages
+- **`Navbar`** — server notification fetches (unread count + recent notifications) removed; these are now handled client-side by `useNotifications` in `NotificationBell`
+- **`tsconfig.json`** — added `"types": ["vitest/globals"]` to eliminate `describe`/`it`/`expect` type errors in test files
+- **`package.json`** — added `test`, `test:run`, `test:ci`, `typecheck` scripts; version bumped to `0.18.0`
+
+### Fixed
+
+- **`src/app/api/health/route.ts`** — removed erroneous `'use server'` directive (route handlers are server-side without it; the directive caused a build error when `export const runtime = 'nodejs'` was present)
+- **`src/app/actions/cohorts.ts`** — double type cast `as unknown as CohortMember[]` resolves TypeScript incompatibility between Supabase's `auth_user` array return and the expected object shape
+
+---
+
 ## [0.17.0] — 2026-06-15
 
 ### Added

@@ -1,0 +1,8 @@
+# Architect review required for infrastructure-critical paths.
+# These files cannot be merged without an approved review from @churchcore/architects.
+
+/supabase/migrations/    @churchcore/architects
+/supabase/functions/     @churchcore/architects
+/.github/workflows/      @churchcore/architects
+/src/lib/supabase/       @churchcore/architects
+/src/utils/supabase/     @churchcore/architects

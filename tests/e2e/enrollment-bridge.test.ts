@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * Enrollment Bridge Integration Tests
  * ADR-2025-004 GAP-002 — Academic bridge trigger + backfill

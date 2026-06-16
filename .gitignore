@@ -35,5 +35,8 @@ supabase/.temp
 *.tsbuildinfo
 next-env.d.ts
 
+# test coverage output
+/coverage/
+
 # ai-factory temp artifacts
 .ai-factory/locks/

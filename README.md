@@ -3,7 +3,7 @@
 > A fast, secure, ministry-ready Learning Management System built for churches and faith communities.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss)](https://tailwindcss.com)
@@ -51,6 +51,10 @@ ChurchCore LMS is a full-stack learning platform purpose-built for church organi
 - **Row Level Security** — all tables secured at DB layer; `current_user_uid()` and `current_user_role()` SECURITY DEFINER helpers prevent RLS recursion
 - **Materialized view** — `mv_academic_performance` with SECURITY DEFINER access functions
 - **Global search** — ⌘K modal searching courses, announcements, and people
+- **Collapsible side navigation** — icon-rail (56 px) or full panel (240 px); collapse preference persisted to `localStorage`; smooth CSS width + label-opacity transitions; mobile falls back to the fixed bottom nav
+- **CI/CD pipeline** — GitHub Actions: lint → typecheck → unit tests → build on every push; e2e on PRs; manual approval gate for production deploys; CODEOWNERS on migrations and workflows
+- **Test suite** — Vitest with `@testing-library/react`; 72+ unit tests across hooks, utilities, and lib; per-directory coverage thresholds
+- **Error boundaries** — route-level error boundaries for admin, courses, course detail, learn shell, and dashboard; never expose stack traces in production DOM
 - **Mobile bottom nav** — 5-tab fixed nav with message badges, iOS safe-area insets
 - **WCAG 2.1 AA** — skip link, `aria-expanded`, `role="dialog"`, `aria-live`, `:focus-visible`
 
@@ -60,13 +64,16 @@ ChurchCore LMS is a full-stack learning platform purpose-built for church organi
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 14 (App Router) |
+| Framework | Next.js 16 (App Router, Turbopack) |
 | Language | TypeScript 5 |
 | Database | Supabase (PostgreSQL 15) |
 | Auth | Supabase Auth (magic link + email/password) |
 | ORM | Supabase JS client (PostgREST) |
 | Styling | Tailwind CSS 3 + shadcn/ui |
-| AI | Anthropic Claude (claude-haiku-4-5) |
+| Icons | Lucide React |
+| AI | Anthropic Claude (claude-haiku-4-5) + OpenAI (embeddings) |
+| Testing | Vitest + Testing Library |
+| CI/CD | GitHub Actions |
 | Deployment | Vercel (recommended) |
 
 ---
@@ -127,9 +134,8 @@ Open [http://localhost:3000](http://localhost:3000).
 ```
 src/
 ├── app/
-│   ├── (auth)/login/          # Auth pages
-│   ├── actions/               # Server actions (learning, enrollment, messages, …)
-│   ├── api/                   # API routes (ai proxy, search, calendar)
+│   ├── actions/               # Server actions (learning, enrollment, messages, cohorts, …)
+│   ├── api/                   # API routes (ai proxy, search, calendar, health)
 │   ├── courses/[id]/
 │   │   ├── build/             # Course builder
 │   │   ├── learn/             # Learning shell
@@ -137,18 +143,42 @@ src/
 │   │   ├── enroll/            # Staff bulk enrollment
 │   │   ├── analytics/         # Instructor analytics
 │   │   └── submissions/       # Grading queue
+│   ├── admin/                 # Cohorts, sections, terms, blueprints, users, health
 │   ├── dashboard/             # Role-aware dashboard
 │   ├── leaderboard/           # XP leaderboard
 │   ├── notifications/         # Full notification center
 │   ├── performance/           # Student GPA + progress
 │   └── certificates/          # Earned certificates
 ├── components/
+│   ├── cohorts/               # UserSearchCombobox
 │   ├── dashboard/             # StudentDashboard, InstructorDashboard, AdminDashboard
-│   ├── layout/                # Navbar, GlobalSearch, MobileBottomNav, NotificationBell
+│   ├── layout/                # Sidebar*, GlobalSearch, MobileBottomNav, NotificationBell
 │   └── learning/              # LearningShell, BlockPlayer, QuizPlayer, DiscussionPlayer, …
+├── hooks/                     # useRealtimeChannel, useNotifications, useMessages
+├── lib/
+│   ├── auth/                  # permissions helpers (isAdmin, isStaff, …)
+│   ├── monitoring.ts          # captureError() — error ID generation + logging
+│   └── queries/               # getHealthChecks
+├── tests/                     # Vitest setup, e2e specs
 ├── types/                     # Shared TypeScript interfaces
-└── utils/supabase/            # Supabase client helpers (client / server / service)
-supabase/migrations/           # 29 ordered SQL migrations
+└── utils/
+    ├── supabase/              # client / server / service helpers + __mocks__
+    ├── grading.ts             # calculatePercentage, calculateLetterGrade, isPassing
+    └── certificate.ts         # formatCompletionDate, generateCertificateData
+.github/
+├── workflows/                 # ci.yml, e2e.yml, release.yml
+└── CODEOWNERS
+docs/
+├── decisions/                 # ADR-2025-001 through ADR-2025-007
+├── HOWTO-sidebar-nav.md       # Sidebar customisation guide
+├── github-setup.md            # Branch protection + secrets reference
+└── testing.md                 # Unit / coverage / e2e guide
+supabase/
+├── functions/search-users/    # Edge Function — role-gated user search with audit log
+├── migrations/                # 49 ordered SQL migrations
+└── seed.test.sql              # Deterministic test seed (fixed UUIDs)
+scripts/
+└── ci-setup-test-env.mjs      # CI helper — sets test-user passwords via Admin API
 ```
 
 ---
@@ -175,6 +205,17 @@ These helpers read from `public.profile_roles`, a lightweight lookup table popul
 ### XP and Level System
 
 XP is awarded atomically via the `award_xp(uid, amount)` SECURITY DEFINER function, which increments `profiles.xp_points` and recomputes `profiles.current_level` using `calculate_level(xp)` in a single transaction. Level thresholds: 1→100→250→500→1000→2000→4000→8000→15000→30000 XP.
+
+---
+
+## Documentation
+
+| Document | Purpose |
+|---|---|
+| [HOWTO-sidebar-nav.md](./docs/HOWTO-sidebar-nav.md) | Adding links, changing icons, cookie persistence, hiding on specific routes |
+| [testing.md](./docs/testing.md) | Unit tests, coverage thresholds, e2e setup, test users |
+| [github-setup.md](./docs/github-setup.md) | Branch protection, required secrets, status check configuration |
+| [decisions/](./docs/decisions/) | Architecture Decision Records (ADR-2025-001 through ADR-2025-007) |
 
 ---
 

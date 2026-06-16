@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * Health Route Integration Tests
  * COUNCIL-2025-005 GAP-006 — /api/health route wiring

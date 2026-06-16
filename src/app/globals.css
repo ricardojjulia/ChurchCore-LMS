@@ -113,3 +113,48 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
+
+@layer components {
+  /* ── Form inputs ─────────────────────────────────────────────────────────── */
+  /* Collision audit (COUNCIL-2025-006): no third-party usage of className="input"
+     found in node_modules or outside src/app/admin + src/components.
+     Global scope is safe. Dark mode covered by CSS variable tokens. */
+  .input {
+    /* Base */
+    @apply w-full rounded-md border border-input bg-background
+           px-3 py-2 text-sm ring-offset-background
+           placeholder:text-muted-foreground;
+
+    /* Focus — WCAG AA required */
+    @apply focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-ring focus-visible:ring-offset-2;
+
+    /* Disabled */
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+
+    /* File input variant */
+    @apply file:border-0 file:bg-transparent
+           file:text-sm file:font-medium;
+  }
+
+  /* ── Button utility classes ──────────────────────────────────────────────── */
+  /* Matches shadcn Button component variants for use in error/not-found pages
+     that cannot import React client components. */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap
+           rounded-md text-sm font-medium ring-offset-background
+           transition-colors h-10 px-4 py-2
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .btn-outline {
+    @apply border border-input bg-background
+           hover:bg-accent hover:text-accent-foreground;
+  }
+}

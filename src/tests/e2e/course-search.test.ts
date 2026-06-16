@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * Course Search Route Integration Tests
  * COUNCIL-2025-005 GAP-007 — /api/search course status fix

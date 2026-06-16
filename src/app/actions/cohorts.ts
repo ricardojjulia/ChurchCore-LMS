@@ -106,6 +106,43 @@ export async function removeCohortMember(
   return {}
 }
 
+type CohortMember = {
+  id: string
+  user_id: string
+  status: string
+  joined_at: string
+  notes: string | null
+  auth_user: { email: string } | null
+}
+
+export async function searchCohortMembers(
+  cohortId: string,
+  query: string,
+): Promise<CohortMember[]> {
+  let supabase: Awaited<ReturnType<typeof createClient>>
+  try {
+    supabase = await requireAdmin()
+  } catch {
+    return []
+  }
+
+  // cohort_id is the first and required WHERE predicate — COUNCIL-2025-006
+  const { data } = await supabase
+    .from('cohort_members')
+    .select('id, user_id, status, joined_at, notes, auth_user:user_id(email)')
+    .eq('cohort_id', cohortId)
+    .order('joined_at', { ascending: false })
+
+  if (!data) return []
+
+  const lower = query.toLowerCase()
+  return (data as unknown as CohortMember[]).filter(
+    (m) =>
+      (m.auth_user?.email?.toLowerCase().includes(lower) ?? false) ||
+      m.user_id.toLowerCase().includes(lower),
+  )
+}
+
 export async function startBulkEnrollment(
   cohortId: string,
   sectionId: string,

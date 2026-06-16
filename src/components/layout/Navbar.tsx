@@ -28,24 +28,9 @@ export default async function Navbar() {
   const isGuardian = profile?.role === 'guardian'
   const uid        = profile?.uid ?? null
 
-  // Fetch notification count + last 10 + unread message thread count + health errors (admin only)
-  const [{ count: unreadCount }, { data: recentNotifs }, { data: msgCountRow }, { count: healthErrors }] = await Promise.all([
-    uid
-      ? supabase
-          .from('notifications')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', uid)
-          .eq('is_read', false)
-          .eq('is_dismissed', false)
-      : Promise.resolve({ count: 0, data: null }),
-    uid
-      ? supabase
-          .from('notifications')
-          .select('id, type, title, body, link, is_read, created_at')
-          .eq('user_id', uid)
-          .order('created_at', { ascending: false })
-          .limit(10)
-      : Promise.resolve({ data: [] }),
+  // Notification data is fetched client-side by NotificationBell via useNotifications hook.
+  // Server fetches only what can't be deferred: unread message count + health error badge.
+  const [{ data: msgCountRow }, { count: healthErrors }] = await Promise.all([
     uid
       ? supabase.rpc('count_unread_message_threads')
       : Promise.resolve({ data: 0 }),
@@ -79,11 +64,7 @@ export default async function Navbar() {
           <GlobalSearch />
 
           {uid && (
-            <NotificationBell
-              initialCount={unreadCount ?? 0}
-              initialNotifications={recentNotifs ?? []}
-              userId={uid}
-            />
+            <NotificationBell userId={uid} />
           )}
 
           <Link href="/profile" title={profile?.display_name ?? user.email ?? 'Profile'}>

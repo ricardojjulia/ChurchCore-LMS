@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef, useTransition } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { useState, useEffect, useRef, useTransition, useCallback } from 'react'
 import { sendMessage, markThreadRead, deleteMessage } from '@/app/actions/messages'
+import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
 import { cn } from '@/lib/utils'
 
 interface Message {
@@ -42,36 +42,26 @@ export default function MessageThread({
   const [isPending, start]      = useTransition()
   const bottomRef               = useRef<HTMLDivElement>(null)
   const textareaRef             = useRef<HTMLTextAreaElement>(null)
-  const supabase                = createClient()
 
   // Mark thread read on mount
   useEffect(() => { markThreadRead(threadId) }, [threadId])
 
-  // Realtime subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel(`thread:${threadId}:messages`)
-      .on(
-        'postgres_changes',
-        {
-          event:  'INSERT',
-          schema: 'public',
-          table:  'messages',
-          filter: `thread_id=eq.${threadId}`,
-        },
-        (payload) => {
-          const msg = payload.new as Message
-          setMessages((prev) => {
-            // Avoid duplicate if we already optimistically added it
-            if (prev.some((m) => m.id === msg.id)) return prev
-            return [...prev, msg]
-          })
-        }
-      )
-      .subscribe()
+  // Realtime subscription via shared base hook (cleanup guaranteed on unmount)
+  const handleIncoming = useCallback((payload: unknown) => {
+    const msg = (payload as { new: Message }).new
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === msg.id)) return prev  // dedup optimistic
+      return [...prev, msg]
+    })
+  }, [])
 
-    return () => { supabase.removeChannel(channel) }
-  }, [threadId, supabase])
+  useRealtimeChannel({
+    channelName: `thread:${threadId}:messages`,
+    table: 'messages',
+    filter: `thread_id=eq.${threadId}`,
+    event: 'INSERT',
+    onData: handleIncoming,
+  })
 
   // Scroll to bottom when messages change
   useEffect(() => {

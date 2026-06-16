@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { addCohortMember, removeCohortMember } from '@/app/actions/cohorts'
+import { useState, useEffect, useRef, useTransition } from 'react'
+import { addCohortMember, removeCohortMember, searchCohortMembers } from '@/app/actions/cohorts'
+import UserSearchCombobox from '@/components/cohorts/UserSearchCombobox'
+import type { SearchResult } from '@/components/cohorts/UserSearchCombobox'
 
 interface Member {
   id: string
@@ -14,25 +16,78 @@ interface Member {
 
 interface Props {
   cohortId: string
-  members: Member[]
+  members:  Member[]
 }
 
+// Matches UsersControls debounce timing exactly (300 ms)
+const DEBOUNCE_MS = 300
+
+// Client-side threshold: above this, fall back to server-side search
+const SERVER_SEARCH_THRESHOLD = 200
+
 export default function CohortMemberPanel({ cohortId, members }: Props) {
-  const [addUid, setAddUid]   = useState('')
-  const [addErr, setAddErr]   = useState<string | null>(null)
-  const [pending, startTransition] = useTransition()
+  const [addErr,    setAddErr]    = useState<string | null>(null)
+  const [addSuccess, setAddSuccess] = useState<string | null>(null)
+  const [query,     setQuery]     = useState('')
+  const [filtered,  setFiltered]  = useState<Member[]>(members)
+  const [serverBusy, setServerBusy] = useState(false)
+  const [pending,   startTransition] = useTransition()
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const activeMembers    = members.filter((m) => m.status === 'active')
-  const inactiveMembers  = members.filter((m) => m.status !== 'active')
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
 
-  function handleAdd(e: React.FormEvent) {
-    e.preventDefault()
-    if (!addUid.trim()) return
+    debounceRef.current = setTimeout(() => {
+      const q = query.trim()
+
+      if (!q) {
+        setFiltered(members)
+        return
+      }
+
+      if (members.length <= SERVER_SEARCH_THRESHOLD) {
+        // Client-side filter — sufficient for most cohorts
+        const lower = q.toLowerCase()
+        setFiltered(
+          members.filter(
+            (m) =>
+              (m.auth_user?.email?.toLowerCase().includes(lower) ?? false) ||
+              m.user_id.toLowerCase().includes(lower),
+          ),
+        )
+      } else {
+        // Server-side query — cohort_id in WHERE clause enforced in the action
+        setServerBusy(true)
+        searchCohortMembers(cohortId, q)
+          .then(setFiltered)
+          .finally(() => setServerBusy(false))
+      }
+    }, DEBOUNCE_MS)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [query, members, cohortId])
+
+  const activeMembers   = filtered.filter((m) => m.status === 'active')
+  const inactiveMembers = filtered.filter((m) => m.status !== 'active')
+  const isSearching     = query.trim().length > 0
+
+  const countLabel = isSearching
+    ? `${filtered.length} of ${members.length} members`
+    : `${members.length} members`
+
+  function handleSelectUser(user: SearchResult) {
     setAddErr(null)
+    setAddSuccess(null)
     startTransition(async () => {
-      const result = await addCohortMember(cohortId, addUid.trim())
-      if (result.error) setAddErr(result.error)
-      else setAddUid('')
+      const result = await addCohortMember(cohortId, user.id)
+      if (result.error) {
+        setAddErr(result.error)
+      } else {
+        setAddSuccess(`${user.full_name} added to cohort`)
+        setTimeout(() => setAddSuccess(null), 3000)
+      }
     })
   }
 
@@ -46,33 +101,46 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-foreground">
-          Members <span className="text-muted-foreground font-normal text-base">({activeMembers.length} active)</span>
+          Members{' '}
+          <span className="text-muted-foreground font-normal text-base">
+            ({countLabel})
+          </span>
         </h2>
       </div>
 
-      {/* Add member */}
+      {/* Search */}
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => e.key === 'Escape' && setQuery('')}
+        placeholder="Search by email or user ID…"
+        aria-label="Search cohort members"
+        className="flex-1 border border-input rounded-lg px-4 py-2 text-sm bg-white text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full"
+      />
+      {serverBusy && (
+        <p className="text-xs text-muted-foreground">Searching…</p>
+      )}
+
+      {/* Add member — search by name or email */}
       <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Add Member by User ID</h3>
-        <form onSubmit={handleAdd} className="flex gap-2">
-          <input
-            value={addUid}
-            onChange={(e) => setAddUid(e.target.value)}
-            placeholder="auth.users UUID"
-            className="input flex-1 font-mono text-xs"
-            aria-label="User UUID to add"
-          />
-          <button
-            type="submit"
-            disabled={pending || !addUid.trim()}
-            className="bg-primary text-primary-foreground font-bold px-4 py-2 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
-          >
-            Add
-          </button>
-        </form>
-        {addErr && <p className="text-rose-600 text-xs mt-2">{addErr}</p>}
-        <p className="text-xs text-muted-foreground mt-2">
-          Paste the UUID from <span className="font-mono">auth.users</span> — user lookup by email coming in Phase 2.
-        </p>
+        <h3 className="text-sm font-semibold text-foreground mb-3">Add Member</h3>
+        <UserSearchCombobox
+          existingMemberIds={members.map((m) => m.user_id)}
+          onSelect={handleSelectUser}
+          onClose={() => {}}
+        />
+        {addErr && (
+          <p className="text-rose-600 text-xs mt-2" role="alert">{addErr}</p>
+        )}
+        {addSuccess && (
+          <p className="text-emerald-600 text-xs mt-2 font-semibold" role="status">
+            ✓ {addSuccess}
+          </p>
+        )}
+        {pending && (
+          <p className="text-xs text-muted-foreground mt-2">Adding…</p>
+        )}
       </div>
 
       {/* Active members table */}
@@ -84,7 +152,7 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
                 <th className="text-left px-6 py-3 font-semibold text-muted-foreground">User</th>
                 <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Joined</th>
                 <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Status</th>
-                <th className="px-4 py-3" />
+                <th className="px-4 py-3" aria-label="Actions" />
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -104,6 +172,7 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
+                      type="button"
                       onClick={() => handleRemove(m.user_id)}
                       disabled={pending}
                       className="text-xs text-rose-600 hover:text-rose-800 font-semibold disabled:opacity-40"
@@ -118,7 +187,11 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
         </div>
       ) : (
         <div className="bg-white border border-border rounded-xl p-8 text-center">
-          <p className="text-muted-foreground text-sm italic">No active members yet.</p>
+          <p className="text-muted-foreground text-sm italic">
+            {isSearching
+              ? 'No members found matching your search.'
+              : 'No active members yet.'}
+          </p>
         </div>
       )}
 

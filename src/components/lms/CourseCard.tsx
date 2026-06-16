@@ -13,6 +13,7 @@ interface Props {
   description?: string | null
   status?: CourseStatus
   minRequiredLevel?: number
+  blueprintCode?: string
   showStatus?: boolean
   /** Extra footer links beyond the default "View →" */
   actions?: React.ReactNode
@@ -33,6 +34,7 @@ export default function CourseCard({
   description,
   status,
   minRequiredLevel,
+  blueprintCode,
   showStatus = false,
   actions,
   href,
@@ -65,6 +67,12 @@ export default function CourseCard({
               </Badge>
             )}
           </div>
+
+          {blueprintCode && (
+            <span className="inline-block text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded mb-2">
+              {blueprintCode}
+            </span>
+          )}
 
           {description && (
             <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{description}</p>

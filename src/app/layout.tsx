@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import Navbar from '@/components/layout/Navbar'
+import Sidebar from '@/components/layout/Sidebar'
+import SidebarMain from '@/components/layout/SidebarMain'
+import { SidebarProvider } from '@/components/layout/SidebarContext'
 import MobileBottomNavServer from '@/components/layout/MobileBottomNavServer'
 import { Toaster } from '@/components/ui/toaster'
 
@@ -24,12 +26,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
 
-        <Navbar />
-
-        {/* Pad bottom on mobile so content doesn't hide behind fixed nav */}
-        <div className="pb-16 md:pb-0">
-          {children}
-        </div>
+        <SidebarProvider>
+          <Sidebar />
+          <SidebarMain>
+            {children}
+          </SidebarMain>
+        </SidebarProvider>
 
         <MobileBottomNavServer />
         <Toaster />

@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * Guardian RPC Integration Tests
  * ADR-2025-004 GAP-005 — Security audit tests
@@ -9,20 +10,30 @@
  *   - A test runner (Jest / Vitest) must be configured before these run.
  *   - SUPABASE_TEST_URL and SUPABASE_TEST_ANON_KEY env vars must be set.
  *   - The database must have been seeded with test fixtures.
+ *   - All credentials MUST be supplied via environment variables — never hardcoded.
+ *     Required: GUARDIAN_A_TEST_EMAIL, GUARDIAN_A_TEST_PASSWORD,
+ *               STUDENT_A_TEST_EMAIL, STUDENT_A_TEST_PASSWORD
  *
- * Run: npx vitest tests/e2e/guardian-rpcs.test.ts
+ * Run: npx vitest run tests/e2e/guardian-rpcs.test.ts
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const TEST_URL  = process.env.SUPABASE_TEST_URL  ?? ''
+const TEST_URL  = process.env.SUPABASE_TEST_URL      ?? ''
 const TEST_ANON = process.env.SUPABASE_TEST_ANON_KEY ?? ''
 
+// ── Test fixture credentials (env vars — never hardcode) ──────────────────────
+const GUARDIAN_A_EMAIL    = process.env.GUARDIAN_A_TEST_EMAIL    ?? ''
+const GUARDIAN_A_PASSWORD = process.env.GUARDIAN_A_TEST_PASSWORD ?? ''
+const STUDENT_A_EMAIL     = process.env.STUDENT_A_TEST_EMAIL     ?? ''
+const STUDENT_A_PASSWORD  = process.env.STUDENT_A_TEST_PASSWORD  ?? ''
+
 // ── Test fixture UIDs (must match seed data) ─────────────────────────────────
-const GUARDIAN_A_EMAIL    = 'guardian-a@test.churchcore.app'
-const GUARDIAN_A_PASSWORD = 'TestPass123!'
-const STUDENT_LINKED_UID  = process.env.TEST_STUDENT_LINKED_UID  ?? '' // linked to guardian A
-const STUDENT_OTHER_UID   = process.env.TEST_STUDENT_OTHER_UID   ?? '' // not linked to guardian A
+// SENTINEL_UNKNOWN_UUID is a deliberately non-existent UUID used to confirm
+// the RPC raises an exception for unknown users. Not a real user's UUID.
+const SENTINEL_UNKNOWN_UUID = '00000000-0000-0000-0000-000000000099'
+const STUDENT_LINKED_UID    = process.env.TEST_STUDENT_LINKED_UID ?? '' // linked to guardian A
+const STUDENT_OTHER_UID     = process.env.TEST_STUDENT_OTHER_UID  ?? '' // not linked to guardian A
 
 async function signInAs(email: string, password: string): Promise<SupabaseClient> {
   const client = createClient(TEST_URL, TEST_ANON)
@@ -49,12 +60,7 @@ describe('get_guardian_students()', () => {
   })
 
   it('returns empty array when called by a non-guardian user', async () => {
-    // Students have no guardian_links rows for themselves
-    const studentClient = createClient(TEST_URL, TEST_ANON)
-    await studentClient.auth.signInWithPassword({
-      email:    'student-a@test.churchcore.app',
-      password: 'TestPass123!',
-    })
+    const studentClient = await signInAs(STUDENT_A_EMAIL, STUDENT_A_PASSWORD)
     const { data, error } = await studentClient.rpc('get_guardian_students')
     expect(error).toBeNull()
     expect(data).toHaveLength(0)
@@ -86,9 +92,9 @@ describe('get_guardian_student_overview(p_student_uid)', () => {
     expect(data).toBeNull()
   })
 
-  it('raises an exception when called with a random UUID', async () => {
+  it('raises an exception when called with a non-existent sentinel UUID', async () => {
     const { data, error } = await guardianClient.rpc('get_guardian_student_overview', {
-      p_student_uid: '00000000-0000-0000-0000-000000000099',
+      p_student_uid: SENTINEL_UNKNOWN_UUID,
     })
     expect(error).not.toBeNull()
     expect(data).toBeNull()
@@ -98,25 +104,15 @@ describe('get_guardian_student_overview(p_student_uid)', () => {
 // ── get_my_academic_performance ───────────────────────────────────────────────
 
 describe('get_my_academic_performance()', () => {
-  it('returns only the calling user\'s own academic records', async () => {
-    const studentClient = createClient(TEST_URL, TEST_ANON)
-    await studentClient.auth.signInWithPassword({
-      email:    'student-a@test.churchcore.app',
-      password: 'TestPass123!',
-    })
-
+  it("returns only the calling user's own academic records", async () => {
+    const studentClient = await signInAs(STUDENT_A_EMAIL, STUDENT_A_PASSWORD)
     const { data, error } = await studentClient.rpc('get_my_academic_performance')
     expect(error).toBeNull()
 
-    // All returned rows must belong to the calling user — verified by server predicate
-    // We confirm no cross-user contamination by checking the session UID
     const { data: { user } } = await studentClient.auth.getUser()
     expect(user).not.toBeNull()
 
-    // If the RPC leaks other users' data, these assertions catch it:
     if (Array.isArray(data) && data.length > 0) {
-      // Each row must not contain another student's display_name (spot-check)
-      // Full verification is in the RLS unit tests
       expect(data.every((r: Record<string, unknown>) => r !== null)).toBe(true)
     }
   })
