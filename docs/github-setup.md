@@ -38,6 +38,38 @@ Configure in **GitHub → Repository → Settings → Secrets and variables → 
 | `TEST_DATABASE_URL` | Postgres connection string for test DB (e2e only) |
 | `TEST_BASE_URL` | Base URL of the test deployment (e2e only) |
 | `DEPLOY_WEBHOOK_URL` | Slack/Discord webhook URL (optional — skipped if missing) |
+| `SUPABASE_ACCESS_TOKEN` | Supabase CLI personal access token (release deploy) |
+| `SUPABASE_PROJECT_REF` | Production Supabase project ref (release deploy) |
+
+## Staging Environment
+
+Create a dedicated second Supabase project for staging — never share schemas, always full project isolation.
+
+### Supabase project
+
+Create a second Supabase project named `churchcore-lms-staging` in the same organisation.
+
+### GitHub environment
+
+In **GitHub → Settings → Environments → New environment**:
+
+- Name: `staging`
+- No approval gate (auto-deploys on every push to `main`)
+- Deployment branches: `main` only
+
+### Required secrets (staging)
+
+| Secret | Purpose |
+|---|---|
+| `STAGING_SUPABASE_PROJECT_REF` | Staging Supabase project ref (used by `deploy-staging` job) |
+
+`SUPABASE_ACCESS_TOKEN` is shared between staging and production (same token, different project refs).
+
+### Pipeline order
+
+After this setup, `release.yml` enforces: **CI → staging deploy → manual production approval → production deploy**. A failed staging migration blocks the production gate automatically.
+
+---
 
 ## CODEOWNERS
 

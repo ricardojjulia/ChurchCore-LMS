@@ -5,6 +5,7 @@ import Sidebar from '@/components/layout/Sidebar'
 import SidebarMain from '@/components/layout/SidebarMain'
 import { SidebarProvider } from '@/components/layout/SidebarContext'
 import MobileBottomNavServer from '@/components/layout/MobileBottomNavServer'
+import MobileAdminDrawerServer from '@/components/layout/MobileAdminDrawerServer'
 import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </SidebarProvider>
 
         <MobileBottomNavServer />
+        <MobileAdminDrawerServer />
         <Toaster />
       </body>
     </html>

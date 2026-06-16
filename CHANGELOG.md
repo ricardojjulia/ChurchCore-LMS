@@ -11,6 +11,29 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.19.0] — 2026-06-16
+
+### Added
+
+- **`MobileAdminDrawer`** (G3) — floating "Admin" button fixed above the 5-tab bottom nav (`bottom-[72px] right-4 z-40 md:hidden`); opens a slide-in bottom sheet with links to `/admin/users`, `/admin/cohorts`, `/admin/sections`, `/admin/terms`, `/admin/blueprints`, `/admin/health`; ARIA `role="dialog" aria-modal="true"`; closes on Escape, backdrop click, or link navigation
+- **`MobileAdminDrawerServer`** (G3) — server component that fetches `profile.role` and passes `isAdmin` prop to the client drawer; follows the same pattern as `MobileBottomNavServer`; rendered in `src/app/layout.tsx` below `<MobileBottomNavServer />`
+- **Server action unit tests** (G1) — `src/app/actions/cohorts.test.ts`, `src/app/actions/messages.test.ts`, `src/app/actions/learning.test.ts`; Proxy-based `resolvesWith()` fluent mock chain allows awaiting at arbitrary chain depth; per-file coverage thresholds enforced in CI (`cohorts.ts` ≥ 40 %, `messages.ts` ≥ 35 %, `learning.ts` ≥ 28 %)
+- **`next/cache` global mock** (G1) — `src/tests/setup.ts` now mocks `revalidatePath` and `revalidateTag` so action tests never hit the Next.js static generation store invariant
+- **Edge Function staging deploy** (G4, G2) — `release.yml` rewritten with four jobs: `ci` (reuses `ci.yml`), `deploy-staging` (Supabase CLI db push + `functions deploy search-users` to staging project), `approve` (manual gate via `environment: production`), `deploy` (production functions deploy + Vercel wait + optional webhook)
+- **Staging environment docs** (G4) — `docs/github-setup.md` extended with `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF` secrets and a full "Staging Environment" section (project isolation, GitHub environment config, `STAGING_SUPABASE_PROJECT_REF`, pipeline order)
+- **`search-users` E2E spec** (G4) — `src/tests/e2e/search-users.test.ts`; tests authenticated admin → 200 + `{id, full_name, email}` fields, no-auth header → 401, student role → 403
+- **Version consistency check** (G0) — `scripts/check-version.mjs` enforces `package.json` version == leading CHANGELOG entry; `npm run version:check` added; CI step runs before lint
+
+### Removed
+
+- **Dead nav files** (G0) — `src/components/layout/Navbar.tsx` and `src/components/layout/NavLinks.tsx` deleted; replaced by `Sidebar` in v0.18.0 with no remaining external imports
+
+### Changed
+
+- **`vitest.config.ts`** — `src/app/actions/**` added to coverage includes; per-file thresholds added for three tested action files
+
+---
+
 ## [0.18.0] — 2026-06-16
 
 ### Added

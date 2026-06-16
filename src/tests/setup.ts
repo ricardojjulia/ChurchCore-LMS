@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
+// ── Next.js cache mock (revalidatePath / revalidateTag require App Router context) ──
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag:  vi.fn(),
+}))
+
 // ── Next.js navigation mocks ────────────────────────────────────────────────
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

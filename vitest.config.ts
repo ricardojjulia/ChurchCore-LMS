@@ -28,6 +28,8 @@ export default defineConfig({
         'src/lib/**',
         'src/hooks/**',
         'src/utils/**',
+        // Measure all action files; per-file thresholds enforced only on tested ones below
+        'src/app/actions/**',
       ],
       exclude: [
         '**/node_modules/**',
@@ -51,9 +53,14 @@ export default defineConfig({
       thresholds: {
         // Per-directory minimums enforced in CI.
         // Set after first measurement at (measured - 5); initial values from R2 baseline.
-        'src/lib/**':   { lines: 80 },
-        'src/hooks/**': { lines: 70 },
-        'src/utils/**': { lines: 80 },
+        'src/lib/**':                          { lines: 80 },
+        'src/hooks/**':                        { lines: 70 },
+        'src/utils/**':                        { lines: 80 },
+        // Thresholds applied only to the three tested action files (COUNCIL-2025-009 G1).
+        // Raise and broaden as coverage expands.
+        'src/app/actions/cohorts.ts':          { lines: 40 },
+        'src/app/actions/messages.ts':         { lines: 35 },
+        'src/app/actions/learning.ts':         { lines: 28 },
       },
     },
   },

@@ -10,10 +10,37 @@ jobs:
     uses: ./.github/workflows/ci.yml
     secrets: inherit
 
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: ci
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Push migrations to staging
+        run: |
+          supabase db push \
+            --project-ref ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy Edge Functions to staging
+        run: |
+          supabase functions deploy search-users \
+            --project-ref ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
   approve:
     name: Manual Approval
     runs-on: ubuntu-latest
-    needs: ci
+    needs: [deploy-staging]
     environment: production   # Requires manual approval in GitHub → Settings → Environments
     steps:
       - name: Approved for production
@@ -25,6 +52,18 @@ jobs:
     needs: approve
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy Edge Functions
+        run: |
+          supabase functions deploy search-users \
+            --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       # Vercel picks up the push to main automatically via its GitHub integration.
       # This step exists only to confirm the deploy succeeded and notify.
