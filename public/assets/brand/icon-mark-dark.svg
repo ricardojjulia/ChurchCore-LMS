@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="ChurchCore LMS icon mark">
+  <path fill="none" stroke="#F9F7F1" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" d="M34 178c35-7 66 2 94 30 28-28 59-37 94-30"/>
+  <path fill="none" stroke="#F9F7F1" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" d="M42 199c32-4 59 2 86 24 27-22 54-28 86-24"/>
+  <path fill="#F9F7F1" d="M120 22h16v45h44v16h-44v116h-16V83H76V67h44V22Z"/>
+  <path fill="none" stroke="#F9F7F1" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" d="M128 184c17-52 43-86 82-102"/>
+  <path fill="#F9F7F1" d="M187 73c21-3 35-1 47 8-9 14-22 22-43 25-14-11-17-20-4-33Z"/>
+  <path fill="#F9F7F1" d="M72 76c20 3 34 10 42 26-12 9-25 11-44 5-10-15-9-24 2-31Z"/>
+  <path fill="none" stroke="#0B2545" stroke-width="4" stroke-linecap="round" d="M196 84l20 8M86 88l16 10"/>
+  <path fill="none" stroke="#F9F7F1" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" d="M128 161c-11-25-29-42-54-51"/>
+  <path fill="none" stroke="#F9F7F1" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" d="M156 133l30-24"/>
+  <circle cx="188" cy="107" r="8" fill="#0B2545" stroke="#F9F7F1" stroke-width="8"/>
+  <path fill="none" stroke="#F9F7F1" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" d="M104 124 79 101"/>
+  <circle cx="78" cy="100" r="8" fill="#0B2545" stroke="#F9F7F1" stroke-width="8"/>
+</svg>

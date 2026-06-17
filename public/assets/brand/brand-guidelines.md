@@ -17,6 +17,7 @@ ChurchCore LMS uses a flat, modern mark built for product interfaces first. The 
 |---|---|
 | `favicon.svg` | 16px and 32px micro-mark: book, cross-stem, one tech node |
 | `icon-mark.svg` | Standard standalone symbol for sidebar, avatars, and empty states |
+| `icon-mark-dark.svg` | Cream standalone symbol for navy or dark surfaces |
 | `logo-horizontal-light.svg` | Horizontal logo for white or cream backgrounds |
 | `logo-horizontal-dark.svg` | Horizontal logo for navy or dark backgrounds |
 | `app-icon.png` | 512x512 rounded squircle app icon |
