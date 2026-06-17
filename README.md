@@ -1,5 +1,9 @@
 # ChurchCore LMS
 
+<p>
+  <img src="public/assets/brand/logo-horizontal-light.svg" alt="ChurchCore LMS" width="360" />
+</p>
+
 > A fast, secure, ministry-ready Learning Management System built for churches and faith communities.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](./LICENSE)

@@ -67,6 +67,12 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        church: {
+          navy:   'var(--church-navy)',
+          cream:  'var(--church-cream)',
+          accent: 'var(--church-accent)',
+          muted:  'var(--church-muted)',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

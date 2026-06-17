@@ -5,6 +5,11 @@
 @layer base {
   :root {
     /* ── ChurchCore Brand Tokens ───────────────────────────────────────────── */
+    --church-navy: #0B2545;
+    --church-cream: #F9F7F1;
+    --church-accent: #134074;
+    --church-muted: #8DA9C4;
+
     /* slate-50 ≈ #f8fafc — keeps the existing page background feel */
     --background:         210 40% 98%;
     --foreground:         220 20% 10%;

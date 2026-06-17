@@ -150,9 +150,13 @@ export default function SidebarClient({
         {!collapsed && (
           <Link
             href="/dashboard"
-            className="flex-1 min-w-0 text-sm font-extrabold text-white tracking-tight truncate"
+            className="flex-1 min-w-0"
           >
-            ChurchCore <span className="text-indigo-400">LMS</span>
+            <img
+              src="/assets/brand/logo-horizontal-dark.svg"
+              alt="ChurchCore LMS"
+              className="h-9 w-auto"
+            />
           </Link>
         )}
         <button

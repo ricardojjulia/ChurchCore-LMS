@@ -13,6 +13,14 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'ChurchCore LMS',
   description: 'A fast, secure, ministry-ready learning management system',
+  icons: {
+    icon: [
+      { url: '/assets/brand/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/assets/brand/app-icon.png', sizes: '512x512', type: 'image/png' },
+    ],
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
