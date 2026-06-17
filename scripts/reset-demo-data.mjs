@@ -21,6 +21,7 @@ Usage:
 
 Required:
   NEXT_PUBLIC_SUPABASE_URL
+  NEXT_PUBLIC_SUPABASE_ANON_KEY
   SUPABASE_SERVICE_ROLE_KEY
 
 This deletes LMS demo/domain data, deletes auth users except the retained email,
@@ -30,10 +31,11 @@ keeps or creates the retained user's admin profile, then creates full demo data.
 }
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-if (!supabaseUrl || !serviceKey) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.')
+if (!supabaseUrl || !anonKey || !serviceKey) {
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, or SUPABASE_SERVICE_ROLE_KEY.')
   process.exit(1)
 }
 
@@ -170,6 +172,7 @@ async function main() {
   await must('upsert retained profile', supabase.from('profiles').upsert(retainedProfilePayload, { onConflict: 'uid' }))
 
   const demoPeople = [
+    ['manager.academic@demo.churchcore.local', 'Academic Demo Manager', 'manager', 5200],
     ['teacher.bible@demo.churchcore.local', 'Dr. Miriam Torres', 'teacher', 4200],
     ['teacher.leadership@demo.churchcore.local', 'Pastor Caleb Owens', 'teacher', 3900],
     ['teacher.formation@demo.churchcore.local', 'Rev. Ana Whitfield', 'teacher', 3100],
@@ -214,6 +217,9 @@ async function main() {
     people.set(email, profile)
   }
 
+  const demoAuthIds = [...people.values()].map((profile) => profile.auth_id)
+  await must('clear auto-created demo profile roles', supabase.from('profile_roles').delete().in('auth_id', demoAuthIds))
+  await must('clear auto-created demo profiles', supabase.from('profiles').delete().in('auth_id', demoAuthIds))
   await must('insert demo profiles', supabase.from('profiles').insert([...people.values()]))
 
   const teacherBible = people.get(`teacher.bible@${demoDomain}`).uid
@@ -230,6 +236,7 @@ async function main() {
 
   await must('insert org members', supabase.from('org_members').insert([
     { org_id: orgId, user_id: retained.id, role: 'owner' },
+    { org_id: orgId, user_id: people.get(`manager.academic@${demoDomain}`).auth_id, role: 'admin' },
     ...['teacher.bible', 'teacher.leadership', 'teacher.formation'].map((prefix) => ({
       org_id: orgId,
       user_id: people.get(`${prefix}@${demoDomain}`).auth_id,
@@ -342,7 +349,12 @@ async function main() {
       { id: uid(), course_id: course.id, parent_block_id: module2, block_type_id: 'quiz', title: 'Knowledge Check', sort_order: 220, content: { instructions: 'Complete the checkpoint quiz.', attempts_allowed: 2, questions: [{ id: uid(), text: 'This demo course is part of a structured program pathway.', type: 'true_false', options: ['True', 'False'], correct_index: 0, points: 10 }] }, gamification: { base_xp_reward: 40 }, is_published: true },
     )
   }
-  await must('insert course blocks', supabase.from('course_blocks').insert(blockRows))
+  await must('insert course blocks', supabase.from('course_blocks').insert(blockRows.map((row) => ({
+    content: {},
+    settings: {},
+    gamification: {},
+    ...row,
+  }))))
 
   const sectionSpecs = [
     ['ot-survey', 'fy-fall', 'FALL-A', 'hybrid', '2026-08-03', '2026-09-06'],
@@ -441,9 +453,10 @@ async function main() {
       const section_id = sections[`${bpKey}:${sectionCode}`]
       for (const member of members) {
         directEnrollments.push({
+          id: uid(),
           user_id: member.user_id,
           section_id,
-          status: 'active',
+          status: 'pending',
           source: 'cohort',
           source_cohort_id: cohorts[cohortKey],
           enrolled_by: retained.id,
@@ -470,6 +483,18 @@ async function main() {
     })
   }
   await must('upsert course enrollments', supabase.from('enrollments').upsert(enrollmentRows, { onConflict: 'user_id,course_id' }))
+
+  const managerClient = createClient(supabaseUrl, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  await must('sign in academic manager', managerClient.auth.signInWithPassword({
+    email: `manager.academic@${demoDomain}`,
+    password,
+  }))
+  await must('activate direct enrollments', managerClient
+    .from('direct_enrollments')
+    .update({ status: 'active' })
+    .in('id', directEnrollments.map((row) => row.id)))
 
   const announcements = [
     ['Welcome to the ChurchCore LMS demo', 'This environment shows diploma, associates, discipleship, remote study, Forge, and leadership programs.', 'global', null],
@@ -547,6 +572,7 @@ Created:
 - 20 sections with access windows
 - ${calendarEvents.length} scheduled calendar events
 - 6 cohorts
+- 1 demo manager, 3 teachers, and 23 demo learners
 - ${directEnrollments.length} direct section enrollments
 - ${enrollmentRows.length} course enrollments
 `)
