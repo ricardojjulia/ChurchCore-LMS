@@ -2,7 +2,7 @@
 
 > A fast, secure, ministry-ready Learning Management System built for churches and faith communities.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org)
@@ -233,4 +233,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for a full version history.
 
 ## License
 
-[MIT](./LICENSE) © 2026 Ricardo Julia
+[GNU Affero General Public License v3.0](./LICENSE) © 2026 Ricardo Julia
