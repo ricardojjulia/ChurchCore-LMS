@@ -1,11 +1,12 @@
 import { createClient } from '@/utils/supabase/server'
 import SidebarClient from './SidebarClient'
+import SidebarPlaceholder from './SidebarPlaceholder'
 
 export default async function Sidebar() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) return null
+  if (!user) return <SidebarPlaceholder />
 
   const { data: profile } = await supabase
     .from('profiles')
