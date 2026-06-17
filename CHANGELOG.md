@@ -11,6 +11,21 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.20.0] — 2026-06-16
+
+### Added
+
+- **Enrollment confirmation email** — `enrollSelf` now sends a transactional email via Resend when a student enrolls; includes course title and a direct "Start learning" link; silently skipped when `RESEND_API_KEY` is not set
+- **Certificate issued email** — `markBlockViewed` captures the `issue_certificate` RPC result and emails the student their certificate number and final grade on course completion; silently skipped when `RESEND_API_KEY` is not set
+- **Announcement course selector** — "Course members" scope in the new announcement form now renders a course `<select>` populated server-side with published courses; the `courseId` is passed to `createAnnouncement` and validated server-side; previously showed a "coming soon" placeholder
+
+### Changed
+
+- `src/app/announcements/new/page.tsx` — converted from a client component to a server component; fetches published courses and passes them to the extracted `NewAnnouncementForm`
+- `src/app/announcements/new/NewAnnouncementForm.tsx` — extracted client form; adds `courses` prop and `courseId` state; clears `courseId` when scope changes
+
+---
+
 ## [0.19.0] — 2026-06-16
 
 ### Added

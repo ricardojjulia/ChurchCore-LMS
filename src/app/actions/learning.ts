@@ -21,7 +21,7 @@ export async function enrollSelf(courseId: string): Promise<{ error?: string }> 
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('uid, current_level')
+    .select('uid, current_level, display_name, email')
     .eq('auth_id', user.id)
     .single()
 
@@ -30,7 +30,7 @@ export async function enrollSelf(courseId: string): Promise<{ error?: string }> 
   // Server-side prerequisite validation
   const { data: course } = await supabase
     .from('courses')
-    .select('min_required_level, prerequisite_course_id')
+    .select('title, min_required_level, prerequisite_course_id')
     .eq('id', courseId)
     .single()
 
@@ -68,6 +68,34 @@ export async function enrollSelf(courseId: string): Promise<{ error?: string }> 
     return { error: error.message }
   }
 
+  // Enrollment confirmation email (optional — skipped if RESEND_API_KEY not set)
+  if (process.env.RESEND_API_KEY && (profile as any).email) {
+    try {
+      const { Resend } = await import('resend')
+      const resend    = new Resend(process.env.RESEND_API_KEY)
+      const siteUrl   = process.env.NEXT_PUBLIC_SITE_URL ?? ''
+      const from      = process.env.RESEND_FROM_EMAIL ?? 'ChurchCore LMS <noreply@churchcore.app>'
+      const name      = (profile as any).display_name ?? 'there'
+      const title     = (course as any)?.title ?? 'your new course'
+      await resend.emails.send({
+        from,
+        to:      (profile as any).email,
+        subject: `You're enrolled: ${title}`,
+        html: `
+<p>Hi ${name},</p>
+<p>You've successfully enrolled in <strong>${title}</strong>. You can start learning right away.</p>
+<p style="margin-top:24px">
+  <a href="${siteUrl}/courses/${courseId}/learn"
+     style="background:#4f46e5;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+    Start learning →
+  </a>
+</p>`,
+      })
+    } catch {
+      // Email failure must never break enrollment
+    }
+  }
+
   revalidatePath(`/courses/${courseId}`)
   revalidatePath('/dashboard')
   return {}
@@ -88,7 +116,7 @@ export async function markBlockViewed(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('uid')
+    .select('uid, display_name, email')
     .eq('auth_id', user.id)
     .single()
   if (!profile) return { justCompleted: false, xpAwarded: 0 }
@@ -129,10 +157,53 @@ export async function markBlockViewed(
   if (justCompleted) {
     await tryAwardXp(supabase, profile.uid, 100)
     xpAwarded += 100
-    await supabase.rpc('issue_certificate', {
+
+    const { data: certData } = await supabase.rpc('issue_certificate', {
       p_uid:       profile.uid,
       p_course_id: courseId,
     })
+    const cert = certData as { certificate_no?: string; letter_grade?: string } | null
+
+    // Certificate issued email (optional — skipped if RESEND_API_KEY not set)
+    if (process.env.RESEND_API_KEY && (profile as any).email) {
+      try {
+        const { data: courseRow } = await supabase
+          .from('courses')
+          .select('title')
+          .eq('id', courseId)
+          .single()
+        const { Resend } = await import('resend')
+        const resend   = new Resend(process.env.RESEND_API_KEY)
+        const siteUrl  = process.env.NEXT_PUBLIC_SITE_URL ?? ''
+        const from     = process.env.RESEND_FROM_EMAIL ?? 'ChurchCore LMS <noreply@churchcore.app>'
+        const name     = (profile as any).display_name ?? 'there'
+        const title    = courseRow?.title ?? 'your course'
+        const certNo   = cert?.certificate_no ?? ''
+        const grade    = cert?.letter_grade ?? 'N/A'
+        await resend.emails.send({
+          from,
+          to:      (profile as any).email,
+          subject: `Certificate earned: ${title}`,
+          html: `
+<p>Hi ${name},</p>
+<p>Congratulations — you've completed <strong>${title}</strong> and earned your certificate!</p>
+<table style="border-collapse:collapse;margin:16px 0">
+  <tr><td style="padding:4px 12px 4px 0;color:#64748b;font-size:14px">Certificate no.</td>
+      <td style="padding:4px 0;font-weight:600;font-size:14px">${certNo}</td></tr>
+  <tr><td style="padding:4px 12px 4px 0;color:#64748b;font-size:14px">Final grade</td>
+      <td style="padding:4px 0;font-weight:600;font-size:14px">${grade}</td></tr>
+</table>
+<p style="margin-top:24px">
+  <a href="${siteUrl}/certificates"
+     style="background:#4f46e5;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+    View your certificates →
+  </a>
+</p>`,
+        })
+      } catch {
+        // Email failure must never break completion
+      }
+    }
   }
 
   revalidatePath(`/courses/${courseId}/learn`)
