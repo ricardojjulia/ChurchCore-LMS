@@ -4,6 +4,14 @@ import { cn } from '@/lib/utils'
 import { useSidebar } from './SidebarContext'
 
 const WORDMARK = ['ChurchCore', 'LMS']
+const LETTER_BLEED = {
+  textShadow: [
+    '0 0 8px rgba(255,255,255,0.55)',
+    '0 0 18px rgba(129,140,248,0.75)',
+    '0 0 34px rgba(99,102,241,0.55)',
+    '0 0 56px rgba(79,70,229,0.35)',
+  ].join(', '),
+}
 
 export default function SidebarPlaceholder() {
   const { collapsed } = useSidebar()
@@ -35,9 +43,9 @@ export default function SidebarPlaceholder() {
                   key={`${word}-${letter}-${index}`}
                   className={cn(
                     'font-black uppercase leading-none tracking-normal text-white',
-                    'drop-shadow-[0_0_22px_rgba(129,140,248,0.55)]',
                     collapsed ? 'text-[0.82rem]' : word === 'LMS' ? 'text-4xl' : 'text-3xl',
                   )}
+                  style={LETTER_BLEED}
                 >
                   {letter}
                 </span>
