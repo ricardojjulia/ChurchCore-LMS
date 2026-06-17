@@ -16,6 +16,7 @@
     "test:unit": "vitest",
     "test:unit:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "demo:reset": "node scripts/reset-demo-data.mjs",
     "typecheck": "tsc --noEmit",
     "version:check": "node scripts/check-version.mjs"
   },

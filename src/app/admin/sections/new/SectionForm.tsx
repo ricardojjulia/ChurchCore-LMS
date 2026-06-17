@@ -15,10 +15,11 @@ const FORMATS = [
 ]
 
 export default function SectionForm({
-  blueprints, terms,
+  blueprints, terms, initialBlueprintId = '',
 }: {
   blueprints: Blueprint[]
   terms:      Term[]
+  initialBlueprintId?: string
 }) {
   const [error, setError]     = useState<string | null>(null)
   const [format, setFormat]   = useState('asynchronous')
@@ -47,7 +48,7 @@ export default function SectionForm({
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="blueprint_id">
             Blueprint <span className="text-rose-500">*</span>
           </label>
-          <select id="blueprint_id" name="blueprint_id" required className="input w-full">
+          <select id="blueprint_id" name="blueprint_id" required defaultValue={initialBlueprintId} className="input w-full">
             <option value="">— Select blueprint —</option>
             {blueprints.map((b) => (
               <option key={b.id} value={b.id}>{b.title} ({b.course_code})</option>

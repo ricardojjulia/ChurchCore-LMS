@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -14,9 +15,13 @@ interface ExistingCourse {
   title: string
 }
 
+type ProgramTrack = { name: string; code: string }
+
 interface Blueprint {
-  id:    string
-  title: string
+  id:             string
+  title:          string
+  course_code?:   string | null
+  program_tracks?: ProgramTrack | ProgramTrack[] | null
 }
 
 interface Props {
@@ -154,24 +159,59 @@ export default function CourseForm({
         />
       </div>
 
-      {/* Blueprint (edit only — only admins/managers assign blueprints) */}
-      {isEdit && (
+      {/* Academic placement */}
+      <section className="border border-border rounded-xl p-5 bg-slate-50 space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">
+          <h2 className="text-sm font-bold text-foreground">Academic Placement</h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Courses attach to blueprints. Tracks are assigned on the blueprint; terms and sections are assigned when you create a section.
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-1" htmlFor="course_blueprint">
             Course Blueprint
             <span className="ml-2 text-xs font-normal text-muted-foreground">(optional)</span>
           </label>
           <BlueprintSelector
+            id="course_blueprint"
             blueprints={blueprints}
             value={blueprintId}
             onChange={setBlueprintId}
             disabled={saving}
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Links this course to an academic blueprint for section enrollment.
+            Section enrollment uses this blueprint to connect students to this course.
           </p>
         </div>
-      )}
+
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/program-tracks/new"
+            className="text-xs font-semibold text-primary border border-border bg-white rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+          >
+            Create Program Track
+          </Link>
+          <Link
+            href="/admin/blueprints/new"
+            className="text-xs font-semibold text-primary border border-border bg-white rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+          >
+            Create Blueprint
+          </Link>
+          <Link
+            href="/admin/terms/new"
+            className="text-xs font-semibold text-primary border border-border bg-white rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+          >
+            Create Term
+          </Link>
+          <Link
+            href={blueprintId ? `/admin/sections/new?blueprint=${blueprintId}` : '/admin/sections/new'}
+            className="text-xs font-semibold text-primary border border-border bg-white rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+          >
+            Create Section
+          </Link>
+        </div>
+      </section>
 
       {/* Min Level + Prerequisite */}
       <div className="grid grid-cols-2 gap-4">

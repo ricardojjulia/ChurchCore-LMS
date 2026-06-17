@@ -21,12 +21,18 @@ export default async function NewCoursePage() {
     redirect('/dashboard')
   }
 
-  // Fetch existing courses for the prerequisite selector
-  const { data: existingCourses } = await supabase
-    .from('courses')
-    .select('id, title')
-    .eq('owner_id', profile?.uid)
-    .order('title', { ascending: true })
+  const [existingCoursesResult, blueprintsResult] = await Promise.all([
+    supabase
+      .from('courses')
+      .select('id, title')
+      .eq('owner_id', profile?.uid)
+      .order('title', { ascending: true }),
+    supabase
+      .from('course_blueprints')
+      .select('id, title, course_code, program_tracks(name, code)')
+      .eq('is_active', true)
+      .order('title', { ascending: true }),
+  ])
 
   return (
     <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -47,7 +53,8 @@ export default async function NewCoursePage() {
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
           <CourseForm
             userId={profile?.uid ?? ''}
-            existingCourses={existingCourses ?? []}
+            existingCourses={existingCoursesResult.data ?? []}
+            blueprints={blueprintsResult.data ?? []}
           />
         </div>
       </div>

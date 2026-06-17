@@ -1,18 +1,23 @@
 'use client'
 
+type ProgramTrack = { name: string; code: string }
+
 interface Blueprint {
-  id:    string
-  title: string
+  id:             string
+  title:          string
+  course_code?:   string | null
+  program_tracks?: ProgramTrack | ProgramTrack[] | null
 }
 
 interface Props {
+  id?:              string
   blueprints:       Blueprint[]
   value:            string | null
   onChange:         (id: string | null) => void
   disabled?:        boolean
 }
 
-export default function BlueprintSelector({ blueprints, value, onChange, disabled }: Props) {
+export default function BlueprintSelector({ id, blueprints, value, onChange, disabled }: Props) {
   if (blueprints.length === 0) {
     return (
       <p className="text-xs text-muted-foreground italic">
@@ -23,6 +28,7 @@ export default function BlueprintSelector({ blueprints, value, onChange, disable
 
   return (
     <select
+      id={id}
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value || null)}
       disabled={disabled}
@@ -30,9 +36,15 @@ export default function BlueprintSelector({ blueprints, value, onChange, disable
       className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition disabled:opacity-50"
     >
       <option value="">No blueprint (standalone course)</option>
-      {blueprints.map((bp) => (
-        <option key={bp.id} value={bp.id}>{bp.title}</option>
-      ))}
+      {blueprints.map((bp) => {
+        const track = Array.isArray(bp.program_tracks) ? bp.program_tracks[0] : bp.program_tracks
+        return (
+          <option key={bp.id} value={bp.id}>
+            {bp.course_code ? `${bp.course_code} — ` : ''}{bp.title}
+            {track?.code ? ` (${track.code})` : ''}
+          </option>
+        )
+      })}
     </select>
   )
 }

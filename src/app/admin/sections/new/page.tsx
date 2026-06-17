@@ -3,7 +3,12 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import SectionForm from './SectionForm'
 
-export default async function NewSectionPage() {
+export default async function NewSectionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ blueprint?: string }>
+}) {
+  const { blueprint: initialBlueprintId = '' } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -28,7 +33,7 @@ export default async function NewSectionPage() {
           <p className="text-sm text-muted-foreground mb-6">
             A section is a scheduled instance of a blueprint within a term.
           </p>
-          <SectionForm blueprints={blueprints ?? []} terms={terms ?? []} />
+          <SectionForm blueprints={blueprints ?? []} terms={terms ?? []} initialBlueprintId={initialBlueprintId} />
         </div>
       </div>
     </main>

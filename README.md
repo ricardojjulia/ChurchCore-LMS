@@ -43,6 +43,11 @@ ChurchCore LMS is a full-stack learning platform purpose-built for church organi
 ### Administration
 - **Role system** — `admin`, `manager`, `teacher`, `student` with ENUM enforcement
 - **User management** — paginated admin panel with role assignment and XP/level display
+- **Program tracks** — define pathways such as diplomas, associate degree year two, discipleship, residency, and leadership tracks
+- **Course blueprints** — reusable catalog definitions with course code, credits, and track placement
+- **Terms and sections** — schedule blueprints into real offerings with delivery format, access windows, and capacity
+- **Course academic placement** — attach a course to a blueprint and see the linked track, sections, and term context from the course screen
+- **Cohorts** — move groups of learners through sections together
 - **Bulk enrollment** — staff search and enroll/unenroll students per course
 - **Course analytics** — per-course class stats, at-risk detection, CSV export
 - **Grading queue** — `/submissions` with status filters and inline grade + feedback forms
@@ -126,6 +131,16 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### 5. Optional demo reset
+
+The repo includes a guarded destructive reset that keeps one retained admin user and rebuilds a full demonstration school with tracks, blueprints, terms, sections, cohorts, users, content, enrollments, calendar events, announcements, and notifications.
+
+```bash
+npm run demo:reset -- --confirm --retain-email=you@example.com
+```
+
+Read [docs/demo-data.md](./docs/demo-data.md) before using it against any hosted database.
 
 ---
 
@@ -215,6 +230,8 @@ XP is awarded atomically via the `award_xp(uid, amount)` SECURITY DEFINER functi
 | [HOWTO-sidebar-nav.md](./docs/HOWTO-sidebar-nav.md) | Adding links, changing icons, cookie persistence, hiding on specific routes |
 | [testing.md](./docs/testing.md) | Unit tests, coverage thresholds, e2e setup, test users |
 | [github-setup.md](./docs/github-setup.md) | Branch protection, required secrets, status check configuration |
+| [academic-program-workflows.md](./docs/academic-program-workflows.md) | Program tracks, blueprints, terms, sections, cohorts, and demo workflows |
+| [demo-data.md](./docs/demo-data.md) | Destructive demo reset command and generated sample programs |
 | [decisions/](./docs/decisions/) | Architecture Decision Records (ADR-2025-001 through ADR-2025-007) |
 
 ---

@@ -33,7 +33,8 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
       .order('title', { ascending: true }),
     supabase
       .from('course_blueprints')
-      .select('id, title')
+      .select('id, title, course_code, program_tracks(name, code)')
+      .eq('is_active', true)
       .order('title', { ascending: true }),
   ])
 

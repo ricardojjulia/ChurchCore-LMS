@@ -29,7 +29,20 @@ export default async function CoursePage({
   const isStaff = ['admin', 'manager', 'teacher'].includes(profile?.role ?? '')
 
   const [courseResult, blocksResult] = await Promise.all([
-    supabase.from('courses').select('*, prereq:prerequisite_course_id(id,title)').eq('id', courseId).single(),
+    supabase
+      .from('courses')
+      .select(`
+        *,
+        prereq:prerequisite_course_id(id,title),
+        blueprint:course_blueprints(
+          id,
+          title,
+          course_code,
+          program_tracks(name, code)
+        )
+      `)
+      .eq('id', courseId)
+      .single(),
     supabase
       .from('course_blocks')
       .select('id, title, block_type_id, parent_block_id, sort_order, is_published, gamification')
@@ -52,6 +65,31 @@ export default async function CoursePage({
         </div>
       </main>
     )
+  }
+
+  const blueprint = (course as any).blueprint as {
+    id: string
+    title: string
+    course_code: string
+    program_tracks: { name: string; code: string } | null
+  } | null
+
+  let blueprintSections: {
+    id: string
+    section_code: string
+    delivery_format: string
+    is_active: boolean
+    academic_terms: { term_name: string; term_code: string } | null
+  }[] = []
+
+  if (isStaff && blueprint?.id) {
+    const { data } = await supabase
+      .from('course_sections')
+      .select('id, section_code, delivery_format, is_active, academic_terms(term_name, term_code)')
+      .eq('blueprint_id', blueprint.id)
+      .order('created_at', { ascending: false })
+
+    blueprintSections = (data ?? []) as unknown as typeof blueprintSections
   }
 
   // Check enrollment
@@ -246,6 +284,113 @@ export default async function CoursePage({
             </div>
           </div>
         </div>
+
+        {isStaff && (
+          <section className="bg-white border border-border rounded-2xl p-6 mb-8 shadow-sm">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Academic Placement</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Courses attach to blueprints. Tracks live on blueprints; terms and sections are created from blueprints.
+                </p>
+              </div>
+              <Link
+                href={`/courses/${courseId}/edit`}
+                className="text-sm font-semibold text-primary border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+              >
+                Edit Course Placement
+              </Link>
+            </div>
+
+            {blueprint ? (
+              <div className="mt-5 space-y-5">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="border border-border rounded-xl p-4 bg-slate-50">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Blueprint</p>
+                    <p className="font-semibold text-foreground mt-1">{blueprint.title}</p>
+                    <p className="text-xs font-mono text-muted-foreground mt-0.5">{blueprint.course_code}</p>
+                  </div>
+                  <div className="border border-border rounded-xl p-4 bg-slate-50">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Program Track</p>
+                    {blueprint.program_tracks ? (
+                      <>
+                        <p className="font-semibold text-foreground mt-1">{blueprint.program_tracks.name}</p>
+                        <p className="text-xs font-mono text-muted-foreground mt-0.5">{blueprint.program_tracks.code}</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-1">No track assigned.</p>
+                    )}
+                  </div>
+                  <div className="border border-border rounded-xl p-4 bg-slate-50">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Sections</p>
+                    <p className="font-semibold text-foreground mt-1">{blueprintSections.length}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Scheduled offerings from this blueprint.</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/admin/blueprints/${blueprint.id}`}
+                    className="text-sm font-semibold text-primary border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                  >
+                    Edit Blueprint
+                  </Link>
+                  <Link
+                    href={`/admin/sections/new?blueprint=${blueprint.id}`}
+                    className="text-sm font-semibold text-primary border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                  >
+                    Create Section for this Blueprint
+                  </Link>
+                </div>
+
+                {blueprintSections.length > 0 && (
+                  <div className="border border-border rounded-xl overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50 border-b border-border">
+                        <tr>
+                          <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Section</th>
+                          <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Term</th>
+                          <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Format</th>
+                          <th className="px-4 py-2"><span className="sr-only">Actions</span></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {blueprintSections.map((section) => (
+                          <tr key={section.id}>
+                            <td className="px-4 py-3 font-mono text-foreground">{section.section_code}</td>
+                            <td className="px-4 py-3">
+                              <p className="text-foreground">{section.academic_terms?.term_name ?? '—'}</p>
+                              <p className="text-xs text-muted-foreground font-mono">{section.academic_terms?.term_code ?? ''}</p>
+                            </td>
+                            <td className="px-4 py-3 text-muted-foreground">{section.delivery_format}</td>
+                            <td className="px-4 py-3 text-right">
+                              <Link href={`/admin/sections/${section.id}`} className="text-sm font-semibold text-primary hover:underline">
+                                Manage →
+                              </Link>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="mt-5 border border-amber-200 bg-amber-50 rounded-xl p-4">
+                <p className="text-sm font-semibold text-amber-900">This course is standalone.</p>
+                <p className="text-sm text-amber-800 mt-1">
+                  Link it to a blueprint before creating term-based sections or cohort enrollment for this content.
+                </p>
+                <Link
+                  href={`/courses/${courseId}/edit`}
+                  className="mt-3 inline-block text-sm font-semibold text-primary hover:underline"
+                >
+                  Attach a Blueprint →
+                </Link>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Curriculum */}
         <h2 className="text-lg font-bold text-foreground mb-4">Curriculum</h2>

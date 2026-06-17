@@ -14,6 +14,59 @@ async function requireAdmin() {
   return { supabase, userId: user.id }
 }
 
+// ── Program Tracks ──────────────────────────────────────────────────────────
+
+export async function createProgramTrack(formData: FormData): Promise<{ error?: string }> {
+  let ctx
+  try { ctx = await requireAdmin() } catch (e: any) { return { error: e.message } }
+
+  const name        = (formData.get('name')        as string)?.trim()
+  const code        = (formData.get('code')        as string)?.trim().toUpperCase()
+  const description = (formData.get('description') as string)?.trim() || null
+
+  if (!name || !code) return { error: 'Name and code are required' }
+
+  const { error } = await ctx.supabase.from('program_tracks').insert({
+    name,
+    code,
+    description,
+    created_by: ctx.userId,
+  })
+
+  if (error) {
+    if (error.code === '23505') return { error: 'A program track with that name or code already exists' }
+    return { error: error.message }
+  }
+
+  revalidatePath('/admin/program-tracks')
+  redirect('/admin/program-tracks')
+}
+
+export async function updateProgramTrack(
+  trackId: string,
+  formData: FormData,
+): Promise<{ error?: string }> {
+  let ctx
+  try { ctx = await requireAdmin() } catch (e: any) { return { error: e.message } }
+
+  const name        = (formData.get('name')        as string)?.trim()
+  const description = (formData.get('description') as string)?.trim() || null
+  const isActive    = formData.get('is_active') === 'true'
+
+  if (!name) return { error: 'Name is required' }
+
+  const { error } = await ctx.supabase
+    .from('program_tracks')
+    .update({ name, description, is_active: isActive })
+    .eq('id', trackId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/program-tracks')
+  revalidatePath(`/admin/program-tracks/${trackId}`)
+  return {}
+}
+
 // ── Terms ──────────────────────────────────────────────────────────────────
 
 export async function createTerm(formData: FormData): Promise<{ error?: string }> {
