@@ -27,16 +27,16 @@ export default function SidebarPlaceholder() {
         <div className="absolute left-1/2 top-8 h-2 w-2 -translate-x-1/2 rounded-full bg-indigo-300 shadow-[0_0_24px_rgba(129,140,248,0.7)]" />
         <div className="absolute bottom-8 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-indigo-300/80 shadow-[0_0_24px_rgba(129,140,248,0.55)]" />
 
-        <div className={cn('relative flex flex-col items-center', collapsed ? 'gap-5' : 'gap-8')}>
+        <div className={cn('relative flex flex-col items-center', collapsed ? 'gap-5' : 'gap-10')}>
           {WORDMARK.map((word) => (
-            <div key={word} className={cn('flex flex-col items-center', collapsed ? 'gap-1' : 'gap-1.5')}>
+            <div key={word} className={cn('flex flex-col items-center', collapsed ? 'gap-1' : 'gap-2')}>
               {word.split('').map((letter, index) => (
                 <span
                   key={`${word}-${letter}-${index}`}
                   className={cn(
                     'font-black uppercase leading-none tracking-normal text-white',
-                    'drop-shadow-[0_0_18px_rgba(129,140,248,0.45)]',
-                    collapsed ? 'text-[0.78rem]' : word === 'LMS' ? 'text-2xl' : 'text-xl',
+                    'drop-shadow-[0_0_22px_rgba(129,140,248,0.55)]',
+                    collapsed ? 'text-[0.82rem]' : word === 'LMS' ? 'text-4xl' : 'text-3xl',
                   )}
                 >
                   {letter}
