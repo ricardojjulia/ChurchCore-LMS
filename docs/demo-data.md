@@ -14,7 +14,7 @@ It refuses to run unless both `--confirm` and `--retain-email` are provided.
 - Keeps the retained auth user and promotes/keeps that profile as `admin`.
 - Deletes other auth users.
 - Clears LMS/domain data.
-- Creates polished demo users, teachers, students, program tracks, blueprints, terms, sections, cohorts, content courses, blocks, enrollments, announcements, calendar events, and notifications.
+- Creates polished demo users, teachers, students, program tracks, blueprints, terms, sections, cohorts, content courses, blocks, enrollments, graded submissions, certificates, announcements, calendar events, and notifications.
 
 ## Demo Programs
 
@@ -24,6 +24,12 @@ It refuses to run unless both `--confirm` and `--retain-email` are provided.
 - Wednesday Remote Bible Study: 10-member remote self-paced Gospel of John group with a one-year Wednesday rhythm.
 - Forge Ministry Formation: residency-style ministry formation program.
 - Christian Leadership Development: leadership pathway for emerging ministry leaders.
+
+The reset also seeds:
+
+- 276 graded submissions so `/performance`, course analytics, and submission views have real grade data.
+- 10 certificates so `/certificates` is visibly populated for completed demo learners.
+- A current-month institutional calendar event plus the Monday discipleship and Wednesday remote-study recurring events.
 
 Generated accounts use:
 

@@ -336,17 +336,21 @@ async function main() {
   await must('insert courses', supabase.from('courses').insert(courseRows))
 
   const blockRows = []
+  const assessableBlocksByCourse = new Map()
   for (const course of courseRows) {
     const module1 = uid()
     const module2 = uid()
+    const assignment = uid()
+    const quiz = uid()
+    assessableBlocksByCourse.set(course.id, { assignment, quiz })
     blockRows.push(
       { id: module1, course_id: course.id, block_type_id: 'module_header', title: 'Week 1-2: Foundations', sort_order: 100, is_published: true },
       { id: uid(), course_id: course.id, parent_block_id: module1, block_type_id: 'page', title: 'Course Welcome and Outcomes', sort_order: 110, content: { body: `Welcome to ${course.title}. Review outcomes, rhythm, and expectations.` }, gamification: { base_xp_reward: 20 }, is_published: true },
       { id: uid(), course_id: course.id, parent_block_id: module1, block_type_id: 'video_stream', title: 'Opening Lecture', sort_order: 120, content: { url: 'https://example.com/demo-video', duration_minutes: 18 }, gamification: { base_xp_reward: 35 }, is_published: true },
       { id: uid(), course_id: course.id, parent_block_id: module1, block_type_id: 'discussion', title: 'Formation Discussion', sort_order: 130, content: { prompt: 'What did this week clarify, challenge, or invite you to practice?' }, gamification: { base_xp_reward: 25 }, is_published: true },
       { id: module2, course_id: course.id, block_type_id: 'module_header', title: 'Week 3-5: Practice and Assessment', sort_order: 200, is_published: true },
-      { id: uid(), course_id: course.id, parent_block_id: module2, block_type_id: 'assignment', title: 'Reflection Assignment', sort_order: 210, content: { instructions: 'Submit a 700-word reflection connecting the readings to ministry practice.', submission_type: 'text', max_points: 100 }, gamification: { base_xp_reward: 60 }, is_published: true },
-      { id: uid(), course_id: course.id, parent_block_id: module2, block_type_id: 'quiz', title: 'Knowledge Check', sort_order: 220, content: { instructions: 'Complete the checkpoint quiz.', attempts_allowed: 2, questions: [{ id: uid(), text: 'This demo course is part of a structured program pathway.', type: 'true_false', options: ['True', 'False'], correct_index: 0, points: 10 }] }, gamification: { base_xp_reward: 40 }, is_published: true },
+      { id: assignment, course_id: course.id, parent_block_id: module2, block_type_id: 'assignment', title: 'Reflection Assignment', sort_order: 210, content: { instructions: 'Submit a 700-word reflection connecting the readings to ministry practice.', submission_type: 'text', max_points: 100 }, gamification: { base_xp_reward: 60 }, is_published: true },
+      { id: quiz, course_id: course.id, parent_block_id: module2, block_type_id: 'quiz', title: 'Knowledge Check', sort_order: 220, content: { instructions: 'Complete the checkpoint quiz.', attempts_allowed: 2, questions: [{ id: uid(), text: 'This demo course is part of a structured program pathway.', type: 'true_false', options: ['True', 'False'], correct_index: 0, points: 10 }] }, gamification: { base_xp_reward: 40 }, is_published: true },
     )
   }
   await must('insert course blocks', supabase.from('course_blocks').insert(blockRows.map((row) => ({
@@ -474,6 +478,7 @@ async function main() {
     const profile = [...people.values()].find((p) => p.auth_id === de.user_id)
     if (!profile) continue
     enrollmentRows.push({
+      id: uid(),
       user_id: profile.uid,
       course_id: courseByBlueprint[bpKey],
       section_id: de.section_id,
@@ -483,6 +488,96 @@ async function main() {
     })
   }
   await must('upsert course enrollments', supabase.from('enrollments').upsert(enrollmentRows, { onConflict: 'user_id,course_id' }))
+
+  const courseEnrollmentRows = enrollmentRows.map((row) => ({
+    id: uid(),
+    course_id: row.course_id,
+    user_id: row.user_id,
+    role: 'student',
+    status: row.transit_status === 'completed' ? 'completed' : 'active',
+    source: 'admin',
+    enrolled_at: iso(new Date(Date.UTC(2026, 5, 17, 14, 0, 0))),
+    last_activity_at: row.last_accessed_at,
+    metadata: { demo: true },
+  }))
+  await must('insert block course enrollments', supabase.from('course_enrollments').insert(courseEnrollmentRows))
+
+  const courseEnrollmentKey = new Map(courseEnrollmentRows.map((row) => [`${row.user_id}:${row.course_id}`, row.id]))
+  const completedEnrollmentKeys = new Set()
+  const gradedSubmissions = []
+  const completedCourseIds = new Set([
+    courseByBlueprint['ot-survey'],
+    courseByBlueprint['nt-survey'],
+    courseByBlueprint['new-members'],
+    courseByBlueprint['forge-core'],
+    courseByBlueprint['leadership-core'],
+  ])
+
+  enrollmentRows.forEach((row, index) => {
+    const blocks = assessableBlocksByCourse.get(row.course_id)
+    const enrollmentId = courseEnrollmentKey.get(`${row.user_id}:${row.course_id}`)
+    if (!blocks || !enrollmentId) return
+
+    const score = 78 + (index % 20)
+    gradedSubmissions.push(
+      {
+        block_id: blocks.assignment,
+        enrollment_id: enrollmentId,
+        user_id: row.user_id,
+        attempt_number: 1,
+        status: 'graded',
+        content: { text: 'Demo reflection connecting course outcomes to ministry practice.' },
+        score,
+        max_score: 100,
+        feedback: 'Strong demo submission with clear application.',
+        graded_by: teacherBible,
+        submitted_at: iso(new Date(Date.UTC(2026, 5, 16, 16, 0, 0))),
+        graded_at: iso(new Date(Date.UTC(2026, 5, 17, 16, 0, 0))),
+      },
+      {
+        block_id: blocks.quiz,
+        enrollment_id: enrollmentId,
+        user_id: row.user_id,
+        attempt_number: 1,
+        status: 'graded',
+        content: { answers: [0] },
+        score: index % 6 === 0 ? 8 : 10,
+        max_score: 10,
+        feedback: 'Auto-graded demo knowledge check.',
+        graded_by: teacherBible,
+        submitted_at: iso(new Date(Date.UTC(2026, 5, 17, 15, 0, 0))),
+        graded_at: iso(new Date(Date.UTC(2026, 5, 17, 15, 1, 0))),
+      },
+    )
+
+    if (completedCourseIds.has(row.course_id) && index % 3 === 0) {
+      row.transit_status = 'completed'
+      row.progress_percent = 100
+      completedEnrollmentKeys.add(`${row.user_id}:${row.course_id}`)
+    }
+  })
+
+  await must('insert graded submissions', supabase.from('block_submissions').insert(gradedSubmissions))
+
+  const completedRows = enrollmentRows.filter((row) => completedEnrollmentKeys.has(`${row.user_id}:${row.course_id}`))
+  if (completedRows.length > 0) {
+    await must('mark completed enrollments', supabase.from('enrollments').upsert(completedRows, { onConflict: 'user_id,course_id' }))
+    await must('mark completed block enrollments', supabase
+      .from('course_enrollments')
+      .update({ status: 'completed', completed_at: iso(new Date(Date.UTC(2026, 5, 17, 17, 0, 0))) })
+      .in('id', completedRows.map((row) => courseEnrollmentKey.get(`${row.user_id}:${row.course_id}`)).filter(Boolean)))
+
+    const certificateRows = completedRows.map((row, index) => ({
+      user_id: row.user_id,
+      course_id: row.course_id,
+      issued_at: iso(new Date(Date.UTC(2026, 5, 17, 18, index % 50, 0))),
+      final_grade: 88 + (index % 10),
+      letter_grade: index % 4 === 0 ? 'A' : 'B+',
+      total_xp_earned: 100,
+      certificate_no: `DEMO-${String(index + 1).padStart(4, '0')}`,
+    }))
+    await must('insert certificates', supabase.from('course_certificates').insert(certificateRows))
+  }
 
   const managerClient = createClient(supabaseUrl, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -513,6 +608,19 @@ async function main() {
   }))))
 
   const calendarEvents = []
+  const currentMonthStart = new Date(Date.UTC(2026, 5, 18, 18, 0, 0))
+  calendarEvents.push({
+    created_by: retainedUid,
+    event_type: 'institutional',
+    title: 'ChurchCore Demo Academic Showcase',
+    description: 'Current-month demo event proving the calendar is wired to the seeded academic data.',
+    starts_at: iso(currentMonthStart),
+    ends_at: iso(new Date(currentMonthStart.getTime() + 60 * 60 * 1000)),
+    timezone: 'America/New_York',
+    location: 'Demo campus and livestream',
+    color_code: '#7C3AED',
+    scope: 'institutional',
+  })
   for (let week = 0; week < 4; week++) {
     const start = new Date(Date.UTC(2026, 8, 7 + week * 7, 23, 0, 0))
     const end = new Date(start.getTime() + 90 * 60 * 1000)
@@ -575,6 +683,8 @@ Created:
 - 1 demo manager, 3 teachers, and 23 demo learners
 - ${directEnrollments.length} direct section enrollments
 - ${enrollmentRows.length} course enrollments
+- ${gradedSubmissions.length} graded submissions
+- ${completedRows.length} certificates
 `)
 }
 
