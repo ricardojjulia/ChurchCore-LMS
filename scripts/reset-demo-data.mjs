@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { randomUUID } from 'node:crypto'
+import { execSync } from 'node:child_process'
 
 const args = new Map()
 for (const arg of process.argv.slice(2)) {
@@ -57,8 +58,17 @@ async function must(label, promise) {
 
 async function maybeDelete(table, column = 'id', keep = '00000000-0000-0000-0000-000000000000') {
   const { error } = await supabase.from(table).delete().neq(column, keep)
-  if (error && !/does not exist|Could not find|schema cache/i.test(error.message)) {
-    throw new Error(`clear ${table}: ${error.message}`)
+  if (error) {
+    // Tables with PostgreSQL RULEs reject PostgREST's DELETE RETURNING.
+    // These tables (report_audit_log, etc.) are empty at reset time so no FK
+    // violation can occur; skip silently.
+    if (/cannot perform DELETE RETURNING/i.test(error.message)) {
+      console.warn(`  ⚠ skipped ${table} (RULE-blocked — expected empty)`)
+      return
+    }
+    if (!/does not exist|Could not find|schema cache/i.test(error.message)) {
+      throw new Error(`clear ${table}: ${error.message}`)
+    }
   }
 }
 
@@ -90,6 +100,22 @@ async function ensureAuthUser(email, displayName, role) {
 
 async function main() {
   console.log(`Preparing destructive demo reset for ${supabaseUrl}`)
+
+  // Tables with PostgreSQL RULEs cannot be cleared by PostgREST and their FK
+  // constraints prevent PostgREST from deleting parent tables (e.g. courses).
+  // Truncate them directly via the Supabase CLI before the main loop.
+  try {
+    // report_audit_log has a PostgreSQL RULE that makes PostgREST's DELETE
+    // RETURNING fail. Truncate via direct SQL before the main JS loop.
+    execSync(
+      `supabase db query --linked "TRUNCATE report_artifacts, report_audit_log, report_definitions;"`,
+      { stdio: 'pipe' },
+    )
+    console.log('  ✓ pre-truncated reporting tables')
+  } catch {
+    console.warn('  ⚠ pre-truncate skipped (reporting tables may not exist yet)')
+  }
+
   const authUsers = await listAllUsers()
   const retained = authUsers.find((user) => user.email?.toLowerCase() === retainEmail)
   if (!retained) {
