@@ -10,7 +10,8 @@ import ModuleCompletionChart from '@/components/reports/charts/ModuleCompletionC
 import GradeHistoryChart from '@/components/reports/charts/GradeHistoryChart'
 import EnrollmentTable from '@/components/reports/tables/EnrollmentTable'
 import StudentProgressSkeleton from '@/components/reports/StudentProgressSkeleton'
-import { generateStudentProgressReport } from './actions'
+import ExportButton from '@/components/reports/ExportButton'
+import { generateStudentProgressReport, generateStudentXLSXExport } from './actions'
 
 type Profile = {
   uid: string
@@ -79,19 +80,10 @@ export default async function StudentReportsPage() {
             })}
           </p>
         </div>
-        <form
-          action={async () => {
-            'use server'
-            await generateStudentProgressReport()
-          }}
-        >
-          <button
-            type="submit"
-            className="inline-flex items-center justify-center bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-          >
-            Download My Progress Report
-          </button>
-        </form>
+        <div className="flex flex-wrap gap-2">
+          <ExportButton label="Export PDF" format="pdf" action={generateStudentProgressReport} />
+          <ExportButton label="Export XLSX" format="xlsx" action={generateStudentXLSXExport} />
+        </div>
       </div>
 
       <noscript>

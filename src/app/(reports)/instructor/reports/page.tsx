@@ -9,6 +9,8 @@ import CourseCompletionChart from '@/components/reports/charts/CourseCompletionC
 import GradeDistributionChart from '@/components/reports/charts/GradeDistributionChart'
 import GradebookTable from '@/components/reports/tables/GradebookTable'
 import TremorProgressBar from '@/components/reports/TremorProgressBar'
+import ExportButton from '@/components/reports/ExportButton'
+import { generateGradebookPDFExport, generateGradebookXLSXExport } from './actions'
 
 type Profile = {
   org_id: string | null
@@ -96,12 +98,26 @@ export default async function InstructorReportsPage({
             </form>
 
             <div className="flex gap-2">
-              <button disabled className="px-3 py-2 text-sm font-semibold text-slate-400 ring-1 ring-slate-200">
-                Export PDF
-              </button>
-              <button disabled className="px-3 py-2 text-sm font-semibold text-slate-400 ring-1 ring-slate-200">
-                Export XLSX
-              </button>
+              {selectedCourse ? (
+                <>
+                  <ExportButton
+                    label="Export PDF"
+                    format="pdf"
+                    action={async () => {
+                      'use server'
+                      return generateGradebookPDFExport(selectedCourse.course_id)
+                    }}
+                  />
+                  <ExportButton
+                    label="Export XLSX"
+                    format="xlsx"
+                    action={async () => {
+                      'use server'
+                      return generateGradebookXLSXExport(selectedCourse.course_id)
+                    }}
+                  />
+                </>
+              ) : null}
             </div>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 import { createServerClient } from '@/lib/supabase/server'
+import ReportsDrawer from '@/components/reports/ReportsDrawer'
 
 export const metadata: Metadata = {
   title: 'Reports | ChurchCore LMS',
@@ -127,7 +128,12 @@ export default async function ReportsLayout({ children }: { children: ReactNode 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
       <ReportsSidebar context={reportsContext} />
-      <section className="min-w-0 px-4 py-8 sm:px-6 lg:px-10">{children}</section>
+      <section className="min-w-0 px-4 py-8 sm:px-6 lg:px-10">
+        <div className="mb-6 flex justify-end">
+          <ReportsDrawer />
+        </div>
+        {children}
+      </section>
     </div>
   )
 }
