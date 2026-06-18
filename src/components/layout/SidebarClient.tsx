@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, BookOpen, BarChart3, Award, Trophy,
+  LayoutDashboard, BookOpen, BarChart3, BarChart2, Award, Trophy,
   MessageCircle, Megaphone, Calendar, Users, Shield, Zap,
   UserCog, Layers, Clock, FileText, Sparkles, Activity,
   ChevronLeft, ChevronRight, GitBranch,
@@ -31,6 +31,7 @@ const LINKS: NavLink[] = [
   { href: '/dashboard',          label: 'Dashboard',       Icon: LayoutDashboard },
   { href: '/courses',            label: 'Courses',         Icon: BookOpen },
   { href: '/performance',        label: 'Grades',          Icon: BarChart3 },
+  { href: '/reports',            label: 'Reports',         Icon: BarChart2 },
   { href: '/certificates',       label: 'Certificates',    Icon: Award },
   { href: '/leaderboard',        label: 'Leaderboard',     Icon: Trophy },
   { href: '/messages',           label: 'Messages',        Icon: MessageCircle, msgBadge: true },

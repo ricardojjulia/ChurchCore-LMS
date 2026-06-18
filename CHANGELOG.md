@@ -11,6 +11,16 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.20.2] — 2026-06-18
+
+### Added
+
+- **Reports navigation** (COUNCIL-2025-012) — `/reports` unified server-side redirect route reads authenticated user's role and redirects to `/student/reports`, `/instructor/reports`, or `/admin/reports`; unknown roles receive a graceful fallback message instead of a redirect loop
+- **Reports sidebar item** — "Reports" with `BarChart2` icon added to the main nav section of the desktop sidebar (visible to all authenticated roles), positioned after Grades
+- **Reports mobile tab** — mobile bottom nav Grades tab replaced with Reports tab; Grades remains accessible via desktop sidebar and `/performance`
+
+---
+
 ## [0.20.1] — 2026-06-18
 
 ### Fixed
