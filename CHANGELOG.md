@@ -11,6 +11,16 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.20.1] — 2026-06-18
+
+### Fixed
+
+- **`system-health-check` Edge Function** — `embedding_jobs_stuck` and `embedding_jobs_failed_24h` checks referenced a non-existent `updated_at` column on `embedding_jobs`; both now use `created_at`, resolving the two persistent ❌ alerts in the health panel
+- **`count_unsynced_bridge_enrollments` RPC** — added missing Postgres function (`supabase/migrations/20260618152000_count_unsynced_bridge_enrollments.sql`) that the health check called but was never defined; function joins `direct_enrollments → course_sections.blueprint_id → courses → enrollments` to count students in active section enrollments with no corresponding course enrollment; `orphaned_enrollments` health check now reports ⚠️ instead of ❓
+- **Demo data consistency** — `scripts/reset-demo-data.mjs` set `profiles.uid` to a random UUID instead of the auth user's `id`; fixed to use `user.id` so that `direct_enrollments.user_id`, `enrollments.user_id`, `cohort_members.user_id`, and `profiles.uid` all share the same auth UUID — the bridge trigger (`trg_bridge_section_to_course`) now fires correctly on fresh demo resets
+
+---
+
 ## [0.20.0] — 2026-06-16
 
 ### Added

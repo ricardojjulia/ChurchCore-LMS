@@ -102,7 +102,7 @@ async function main() {
     .eq('auth_id', retained.id)
     .maybeSingle()
 
-  const retainedUid = retainedProfile?.uid ?? uid()
+  const retainedUid = retainedProfile?.uid ?? retained.id
 
   const domainTables = [
     'messages',
@@ -205,7 +205,7 @@ async function main() {
   for (const [email, displayName, role, xpPoints] of demoPeople) {
     const user = await ensureAuthUser(email, displayName, role)
     const profile = {
-      uid: uid(),
+      uid: user.id,
       auth_id: user.id,
       email,
       display_name: displayName,

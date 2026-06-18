@@ -46,7 +46,7 @@ async function checkStuckEmbeddingJobs(
       .from('embedding_jobs')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'processing')
-      .lt('updated_at', cutoff)
+      .lt('created_at', cutoff)
 
     if (error) {
       return { check_name: 'embedding_jobs_stuck', status: 'error', message: error.message }
@@ -76,7 +76,7 @@ async function checkFailedEmbeddingJobs(
       .from('embedding_jobs')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'failed')
-      .gte('updated_at', since)
+      .gte('created_at', since)
 
     if (error) {
       return { check_name: 'embedding_jobs_failed_24h', status: 'error', message: error.message }
