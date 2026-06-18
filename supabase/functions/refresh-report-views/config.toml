@@ -1,0 +1,4 @@
+verify_jwt = false
+
+[cron]
+schedule = "0 6-22 * * *"
