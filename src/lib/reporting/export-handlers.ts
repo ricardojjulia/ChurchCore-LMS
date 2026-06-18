@@ -1,6 +1,6 @@
+import ExcelJS from 'exceljs'
 import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer'
 import { createElement, type ComponentType, type ReactElement } from 'react'
-import { utils, write } from 'xlsx'
 
 import type {
   GradebookReportData,
@@ -69,32 +69,46 @@ export async function generateGradebookPDF(data: GradebookReportData): Promise<B
   return renderToBuffer(document)
 }
 
-export function generateGradebookXLSX(data: GradebookSummary[]): Buffer {
-  const worksheet = utils.json_to_sheet(
-    data.map((row) => ({
-      'Student Name': row.student_name,
-      'Total Submissions': row.total_submissions,
-      'Average Grade': row.avg_grade === null ? 'Not graded' : row.avg_grade,
-      'Last Submission': row.last_submission_at ?? '',
-      'Grade Letter': gradeLetter(row.avg_grade),
-    }))
-  )
-  const workbook = utils.book_new()
-  utils.book_append_sheet(workbook, worksheet, 'Gradebook')
-  return write(workbook, { bookType: 'xlsx', type: 'buffer' }) as Buffer
+export async function generateGradebookXLSX(data: GradebookSummary[]): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook()
+  const sheet = workbook.addWorksheet('Gradebook')
+  sheet.columns = [
+    { header: 'Student Name',      key: 'name',        width: 30 },
+    { header: 'Total Submissions', key: 'submissions',  width: 18 },
+    { header: 'Average Grade',     key: 'avg',         width: 15 },
+    { header: 'Last Submission',   key: 'last',        width: 22 },
+    { header: 'Grade Letter',      key: 'letter',      width: 14 },
+  ]
+  for (const row of data) {
+    sheet.addRow({
+      name:        row.student_name,
+      submissions: row.total_submissions,
+      avg:         row.avg_grade === null ? 'Not graded' : row.avg_grade,
+      last:        row.last_submission_at ?? '',
+      letter:      gradeLetter(row.avg_grade),
+    })
+  }
+  return Buffer.from(await workbook.xlsx.writeBuffer())
 }
 
-export function generateStudentXLSX(data: StudentReportData): Buffer {
-  const worksheet = utils.json_to_sheet(
-    data.courses.map((course) => ({
-      'Course Title': course.courseTitle,
-      'Enrolled Date': '',
-      Completed: course.completedAt ? 'Yes' : 'No',
-      'Average Grade': course.averageGrade === null ? 'Not graded' : course.averageGrade,
-      'Certificate Earned': course.certificateNo ? 'Yes' : 'No',
-    }))
-  )
-  const workbook = utils.book_new()
-  utils.book_append_sheet(workbook, worksheet, 'Student Progress')
-  return write(workbook, { bookType: 'xlsx', type: 'buffer' }) as Buffer
+export async function generateStudentXLSX(data: StudentReportData): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook()
+  const sheet = workbook.addWorksheet('Student Progress')
+  sheet.columns = [
+    { header: 'Course Title',      key: 'title',   width: 36 },
+    { header: 'Enrolled Date',     key: 'enrolled', width: 16 },
+    { header: 'Completed',         key: 'done',    width: 12 },
+    { header: 'Average Grade',     key: 'avg',     width: 15 },
+    { header: 'Certificate Earned', key: 'cert',   width: 18 },
+  ]
+  for (const course of data.courses) {
+    sheet.addRow({
+      title:   course.courseTitle,
+      enrolled: '',
+      done:    course.completedAt ? 'Yes' : 'No',
+      avg:     course.averageGrade === null ? 'Not graded' : course.averageGrade,
+      cert:    course.certificateNo ? 'Yes' : 'No',
+    })
+  }
+  return Buffer.from(await workbook.xlsx.writeBuffer())
 }

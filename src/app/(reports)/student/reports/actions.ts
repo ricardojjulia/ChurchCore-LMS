@@ -143,7 +143,7 @@ export async function generateStudentXLSXExport(courseId?: string): Promise<Repo
 
   try {
     const data = await buildStudentReportData(profile.uid, profile.org_id, courseId)
-    const workbook = generateStudentXLSX(data)
+    const workbook = await generateStudentXLSX(data)
     await writeAuditLog({
       orgId: profile.org_id,
       actorId: profile.uid,

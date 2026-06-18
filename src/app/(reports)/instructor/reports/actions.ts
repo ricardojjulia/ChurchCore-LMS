@@ -188,7 +188,7 @@ export async function generateGradebookXLSXExport(courseId: string): Promise<Rep
 
   try {
     const rows = await getGradebookSummary(profile.org_id, course.id)
-    const workbook = generateGradebookXLSX(rows)
+    const workbook = await generateGradebookXLSX(rows)
     await writeAuditLog({
       orgId: profile.org_id,
       actorId: profile.uid,
