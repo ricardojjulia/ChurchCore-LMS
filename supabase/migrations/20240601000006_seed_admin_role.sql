@@ -1,6 +1,6 @@
--- Promote the project owner to admin.
--- Safe to run multiple times (ON CONFLICT is not needed — just UPDATE by email).
+-- Migration 006: seed_admin_role
+-- Originally promoted the project owner to admin by email.
+-- Replaced with a no-op: the first admin is set up manually after installation.
+-- See docs/github-setup.md → "First admin user" for setup instructions.
 
-UPDATE public.profiles
-SET role = 'admin', status = 'active'
-WHERE email = 'ricardojjulia@gmail.com';
+SELECT 1;

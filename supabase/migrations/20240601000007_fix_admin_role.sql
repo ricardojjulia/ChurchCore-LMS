@@ -1,9 +1,5 @@
--- Promote the project owner to admin, matching on both email and auth_id
--- (auth_id path handles the case where profiles.email was null at migration time)
+-- Migration 007: fix_admin_role
+-- Originally promoted the project owner to admin via email + auth_id lookup.
+-- Replaced with a no-op: first admin setup is documented in docs/github-setup.md.
 
-UPDATE public.profiles
-SET role = 'admin', status = 'active'
-WHERE email = 'ricardojjulia@gmail.com'
-   OR auth_id IN (
-     SELECT id FROM auth.users WHERE email = 'ricardojjulia@gmail.com'
-   );
+SELECT 1;
