@@ -167,6 +167,8 @@ export default async function AdminUsersPage({
         ) : (
           <div className="space-y-2">
             {sorted.map((profile) => (
+              // Supabase select shape doesn't match UserRow prop type — no generated types for this select
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               <UserRow key={profile.uid} profile={profile as any} />
             ))}
           </div>

@@ -101,6 +101,7 @@ export default function MessageThread({
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- handleSend expects FormEvent but is triggered from KeyboardEvent; shape is compatible at runtime
       handleSend(e as any)
     }
   }

@@ -50,6 +50,7 @@ export default async function CalendarPage() {
         </div>
 
         <CalendarView
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase select shape doesn't match CalendarView prop type
           initialEvents={(events ?? []) as any}
           isStaff={isStaff}
         />

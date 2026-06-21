@@ -99,6 +99,7 @@ export default async function CohortDetailPage({
         </div>
 
         {/* Members panel — client component for add/remove */}
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase select return shape doesn't match component prop signature */}
         <CohortMemberPanel cohortId={cohortId} members={members as any} />
 
         {/* Recent enrollment jobs */}
@@ -119,7 +120,9 @@ export default async function CohortDetailPage({
                 </thead>
                 <tbody className="divide-y divide-border">
                   {jobs.map((job) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join types not narrowed
                     const section = job.course_sections as any
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join types not narrowed
                     const blueprint = section?.course_blueprints as any
                     const statusColors: Record<string, string> = {
                       completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -146,9 +149,11 @@ export default async function CohortDetailPage({
                           </span>
                         </td>
                         <td className="px-4 py-3 text-center font-semibold text-emerald-700">
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- result_summary is JSONB with dynamic shape */}
                           {(job.result_summary as any)?.enrolled ?? job.processed_count ?? '—'}
                         </td>
                         <td className="px-4 py-3 text-center text-muted-foreground">
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- result_summary is JSONB with dynamic shape */}
                           {(job.result_summary as any)?.skipped ?? job.skipped_count ?? '—'}
                         </td>
                         <td className="px-4 py-3 text-muted-foreground text-xs">

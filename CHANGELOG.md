@@ -11,6 +11,37 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.22.1] — 2026-06-21
+
+### Security
+
+- **Middleware: `/join` and `/api/` excluded from auth redirect** (ADR-2026-003) — unauthenticated visitors can now reach `/join/[slug]` for self-registration; Stripe webhook POSTs to `/api/stripe/webhook` are no longer silently dropped as 302 redirects (critical pre-launch bug)
+- **`AssignmentPlayer`: removed `getPublicUrl()` on private bucket** — `assignment-files` is `public = FALSE`; broken public-URL fallback replaced with a hard user-facing error on signed-URL failure
+- **4 API routes: sanitized error messages** — `calendar`, `upload/image`, `analytics/events`, `ai/related-concepts` no longer return raw Supabase `error.message` to clients (was leaking constraint names, bucket paths, internal function names)
+- **Digest route: removed PII from server logs** — `console.error` now logs `uid` instead of `email` on weekly digest send failures
+
+### Fixed
+
+- **`handle_new_user` trigger: explicit `::public.user_role` cast** (`20260621210000`) — JSONB `->>` yields `text`; inside a SECURITY DEFINER trigger Postgres does not apply the implicit assignment cast to the enum; caused every `supabase.auth.admin.createUser()` call to fail with "Database error creating new user"
+- **`enforcement_enrollment_state_machine`: `org_id` added to audit INSERT** (`20260621220000`) — Phase 2 made `enrollment_audit_log.org_id` NOT NULL but the trigger predated that column; enrollment status transitions (pending → active, etc.) were failing
+- **`reset-demo-data.mjs`: three fixes** — creates retained auth user if not found; adds `org_id` to all 16+ tables with Phase 2 NOT NULL; NULLs `profiles.org_id` before cleanup loop to avoid `profiles_org_id_fkey` FK violation on org delete
+- **`platform_admins` bootstrap SQL**: corrected to include required `display_name` column
+
+### Consistency (ADR-2026-003)
+
+- **Organizations RLS policies** (`20260621230000`) — inline `id IN (SELECT org_id FROM profile_roles ...)` subqueries replaced with `current_user_org_id()` helper
+- **Guardian SECURITY DEFINER functions** (`20260621230100`) — `get_guardian_students`, `get_guardian_student_overview`, `link_guardian_to_student`, `unlink_guardian_from_student` switched from `profiles` to `profile_roles` for caller UID/role; email lookup remains in `profiles` (only table with that column)
+- **Embeddings RLS**: documented why `auth.uid()` is correct for `direct_enrollments.user_id` comparison (FK to `auth.users`, not `profiles.uid`)
+
+### Code Quality
+
+- **`learning.ts`**: removed 6 unnecessary `as any` casts — `email`, `display_name`, `current_level` were already in the select; direct field access used
+- **`courses/[id]/page.tsx`**: `CourseRow` and `GamificationJSON` typed interfaces replace 12 `(course as any).xxx` casts
+- **`messages/page.tsx`, `messages/[threadId]/page.tsx`**: `ThreadRow` and `ThreadInfo` interfaces replace bare `as any` thread casts
+- **28 remaining `as any` casts**: all documented with `eslint-disable-next-line` and reason (Supabase join inference, JSONB shape, RPC return type, event type union); test file mocks exempt per ADR-2026-003
+
+---
+
 ## [0.22.0] — 2026-06-21
 
 ### Added

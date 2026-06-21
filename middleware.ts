@@ -49,8 +49,17 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Redirect unauthenticated users away from protected routes
-  if (!user && !pathname.startsWith('/login') && !pathname.startsWith('/auth')) {
+  // Redirect unauthenticated users away from protected routes.
+  // /join and /api routes are intentionally public: /join handles self-registration
+  // for unauthenticated visitors; /api routes (including Stripe webhooks) authenticate
+  // themselves via their own mechanisms and must not be redirected.
+  if (
+    !user &&
+    !pathname.startsWith('/login') &&
+    !pathname.startsWith('/auth') &&
+    !pathname.startsWith('/join') &&
+    !pathname.startsWith('/api/')
+  ) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

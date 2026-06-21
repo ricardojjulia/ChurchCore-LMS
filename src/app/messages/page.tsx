@@ -55,9 +55,17 @@ export default async function MessagesPage() {
     .is('left_at', null)
     .order('message_threads(last_message_at)', { ascending: false, nullsFirst: false })
 
+  // Supabase doesn't narrow nested join shapes — define the type from the select above
+  type ThreadRow = {
+    id: string; thread_type: string; subject: string | null
+    last_message_at: string | null; last_message_preview: string | null
+    last_sender_uid: string | null; created_at: string
+    message_thread_participants: { user_id: string; profiles: { uid: string; display_name: string; email: string } | null }[]
+  }
+
   const threads = (participations ?? [])
     .map((p) => {
-      const thread = p.message_threads as any
+      const thread = p.message_threads as unknown as ThreadRow | null
       if (!thread) return null
 
       // Co-participants (not me)

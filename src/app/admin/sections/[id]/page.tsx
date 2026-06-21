@@ -52,6 +52,7 @@ export default async function SectionDetailPage({
   const groups    = groupsResult.data ?? []
 
   const totalMembers = groups.reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join not narrowed
     (s, g) => s + ((g.section_group_members as any[])?.length ?? 0), 0
   )
 
@@ -109,6 +110,7 @@ export default async function SectionDetailPage({
         {/* Groups management */}
         <GroupsPanel
           sectionId={sectionId}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase select shape doesn't match GroupsPanel prop type
           initialGroups={groups as any}
           isAdmin={['admin', 'manager'].includes(me.role)}
         />

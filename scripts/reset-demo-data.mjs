@@ -181,6 +181,10 @@ async function main() {
     'system_health_checks',
   ]
 
+  // NULL out org_id on all profiles before deleting organizations —
+  // profiles_org_id_fkey (NO ACTION) blocks the org delete otherwise.
+  await supabase.from('profiles').update({ org_id: null }).not('uid', 'eq', '00000000-0000-0000-0000-000000000000')
+
   for (const table of domainTables) await maybeDelete(table)
   await maybeDelete('profile_roles', 'auth_id', retained.id)
   await maybeDelete('profiles', 'uid', retainedUid)

@@ -106,6 +106,7 @@ export async function getOrCreateDirectThread(
       .is('left_at', null)
       .in('thread_id', myThreadIds)
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join not narrowed by TS
     const direct = (sharedRows ?? []).find(
       (r) => (r.message_threads as any)?.thread_type === 'direct'
     )

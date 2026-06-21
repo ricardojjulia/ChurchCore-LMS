@@ -70,6 +70,7 @@ export default async function CohortEnrollPage({
           <EnrollWizard
             cohortId={cohortId}
             memberCount={memberCount}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase select shape doesn't match EnrollWizard prop type
             sections={sections as any}
           />
         </div>

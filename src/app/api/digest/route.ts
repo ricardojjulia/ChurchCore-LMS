@@ -149,7 +149,7 @@ export async function GET(request: Request) {
         .eq('uid', student.uid)
       sent++
     } catch (err) {
-      console.error(`[digest] Failed for ${student.email}:`, err)
+      console.error(`[digest] Failed for uid=${student.uid}:`, err)
     }
   }
 

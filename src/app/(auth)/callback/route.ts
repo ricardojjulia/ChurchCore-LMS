@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
           },
           setAll(cookiesToSet: { name: string; value: string; options?: object }[]) {
             cookiesToSet.forEach(({ name, value, options }) =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase SSR CookieOptionsWithName doesn't match Next.js ResponseCookies exactly
               cookieStore.set(name, value, options as any)
             )
           },

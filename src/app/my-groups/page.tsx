@@ -18,6 +18,7 @@ export default async function MyGroupsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_my_groups RPC return type is not in generated Supabase types
   const { data: { data: groups }, error } = await supabase.rpc('get_my_groups') as any
 
   return (
@@ -46,6 +47,7 @@ export default async function MyGroupsPage() {
           </div>
         ) : (
           <div className="space-y-3">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_my_groups RPC return not typed */}
             {(groups as any[]).map((g) => (
               <Link
                 key={g.group_id}

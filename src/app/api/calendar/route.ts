@@ -17,6 +17,6 @@ export async function GET(req: NextRequest) {
     .lte('starts_at', to)
     .order('starts_at', { ascending: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: 'Failed to load calendar events' }, { status: 500 })
   return NextResponse.json(data ?? [])
 }

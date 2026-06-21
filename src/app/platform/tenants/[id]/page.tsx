@@ -108,6 +108,7 @@ export default async function TenantDetailPage({ params }: { params: { id: strin
                   <p className="text-xs text-slate-600">{u.email}</p>
                 </div>
                 <span className="text-xs text-slate-500 capitalize">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join returns role as array; shape not narrowed */}
                   {(u.role as any)?.[0]?.role ?? '—'}
                 </span>
               </div>

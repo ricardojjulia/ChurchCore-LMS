@@ -4,6 +4,28 @@ import { BLOCK_TYPE_META } from '@/types/blocks'
 import EnrollButton from '@/components/learning/EnrollButton'
 import type { CourseBlock } from '@/types/blocks'
 
+// Supabase's select('*, alias:join(...)') doesn't narrow to a concrete TS type.
+// CourseRow captures the full shape returned by the courses query below.
+type CourseRow = {
+  id: string
+  title: string
+  description: string | null
+  status: string
+  org_id: string
+  owner_id: string | null
+  min_required_level: number
+  prerequisite_course_id: string | null
+  prereq: { id: string; title: string } | null
+  blueprint: {
+    id: string
+    title: string
+    course_code: string
+    program_tracks: { name: string; code: string } | null
+  } | null
+}
+
+type GamificationJSON = { base_xp_reward?: number }
+
 export const dynamic = 'force-dynamic'
 
 export default async function CoursePage({
@@ -50,7 +72,7 @@ export default async function CoursePage({
       .order('sort_order', { ascending: true }),
   ])
 
-  const course    = courseResult.data
+  const course    = courseResult.data as CourseRow | null
   const allBlocks = (blocksResult.data ?? []) as CourseBlock[]
 
   if (!course) {
@@ -67,12 +89,7 @@ export default async function CoursePage({
     )
   }
 
-  const blueprint = (course as any).blueprint as {
-    id: string
-    title: string
-    course_code: string
-    program_tracks: { name: string; code: string } | null
-  } | null
+  const blueprint = course?.blueprint
 
   let blueprintSections: {
     id: string
@@ -110,22 +127,22 @@ export default async function CoursePage({
   let enrollLocked    = false
   let enrollLockReason: string | undefined
   if (profile && !isStaff && !isEnrolled) {
-    const requiredLevel = (course as any).min_required_level ?? 1
+    const requiredLevel = course.min_required_level ?? 1
     const studentLevel  = profile.current_level ?? 1
     if (studentLevel < requiredLevel) {
       enrollLocked     = true
       enrollLockReason = `Level ${requiredLevel} required — you are level ${studentLevel}`
-    } else if ((course as any).prerequisite_course_id) {
+    } else if (course.prerequisite_course_id) {
       const { data: prereqDone } = await supabase
         .from('enrollments')
         .select('transit_status')
         .eq('user_id',   profile.uid)
-        .eq('course_id', (course as any).prerequisite_course_id)
+        .eq('course_id', course.prerequisite_course_id)
         .eq('transit_status', 'completed')
         .maybeSingle()
       if (!prereqDone) {
         enrollLocked     = true
-        const prereqTitle = ((course as any).prereq as { title: string } | null)?.title
+        const prereqTitle = course.prereq?.title
         enrollLockReason = prereqTitle
           ? `Complete "${prereqTitle}" first`
           : 'Complete the prerequisite course first'
@@ -144,7 +161,7 @@ export default async function CoursePage({
 
   const publishedCount = allBlocks.filter((b) => b.is_published && b.block_type_id !== 'module_header').length
   const totalXp        = allBlocks.reduce(
-    (s, b) => s + ((b.gamification as any)?.base_xp_reward ?? 0), 0
+    (s, b) => s + ((b.gamification as GamificationJSON)?.base_xp_reward ?? 0), 0
   )
 
   // Find first lesson for Start / Continue CTA
@@ -176,9 +193,9 @@ export default async function CoursePage({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`text-xs font-bold uppercase tracking-widest ${
-                    (course as any).status === 'published' ? 'text-emerald-600' : 'text-amber-600'
+                    course.status === 'published' ? 'text-emerald-600' : 'text-amber-600'
                   }`}>
-                    {(course as any).status === 'published' ? 'Published' : ((course as any).status ?? 'Draft')}
+                    {course.status === 'published' ? 'Published' : (course.status ?? 'Draft')}
                   </span>
                 </div>
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">{course.title}</h1>
@@ -197,14 +214,14 @@ export default async function CoursePage({
                   {moduleHeaders.length > 0 && (
                     <span>{moduleHeaders.length} module{moduleHeaders.length !== 1 ? 's' : ''}</span>
                   )}
-                  {(course as any).min_required_level > 1 && (
+                  {course.min_required_level > 1 && (
                     <span className="inline-flex items-center gap-1 text-amber-600 font-semibold bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5 text-xs">
-                      ⚡ Level {(course as any).min_required_level}+ required
+                      ⚡ Level {course.min_required_level}+ required
                     </span>
                   )}
-                  {(course as any).prereq && (
+                  {course.prereq && (
                     <span className="inline-flex items-center gap-1 text-slate-500 text-xs">
-                      Requires: <span className="font-medium text-slate-700">{((course as any).prereq as { title: string }).title}</span>
+                      Requires: <span className="font-medium text-slate-700">{course.prereq.title}</span>
                     </span>
                   )}
                 </div>
@@ -468,9 +485,10 @@ function CurriculumItem({
           {meta?.label ?? block.block_type_id}
         </p>
       </div>
-      {(block.gamification as any)?.base_xp_reward > 0 && (
+      {(block.gamification as GamificationJSON)?.base_xp_reward != null &&
+       (block.gamification as GamificationJSON).base_xp_reward! > 0 && (
         <span className="text-xs text-indigo-500 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 shrink-0">
-          +{(block.gamification as any).base_xp_reward} XP
+          +{(block.gamification as GamificationJSON).base_xp_reward} XP
         </span>
       )}
       {!isEnrolled && (

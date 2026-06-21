@@ -65,6 +65,8 @@ CREATE POLICY "embeddings: enrolled students read own org"
     AND EXISTS (
       SELECT 1 FROM public.direct_enrollments de
       WHERE de.section_id = embeddings.section_id
+        -- direct_enrollments.user_id references auth.users(id), not profiles.uid,
+        -- so auth.uid() is the correct comparator here (not current_user_uid()).
         AND de.user_id = auth.uid()
         AND de.status = 'active'
     )

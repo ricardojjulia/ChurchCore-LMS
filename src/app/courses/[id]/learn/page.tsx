@@ -103,6 +103,7 @@ export default async function LearnPage({
       courseTitle={course.title}
       modules={modules}
       blocks={blocks}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase select shape doesn't match LearningShell prop type
       submissions={submissions as any}
       initialBlockId={initialBlockId}
       progressPercent={enrollment?.progress_percent ?? 0}

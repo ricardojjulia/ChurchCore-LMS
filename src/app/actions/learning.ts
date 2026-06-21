@@ -35,7 +35,7 @@ export async function enrollSelf(courseId: string): Promise<{ error?: string }> 
     .single()
 
   if (course) {
-    const studentLevel = (profile as any).current_level ?? 1
+    const studentLevel = profile.current_level ?? 1
     const requiredLevel = course.min_required_level ?? 1
     if (studentLevel < requiredLevel) {
       return { error: `Level ${requiredLevel} required — you are level ${studentLevel}` }
@@ -69,17 +69,17 @@ export async function enrollSelf(courseId: string): Promise<{ error?: string }> 
   }
 
   // Enrollment confirmation email (optional — skipped if RESEND_API_KEY not set)
-  if (process.env.RESEND_API_KEY && (profile as any).email) {
+  if (process.env.RESEND_API_KEY && profile.email) {
     try {
       const { Resend } = await import('resend')
       const resend    = new Resend(process.env.RESEND_API_KEY)
       const siteUrl   = process.env.NEXT_PUBLIC_SITE_URL ?? ''
       const from      = process.env.RESEND_FROM_EMAIL ?? 'ChurchCore LMS <noreply@churchcore.app>'
-      const name      = (profile as any).display_name ?? 'there'
-      const title     = (course as any)?.title ?? 'your new course'
+      const name      = profile.display_name ?? 'there'
+      const title     = course?.title ?? 'your new course'
       await resend.emails.send({
         from,
-        to:      (profile as any).email,
+        to:      profile.email,
         subject: `You're enrolled: ${title}`,
         html: `
 <p>Hi ${name},</p>
@@ -165,7 +165,7 @@ export async function markBlockViewed(
     const cert = certData as { certificate_no?: string; letter_grade?: string } | null
 
     // Certificate issued email (optional — skipped if RESEND_API_KEY not set)
-    if (process.env.RESEND_API_KEY && (profile as any).email) {
+    if (process.env.RESEND_API_KEY && profile.email) {
       try {
         const { data: courseRow } = await supabase
           .from('courses')
@@ -176,13 +176,13 @@ export async function markBlockViewed(
         const resend   = new Resend(process.env.RESEND_API_KEY)
         const siteUrl  = process.env.NEXT_PUBLIC_SITE_URL ?? ''
         const from     = process.env.RESEND_FROM_EMAIL ?? 'ChurchCore LMS <noreply@churchcore.app>'
-        const name     = (profile as any).display_name ?? 'there'
+        const name     = profile.display_name ?? 'there'
         const title    = courseRow?.title ?? 'your course'
         const certNo   = cert?.certificate_no ?? ''
         const grade    = cert?.letter_grade ?? 'N/A'
         await resend.emails.send({
           from,
-          to:      (profile as any).email,
+          to:      profile.email,
           subject: `Certificate earned: ${title}`,
           html: `
 <p>Hi ${name},</p>

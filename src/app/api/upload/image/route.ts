@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     .from(BUCKET)
     .upload(path, buffer, { contentType: file.type, cacheControl: '3600', upsert: false })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
 
   // Return the storage path (not a URL). Callers use getSignedImageUrl(path)
   // to generate render-time signed URLs with 1-hour expiry.

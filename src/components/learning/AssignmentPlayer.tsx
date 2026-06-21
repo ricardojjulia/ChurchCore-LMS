@@ -66,16 +66,17 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, exi
 
         if (uploadErr) { setResult({ error: `Upload failed: ${uploadErr.message}` }); return }
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('assignment-files')
-          .getPublicUrl(uploaded.path)
-
-        // Use a signed URL (private bucket) instead of publicUrl
-        const { data: signed } = await supabase.storage
+        // assignment-files is a private bucket — signed URLs only
+        const { data: signed, error: signErr } = await supabase.storage
           .from('assignment-files')
           .createSignedUrl(uploaded.path, 60 * 60 * 24 * 30) // 30-day link
 
-        fileUrl  = signed?.signedUrl ?? publicUrl
+        if (signErr || !signed?.signedUrl) {
+          setResult({ error: 'Upload succeeded but file link could not be generated. Please try again.' })
+          return
+        }
+
+        fileUrl  = signed.signedUrl
         fileName = file.name
       }
 

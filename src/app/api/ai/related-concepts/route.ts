@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       // Likely role gate — surface as auth error
-      return Response.json({ error: 'find_related_concepts denied: ' + error.message }, { status: 403 })
+      return Response.json({ error: 'Access denied' }, { status: 403 })
     }
 
     for (const row of (rows ?? []) as RawRelatedRow[]) {

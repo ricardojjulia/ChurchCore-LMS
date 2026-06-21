@@ -30,7 +30,9 @@ export default async function ThreadPage({ params }: { params: Promise<{ threadI
 
   if (!participant) notFound()
 
-  const thread = participant.message_threads as any
+  // Supabase doesn't narrow nested join shapes — explicit cast from the select above
+  type ThreadInfo = { id: string; thread_type: string; subject: string | null }
+  const thread = participant.message_threads as unknown as ThreadInfo | null
 
   // Get co-participants for display name
   const { data: allParticipants } = await supabase
@@ -101,6 +103,7 @@ export default async function ThreadPage({ params }: { params: Promise<{ threadI
         <MessageThread
           threadId={threadId}
           myUid={profile.uid}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase select shape doesn't match MessageThread prop type
           initialMessages={sortedMessages as any}
         />
       </div>
