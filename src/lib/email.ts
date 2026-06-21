@@ -1,7 +1,13 @@
 import { Resend } from 'resend'
 import { env } from '@/env'
 
-const resend = new Resend(env.resendApiKey)
+let _resend: Resend | null = null
+
+function getResend(): Resend {
+  if (!env.resendApiKey) throw new Error('RESEND_API_KEY is not set')
+  if (!_resend) _resend = new Resend(env.resendApiKey)
+  return _resend
+}
 
 export async function sendEmail({
   to,
@@ -12,8 +18,8 @@ export async function sendEmail({
   subject: string
   react: React.ReactElement
 }) {
-  const { error } = await resend.emails.send({
-    from:    env.emailFrom,
+  const { error } = await getResend().emails.send({
+    from:    env.emailFrom || 'ChurchCore LMS <noreply@churchcore.app>',
     to:      Array.isArray(to) ? to : [to],
     subject,
     react,

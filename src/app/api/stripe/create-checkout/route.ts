@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 
@@ -46,12 +46,12 @@ export async function POST(req: NextRequest) {
 
   if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
 
-  const customer = await stripe.customers.create({
+  const customer = await getStripe().customers.create({
     name:     org.name,
     metadata: { org_id: orgId },
   })
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     customer:              customer.id,
     payment_method_types:  ['card'],
     line_items:            [{ price: priceId, quantity: 1 }],

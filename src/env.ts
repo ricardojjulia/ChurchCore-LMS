@@ -18,9 +18,9 @@ export const env = {
   supabaseAnonKey:    required('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
   supabaseServiceKey: required('SUPABASE_SERVICE_ROLE_KEY'),
 
-  // ── Email / Resend (required for invite + digest) ───────
-  resendApiKey: required('RESEND_API_KEY'),
-  emailFrom:    required('EMAIL_FROM'),
+  // ── Email / Resend (optional — email features degrade gracefully if unset) ──
+  resendApiKey: optional('RESEND_API_KEY'),
+  emailFrom:    optional('EMAIL_FROM'),
 
   // ── Stripe (required for billing; optional in dev) ──────
   stripeSecretKey:     optional('STRIPE_SECRET_KEY'),

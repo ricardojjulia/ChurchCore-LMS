@@ -1,7 +1,7 @@
 import Link           from 'next/link'
 import { notFound }   from 'next/navigation'
 import { createServiceClient } from '@/utils/supabase/service'
-import { stripe }     from '@/lib/stripe'
+import { getStripe }  from '@/lib/stripe'
 import { PLAN_FEATURES } from '@/lib/stripe-plans'
 import BillingActions from './BillingActions'
 
@@ -30,7 +30,7 @@ export default async function BillingPage({ params }: Props) {
   let nextBillingDate: string | null = null
 
   try {
-    const customers = await stripe.customers.search({
+    const customers = await getStripe().customers.search({
       query: `metadata['org_id']:'${org.id}'`,
       limit: 1,
     })
@@ -38,8 +38,8 @@ export default async function BillingPage({ params }: Props) {
 
     if (customer) {
       const [invoiceList, subscriptions] = await Promise.all([
-        stripe.invoices.list({ customer: customer.id, limit: 10 }),
-        stripe.subscriptions.list({ customer: customer.id, status: 'active', limit: 1 }),
+        getStripe().invoices.list({ customer: customer.id, limit: 10 }),
+        getStripe().subscriptions.list({ customer: customer.id, status: 'active', limit: 1 }),
       ])
 
       invoices = invoiceList.data.map((inv) => ({

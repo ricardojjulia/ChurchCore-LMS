@@ -10,10 +10,3 @@ export function getStripe(): Stripe {
   }
   return _stripe
 }
-
-// Backwards-compatible named export for code that already imports `stripe`
-export const stripe = new Proxy({} as Stripe, {
-  get(_target, prop) {
-    return getStripe()[prop as keyof Stripe]
-  },
-})
