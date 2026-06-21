@@ -117,9 +117,17 @@ async function main() {
   }
 
   const authUsers = await listAllUsers()
-  const retained = authUsers.find((user) => user.email?.toLowerCase() === retainEmail)
+  let retained = authUsers.find((user) => user.email?.toLowerCase() === retainEmail)
   if (!retained) {
-    throw new Error(`Retained auth user not found: ${retainEmail}`)
+    console.log(`  Creating retained auth user: ${retainEmail}`)
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: retainEmail,
+      password,
+      email_confirm: true,
+      user_metadata: { display_name: 'Demo Owner', role: 'admin' },
+    })
+    if (error) throw new Error(`create retained auth user: ${error.message}`)
+    retained = data.user
   }
 
   const { data: retainedProfile } = await supabase
@@ -285,6 +293,7 @@ async function main() {
   const tracks = Object.fromEntries(trackData.map(([key]) => [key, uid()]))
   await must('insert program tracks', supabase.from('program_tracks').insert(trackData.map(([key, name, code, description]) => ({
     id: tracks[key],
+    org_id: orgId,
     name,
     code,
     description,
@@ -305,6 +314,7 @@ async function main() {
   const terms = Object.fromEntries(termData.map(([key]) => [key, uid()]))
   await must('insert terms', supabase.from('academic_terms').insert(termData.map(([key, term_name, term_code, type, start_date, end_date]) => ({
     id: terms[key],
+    org_id: orgId,
     term_name,
     term_code,
     type,
@@ -340,6 +350,7 @@ async function main() {
   const blueprints = Object.fromEntries(blueprintSpecs.map(([key]) => [key, uid()]))
   await must('insert blueprints', supabase.from('course_blueprints').insert(blueprintSpecs.map(([key, trackId, course_code, title, description]) => ({
     id: blueprints[key],
+    org_id: orgId,
     program_track_id: trackId,
     course_code,
     title,
@@ -386,6 +397,7 @@ async function main() {
     content: {},
     settings: {},
     gamification: {},
+    org_id: orgId,
     ...row,
   }))))
 
@@ -420,6 +432,7 @@ async function main() {
     sections[`${key}:${section_code}`] = id
     sectionRows.push({
       id,
+      org_id: orgId,
       blueprint_id: blueprints[key],
       term_id: terms[termKey],
       section_code,
@@ -430,6 +443,7 @@ async function main() {
       created_by: retained.id,
     })
     accessRows.push({
+      org_id: orgId,
       section_id: id,
       start_date: iso(new Date(`${start}T04:00:00Z`)),
       end_date: iso(new Date(`${end}T23:59:00Z`)),
@@ -451,6 +465,7 @@ async function main() {
   const cohorts = Object.fromEntries(cohortSpecs.map(([key]) => [key, uid()]))
   await must('insert cohorts', supabase.from('global_cohorts').insert(cohortSpecs.map(([key, trackId, cohort_name, cohort_code]) => ({
     id: cohorts[key],
+    org_id: orgId,
     program_track_id: trackId,
     cohort_name,
     cohort_code,
@@ -462,6 +477,7 @@ async function main() {
   for (const [key, , , , prefixes] of cohortSpecs) {
     for (const prefix of prefixes) {
       cohortMembers.push({
+        org_id: orgId,
         cohort_id: cohorts[key],
         user_id: people.get(`${prefix}@${demoDomain}`).auth_id,
         status: 'active',
@@ -487,6 +503,7 @@ async function main() {
       for (const member of members) {
         directEnrollments.push({
           id: uid(),
+          org_id: orgId,
           user_id: member.user_id,
           section_id,
           status: 'pending',
@@ -508,6 +525,7 @@ async function main() {
     if (!profile) continue
     enrollmentRows.push({
       id: uid(),
+      org_id: orgId,
       user_id: profile.uid,
       course_id: courseByBlueprint[bpKey],
       section_id: de.section_id,
@@ -520,6 +538,7 @@ async function main() {
 
   const courseEnrollmentRows = enrollmentRows.map((row) => ({
     id: uid(),
+    org_id: orgId,
     course_id: row.course_id,
     user_id: row.user_id,
     role: 'student',
@@ -550,6 +569,7 @@ async function main() {
     const score = 78 + (index % 20)
     gradedSubmissions.push(
       {
+        org_id: orgId,
         block_id: blocks.assignment,
         enrollment_id: enrollmentId,
         user_id: row.user_id,
@@ -564,6 +584,7 @@ async function main() {
         graded_at: iso(new Date(Date.UTC(2026, 5, 17, 16, 0, 0))),
       },
       {
+        org_id: orgId,
         block_id: blocks.quiz,
         enrollment_id: enrollmentId,
         user_id: row.user_id,
@@ -597,6 +618,7 @@ async function main() {
       .in('id', completedRows.map((row) => courseEnrollmentKey.get(`${row.user_id}:${row.course_id}`)).filter(Boolean)))
 
     const certificateRows = completedRows.map((row, index) => ({
+      org_id: orgId,
       user_id: row.user_id,
       course_id: row.course_id,
       issued_at: iso(new Date(Date.UTC(2026, 5, 17, 18, index % 50, 0))),
@@ -626,6 +648,7 @@ async function main() {
     ['Remote Bible Study Rhythm', 'The Wednesday group is remote and self-paced, with weekly check-ins for one year.', 'course', courseByBlueprint['remote-john']],
   ]
   await must('insert announcements', supabase.from('announcements').insert(announcements.map(([title, body, scope, course_id]) => ({
+    org_id: orgId,
     created_by: retainedUid,
     title,
     body,
@@ -639,6 +662,7 @@ async function main() {
   const calendarEvents = []
   const currentMonthStart = new Date(Date.UTC(2026, 5, 18, 18, 0, 0))
   calendarEvents.push({
+    org_id: orgId,
     created_by: retainedUid,
     event_type: 'institutional',
     title: 'ChurchCore Demo Academic Showcase',
@@ -654,6 +678,7 @@ async function main() {
     const start = new Date(Date.UTC(2026, 8, 7 + week * 7, 23, 0, 0))
     const end = new Date(start.getTime() + 90 * 60 * 1000)
     calendarEvents.push({
+      org_id: orgId,
       created_by: retainedUid,
       course_id: courseByBlueprint['new-members'],
       event_type: 'custom',
@@ -672,6 +697,7 @@ async function main() {
     const start = new Date(Date.UTC(2026, 8, 2 + week * 7, 23, 30, 0))
     const end = new Date(start.getTime() + 60 * 60 * 1000)
     calendarEvents.push({
+      org_id: orgId,
       created_by: retainedUid,
       course_id: courseByBlueprint['remote-john'],
       event_type: 'custom',
@@ -693,6 +719,7 @@ async function main() {
   else console.log('✓ reporting views refreshed')
 
   await must('insert notifications', supabase.from('notifications').insert([...people.values()].slice(3, 13).map((profile) => ({
+    org_id: orgId,
     user_id: profile.uid,
     type: 'system',
     title: 'Welcome to your ChurchCore demo pathway',
