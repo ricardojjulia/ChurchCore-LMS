@@ -7,6 +7,7 @@ import DashboardMessagesPreview from './DashboardMessagesPreview'
 import DashboardAnnouncementsPreview from './DashboardAnnouncementsPreview'
 import DashboardUpcomingEvents from './DashboardUpcomingEvents'
 import InstructorActionPanel from './InstructorActionPanel'
+import OnboardingChecklist from './OnboardingChecklist'
 import type { DashboardContext } from '@/lib/dashboard/context'
 import type { SystemHealthCheck } from '@/types/health'
 import { cn } from '@/lib/utils'
@@ -79,9 +80,11 @@ function StatCard({
 export default function AdminDashboard({
   ctx,
   healthChecks = [],
+  onboarding,
 }: {
   ctx:           DashboardContext
   healthChecks?: SystemHealthCheck[]
+  onboarding?:   { logo_uploaded: boolean; first_teacher_invited: boolean; first_course_created: boolean; first_announcement_published: boolean } | null
 }) {
   const stats = ctx.stats
 
@@ -89,6 +92,13 @@ export default function AdminDashboard({
     <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <SmartSummaryCard ctx={ctx} />
+
+        {/* Onboarding checklist — auto-hides when 100% complete */}
+        {onboarding && (
+          <section className="mb-6">
+            <OnboardingChecklist progress={onboarding} />
+          </section>
+        )}
 
         {/* System health widget */}
         <section className="mb-6">

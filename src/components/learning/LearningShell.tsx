@@ -33,12 +33,13 @@ interface Props {
   initialBlockId:  string | null
   progressPercent: number
   isStaff:         boolean
+  viewerRole?:     string
 }
 
 const CONTENT_TYPES = new Set(['page', 'video_stream', 'resource_file', 'external_url'])
 
 export default function LearningShell({
-  courseId, courseTitle, modules, blocks, submissions, initialBlockId, progressPercent, isStaff,
+  courseId, courseTitle, modules, blocks, submissions, initialBlockId, progressPercent, isStaff, viewerRole,
 }: Props) {
   const publishedBlocks = blocks.filter((b) => b.is_published || isStaff)
 
@@ -253,7 +254,7 @@ export default function LearningShell({
             </div>
 
             {/* Block content */}
-            <BlockPlayer block={current} submission={currentSub as any} onComplete={handleBlockComplete} />
+            <BlockPlayer block={current} submission={currentSub as any} onComplete={handleBlockComplete} viewerRole={viewerRole} />
 
             {/* Navigation */}
             <div className="flex items-center justify-between mt-10 pt-6 border-t border-border">

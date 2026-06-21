@@ -6,11 +6,12 @@
 **built for churches, seminaries, and faith communities**
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-0.20.1-brightgreen)](./CHANGELOG.md)
-[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
+[![Version](https://img.shields.io/badge/version-0.22.0-brightgreen)](./CHANGELOG.md)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss)](https://tailwindcss.com)
+[![PWA](https://img.shields.io/badge/PWA-offline--ready-5A0FC8)](./docs/council/COUNCIL-2026-004.md)
 [![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions)](/.github/workflows/ci.yml)
 
 [Features](#features) · [Architecture](#architecture) · [Getting Started](#getting-started) · [How-To](#how-to) · [Changelog](./CHANGELOG.md) · [License](#license)
@@ -44,10 +45,11 @@ ChurchCore LMS is an **open-source, production-ready learning platform** purpose
 | **Interactive learning shell** | Collapsible module sidebar, prev/next navigation, block-level progress tracking |
 | **Auto-graded quizzes** | Multiple choice with per-question point values, attempt limits, and instant feedback |
 | **Assignment submission** | Text submissions with instructor grading, rubric scoring, and inline feedback |
-| **Discussion threads** | Per-block discussion boards visible to all enrolled students |
+| **Graded discussion threads** | Per-block discussion boards; teachers grade participation inline; students see their grade below their post |
 | **Video embedding** | YouTube, Vimeo, or native HTML5 video |
 | **Certificate issuance** | Auto-issued on course completion with letter grade and unique certificate number |
 | **PDF certificate download** | `@react-pdf/renderer`-powered certificate with name, course, grade, and date |
+| **PWA + offline support** | Service worker via `@ducanh2912/next-pwa`; page/assignment/quiz blocks work offline; amber offline banner on course pages |
 
 ### Gamification & Motivation
 
@@ -75,14 +77,16 @@ ChurchCore LMS is an **open-source, production-ready learning platform** purpose
 
 | Feature | Details |
 |---|---|
-| **Role system** | `admin`, `manager`, `teacher`, `student` with ENUM enforcement at DB layer |
+| **Role system** | `admin`, `manager`, `teacher`, `student`, `guardian` with ENUM enforcement at DB layer |
 | **User management** | Paginated admin panel with role assignment and XP/level display |
+| **Bulk CSV import** | Upload a CSV of users (email, name, role); preview before inviting; per-row error reporting with downloadable error CSV; 50-row cap |
 | **Announcements** | Staff-authored with audience targeting: all, course members, or specific cohort |
 | **Threaded messaging** | Direct and group threads with real-time unread badge counts |
 | **Notifications** | In-app bell with full `/notifications` center, type icons, and dismiss-all |
-| **Guardian links** | Parent/guardian accounts with read-only progress view |
+| **Guardian links** | Parent/guardian accounts with read-only progress view; automatic email alerts on course completion and badge awards (30-minute debounce); opt-out unsubscribe link |
 | **Course analytics** | Per-course class stats, at-risk detection, CSV export |
 | **Grading queue** | `/submissions` with status filters and inline grade + feedback forms |
+| **Self-serve billing** | Org admins view plan, features, and manage subscription via Stripe Customer Portal; suspension banner; "Upgrade Plan" CTA for free-plan orgs |
 | **AI Tutor** | Claude-powered question assistant embedded in the learning shell |
 | **Semantic search** | OpenAI embeddings-backed course content search via `⌘K` modal |
 | **Weekly AI digest** | Anthropic-powered personalized learning summary (cron-triggered) |
@@ -216,7 +220,7 @@ graph LR
 
 | Layer | Technology | Notes |
 |---|---|---|
-| Framework | [Next.js 16](https://nextjs.org) (App Router) | Server Components, Server Actions, Turbopack |
+| Framework | [Next.js 15](https://nextjs.org) (App Router) | Server Components, Server Actions, Turbopack |
 | Language | TypeScript 5 | Strict mode |
 | Database | Supabase (PostgreSQL 15) | RLS on all tables, pg_cron, `SECURITY DEFINER` functions |
 | Auth | Supabase Auth | Email/password + magic link; SSR session via `@supabase/ssr` |
@@ -224,7 +228,9 @@ graph LR
 | Rich text | Tiptap 3 | Course block content, announcements |
 | AI — Tutor | [Anthropic Claude](https://anthropic.com) (`claude-haiku-4-5`) | Server-side only; zero PII in prompts |
 | AI — Embeddings | [OpenAI](https://openai.com) | `text-embedding-3-small`; semantic course search |
-| Email | [Resend](https://resend.com) | Enrollment, certificate, digest, Formation Pulse |
+| Email | [Resend](https://resend.com) | Enrollment, certificate, digest, guardian notifications |
+| Payments | [Stripe](https://stripe.com) | Checkout, webhooks, Customer Portal; idempotency via `platform_audit_log` |
+| PWA | `@ducanh2912/next-pwa` | Workbox service worker; offline fallback; App Router compatible |
 | Testing | [Vitest](https://vitest.dev) + Testing Library | 72+ unit tests; Proxy mock chain for Supabase |
 | CI/CD | GitHub Actions | Lint → typecheck → test → build → staging gate → production |
 | Deployment | [Vercel](https://vercel.com) | Edge-optimized; cron via `vercel.json` |
@@ -289,6 +295,14 @@ RESEND_FROM_EMAIL=noreply@yourdomain.com
 
 # Cron auth (used by API routes called by Vercel/pg_cron)
 CRON_SECRET=a-long-random-string
+
+# Stripe billing (server-side only)
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_PRICE_STARTER=price_...
+
+# Guardian unsubscribe token verification (server-side only)
+SUPABASE_JWT_SECRET=<your-supabase-jwt-secret>
 ```
 
 > **Security note:** `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, and `OPENAI_API_KEY` are server-side only. They must **never** appear in client components or be prefixed `NEXT_PUBLIC_`. All AI calls are proxied through `/api/ai` and `/api/digest`.
@@ -400,6 +414,11 @@ src/
 │   ├── actions/               # Server actions — learning, enrollment, messages, cohorts
 │   ├── api/                   # API routes — AI proxy, search, calendar, digest, health
 │   ├── admin/                 # Cohorts, sections, terms, blueprints, users, health panel
+│   │   ├── billing/           # Self-serve billing — plan display, Stripe Customer Portal
+│   │   └── users/import/      # Bulk CSV user import
+│   ├── api/
+│   │   ├── stripe/            # Checkout, webhook, Customer Portal session
+│   │   └── guardian/          # Unsubscribe route (HMAC-SHA256 token)
 │   ├── courses/[id]/
 │   │   ├── build/             # Course builder
 │   │   ├── learn/             # Learning shell + block players
@@ -408,6 +427,7 @@ src/
 │   │   ├── analytics/         # Instructor analytics + CSV export
 │   │   └── submissions/       # Grading queue
 │   ├── dashboard/             # Role-aware dashboard (student · teacher · admin)
+│   ├── offline/               # PWA offline fallback page (no auth required)
 │   ├── leaderboard/           # XP leaderboard — top 50 with podium
 │   ├── notifications/         # Full notification center
 │   ├── performance/           # Student GPA and progress view
@@ -444,14 +464,17 @@ docs/
 └── academic-program-workflows.md  # Tracks, blueprints, terms, cohorts walkthrough
 supabase/
 ├── functions/
-│   ├── search-users/          # Edge Function — role-gated user search with audit log
-│   └── system-health-check/   # Edge Function — DB, embedding, RLS, and bridge checks
+│   ├── search-users/              # Edge Function — role-gated user search with audit log
+│   ├── system-health-check/       # Edge Function — DB, embedding, RLS, and bridge checks
+│   └── send-guardian-notifications/  # Edge Function — guardian email queue processor (pg_cron, every 5 min)
 ├── migrations/                # 50+ ordered SQL migrations
-└── seed.test.sql              # Deterministic test seed (fixed UUIDs)
+└── seed.test.sql              # Deterministic test seed (GoTrue-first, email-subquery pattern)
 scripts/
 ├── reset-demo-data.mjs        # Guarded destructive demo reset
 ├── check-version.mjs          # CHANGELOG ↔ package.json version sync
-└── ci-setup-test-env.mjs      # CI helper — sets test-user passwords via Admin API
+├── ci-setup-test-env.mjs      # CI helper — sets test-user passwords via Admin API
+├── generate-icons.js          # Generates PWA icons (icon-192.png, icon-512.png) — Node.js built-ins only
+└── register-guardian-cron.sh  # Registers guardian-notify pg_cron job against linked Supabase project
 ```
 
 ---
@@ -469,7 +492,14 @@ Full records in [docs/decisions/](./docs/decisions/). Key decisions:
 | [ADR-2025-005](./docs/decisions/ADR-2025-005.md) | Server Actions pattern for all mutations |
 | [ADR-2025-006](./docs/decisions/ADR-2025-006.md) | OpenAI embeddings for semantic course search |
 | [ADR-2025-007](./docs/decisions/ADR-2025-007.md) | AGPL-3.0 licensing model |
+| [ADR-2026-001](./docs/decisions/ADR-2026-001.md) | Multi-tenant isolation: platform_admins, organizations, RLS |
+| [ADR-2026-002](./docs/decisions/ADR-2026-002.md) | Stripe billing: webhook idempotency, Customer Portal, plan mapping |
 | [COUNCIL-2025-011](./docs/decisions/COUNCIL-2025-011.md) | Formation Pulse — AI-generated weekly pastoral nudges |
+| [COUNCIL-2026-001](./docs/council/COUNCIL-2026-001.md) | Guardian Email Bridge — queue, Edge Function, debounce, unsubscribe |
+| [COUNCIL-2026-002](./docs/council/COUNCIL-2026-002.md) | Bulk CSV Import — parse, preview, GoTrue invite, per-row errors |
+| [COUNCIL-2026-003](./docs/council/COUNCIL-2026-003.md) | Self-Serve Billing — Stripe Customer Portal, plan page, suspension UX |
+| [COUNCIL-2026-004](./docs/council/COUNCIL-2026-004.md) | PWA + Offline Player — service worker, manifest, offline banner |
+| [COUNCIL-2026-005](./docs/council/COUNCIL-2026-005.md) | Graded Discussion Block — participation score, inline teacher UI |
 
 ### The RLS Recursion Fix
 
@@ -537,8 +567,8 @@ Contact: **ricardojjulia@gmail.com**
 
 See [CHANGELOG.md](./CHANGELOG.md) for the full version history.
 
-**Latest:** [v0.20.1](./CHANGELOG.md#0201--2026-06-18) — Health check fixes, RPC migration, demo data consistency  
-**Previous:** [v0.20.0](./CHANGELOG.md#0200--2026-06-16) — Enrollment emails, certificate emails, announcement course selector  
+**Latest:** [v0.22.0](./CHANGELOG.md#0220--2026-06-21) — Self-Serve Billing, PWA + Offline, Graded Discussions  
+**Previous:** [v0.21.0](./CHANGELOG.md#0210--2026-06-21) — Guardian Email Bridge, Bulk CSV Import  
 
 ---
 

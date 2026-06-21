@@ -9,12 +9,26 @@ npm run demo:reset -- --confirm --retain-email=you@example.com
 The script uses `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
 It refuses to run unless both `--confirm` and `--retain-email` are provided.
 
+> **Demo credentials for all seeded accounts:** `ChurchCoreDemo!2026`
+
 ## What It Does
 
 - Keeps the retained auth user and promotes/keeps that profile as `admin`.
 - Deletes other auth users.
 - Clears LMS/domain data.
 - Creates polished demo users, teachers, students, program tracks, blueprints, terms, sections, cohorts, content courses, blocks, enrollments, graded submissions, certificates, announcements, calendar events, and notifications.
+
+## v0.22.0 Demo Features
+
+The following Sprint 2 features are available in the demo environment:
+
+| Feature | How to see it |
+|---|---|
+| **Guardian email bridge** | Log in as a guardian-linked account; trigger a course completion to fire a notification queue entry |
+| **Bulk CSV import** | Admin → Users → Import Users; upload a CSV with `email,display_name,role` columns |
+| **Self-serve billing** | Admin → Billing; free-plan demo shows "Upgrade Plan"; paid-plan demo (with `stripe_customer_id` set) shows "Manage Subscription" |
+| **PWA / Offline** | Open any course page; add to home screen on iOS/Android; go offline; amber banner appears; course content remains readable |
+| **Graded discussions** | Open a course with a discussion block as a teacher; click "Grade" next to a student reply; student view shows the grade badge |
 
 ## Demo Programs
 

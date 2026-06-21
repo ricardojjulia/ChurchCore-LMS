@@ -59,9 +59,14 @@ export default async function AdminUsersPage({
   const { data: profiles, error, count } = await query
 
   if (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[admin/users]', error)
+    }
     return (
       <main className="min-h-screen bg-slate-50 py-10 px-4">
-        <p className="text-destructive">Failed to load users: {error.message}</p>
+        <p className="text-destructive">
+          Failed to load users. Please refresh the page or contact support.
+        </p>
       </main>
     )
   }
@@ -110,7 +115,15 @@ export default async function AdminUsersPage({
               Click any user to expand and edit their role or status.
             </p>
           </div>
-          <InviteUserForm />
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/admin/users/import"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-3 border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              Import CSV
+            </Link>
+            <InviteUserForm />
+          </div>
         </div>
 
         {/* Stats bar */}

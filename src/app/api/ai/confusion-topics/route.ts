@@ -12,6 +12,7 @@
 
 import { NextRequest } from 'next/server'
 import { createClient }  from '@/utils/supabase/server'
+import { heavyLimiter, checkLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -41,6 +42,21 @@ export async function POST(req: NextRequest) {
     .single()
   if (!me || !['admin', 'manager', 'teacher'].includes(me.role)) {
     return Response.json({ error: 'Staff access required' }, { status: 403 })
+  }
+
+  const rl = await checkLimit(heavyLimiter, user.id)
+  if (rl.limited) {
+    return Response.json(
+      { error: 'Too many requests. Please wait before trying again.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After':           String(rl.retryAfter),
+          'X-RateLimit-Limit':     String(rl.limit),
+          'X-RateLimit-Remaining': '0',
+        },
+      }
+    )
   }
 
   // ── Query log stats for this section ──────────────────────

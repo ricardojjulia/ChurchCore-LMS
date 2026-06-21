@@ -386,6 +386,9 @@ verify_jwt = false
 [functions.refresh-report-views]
 verify_jwt = false
 
+[functions.send-guardian-notifications]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

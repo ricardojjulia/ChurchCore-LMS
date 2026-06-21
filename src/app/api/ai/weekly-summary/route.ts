@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
+import { heavyLimiter, checkLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -15,11 +16,26 @@ interface PerfRow {
   is_at_risk:         boolean
 }
 
-export async function GET() {
+export async function GET(_req: NextRequest) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const rl = await checkLimit(heavyLimiter, user.id)
+  if (rl.limited) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait before trying again.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After':           String(rl.retryAfter),
+          'X-RateLimit-Limit':     String(rl.limit),
+          'X-RateLimit-Remaining': '0',
+        },
+      }
+    )
+  }
 
   const { data: perf } = await supabase.rpc('get_my_academic_performance')
   const { data: gpa  } = await supabase.rpc('get_my_overall_gpa')

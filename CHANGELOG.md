@@ -11,6 +11,52 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.22.0] — 2026-06-21
+
+### Added
+
+- **Self-Serve Billing page** (COUNCIL-2026-003) — `/admin/billing` page for org admins: current plan display with feature list, "Manage Subscription & Invoices" button (Stripe Customer Portal redirect for paid plans), "Upgrade Plan" CTA (Stripe Checkout for free plans), suspension banner when `org.status = 'suspended'`; skeleton loading state
+- **`/api/stripe/portal` route** — POST, admin-only; creates a Stripe Customer Portal session; returns single-use session URL; org_id derived from server session only; Stripe errors caught and genericised
+- **`stripe_customer_id` migration** (`20260621100000_org_stripe_customer_id.sql`) — adds nullable `stripe_customer_id TEXT` to `organizations`; inherited by existing RLS policies
+- **"Billing" nav item** — added to desktop sidebar (`SidebarClient`) and mobile admin drawer (`MobileAdminDrawer`) with `CreditCard` icon
+- **PWA + Offline Player** (COUNCIL-2026-004) — `@ducanh2912/next-pwa` installed; `next.config.ts` wrapped with Workbox config that excludes `*.supabase.co` and `/api/*` from runtime caching; offline fallback routed to `/offline`
+- **`public/manifest.json`** — full Web App Manifest: `display: standalone`, `start_url: /dashboard`, indigo (#4f46e5) theme, dark (#0f172a) background
+- **PWA icons** — `public/icons/icon-192.png` and `public/icons/icon-512.png` generated via `scripts/generate-icons.js` (Node.js built-ins only, no external deps); confirmed valid PNG via `file` command
+- **`/offline` page** — static fallback page with no auth requirement; used as Workbox document fallback when a user navigates to an uncached page while offline
+- **`OfflineBanner` component** (`src/components/layout/OfflineBanner.tsx`) — `'use client'`; SSR-safe (initialises from `navigator.onLine` inside `useEffect`); renders amber banner with `aria-live="polite"` only when offline
+- **Course layout** (`src/app/courses/[id]/layout.tsx`) — created; wraps all course player pages with `<OfflineBanner />`; scoped to course routes only (admin builder unaffected)
+- **PWA meta tags** in `src/app/layout.tsx` — manifest link, theme-color, apple-mobile-web-app meta tags, apple-touch-icon
+- **Graded Discussion Block** (COUNCIL-2026-005) — participation-based grading (one score per student per discussion block) added to `DiscussionPlayer`; teachers/admins see inline "Grade" button on each reply; clicking opens a score/max-score form; students see `"Grade: X / Y"` badge below their own post after grading
+- **`gradeDiscussionSubmission` server action** (`src/app/actions/learning.ts`) — role check (admin/manager/teacher), numeric validation, cross-tenant guard (JOIN `block_submissions → course_blocks → courses` WHERE `org_id = callerOrgId`), `graded_by` set from server session only, status set to `'graded'`
+- **`viewerRole` prop chain** — `learn/page.tsx` → `LearningShell` → `BlockPlayer` → `DiscussionPlayer`; `BlockPlayer` also passes `maxScore` from `block.content?.max_score ?? 10`
+- **SW files excluded from git** — `public/sw.js` and `public/workbox-*.js` added to `.gitignore`
+
+### Fixed
+
+- **`BlockPlayer` stale comment** — "This content type is not yet interactive" comment removed from the `discussion` block case (was incorrect; `DiscussionPlayer` is fully interactive)
+
+---
+
+## [0.21.0] — 2026-06-21
+
+### Added
+
+- **Guardian Email Bridge** (COUNCIL-2026-001) — automatic email notifications to linked guardians on student course completion and badge award; 30-minute debounce prevents notification storms; default opt-in with per-guardian opt-out
+- **`guardian_notification_queue` table** (`20260620100000_guardian_notification_queue.sql`) — RLS `USING (false)` for all authenticated (service role only); index on `(debounce_until, sent_at) WHERE sent_at IS NULL`
+- **Guardian queue triggers** (SECURITY DEFINER) — `trg_guardian_notification_course_completion` (AFTER UPDATE OF status ON `course_enrollments` WHERE NEW.status = 'completed') and `trg_guardian_notification_badge` (AFTER INSERT ON `profile_badges`); both upsert-debounce into the queue
+- **`send-guardian-notifications` Edge Function** (`supabase/functions/send-guardian-notifications/`) — Deno; auth via `CRON_SECRET` bearer token; processes up to 50 queue rows per invocation where `debounce_until < NOW() AND sent_at IS NULL`; builds HMAC-SHA256 unsubscribe JWT via Web Crypto API; sends via Resend; marks `sent_at = NOW()`
+- **`GuardianCourseCompletionEmail` template** (`src/emails/GuardianCourseCompletionEmail.tsx`) — React Email; purple CTA; unsubscribe footer link
+- **Guardian unsubscribe route** (`src/app/api/guardian/unsubscribe/route.ts`) — GET-only, `runtime = 'nodejs'`; verifies HMAC-SHA256 token with `timingSafeEqual`; updates `profiles.settings.notifications.guardian_emails = false` via service client using read-then-merge pattern to preserve other settings keys
+- **pg_cron guardian job** — `guardian-notify` scheduled every 5 minutes via `cron.schedule` + `net.http_post`; registered with `scripts/register-guardian-cron.sh`
+- **`supabase/config.toml`** — `[functions.send-guardian-notifications] verify_jwt = false` added
+- **Bulk CSV User Import** (COUNCIL-2026-002) — `/admin/users/import` page; 3-step UI (upload → preview → done); supports CSV with columns: `email`, `display_name`, `role`; 50-row cap with clear error messaging; per-row error reporting; downloadable error CSV
+- **`parse-csv.ts`** (`src/lib/parse-csv.ts`) — pure function, zero imports, browser-safe; case-insensitive headers; collects ALL row errors without short-circuiting; validates email format and role allow-list (`admin|manager|teacher|student|guardian`); `MAX_ROWS = 50`
+- **`bulkInviteUsers` server action** — `org_id` from server session only; role allow-list validated server-side; `ilike` email duplicate check; calls GoTrue `inviteUserByEmail`; writes counts to `admin_audit_log` (no email addresses in log); returns per-row `BulkInviteResult[]`
+- **`ImportForm` component** (`src/app/admin/users/import/ImportForm.tsx`) — `'use client'`; state machine (`upload | preview | done`); rate-limit warning banner; file input via styled label; error CSV download is pure client-side (`Blob` + `URL.createObjectURL`)
+- **`.env.local.example`** — added `SUPABASE_JWT_SECRET` and `CRON_SECRET` documentation entries
+
+---
+
 ## [0.20.2] — 2026-06-18
 
 ### Added
@@ -440,7 +486,22 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-[Unreleased]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.21.0...v0.22.0
+[0.21.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.20.2...v0.21.0
+[0.20.2]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.20.1...v0.20.2
+[0.20.1]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.20.0...v0.20.1
+[0.20.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.19.0...v0.20.0
+[0.19.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.18.0...v0.19.0
+[0.18.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.17.0...v0.18.0
+[0.17.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.16.0...v0.17.0
+[0.16.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.15.0...v0.16.0
+[0.15.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.14.0...v0.15.0
+[0.14.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.13.0...v0.14.0
+[0.13.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.12.0...v0.13.0
+[0.12.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.11.0...v0.12.0
+[0.11.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.10.0...v0.11.0
+[0.10.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/ricardojjulia/ChurchCore-LMS/compare/v0.7.1...v0.7.2

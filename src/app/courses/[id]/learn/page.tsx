@@ -107,6 +107,7 @@ export default async function LearnPage({
       initialBlockId={initialBlockId}
       progressPercent={enrollment?.progress_percent ?? 0}
       isStaff={isStaff}
+      viewerRole={profile.role}
     />
   )
 }

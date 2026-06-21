@@ -19,9 +19,10 @@ interface Props {
   block:       CourseBlock
   submission?: Submission | null
   onComplete?: (xpAwarded: number) => void
+  viewerRole?: string
 }
 
-export default function BlockPlayer({ block, submission, onComplete }: Props) {
+export default function BlockPlayer({ block, submission, onComplete, viewerRole }: Props) {
   const content = block.content as Record<string, unknown>
 
   // ── Page ───────────────────────────────────────────────────────────
@@ -167,20 +168,23 @@ export default function BlockPlayer({ block, submission, onComplete }: Props) {
 
   // ── Discussion ─────────────────────────────────────────────────────
   if (block.block_type_id === 'discussion') {
-    const prompt      = content.prompt as string | undefined
-    const ownReply    = submission?.content?.text as string | null | undefined
+    const prompt    = content.prompt as string | undefined
+    const ownReply  = submission?.content?.text as string | null | undefined
+    const maxScore  = (content.max_score as number | undefined) ?? 10
     return (
       <DiscussionPlayer
         blockId={block.id}
         prompt={prompt}
         ownReplyText={ownReply ?? null}
+        viewerRole={viewerRole}
+        maxScore={maxScore}
       />
     )
   }
 
   return (
     <div className="bg-slate-50 border border-border rounded-xl p-5 text-center">
-      <p className="text-muted-foreground text-sm italic">This content type is not yet interactive.</p>
+      <p className="text-muted-foreground text-sm italic">Block type not supported.</p>
     </div>
   )
 }

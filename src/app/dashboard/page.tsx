@@ -12,9 +12,25 @@ export default async function DashboardPage() {
   const ctx = await resolveUserDashboardContext()
 
   if (ctx.role === 'admin') {
-    const supabase    = await createClient()
-    const healthChecks = await getHealthChecks(supabase)
-    return <AdminDashboard ctx={ctx} healthChecks={healthChecks} />
+    const supabase = await createClient()
+    const [healthChecks, profileOrg] = await Promise.all([
+      getHealthChecks(supabase),
+      supabase
+        .from('profiles')
+        .select('org_id')
+        .eq('auth_id', ctx.authId)
+        .single(),
+    ])
+    let onboarding = null
+    if (profileOrg.data?.org_id) {
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('settings')
+        .eq('id', profileOrg.data.org_id)
+        .single()
+      onboarding = org?.settings?.onboarding ?? null
+    }
+    return <AdminDashboard ctx={ctx} healthChecks={healthChecks} onboarding={onboarding} />
   }
 
   if (ctx.role === 'teacher' || ctx.role === 'manager') return <InstructorDashboard ctx={ctx} />

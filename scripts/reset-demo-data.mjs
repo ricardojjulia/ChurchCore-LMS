@@ -270,6 +270,9 @@ async function main() {
     })),
   ]))
 
+  // Link every profile to the demo org so reporting RPCs can resolve org context.
+  await must('set org_id on profiles', supabase.from('profiles').update({ org_id: orgId }).in('auth_id', [retained.id, ...demoAuthIds]))
+
   const trackData = [
     ['fybsd', 'First Year Bible Studies Diploma', 'FYBSD', 'Single-year diploma track: 8 courses, 5 weeks each, hybrid delivery.'],
     ['associates', 'Associate of Biblical Studies - Year Two', 'ABS-Y2', 'Second-year associate degree pathway for continuing students.'],
@@ -684,6 +687,10 @@ async function main() {
   }
 
   await must('insert calendar events', supabase.from('calendar_events').insert(calendarEvents))
+
+  const { error: refreshErr } = await supabase.rpc('refresh_report_materialized_views')
+  if (refreshErr) console.warn('⚠ refresh_report_materialized_views:', refreshErr.message)
+  else console.log('✓ reporting views refreshed')
 
   await must('insert notifications', supabase.from('notifications').insert([...people.values()].slice(3, 13).map((profile) => ({
     user_id: profile.uid,

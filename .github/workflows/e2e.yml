@@ -19,6 +19,9 @@ jobs:
       TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
       TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
       APP_BASE_URL: ${{ secrets.TEST_BASE_URL }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      TEST_USER_A_EMAIL: ${{ secrets.TEST_USER_A_EMAIL }}
+      TEST_USER_B_EMAIL: ${{ secrets.TEST_USER_B_EMAIL }}
 
     steps:
       - uses: actions/checkout@v4

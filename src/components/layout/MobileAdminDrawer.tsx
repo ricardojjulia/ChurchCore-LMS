@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { Settings, X, Users, Layout, Layers, Clock, FileText, Activity } from 'lucide-react'
+import { Settings, X, Users, Layout, Layers, Clock, FileText, Activity, CreditCard } from 'lucide-react'
 
 const ADMIN_LINKS = [
-  { href: '/admin/users',      label: 'Users',          Icon: Users    },
-  { href: '/admin/cohorts',    label: 'Cohorts',        Icon: Layout   },
-  { href: '/admin/sections',   label: 'Sections',       Icon: Layers   },
-  { href: '/admin/terms',      label: 'Terms',          Icon: Clock    },
-  { href: '/admin/blueprints', label: 'Blueprints',     Icon: FileText },
-  { href: '/admin/health',     label: 'System Health',  Icon: Activity },
+  { href: '/admin/users',      label: 'Users',          Icon: Users      },
+  { href: '/admin/cohorts',    label: 'Cohorts',        Icon: Layout     },
+  { href: '/admin/sections',   label: 'Sections',       Icon: Layers     },
+  { href: '/admin/terms',      label: 'Terms',          Icon: Clock      },
+  { href: '/admin/blueprints', label: 'Blueprints',     Icon: FileText   },
+  { href: '/admin/billing',    label: 'Billing',        Icon: CreditCard },
+  { href: '/admin/health',     label: 'System Health',  Icon: Activity   },
 ] as const
 
 interface Props {
@@ -78,7 +79,7 @@ export default function MobileAdminDrawer({ isAdmin }: Props) {
             <hr className="mb-4 border-gray-200 dark:border-gray-700" />
 
             {/* Nav links */}
-            <nav>
+            <nav aria-label="Admin navigation">
               <ul className="space-y-1">
                 {ADMIN_LINKS.map(({ href, label, Icon }) => {
                   const active = pathname === href || pathname.startsWith(href + '/')
@@ -86,6 +87,7 @@ export default function MobileAdminDrawer({ isAdmin }: Props) {
                     <li key={href}>
                       <button
                         type="button"
+                        aria-current={active ? 'page' : undefined}
                         onClick={() => { setOpen(false); router.push(href) }}
                         className={[
                           'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',

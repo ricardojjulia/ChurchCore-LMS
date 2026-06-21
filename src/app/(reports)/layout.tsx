@@ -1,12 +1,12 @@
 import nextDynamic from 'next/dynamic'
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 import { createServerClient } from '@/lib/supabase/server'
 import ReportsDrawer from '@/components/reports/ReportsDrawer'
+import { ReportsNav } from './ReportsNav'
 
 export const metadata: Metadata = {
   title: 'Reports | ChurchCore LMS',
@@ -83,17 +83,7 @@ function ReportsSidebarShell({ context }: { context: ReportsContextValue }) {
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Reports</p>
         <p className="mt-1 text-lg font-bold text-slate-950">ChurchCore LMS</p>
       </div>
-      <nav className="mt-8 space-y-1" aria-label={`${context.role} reports`}>
-        {navByRole[context.role].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="block border-l-2 border-transparent px-3 py-2 text-sm font-medium text-slate-700 hover:border-slate-900 hover:bg-slate-50 hover:text-slate-950"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      <ReportsNav links={navByRole[context.role]} ariaLabel={`${context.role} reports`} />
     </aside>
   )
 }

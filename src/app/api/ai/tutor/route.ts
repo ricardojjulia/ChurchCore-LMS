@@ -12,6 +12,7 @@
 
 import { NextRequest } from 'next/server'
 import { createClient }  from '@/utils/supabase/server'
+import { tutorLimiter, checkLimit } from '@/lib/rate-limit'
 import type { TutorQueryContextInternal, ContentChunk } from '@/types/ai'
 
 export const runtime = 'nodejs'
@@ -159,6 +160,22 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // ── Rate limit (by user UUID — not IP; check before opening any stream) ──
+  const rl = await checkLimit(tutorLimiter, user.id)
+  if (rl.limited) {
+    return Response.json(
+      { error: 'Too many requests. Please wait before asking again.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After':           String(rl.retryAfter),
+          'X-RateLimit-Limit':     String(rl.limit),
+          'X-RateLimit-Remaining': '0',
+        },
+      }
+    )
+  }
 
   // ── Build academic context (SECURITY INVOKER — only the calling user's data) ──
   const { data: rawCtx, error: ctxErr } = await supabase

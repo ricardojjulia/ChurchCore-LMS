@@ -1,6 +1,6 @@
 {
   "name": "churchcore-lms",
-  "version": "0.20.2",
+  "version": "0.22.0",
   "license": "AGPL-3.0-only",
   "private": true,
   "scripts": {
@@ -21,11 +21,14 @@
     "version:check": "node scripts/check-version.mjs"
   },
   "dependencies": {
+    "@ducanh2912/next-pwa": "^10.2.9",
+    "@marsidev/react-turnstile": "^1.5.3",
     "@radix-ui/react-avatar": "^1.1.12",
     "@radix-ui/react-separator": "^1.1.9",
     "@radix-ui/react-slot": "^1.2.5",
     "@radix-ui/react-toast": "^1.2.16",
     "@react-pdf/renderer": "^4.5.1",
+    "@sentry/nextjs": "^10.59.0",
     "@supabase/ssr": "^0.5.0",
     "@supabase/supabase-js": "^2.43.4",
     "@tiptap/extension-image": "^3.26.1",
@@ -36,6 +39,8 @@
     "@tiptap/react": "^3.26.1",
     "@tiptap/starter-kit": "^3.26.1",
     "@tremor/react": "^3.18.7",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "exceljs": "^4.4.0",
@@ -45,6 +50,7 @@
     "react-dom": "^18.3.1",
     "recharts": "^3.8.1",
     "resend": "^6.12.4",
+    "stripe": "^22.2.2",
     "tailwind-merge": "^3.6.0",
     "tailwindcss-animate": "^1.0.7"
   },

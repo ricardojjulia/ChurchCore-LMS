@@ -6,7 +6,7 @@ import {
   LayoutDashboard, BookOpen, BarChart3, BarChart2, Award, Trophy,
   MessageCircle, Megaphone, Calendar, Users, Shield, Zap,
   UserCog, Layers, Clock, FileText, Sparkles, Activity,
-  ChevronLeft, ChevronRight, GitBranch,
+  ChevronLeft, ChevronRight, GitBranch, CreditCard,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -17,48 +17,54 @@ import SignOutButton from './SignOutButton'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 interface NavLink {
-  href:          string
-  label:         string
-  Icon:          LucideIcon
-  staffOnly?:    boolean
-  adminOnly?:    boolean
-  guardianOnly?: boolean
-  msgBadge?:     boolean
-  healthBadge?:  boolean
+  href:              string
+  label:             string
+  Icon:              LucideIcon
+  staffOnly?:        boolean
+  adminOnly?:        boolean
+  guardianOnly?:     boolean
+  platformAdminOnly?: boolean
+  msgBadge?:         boolean
+  healthBadge?:      boolean
+  featureGate?:      string
 }
 
 const LINKS: NavLink[] = [
   { href: '/dashboard',          label: 'Dashboard',       Icon: LayoutDashboard },
   { href: '/courses',            label: 'Courses',         Icon: BookOpen },
   { href: '/performance',        label: 'Grades',          Icon: BarChart3 },
-  { href: '/reports',            label: 'Reports',         Icon: BarChart2 },
+  { href: '/reports',            label: 'Reports',         Icon: BarChart2,  featureGate: 'reporting' },
   { href: '/certificates',       label: 'Certificates',    Icon: Award },
-  { href: '/leaderboard',        label: 'Leaderboard',     Icon: Trophy },
+  { href: '/leaderboard',        label: 'Leaderboard',     Icon: Trophy,     featureGate: 'leaderboard' },
   { href: '/messages',           label: 'Messages',        Icon: MessageCircle, msgBadge: true },
   { href: '/announcements',      label: 'Announcements',   Icon: Megaphone },
   { href: '/calendar',           label: 'Calendar',        Icon: Calendar },
   { href: '/my-groups',          label: 'My Groups',       Icon: Users },
-  { href: '/guardian',           label: 'Guardian Portal', Icon: Shield,         guardianOnly: true },
-  { href: '/hq',                 label: 'HQ',              Icon: Zap,            staffOnly: true },
+  { href: '/guardian',           label: 'Guardian Portal', Icon: Shield,         guardianOnly: true,    featureGate: 'guardian_portal' },
+  { href: '/hq',                 label: 'HQ',              Icon: Zap,            staffOnly: true,       featureGate: 'hq' },
   { href: '/admin/users',        label: 'Users',           Icon: UserCog,        adminOnly: true },
   { href: '/admin/cohorts',      label: 'Cohorts',         Icon: Users,          adminOnly: true },
   { href: '/admin/sections',     label: 'Sections',        Icon: Layers,         adminOnly: true },
   { href: '/admin/terms',        label: 'Terms',           Icon: Clock,          adminOnly: true },
-  { href: '/admin/program-tracks', label: 'Program Tracks', Icon: GitBranch,      adminOnly: true },
+  { href: '/admin/program-tracks', label: 'Program Tracks', Icon: GitBranch,     adminOnly: true },
   { href: '/admin/blueprints',   label: 'Blueprints',      Icon: FileText,       adminOnly: true },
-  { href: '/admin/ai-analytics', label: 'AI Analytics',    Icon: Sparkles,       adminOnly: true },
-  { href: '/admin/health',       label: 'System Health',   Icon: Activity,       adminOnly: true, healthBadge: true },
+  { href: '/admin/ai-analytics', label: 'AI Analytics',    Icon: Sparkles,       adminOnly: true,       featureGate: 'ai_tutor' },
+  { href: '/admin/billing',      label: 'Billing',         Icon: CreditCard,     adminOnly: true },
+  { href: '/admin/health',       label: 'System Health',   Icon: Activity,       adminOnly: true,       healthBadge: true },
+  { href: '/platform',           label: 'Platform Admin',  Icon: Shield,         platformAdminOnly: true },
 ]
 
 interface Props {
   isStaff:          boolean
   isAdmin:          boolean
   isGuardian:       boolean
+  isPlatformAdmin:  boolean
   uid:              string | null
   initial:          string
   displayName:      string | null
   messageCount:     number
   healthErrorCount: number
+  features:         Record<string, boolean>
 }
 
 function NavItem({
@@ -78,6 +84,7 @@ function NavItem({
     <Link
       href={href}
       title={collapsed ? label : undefined}
+      aria-current={active ? 'page' : undefined}
       className={cn(
         'flex items-center gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-colors relative',
         active
@@ -120,16 +127,19 @@ function SectionDivider({ label, collapsed }: { label: string; collapsed: boolea
 }
 
 export default function SidebarClient({
-  isStaff, isAdmin, isGuardian, uid, initial, displayName,
-  messageCount, healthErrorCount,
+  isStaff, isAdmin, isGuardian, isPlatformAdmin, uid, initial, displayName,
+  messageCount, healthErrorCount, features,
 }: Props) {
   const { collapsed, toggle } = useSidebar()
   const pathname = usePathname()
 
-  const main      = LINKS.filter(l => !l.adminOnly && !l.staffOnly && !l.guardianOnly)
-  const guardian  = LINKS.filter(l => l.guardianOnly && isGuardian)
-  const staff     = LINKS.filter(l => l.staffOnly    && isStaff)
-  const admin     = LINKS.filter(l => l.adminOnly    && isAdmin)
+  const visible = (l: NavLink) => !l.featureGate || features[l.featureGate] !== false
+
+  const main      = LINKS.filter(l => !l.adminOnly && !l.staffOnly && !l.guardianOnly && !l.platformAdminOnly && visible(l))
+  const guardian  = LINKS.filter(l => l.guardianOnly && isGuardian && visible(l))
+  const staff     = LINKS.filter(l => l.staffOnly    && isStaff    && visible(l))
+  const admin     = LINKS.filter(l => l.adminOnly    && isAdmin     && visible(l))
+  const platform  = LINKS.filter(l => l.platformAdminOnly && isPlatformAdmin)
 
   const linkProps = { collapsed, pathname, messageCount, healthErrorCount }
 
@@ -198,6 +208,13 @@ export default function SidebarClient({
           <>
             <SectionDivider label="Admin" collapsed={collapsed} />
             {admin.map(link => <NavItem key={link.href} link={link} {...linkProps} />)}
+          </>
+        )}
+
+        {platform.length > 0 && (
+          <>
+            <SectionDivider label="Platform" collapsed={collapsed} />
+            {platform.map(link => <NavItem key={link.href} link={link} {...linkProps} />)}
           </>
         )}
       </nav>

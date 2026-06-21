@@ -481,3 +481,72 @@ export async function gradeSubmission(
   revalidatePath('/courses/[id]/submissions', 'page')
   return {}
 }
+
+// ── Grade a discussion block submission (teacher/admin/manager) ───────────────
+
+export async function gradeDiscussionSubmission({
+  submissionId,
+  score,
+  maxScore,
+}: {
+  submissionId: string
+  score: number
+  maxScore: number
+}): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('uid, role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!profile || !['admin', 'manager', 'teacher'].includes(profile.role)) {
+    return { error: 'Unauthorized' }
+  }
+
+  // Validate score bounds
+  if (score < 0)          return { error: 'Score cannot be negative' }
+  if (maxScore <= 0)      return { error: 'Max score must be greater than zero' }
+  if (score > maxScore)   return { error: 'Score cannot exceed max score' }
+
+  // Cross-tenant check: verify the submission belongs to the caller's org.
+  // A teacher from Org A must not be able to grade Org B submissions.
+  // Same "Not found" response whether the row is missing or belongs to another org.
+  const service = createServiceClient()
+
+  const { data: ownershipCheck } = await service
+    .from('block_submissions')
+    .select('id, course_blocks!inner(course_id, courses!inner(org_id))')
+    .eq('id', submissionId)
+    .single()
+
+  // Walk the nested join result to confirm the org matches
+  const submissionOrgId =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join type is not narrowed
+    (ownershipCheck?.course_blocks as any)?.courses?.org_id ?? null
+
+  if (!ownershipCheck || submissionOrgId !== profile.org_id) {
+    return { error: 'Not found' }
+  }
+
+  // Service client UPDATE — graded_by is set from the server session, never from client input.
+  // graded_by references profiles.uid (see migration 027: block_submissions_graded_by_fkey).
+  const { error: updateError } = await service
+    .from('block_submissions')
+    .update({
+      score,
+      max_score:  maxScore,
+      graded_by:  profile.uid,
+      graded_at:  new Date().toISOString(),
+      status:     'graded',
+    })
+    .eq('id', submissionId)
+
+  if (updateError) return { error: 'Failed to save grade' }
+
+  revalidatePath('/courses/[id]/learn', 'page')
+  return {}
+}

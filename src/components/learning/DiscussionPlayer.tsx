@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { gradeDiscussionSubmission } from '@/app/actions/learning'
 
 interface Reply {
   submission_id: string
@@ -10,6 +11,11 @@ interface Reply {
   content:       { text?: string; edited_at?: string }
   submitted_at:  string
   is_own:        boolean
+  // Grade fields merged from block_submissions after load
+  score?:        number | null
+  max_score?:    number | null
+  status?:       string | null
+  graded_at?:    string | null
 }
 
 function timeAgo(iso: string): string {
@@ -20,29 +26,143 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
+// ── GradeForm subcomponent ────────────────────────────────────────────────────
+
+function GradeForm({
+  submissionId,
+  existingScore,
+  existingMaxScore,
+  onSave,
+  onCancel,
+}: {
+  submissionId:     string
+  existingScore:    number | null
+  existingMaxScore: number
+  onSave:           (score: number, maxScore: number) => void
+  onCancel:         () => void
+}) {
+  const [score,    setScore]    = useState(existingScore ?? 0)
+  const [maxScore, setMaxScore] = useState(existingMaxScore)
+  const [saving,   setSaving]   = useState(false)
+  const [error,    setError]    = useState<string | null>(null)
+
+  async function handleSave() {
+    setSaving(true)
+    setError(null)
+    const result = await gradeDiscussionSubmission({ submissionId, score, maxScore })
+    setSaving(false)
+    if (result.error) {
+      setError(result.error)
+    } else {
+      onSave(score, maxScore)
+    }
+  }
+
+  return (
+    <div className="mt-2 flex flex-col gap-2">
+      <div className="flex gap-2 items-center flex-wrap">
+        <label className="text-xs text-muted-foreground">Score</label>
+        <input
+          type="number"
+          min={0}
+          max={maxScore}
+          step={0.5}
+          value={score}
+          onChange={(e) => setScore(Number(e.target.value))}
+          className="w-20 border border-border rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          aria-label="Score"
+        />
+        <label className="text-xs text-muted-foreground">/ Max</label>
+        <input
+          type="number"
+          min={1}
+          step={1}
+          value={maxScore}
+          onChange={(e) => setMaxScore(Number(e.target.value))}
+          className="w-20 border border-border rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          aria-label="Max score"
+        />
+      </div>
+      {error && <p className="text-xs text-red-500" role="alert">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90 disabled:opacity-50 transition-colors"
+        >
+          {saving ? 'Saving…' : 'Save Grade'}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-xs text-muted-foreground hover:underline"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── DiscussionPlayer ──────────────────────────────────────────────────────────
+
 export default function DiscussionPlayer({
   blockId,
   prompt,
   ownReplyText,
+  viewerRole,
+  maxScore,
 }: {
   blockId:       string
   prompt?:       string
   ownReplyText?: string | null
+  viewerRole?:   string
+  maxScore?:     number
 }) {
-  const [replies,    setReplies]    = useState<Reply[]>([])
-  const [loading,    setLoading]    = useState(true)
-  const [text,       setText]       = useState('')
-  const [error,      setError]      = useState<string | null>(null)
-  const [editingId,  setEditingId]  = useState<string | null>(null)
-  const [editText,   setEditText]   = useState('')
-  const [pending,    startPost]     = useTransition()
-  const [editPending, startEdit]    = useTransition()
-  const bottomRef                   = useRef<HTMLDivElement>(null)
-  const supabase                    = createClient()
+  const [replies,     setReplies]     = useState<Reply[]>([])
+  const [loading,     setLoading]     = useState(true)
+  const [text,        setText]        = useState('')
+  const [error,       setError]       = useState<string | null>(null)
+  const [editingId,   setEditingId]   = useState<string | null>(null)
+  const [editText,    setEditText]    = useState('')
+  const [gradingId,   setGradingId]   = useState<string | null>(null)
+  const [pending,     startPost]      = useTransition()
+  const [editPending, startEdit]      = useTransition()
+  const bottomRef                     = useRef<HTMLDivElement>(null)
+  const supabase                      = createClient()
+
+  const canGrade         = ['admin', 'manager', 'teacher'].includes(viewerRole ?? '')
+  const effectiveMaxScore = maxScore ?? 10
 
   async function loadReplies() {
-    const { data } = await supabase.rpc('get_block_discussion_replies', { p_block_id: blockId })
-    setReplies((data as Reply[]) ?? [])
+    const { data: rpcData } = await supabase.rpc('get_block_discussion_replies', { p_block_id: blockId })
+    const base = (rpcData as Reply[]) ?? []
+
+    // The RPC does not return score/max_score/status/graded_at — fetch them separately.
+    // RLS ensures teachers see all rows and students see only their own.
+    const { data: gradeData } = await supabase
+      .from('block_submissions')
+      .select('id, score, max_score, status, graded_at')
+      .eq('block_id', blockId)
+
+    if (gradeData && gradeData.length > 0) {
+      const gradeMap = new Map(gradeData.map((g) => [g.id as string, g]))
+      const merged = base.map((r) => {
+        const g = gradeMap.get(r.submission_id)
+        if (!g) return r
+        return {
+          ...r,
+          score:      g.score      as number | null,
+          max_score:  g.max_score  as number | null,
+          status:     g.status     as string | null,
+          graded_at:  g.graded_at  as string | null,
+        }
+      })
+      setReplies(merged)
+    } else {
+      setReplies(base)
+    }
   }
 
   useEffect(() => {
@@ -205,6 +325,40 @@ export default function DiscussionPlayer({
                       <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                         {r.content?.text ?? ''}
                       </p>
+
+                      {/* Teacher grade controls */}
+                      {canGrade && (
+                        gradingId === r.submission_id ? (
+                          <GradeForm
+                            submissionId={r.submission_id}
+                            existingScore={r.score ?? null}
+                            existingMaxScore={r.max_score ?? effectiveMaxScore}
+                            onSave={() => {
+                              setGradingId(null)
+                              loadReplies()
+                            }}
+                            onCancel={() => setGradingId(null)}
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setGradingId(r.submission_id)}
+                            className="text-xs text-primary hover:underline mt-1"
+                          >
+                            {r.score != null
+                              ? `Graded: ${r.score}/${r.max_score ?? effectiveMaxScore} — Edit`
+                              : 'Grade'}
+                          </button>
+                        )
+                      )}
+
+                      {/* Student: show own grade */}
+                      {r.is_own && r.score != null && !canGrade && (
+                        <p className="text-xs text-emerald-700 mt-1 font-medium">
+                          Grade: {r.score} / {r.max_score ?? effectiveMaxScore}
+                        </p>
+                      )}
+
                       {r.is_own && (
                         <div className="flex items-center gap-3 mt-2">
                           <button
