@@ -224,3 +224,92 @@ export async function bulkInviteUsers(
   revalidatePath('/admin/users')
   return results
 }
+
+// ── Badge management ──────────────────────────────────────────────────────────
+
+export async function upsertBadge({
+  id,
+  title,
+  description,
+  triggerCondition,
+}: {
+  id?:               string
+  title:             string
+  description:       string
+  triggerCondition:  Record<string, unknown> | null
+}): Promise<{ error?: string; id?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('uid, role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr || !['admin', 'manager'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const payload = {
+    org_id:            pr.org_id,
+    title:             title.trim(),
+    description:       description.trim(),
+    trigger_condition: triggerCondition,
+    is_auto_awarded:   triggerCondition !== null,
+    // badge_key is required by schema — use a slug from title for new badges
+    ...(id ? {} : { badge_key: `${pr.org_id}_${title.trim().toLowerCase().replace(/\s+/g, '_')}_${Date.now()}` }),
+  }
+
+  if (id) {
+    // Verify org ownership before update
+    const { data: existing } = await supabase
+      .from('badges')
+      .select('org_id')
+      .eq('id', id)
+      .single()
+
+    if (!existing || existing.org_id !== pr.org_id) return { error: 'Not found' }
+
+    const { error } = await supabase.from('badges').update(payload).eq('id', id)
+    if (error) return { error: 'Failed to update badge' }
+    revalidatePath('/admin/badges')
+    return { id }
+  }
+
+  const { data: inserted, error } = await supabase
+    .from('badges')
+    .insert(payload)
+    .select('id')
+    .single()
+
+  if (error || !inserted) return { error: 'Failed to create badge' }
+  revalidatePath('/admin/badges')
+  return { id: inserted.id }
+}
+
+export async function deleteBadge(badgeId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr || !['admin', 'manager'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const { data: badge } = await supabase
+    .from('badges')
+    .select('org_id')
+    .eq('id', badgeId)
+    .single()
+
+  if (!badge || badge.org_id !== pr.org_id) return { error: 'Not found' }
+
+  const { error } = await supabase.from('badges').delete().eq('id', badgeId)
+  if (error) return { error: 'Failed to delete badge' }
+  revalidatePath('/admin/badges')
+  return {}
+}

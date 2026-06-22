@@ -11,6 +11,16 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.24.1] — 2026-06-22
+
+### Added
+
+- **Badge Auto-Triggers** (COUNCIL-2026-012) — `badges.trigger_condition` JSONB and `is_auto_awarded` columns; `evaluate_badge_triggers()` SECURITY DEFINER Postgres function evaluates `xp_threshold`, `course_completion`, `streak`, and `block_count` trigger types; hooked into `record_engagement_event()` so badges fire atomically with each engagement event; ON CONFLICT DO NOTHING ensures idempotency; in-app notification inserted on award
+- `/admin/badges` management page — create, edit, delete badges; trigger type + threshold configuration UI
+- `upsertBadge` and `deleteBadge` server actions with role + org ownership checks
+
+---
+
 ## [0.24.0] — 2026-06-22
 
 ### Added
