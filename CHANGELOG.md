@@ -11,6 +11,16 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.24.2] — 2026-06-22
+
+### Added
+
+- **AI Outline Generator** (COUNCIL-2026-014) — teachers click "✨ AI" in the course builder sidebar to open a modal; paste curriculum text or upload a PDF (≤ 5 MB); AI (claude-sonnet-4-6) returns a structured outline with modules and blocks; preview shows collapsible module list; "Accept & Build" creates all `course_blocks` rows via `createCourseFromOutline` server action; rate-limited to 5 requests/hour/user via Upstash
+- `POST /api/ai/outline-generator` — auth + role check + rate limit + base64 PDF support via Anthropic document API; no org/user PII in prompt
+- `outlineLimiter` added to `src/lib/rate-limit.ts` (5 req / 3600s)
+
+---
+
 ## [0.24.1] — 2026-06-22
 
 ### Added

@@ -26,7 +26,10 @@ function makeLimiter(prefix: string, requests: number, windowSeconds: number) {
 export const tutorLimiter  = makeLimiter('tutor',  20, 60)
 
 // 5 req / 60 s per user — heavier analysis routes
-export const heavyLimiter  = makeLimiter('heavy',   5, 60)
+export const heavyLimiter   = makeLimiter('heavy',    5,    60)
+
+// 5 req / 3600 s per user — AI outline generator (expensive inference)
+export const outlineLimiter = makeLimiter('outline',  5, 3600)
 
 export interface RateLimitResult {
   limited:   boolean

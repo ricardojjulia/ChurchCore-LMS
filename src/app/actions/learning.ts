@@ -611,6 +611,101 @@ export async function gradeDiscussionSubmission({
   return {}
 }
 
+// ── Create course blocks from AI outline ──────────────────────────────────────
+
+interface OutlineBlock {
+  title:     string
+  type:      'text' | 'quiz' | 'discussion'
+  objective: string
+}
+
+interface OutlineModule {
+  title:  string
+  blocks: OutlineBlock[]
+}
+
+interface OutlineSchema {
+  course_title:       string
+  course_description: string
+  modules:            OutlineModule[]
+}
+
+export async function createCourseFromOutline({
+  courseId,
+  outline,
+}: {
+  courseId: string
+  outline:  OutlineSchema
+}): Promise<{ error?: string; blocksCreated?: number }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('uid, role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr) return { error: 'Not authenticated' }
+  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('org_id')
+    .eq('id', courseId)
+    .single()
+
+  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
+
+  // Flatten module + block rows with sequential sort_order
+  const totalBlocks = outline.modules.reduce((n, m) => n + 1 + m.blocks.length, 0)
+  if (totalBlocks > 50) return { error: 'Outline too large — maximum 50 blocks.' }
+
+  const rows: {
+    course_id:     string
+    org_id:        string
+    block_type_id: string
+    title:         string
+    content:       Record<string, unknown>
+    sort_order:    number
+  }[] = []
+
+  let order = 1
+  for (const mod of outline.modules) {
+    rows.push({
+      course_id:     courseId,
+      org_id:        pr.org_id,
+      block_type_id: 'module_header',
+      title:         mod.title,
+      content:       {},
+      sort_order:    order++,
+    })
+    for (const block of mod.blocks) {
+      const typeId =
+        block.type === 'quiz'       ? 'quiz'       :
+        block.type === 'discussion' ? 'discussion' :
+        'page'
+
+      rows.push({
+        course_id:     courseId,
+        org_id:        pr.org_id,
+        block_type_id: typeId,
+        title:         block.title,
+        content:       { objective: block.objective },
+        sort_order:    order++,
+      })
+    }
+  }
+
+  const service = createServiceClient()
+  const { error } = await service.from('course_blocks').insert(rows)
+  if (error) return { error: 'Failed to create blocks' }
+
+  revalidatePath(`/courses/${courseId}/build`)
+  return { blocksCreated: rows.length }
+}
+
 // ── Reorder course blocks (drag-and-drop) ─────────────────────────────────────
 
 export async function reorderCourseBlocks({

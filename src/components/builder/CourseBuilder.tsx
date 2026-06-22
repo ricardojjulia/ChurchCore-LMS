@@ -6,6 +6,7 @@ import type { CourseBlock, BlockTypeId, BlockFormData } from '@/types/blocks'
 import { BLOCK_TYPE_META } from '@/types/blocks'
 import AssetLibrary from './AssetLibrary'
 import NodeForm from './NodeForm'
+import OutlineGeneratorModal from './OutlineGeneratorModal'
 import {
   DndContext,
   closestCenter,
@@ -45,8 +46,9 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   const [editingBlock, setEditingBlock] = useState<CourseBlock | null>(null)
   const [addingModule, setAddingModule] = useState(false)
   const [newModuleTitle, setNewModuleTitle] = useState('')
-  const [saving,       setSaving]       = useState(false)
-  const [reorderState, setReorderState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [saving,        setSaving]        = useState(false)
+  const [reorderState,  setReorderState]  = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [showOutline,   setShowOutline]   = useState(false)
 
   const supabase = createClient()
 
@@ -222,14 +224,24 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
       <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
         <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Modules</span>
-          <button
-            onClick={() => setAddingModule(true)}
-            className="text-indigo-400 hover:text-indigo-300 text-lg leading-none transition-colors"
-            title="Add module"
-            type="button"
-          >
-            +
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowOutline(true)}
+              className="text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+              title="Generate outline with AI"
+            >
+              ✨ AI
+            </button>
+            <button
+              onClick={() => setAddingModule(true)}
+              className="text-indigo-400 hover:text-indigo-300 text-lg leading-none transition-colors"
+              title="Add module"
+              type="button"
+            >
+              +
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-2">
@@ -391,6 +403,19 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
         <AssetLibrary
           onSelect={handleLibrarySelect}
           onClose={() => setShowLibrary(false)}
+        />
+      )}
+
+      {/* AI Outline Generator modal */}
+      {showOutline && (
+        <OutlineGeneratorModal
+          courseId={courseId}
+          onClose={() => setShowOutline(false)}
+          onOutlineAccepted={() => {
+            setShowOutline(false)
+            // Reload the page to show the newly created blocks
+            window.location.reload()
+          }}
         />
       )}
     </div>
