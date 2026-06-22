@@ -102,12 +102,21 @@ export default async function CertificatesPage() {
 
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                       <p className="text-[10px] font-mono text-muted-foreground/60">{cert.certificate_no}</p>
-                      <Link
-                        href={`/courses/${cert.course_id}/complete`}
-                        className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
-                      >
-                        View →
-                      </Link>
+                      <div className="flex items-center gap-3">
+                        <Link
+                          href={`/courses/${cert.course_id}/complete`}
+                          className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+                        >
+                          View →
+                        </Link>
+                        <a
+                          href={`/api/certificates/${cert.id}/pdf`}
+                          download
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500 transition-colors"
+                        >
+                          Download PDF
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>

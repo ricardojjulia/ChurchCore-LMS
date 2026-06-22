@@ -11,6 +11,16 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.23.2] — 2026-06-22
+
+### Added
+
+- **PDF Certificate Download** (COUNCIL-2026-008) — `GET /api/certificates/[id]/pdf` generates a formal A4-landscape PDF on-demand via `@react-pdf/renderer`; no PDF stored in Supabase Storage; authenticated via `getUser()` + RLS; `Content-Disposition: attachment` triggers native browser download
+- `CertificateDocument` React PDF component (`src/components/pdf/CertificateDocument.tsx`) renders learner name, course title, org name, issued date, certificate number, and grade (omitted when null)
+- "Download PDF" link added to each certificate card on `/certificates` page
+
+---
+
 ## [0.23.1] — 2026-06-22
 
 ### Added
