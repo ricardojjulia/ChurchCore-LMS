@@ -11,6 +11,21 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.23.1] — 2026-06-22
+
+### Added
+
+- **Teacher Plug Module** (COUNCIL-2026-007) — new `teacher_plug` block type; instructors can insert a personal card into any course with name, photo, bio override, specialties, and a website link; `TeacherPlugForm` auto-fills from the author's profile; `TeacherPlugPlayer` fetches the live profile by `teacher_uid`, verifies org isolation, and renders with signed avatar URL (private bucket)
+- `profiles` table extended with `bio TEXT`, `specialty TEXT[]`, and `website_url TEXT` columns (migration `20260622110000`)
+
+### Changed
+
+- `ContentBlockTypeId` union extended with `'teacher_plug'`; `BLOCK_TYPE_META` record updated accordingly
+- `BlockPlayer` accepts an optional `orgId` prop (threaded from `LearningShell` ← `learn/page.tsx`); required for `teacher_plug` org-isolation check
+- `LearningShell` and `learn/page.tsx` updated to fetch and pass `course.org_id`
+
+---
+
 ## [0.23.0] — 2026-06-22
 
 ### Added

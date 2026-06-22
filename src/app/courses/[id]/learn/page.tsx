@@ -52,7 +52,7 @@ export default async function LearnPage({
   const [courseResult, blocksResult] = await Promise.all([
     supabase
       .from('courses')
-      .select('id, title')
+      .select('id, title, org_id')
       .eq('id', courseId)
       .single(),
     supabase
@@ -101,6 +101,7 @@ export default async function LearnPage({
     <LearningShell
       courseId={courseId}
       courseTitle={course.title}
+      orgId={course.org_id}
       modules={modules}
       blocks={blocks}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase select shape doesn't match LearningShell prop type

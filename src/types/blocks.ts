@@ -1,7 +1,7 @@
 export type BlockCategory = 'content' | 'activity' | 'structure'
 
 export type StructureBlockTypeId = 'module_header' | 'section' | 'certificate'
-export type ContentBlockTypeId   = 'page' | 'video_stream' | 'resource_file' | 'external_url' | 'scorm' | 'live_session'
+export type ContentBlockTypeId   = 'page' | 'video_stream' | 'resource_file' | 'external_url' | 'scorm' | 'live_session' | 'teacher_plug'
 export type ActivityBlockTypeId  = 'assignment' | 'quiz' | 'discussion' | 'survey' | 'checklist' | 'flashcard_set'
 export type BlockTypeId          = StructureBlockTypeId | ContentBlockTypeId | ActivityBlockTypeId
 
@@ -26,6 +26,7 @@ export const BLOCK_TYPE_META: Record<BlockTypeId, BlockTypeMeta> = {
   external_url:  { label: 'External URL', icon: '🔗', category: 'content',   color: 'slate',   description: 'Link to an external website',          is_active: true  },
   scorm:         { label: 'SCORM',        icon: '📦', category: 'content',   color: 'slate',   description: 'SCORM-compatible package',             is_active: false },
   live_session:  { label: 'Live Session', icon: '🎙️', category: 'content',   color: 'violet',  description: 'Zoom, Meet, or live class link',       is_active: true  },
+  teacher_plug:  { label: 'Teacher Card', icon: '👤', category: 'content',   color: 'indigo',  description: 'Instructor bio and introduction card', is_active: true  },
   // Activity
   assignment:    { label: 'Assignment',   icon: '📝', category: 'activity',  color: 'emerald', description: 'Written or file submission task',      is_active: true  },
   quiz:          { label: 'Quiz',         icon: '🧠', category: 'activity',  color: 'violet',  description: 'Auto-graded knowledge check',          is_active: true  },

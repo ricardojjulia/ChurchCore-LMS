@@ -4,6 +4,7 @@ import AssignmentPlayer from './AssignmentPlayer'
 import QuizPlayer from './QuizPlayer'
 import DiscussionPlayer from './DiscussionPlayer'
 import LiveSessionPlayer from './LiveSessionPlayer'
+import TeacherPlugPlayer from './TeacherPlugPlayer'
 import type { CourseBlock, QuizQuestion } from '@/types/blocks'
 
 interface Submission {
@@ -17,12 +18,13 @@ interface Submission {
 
 interface Props {
   block:       CourseBlock
+  orgId?:      string
   submission?: Submission | null
   onComplete?: (xpAwarded: number) => void
   viewerRole?: string
 }
 
-export default function BlockPlayer({ block, submission, onComplete, viewerRole }: Props) {
+export default function BlockPlayer({ block, orgId, submission, onComplete, viewerRole }: Props) {
   const content = block.content as Record<string, unknown>
 
   // ── Page ───────────────────────────────────────────────────────────
@@ -180,6 +182,12 @@ export default function BlockPlayer({ block, submission, onComplete, viewerRole 
         maxScore={maxScore}
       />
     )
+  }
+
+  // ── Teacher Plug ───────────────────────────────────────────────────
+  if (block.block_type_id === 'teacher_plug') {
+    if (!orgId) return <p className="text-muted-foreground italic">Instructor card not available.</p>
+    return <TeacherPlugPlayer blockContent={block.content} orgId={orgId} />
   }
 
   return (
