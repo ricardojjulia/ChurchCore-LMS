@@ -6,6 +6,24 @@ import type { CourseBlock, BlockTypeId, BlockFormData } from '@/types/blocks'
 import { BLOCK_TYPE_META } from '@/types/blocks'
 import AssetLibrary from './AssetLibrary'
 import NodeForm from './NodeForm'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { reorderCourseBlocks } from '@/app/actions/learning'
 
 interface Props {
   courseId: string
@@ -27,9 +45,49 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   const [editingBlock, setEditingBlock] = useState<CourseBlock | null>(null)
   const [addingModule, setAddingModule] = useState(false)
   const [newModuleTitle, setNewModuleTitle] = useState('')
-  const [saving, setSaving] = useState(false)
+  const [saving,       setSaving]       = useState(false)
+  const [reorderState, setReorderState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
   const supabase = createClient()
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const items     = [...activeModuleItems]
+    const oldIndex  = items.findIndex((b) => b.id === active.id)
+    const newIndex  = items.findIndex((b) => b.id === over.id)
+    const reordered = arrayMove(items, oldIndex, newIndex)
+
+    // Optimistic UI update
+    const reorderedIds = reordered.map((b) => b.id)
+    setBlocks((prev) => {
+      const otherBlocks = prev.filter((b) => b.parent_block_id !== active.id && !reorderedIds.includes(b.id)
+        || b.parent_block_id !== items[0]?.parent_block_id)
+      // Replace items in the active module with the reordered list (with updated sort_order)
+      const reorderedWithOrder = reordered.map((b, i) => ({ ...b, sort_order: i + 1 }))
+      return prev.map((b) => {
+        const updated = reorderedWithOrder.find((r) => r.id === b.id)
+        return updated ?? b
+      })
+    })
+
+    setReorderState('saving')
+    const result = await reorderCourseBlocks({ courseId, reorderedIds })
+    if (result.error) {
+      // Revert optimistic update on error
+      setBlocks(blocks)
+      setReorderState('error')
+    } else {
+      setReorderState('saved')
+    }
+    setTimeout(() => setReorderState('idle'), 2000)
+  }
 
   const moduleHeaders = blocks
     .filter((b) => b.block_type_id === 'module_header' && !b.parent_block_id)
@@ -240,13 +298,24 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
                     {activeModuleItems.length} item{activeModuleItems.length !== 1 ? 's' : ''}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => { setShowLibrary(true); setSelectedType(null); setEditingBlock(null) }}
-                  className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-500 transition-colors"
-                >
-                  + Add Content
-                </button>
+                <div className="flex items-center gap-3">
+                  {reorderState === 'saving' && (
+                    <span className="text-xs text-slate-400 animate-pulse">Saving…</span>
+                  )}
+                  {reorderState === 'saved' && (
+                    <span className="text-xs text-emerald-400">Saved ✓</span>
+                  )}
+                  {reorderState === 'error' && (
+                    <span className="text-xs text-rose-400">Save failed — reverted</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setShowLibrary(true); setSelectedType(null); setEditingBlock(null) }}
+                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-500 transition-colors"
+                  >
+                    + Add Content
+                  </button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3">
@@ -262,44 +331,29 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
                     </button>
                   </div>
                 ) : (
-                  activeModuleItems.map((block, idx) => {
-                    const meta = BLOCK_TYPE_META[block.block_type_id]
-                    const isEditing = editingBlock?.id === block.id
-                    return (
-                      <div
-                        key={block.id}
-                        className={`group flex items-center gap-4 p-4 bg-slate-900 border rounded-xl transition-all ${
-                          isEditing ? 'border-indigo-500' : 'border-slate-800 hover:border-slate-600'
-                        }`}
-                      >
-                        <span className="text-xl shrink-0">{meta?.icon ?? '📦'}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white font-semibold text-sm truncate">{block.title}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-xs text-slate-500">{meta?.label ?? block.block_type_id}</span>
-                            {block.gamification?.base_xp_reward ? (
-                              <span className="text-xs text-indigo-400 font-bold">
-                                +{block.gamification.base_xp_reward} XP
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                          <button type="button" onClick={() => handleMoveBlock(block.id, 'up')} disabled={idx === 0}
-                            title="Move up"
-                            className="p-1.5 text-slate-500 hover:text-white disabled:opacity-20 transition-colors text-xs">▲</button>
-                          <button type="button" onClick={() => handleMoveBlock(block.id, 'down')} disabled={idx === activeModuleItems.length - 1}
-                            title="Move down"
-                            className="p-1.5 text-slate-500 hover:text-white disabled:opacity-20 transition-colors text-xs">▼</button>
-                          <button type="button" onClick={() => handleEditBlock(block)}
-                            className="p-1.5 text-slate-500 hover:text-indigo-400 transition-colors text-xs font-bold">Edit</button>
-                          <button type="button" onClick={() => handleDeleteBlock(block.id)}
-                            title="Delete"
-                            className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors text-xs">✕</button>
-                        </div>
-                      </div>
-                    )
-                  })
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={activeModuleItems.map((b) => b.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {activeModuleItems.map((block, idx) => (
+                        <SortableBlockRow
+                          key={block.id}
+                          block={block}
+                          idx={idx}
+                          total={activeModuleItems.length}
+                          isEditing={editingBlock?.id === block.id}
+                          onEdit={() => handleEditBlock(block)}
+                          onDelete={() => handleDeleteBlock(block.id)}
+                          onMove={(dir) => handleMoveBlock(block.id, dir)}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
                 )}
               </div>
             </>
@@ -339,6 +393,70 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
           onClose={() => setShowLibrary(false)}
         />
       )}
+    </div>
+  )
+}
+
+function SortableBlockRow({
+  block, idx, total, isEditing, onEdit, onDelete, onMove,
+}: {
+  block:     CourseBlock
+  idx:       number
+  total:     number
+  isEditing: boolean
+  onEdit:    () => void
+  onDelete:  () => void
+  onMove:    (dir: 'up' | 'down') => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id })
+  const meta = BLOCK_TYPE_META[block.block_type_id]
+
+  return (
+    <div
+      ref={setNodeRef}
+      // transform and transition are dynamic values from @dnd-kit — cannot be static CSS
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`group flex items-center gap-3 p-4 bg-slate-900 border rounded-xl transition-colors ${
+        isEditing ? 'border-indigo-500' : 'border-slate-800 hover:border-slate-600'
+      } ${isDragging ? 'opacity-50' : 'opacity-100'}`}
+    >
+      {/* Drag handle */}
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-1 text-slate-600 hover:text-slate-300 transition-colors shrink-0 touch-none"
+        aria-label="Drag to reorder"
+        title="Drag to reorder"
+      >
+        ⠿
+      </button>
+
+      <span className="text-xl shrink-0">{meta?.icon ?? '📦'}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-white font-semibold text-sm truncate">{block.title}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-xs text-slate-500">{meta?.label ?? block.block_type_id}</span>
+          {block.gamification?.base_xp_reward ? (
+            <span className="text-xs text-indigo-400 font-bold">
+              +{block.gamification.base_xp_reward} XP
+            </span>
+          ) : null}
+        </div>
+      </div>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <button type="button" onClick={() => onMove('up')} disabled={idx === 0}
+          title="Move up"
+          className="p-1.5 text-slate-500 hover:text-white disabled:opacity-20 transition-colors text-xs">▲</button>
+        <button type="button" onClick={() => onMove('down')} disabled={idx === total - 1}
+          title="Move down"
+          className="p-1.5 text-slate-500 hover:text-white disabled:opacity-20 transition-colors text-xs">▼</button>
+        <button type="button" onClick={onEdit}
+          className="p-1.5 text-slate-500 hover:text-indigo-400 transition-colors text-xs font-bold">Edit</button>
+        <button type="button" onClick={onDelete}
+          title="Delete"
+          className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors text-xs">✕</button>
+      </div>
     </div>
   )
 }

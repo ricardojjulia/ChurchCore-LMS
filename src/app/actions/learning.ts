@@ -610,3 +610,59 @@ export async function gradeDiscussionSubmission({
   revalidatePath('/courses/[id]/learn', 'page')
   return {}
 }
+
+// ── Reorder course blocks (drag-and-drop) ─────────────────────────────────────
+
+export async function reorderCourseBlocks({
+  courseId,
+  reorderedIds,
+}: {
+  courseId:     string
+  reorderedIds: string[]
+}): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('uid, role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr) return { error: 'Not authenticated' }
+  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  // Verify course belongs to caller's org
+  const { data: course } = await supabase
+    .from('courses')
+    .select('org_id')
+    .eq('id', courseId)
+    .single()
+
+  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
+
+  // Verify all block IDs belong to this course
+  const { data: ownedBlocks } = await supabase
+    .from('course_blocks')
+    .select('id')
+    .eq('course_id', courseId)
+    .in('id', reorderedIds)
+
+  if (!ownedBlocks || ownedBlocks.length !== reorderedIds.length) {
+    return { error: 'Invalid block IDs' }
+  }
+
+  const service = createServiceClient()
+  await Promise.all(
+    reorderedIds.map((id, index) =>
+      service
+        .from('course_blocks')
+        .update({ sort_order: index + 1 })
+        .eq('id', id)
+    )
+  )
+
+  revalidatePath(`/courses/${courseId}/build`)
+  return {}
+}

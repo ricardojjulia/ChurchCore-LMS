@@ -11,6 +11,15 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.24.0] — 2026-06-22
+
+### Added
+
+- **Drag-and-Drop Course Builder** (COUNCIL-2026-009) — blocks in the course builder can be reordered by dragging; `@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities` added; keyboard drag mode supported natively; move-up/move-down arrow buttons retained as fallback; optimistic UI with error revert and save status indicator
+- `reorderCourseBlocks` server action validates caller role + org ownership + all block IDs belong to the course before updating `sort_order` via service client
+
+---
+
 ## [0.23.3] — 2026-06-22
 
 ### Added
