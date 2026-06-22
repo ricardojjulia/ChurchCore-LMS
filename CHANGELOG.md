@@ -11,6 +11,14 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.23.3] — 2026-06-22
+
+### Added
+
+- **Focus Mode** (COUNCIL-2026-013) — `F` keyboard shortcut or fixed bottom-right toggle button hides the course sidebar and sidebar toggle; preference persisted in localStorage and restored on refresh; `useFocusMode` hook in `src/hooks/useFocusMode.ts`; `FocusModeToggle` component in `src/components/ui/FocusModeToggle.tsx`; `F` key no-ops when an input or textarea is focused
+
+---
+
 ## [0.23.2] — 2026-06-22
 
 ### Added

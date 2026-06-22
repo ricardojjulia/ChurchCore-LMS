@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { BLOCK_TYPE_META } from '@/types/blocks'
 import BlockPlayer from './BlockPlayer'
+import { FocusModeToggle } from '@/components/ui/FocusModeToggle'
+import { useFocusMode } from '@/hooks/useFocusMode'
 import { markBlockViewed } from '@/app/actions/learning'
 import type { CourseBlock } from '@/types/blocks'
 
@@ -58,6 +60,7 @@ export default function LearningShell({
   const [sidebarOpen,     setSidebarOpen]    = useState(true)
   const [xpToast,         setXpToast]        = useState<number | null>(null)
   const [completedIds,    setCompletedIds]   = useState<Set<string>>(initialCompleted)
+  const [isFocusMode,     toggleFocusMode]   = useFocusMode()
   const [, startTransition] = useTransition()
   const router = useRouter()
 
@@ -137,13 +140,14 @@ export default function LearningShell({
         </div>
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar — hidden in focus mode */}
       <aside
         className={cn(
           'bg-slate-900 border-r border-slate-800 flex flex-col transition-all duration-200 shrink-0 overflow-hidden',
-          sidebarOpen ? 'w-72' : 'w-0'
+          isFocusMode ? 'w-0' : sidebarOpen ? 'w-72' : 'w-0'
         )}
         aria-label="Course outline"
+        aria-hidden={isFocusMode ? 'true' : undefined}
       >
         <div className="px-4 py-3 border-b border-slate-800">
           <Link
@@ -205,15 +209,23 @@ export default function LearningShell({
         </nav>
       </aside>
 
-      {/* Sidebar toggle */}
-      <button
-        onClick={() => setSidebarOpen((v) => !v)}
-        className="absolute top-[calc(16px)] z-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-r-lg px-1.5 py-3 text-[10px] transition-all"
-        aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-        style={{ left: sidebarOpen ? '18rem' : '0' }}
-      >
-        {sidebarOpen ? '‹' : '›'}
-      </button>
+      {/* Sidebar toggle — hidden in focus mode */}
+      {!isFocusMode && (
+        <button
+          type="button"
+          onClick={() => setSidebarOpen((v) => !v)}
+          className={cn(
+            'absolute top-4 z-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-r-lg px-1.5 py-3 text-[10px] transition-all',
+            sidebarOpen ? 'left-72' : 'left-0'
+          )}
+          aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          {sidebarOpen ? '‹' : '›'}
+        </button>
+      )}
+
+      {/* Focus mode toggle — always visible */}
+      <FocusModeToggle isFocusMode={isFocusMode} toggle={toggleFocusMode} />
 
       {/* Main content */}
       <main id="main-content" className="flex-1 overflow-y-auto bg-slate-50">
