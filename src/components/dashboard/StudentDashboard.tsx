@@ -8,6 +8,7 @@ import DashboardAnnouncementsPreview from './DashboardAnnouncementsPreview'
 import DashboardUpcomingEvents from './DashboardUpcomingEvents'
 import DashboardPerformancePanel from './DashboardPerformancePanel'
 import AiWeeklySummary from './AiWeeklySummary'
+import EngagementWidget from '@/components/engagement/EngagementWidget'
 import type { DashboardContext, EnrolledCourse } from '@/lib/dashboard/context'
 
 function Section({
@@ -74,6 +75,7 @@ export default function StudentDashboard({ ctx }: { ctx: DashboardContext }) {
     <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <SmartSummaryCard ctx={ctx} />
+        <EngagementWidget uid={ctx.uid} />
         <AiWeeklySummary uid={ctx.uid} />
 
         {ctx.enrollments.length === 0 ? (

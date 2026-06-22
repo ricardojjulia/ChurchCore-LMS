@@ -11,6 +11,21 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.23.0] — 2026-06-22
+
+### Added
+
+- **Engagement Tracker + Ledger** (COUNCIL-2026-006) — immutable `engagement_events` log and `engagement_streaks` table; `record_engagement_event()` SECURITY DEFINER RPC atomically records events, awards XP, and updates daily streaks; `EngagementWidget` on student dashboard shows total XP, current streak, and last 5 activities; admin member detail page at `/admin/users/[id]` with engagement view; "View engagement →" link added to `UserRow`
+- `recordEngagement` server action wrapping the RPC for client-component use
+- Block completions, quiz submissions, and course completions now flow through the engagement ledger instead of direct `award_xp` calls — full audit trail from first install
+
+### Changed
+
+- `markBlockViewed` now calls `record_engagement_event('block_completion')` (10 XP default) instead of `tryAwardXp` directly; course completion 100 XP bonus routed through `record_engagement_event('course_completion')`
+- `submitQuiz` now calls `record_engagement_event('quiz_pass')` with grade-scaled XP instead of `tryAwardXp`
+
+---
+
 ## [0.22.1] — 2026-06-21
 
 ### Security

@@ -12,6 +12,48 @@ async function tryAwardXp(supabase: Awaited<ReturnType<typeof createClient>>, ui
   return data as { new_xp: number; new_level: number; leveled_up: boolean; prev_level: number } | null
 }
 
+// ── Record engagement event (log + streak + XP) ──────────────────────────────
+
+type EngagementResult = { error?: string; xpEarned?: number; leveledUp?: boolean; currentStreak?: number; newXp?: number }
+
+export async function recordEngagement({
+  eventType,
+  sourceType,
+  sourceId,
+  xpAmount = 0,
+}: {
+  eventType: 'block_completion' | 'quiz_pass' | 'discussion_post' | 'daily_login' | 'course_completion' | 'manual'
+  sourceType?: string
+  sourceId?: string
+  xpAmount?: number
+}): Promise<EngagementResult> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data, error } = await supabase.rpc('record_engagement_event', {
+    p_event_type:  eventType,
+    p_source_type: sourceType ?? null,
+    p_source_id:   sourceId   ?? null,
+    p_xp:          xpAmount,
+    p_metadata:    {},
+  })
+
+  if (error) return { error: 'Engagement tracking unavailable' }
+
+  const result = data as {
+    inserted: boolean; xp_earned: number; new_xp: number
+    new_level: number; leveled_up: boolean; current_streak: number
+  } | null
+
+  return {
+    xpEarned:      result?.xp_earned       ?? 0,
+    leveledUp:     result?.leveled_up       ?? false,
+    currentStreak: result?.current_streak   ?? 0,
+    newXp:         result?.new_xp           ?? 0,
+  }
+}
+
 // ── Enroll self in a course ───────────────────────────────────────────────────
 
 export async function enrollSelf(courseId: string): Promise<{ error?: string }> {
@@ -146,16 +188,29 @@ export async function markBlockViewed(
     .eq('user_id',   profile.uid)
     .eq('course_id', courseId)
 
-  // Award XP for this block
+  // Record engagement event — handles XP award + streak + deduplication atomically
   let xpAwarded = 0
-  if (blockXp > 0) {
-    await tryAwardXp(supabase, profile.uid, blockXp)
-    xpAwarded = blockXp
+  const engResult = await supabase.rpc('record_engagement_event', {
+    p_event_type:  'block_completion',
+    p_source_type: 'block',
+    p_source_id:   blockId,
+    p_xp:          blockXp > 0 ? blockXp : 10,
+    p_metadata:    {},
+  })
+  if (!engResult.error) {
+    const eng = engResult.data as { xp_earned?: number } | null
+    xpAwarded = eng?.xp_earned ?? 0
   }
 
   // On course completion: bonus 100 XP + issue certificate (only on first completion)
   if (justCompleted) {
-    await tryAwardXp(supabase, profile.uid, 100)
+    await supabase.rpc('record_engagement_event', {
+      p_event_type:  'course_completion',
+      p_source_type: 'course',
+      p_source_id:   courseId,
+      p_xp:          100,
+      p_metadata:    {},
+    })
     xpAwarded += 100
 
     const { data: certData } = await supabase.rpc('issue_certificate', {
@@ -358,16 +413,21 @@ export async function submitQuiz(
 
   const gradePct = maxScore > 0 ? Math.round((earnedScore / maxScore) * 100) : 0
 
-  // Award XP: block base XP scaled by score percentage (minimum 50% of block XP)
+  // Record quiz engagement event — handles XP award + streak + deduplication atomically
+  const quizXp = blockXp > 0
+    ? Math.max(Math.round(blockXp * (gradePct / 100)), Math.round(blockXp * 0.5))
+    : 25
   let xpAwarded = 0
-  if (blockXp > 0) {
-    const xpEarned = Math.max(Math.round(blockXp * (gradePct / 100)), Math.round(blockXp * 0.5))
-    await tryAwardXp(supabase, profile.uid, xpEarned)
-    xpAwarded = xpEarned
-  } else {
-    // Default: 5 XP per quiz submission
-    await tryAwardXp(supabase, profile.uid, 5)
-    xpAwarded = 5
+  const quizEng = await supabase.rpc('record_engagement_event', {
+    p_event_type:  'quiz_pass',
+    p_source_type: 'quiz',
+    p_source_id:   blockId,
+    p_xp:          quizXp,
+    p_metadata:    { grade_pct: gradePct },
+  })
+  if (!quizEng.error) {
+    const eng = quizEng.data as { xp_earned?: number } | null
+    xpAwarded = eng?.xp_earned ?? 0
   }
 
   revalidatePath('/courses/[id]/learn', 'page')

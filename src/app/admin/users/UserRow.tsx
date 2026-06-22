@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { updateUserRole, updateUserStatus, deleteUser } from '@/app/actions/admin'
@@ -168,6 +169,12 @@ export default function UserRow({ profile }: { profile: Profile }) {
             {profile.student_id && (
               <span>ID <strong className="font-mono text-foreground">{profile.student_id}</strong></span>
             )}
+            <Link
+              href={`/admin/users/${profile.uid}`}
+              className="text-xs text-primary hover:underline font-medium"
+            >
+              View engagement →
+            </Link>
             {isPending && <span className="ml-auto">Saving…</span>}
 
             <div className="ml-auto flex items-center gap-2">
