@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import { createCourse } from '@/app/actions/courses'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import BlueprintSelector from '@/components/courses/BlueprintSelector'
@@ -103,15 +104,11 @@ export default function CourseForm({
       router.push(`/courses/${courseId}`)
       router.refresh()
     } else {
-      const { data, error: insertError } = await supabase
-        .from('courses')
-        .insert({ ...payload, owner_id: userId })
-        .select('id')
-        .single()
+      const result = await createCourse(payload)
 
       setSaving(false)
-      if (insertError) { setError(insertError.message); return }
-      router.push(`/courses/${data.id}`)
+      if (result.error) { setError(result.error); return }
+      router.push(`/courses/${result.id}`)
       router.refresh()
     }
   }
