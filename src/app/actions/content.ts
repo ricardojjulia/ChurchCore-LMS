@@ -45,7 +45,10 @@ export async function createPage(
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) {
+    console.error('[createPage] insert failed:', error.message, { courseId, orgId: course.org_id })
+    return { error: error.message }
+  }
   revalidatePath(`/courses/${courseId}/pages`)
   return { id: data.id }
 }

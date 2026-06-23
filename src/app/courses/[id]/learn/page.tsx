@@ -49,7 +49,7 @@ export default async function LearnPage({
     .eq('course_id', courseId)
     .maybeSingle()
 
-  const [courseResult, blocksResult] = await Promise.all([
+  const [courseResult, blocksResult, pagesResult] = await Promise.all([
     supabase
       .from('courses')
       .select('id, title, org_id')
@@ -60,12 +60,19 @@ export default async function LearnPage({
       .select('*')
       .eq('course_id', courseId)
       .order('sort_order', { ascending: true }),
+    supabase
+      .from('content_pages')
+      .select('id, title, body')
+      .eq('course_id', courseId)
+      .eq('status', 'published')
+      .order('sort_order', { ascending: true }),
   ])
 
   const course = courseResult.data
   if (!course) notFound()
 
-  const blocks = (blocksResult.data ?? []) as CourseBlock[]
+  const blocks      = (blocksResult.data ?? []) as CourseBlock[]
+  const contentPages = (pagesResult.data ?? []) as { id: string; title: string; body: object }[]
 
   // Get student's submissions for this course's blocks
   const activityBlockIds = blocks
@@ -104,6 +111,7 @@ export default async function LearnPage({
       orgId={course.org_id}
       modules={modules}
       blocks={blocks}
+      contentPages={contentPages}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase select shape doesn't match LearningShell prop type
       submissions={submissions as any}
       initialBlockId={initialBlockId}

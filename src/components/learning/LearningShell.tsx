@@ -9,7 +9,14 @@ import BlockPlayer from './BlockPlayer'
 import { FocusModeToggle } from '@/components/ui/FocusModeToggle'
 import { useFocusMode } from '@/hooks/useFocusMode'
 import { markBlockViewed } from '@/app/actions/learning'
+import { tiptapToHtml } from '@/utils/tiptap'
 import type { CourseBlock } from '@/types/blocks'
+
+interface ContentPage {
+  id:    string
+  title: string
+  body:  object
+}
 
 interface Submission {
   blockId:   string
@@ -32,6 +39,7 @@ interface Props {
   orgId:           string
   modules:         Module[]
   blocks:          CourseBlock[]
+  contentPages?:   ContentPage[]
   submissions:     Submission[]
   initialBlockId:  string | null
   progressPercent: number
@@ -42,7 +50,7 @@ interface Props {
 const CONTENT_TYPES = new Set(['page', 'video_stream', 'resource_file', 'external_url'])
 
 export default function LearningShell({
-  courseId, courseTitle, orgId, modules, blocks, submissions, initialBlockId, progressPercent, isStaff, viewerRole,
+  courseId, courseTitle, orgId, modules, blocks, contentPages = [], submissions, initialBlockId, progressPercent, isStaff, viewerRole,
 }: Props) {
   const publishedBlocks = blocks.filter((b) => b.is_published || isStaff)
 
@@ -56,11 +64,12 @@ export default function LearningShell({
     submissions.filter((s) => s.status !== 'draft').map((s) => s.blockId)
   )
 
-  const [currentId,       setCurrentId]      = useState<string | null>(initialBlockId ?? findFirst()?.id ?? null)
-  const [sidebarOpen,     setSidebarOpen]    = useState(true)
-  const [xpToast,         setXpToast]        = useState<number | null>(null)
-  const [completedIds,    setCompletedIds]   = useState<Set<string>>(initialCompleted)
-  const [isFocusMode,     toggleFocusMode]   = useFocusMode()
+  const [currentId,          setCurrentId]         = useState<string | null>(initialBlockId ?? findFirst()?.id ?? null)
+  const [currentContentPage, setCurrentContentPage] = useState<string | null>(null)
+  const [sidebarOpen,        setSidebarOpen]        = useState(true)
+  const [xpToast,            setXpToast]            = useState<number | null>(null)
+  const [completedIds,       setCompletedIds]       = useState<Set<string>>(initialCompleted)
+  const [isFocusMode,        toggleFocusMode]       = useFocusMode()
   const [, startTransition] = useTransition()
   const router = useRouter()
 
@@ -120,6 +129,13 @@ export default function LearningShell({
     const viewedAfter = currentIndex + 1
     trackCurrentBlock(viewedAfter)
     setCurrentId(blockId)
+    setCurrentContentPage(null)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function navigateToPage(pageId: string) {
+    setCurrentContentPage(pageId)
+    setCurrentId(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -183,7 +199,7 @@ export default function LearningShell({
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-2" aria-label="Course modules">
+        <nav className="flex-1 overflow-y-auto py-2" aria-label="Course navigation">
           {moduleHeaders.length === 0 ? (
             <div className="px-2 py-1">
               {navBlocks.map((block) => (
@@ -219,6 +235,32 @@ export default function LearningShell({
               )
             })
           )}
+
+          {/* Published pages section */}
+          {contentPages.length > 0 && (
+            <div className="mt-2 border-t border-slate-800 pt-2">
+              <div className="px-4 py-2">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Pages</p>
+              </div>
+              {contentPages.map((page) => (
+                <button
+                  key={page.id}
+                  type="button"
+                  onClick={() => navigateToPage(page.id)}
+                  aria-current={currentContentPage === page.id ? 'page' : undefined}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors rounded-lg mx-1',
+                    currentContentPage === page.id
+                      ? 'bg-indigo-600 text-white'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  )}
+                >
+                  <span className="text-base shrink-0" aria-hidden="true">📄</span>
+                  <span className="flex-1 truncate">{page.title}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </nav>
       </aside>
 
@@ -242,7 +284,31 @@ export default function LearningShell({
 
       {/* Main content */}
       <main id="main-content" className="flex-1 overflow-y-auto bg-slate-50">
-        {!current ? (
+        {/* Content page viewer */}
+        {currentContentPage && (() => {
+          const page = contentPages.find((p) => p.id === currentContentPage)
+          if (!page) return null
+          const html = tiptapToHtml(page.body)
+          return (
+            <div className="max-w-3xl mx-auto py-8 px-6">
+              <div className="mb-6">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                  <span aria-hidden="true">📄</span>
+                  <span className="font-medium uppercase tracking-wide">Page</span>
+                </div>
+                <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{page.title}</h1>
+              </div>
+              <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
+                {html
+                  ? <div dangerouslySetInnerHTML={{ __html: html }} />
+                  : <p className="italic text-muted-foreground">No content yet.</p>
+                }
+              </div>
+            </div>
+          )
+        })()}
+
+        {!currentContentPage && !current ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <p className="text-xl font-bold text-foreground mb-2">Welcome to {courseTitle}</p>
@@ -253,7 +319,7 @@ export default function LearningShell({
               </p>
             </div>
           </div>
-        ) : (
+        ) : !currentContentPage && current && (
           <div className="max-w-3xl mx-auto py-8 px-6">
             {/* Block header */}
             <div className="mb-6">
@@ -324,6 +390,7 @@ export default function LearningShell({
     </div>
   )
 }
+
 
 function SidebarItem({
   block, active, completed, onClick,

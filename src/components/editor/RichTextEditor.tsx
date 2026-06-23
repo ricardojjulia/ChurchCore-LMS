@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
+import TextAlign from '@tiptap/extension-text-align'
 import { useEffect, useCallback, useRef } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -89,6 +90,12 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload: () 
       <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} label="Ordered list">#≡</ToolBtn>
       <Divider />
 
+      {/* Alignment */}
+      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('left').run()}   active={editor.isActive({ textAlign: 'left' })}    label="Align left">⇤</ToolBtn>
+      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })}  label="Align center">⇔</ToolBtn>
+      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('right').run()}  active={editor.isActive({ textAlign: 'right' })}   label="Align right">⇥</ToolBtn>
+      <Divider />
+
       {/* Block */}
       <ToolBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} label="Blockquote">❝</ToolBtn>
       <ToolBtn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} label="Code block">
@@ -136,6 +143,7 @@ export default function RichTextEditor({
       Image.configure({ inline: false }),
       Underline,
       Placeholder.configure({ placeholder }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
     ],
     content:  content ?? { type: 'doc', content: [] },
     editable,
