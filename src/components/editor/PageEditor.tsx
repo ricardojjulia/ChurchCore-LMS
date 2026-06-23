@@ -79,7 +79,7 @@ export default function PageEditor({ pageId, courseId, title: initialTitle, body
           onClick={() => router.push(`/courses/${courseId}/pages`)}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          ← All pages
+          ← All materials
         </button>
 
         <div className="flex items-center gap-3">
@@ -123,6 +123,23 @@ export default function PageEditor({ pageId, courseId, title: initialTitle, body
           </button>
         </div>
       </div>
+
+      {/* Draft callout */}
+      {status === 'draft' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4 flex items-center justify-between gap-4">
+          <p className="text-sm text-amber-800">
+            <span className="font-semibold">Draft — </span>students cannot see this material yet. Publish it when it's ready.
+          </p>
+          <button
+            type="button"
+            onClick={handlePublish}
+            disabled={pubPending}
+            className="shrink-0 text-sm font-bold text-white bg-primary rounded-lg px-4 py-1.5 hover:bg-primary/90 transition-colors disabled:opacity-50"
+          >
+            {pubPending ? 'Publishing…' : 'Publish now'}
+          </button>
+        </div>
+      )}
 
       {/* Embedding status note */}
       {embeddingNote && (

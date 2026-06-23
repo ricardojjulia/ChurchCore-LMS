@@ -50,7 +50,7 @@ export default async function CoursePage({
 
   const isStaff = ['admin', 'manager', 'teacher'].includes(profile?.role ?? '')
 
-  const [courseResult, blocksResult] = await Promise.all([
+  const [courseResult, blocksResult, materialsResult] = await Promise.all([
     supabase
       .from('courses')
       .select(`
@@ -70,10 +70,16 @@ export default async function CoursePage({
       .select('id, title, block_type_id, parent_block_id, sort_order, is_published, gamification')
       .eq('course_id', courseId)
       .order('sort_order', { ascending: true }),
+    supabase
+      .from('content_pages')
+      .select('id', { count: 'exact', head: true })
+      .eq('course_id', courseId)
+      .eq('status', 'published'),
   ])
 
-  const course    = courseResult.data as CourseRow | null
-  const allBlocks = (blocksResult.data ?? []) as CourseBlock[]
+  const course         = courseResult.data as CourseRow | null
+  const allBlocks      = (blocksResult.data ?? []) as CourseBlock[]
+  const materialsCount = materialsResult.count ?? 0
 
   if (!course) {
     return (
@@ -214,6 +220,9 @@ export default async function CoursePage({
                   {moduleHeaders.length > 0 && (
                     <span>{moduleHeaders.length} module{moduleHeaders.length !== 1 ? 's' : ''}</span>
                   )}
+                  {materialsCount > 0 && (
+                    <span>📚 {materialsCount} additional material{materialsCount !== 1 ? 's' : ''}</span>
+                  )}
                   {course.min_required_level > 1 && (
                     <span className="inline-flex items-center gap-1 text-amber-600 font-semibold bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5 text-xs">
                       ⚡ Level {course.min_required_level}+ required
@@ -250,6 +259,14 @@ export default async function CoursePage({
                           />
                         </div>
                       </div>
+                    )}
+                    {materialsCount > 0 && !isStaff && (
+                      <Link
+                        href={`/courses/${courseId}/pages`}
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-xl px-4 py-2 hover:bg-slate-50 transition-colors"
+                      >
+                        📚 Additional Materials ({materialsCount})
+                      </Link>
                     )}
                   </>
                 ) : !isStaff && user ? (
@@ -293,7 +310,7 @@ export default async function CoursePage({
                       href={`/courses/${courseId}/pages`}
                       className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
                     >
-                      Pages
+                      📚 Materials
                     </Link>
                     <Link
                       href={`/courses/${courseId}/attendance`}
