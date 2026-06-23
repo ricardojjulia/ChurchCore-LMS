@@ -3,13 +3,14 @@ import { notFound }            from 'next/navigation'
 import { createServiceClient } from '@/utils/supabase/service'
 import TenantActions           from '../../TenantActions'
 
-export default async function TenantDetailPage({ params }: { params: { id: string } }) {
+export default async function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const service = createServiceClient()
 
   const { data: org } = await service
     .from('organizations')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!org) notFound()
@@ -43,7 +44,7 @@ export default async function TenantDetailPage({ params }: { params: { id: strin
           >
             Edit Settings
           </Link>
-          <TenantActions orgId={org.id} status={org.status} />
+          <TenantActions orgId={org.id} orgName={org.name} status={org.status} />
         </div>
       </div>
 

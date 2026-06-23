@@ -144,7 +144,7 @@ export default async function PlatformPage() {
                     : '—'}
                 </td>
                 <td className="px-4 py-3">
-                  <TenantActions orgId={t.id} status={t.status} />
+                  <TenantActions orgId={t.id} orgName={t.name} status={t.status} />
                 </td>
               </tr>
             ))}

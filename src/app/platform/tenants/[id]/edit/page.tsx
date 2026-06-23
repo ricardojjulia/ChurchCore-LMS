@@ -2,13 +2,14 @@ import { notFound }            from 'next/navigation'
 import { createServiceClient } from '@/utils/supabase/service'
 import { updateTenant }        from '../../../actions'
 
-export default async function EditTenantPage({ params }: { params: { id: string } }) {
+export default async function EditTenantPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const service = createServiceClient()
 
   const { data: org } = await service
     .from('organizations')
     .select('id, name, slug, plan, settings')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!org) notFound()

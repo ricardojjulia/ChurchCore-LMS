@@ -6,24 +6,34 @@ import { suspendTenant, restoreTenant, softDeleteTenant } from './actions'
 
 export default function TenantActions({
   orgId,
+  orgName,
   status,
 }: {
-  orgId: string
-  status: string
+  orgId:    string
+  orgName:  string
+  status:   string
 }) {
   const [pending, start] = useTransition()
 
   function handleSuspend() {
-    if (!confirm('Suspend this tenant? All users will be locked out immediately.')) return
+    if (!confirm(`Suspend "${orgName}"? All users will be locked out immediately.`)) return
     start(() => suspendTenant(orgId))
   }
 
   function handleRestore() {
+    if (!confirm(`Restore "${orgName}"?`)) return
     start(() => restoreTenant(orgId))
   }
 
   function handleDelete() {
-    if (!confirm('Soft-delete this tenant? It will be permanently purged after 30 days.')) return
+    const typed = window.prompt(
+      `This will soft-delete "${orgName}" and lock out all users.\n\nType the organization name to confirm:`
+    )
+    if (typed === null) return
+    if (typed.trim() !== orgName) {
+      alert('Name did not match. Deletion cancelled.')
+      return
+    }
     start(() => softDeleteTenant(orgId))
   }
 

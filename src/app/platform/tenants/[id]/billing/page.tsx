@@ -7,17 +7,14 @@ import BillingActions from './BillingActions'
 
 export const dynamic = 'force-dynamic'
 
-interface Props {
-  params: { id: string }
-}
-
-export default async function BillingPage({ params }: Props) {
+export default async function BillingPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const service = createServiceClient()
 
   const { data: org } = await service
     .from('organizations')
     .select('id, name, slug, plan, status, settings')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!org) notFound()
