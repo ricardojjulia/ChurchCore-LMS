@@ -26,10 +26,18 @@ export async function createPage(
 ): Promise<{ id?: string; error?: string }> {
   const { supabase, profile } = await requireStaff()
 
+  const { data: course } = await supabase
+    .from('courses')
+    .select('org_id')
+    .eq('id', courseId)
+    .single()
+  if (!course?.org_id) return { error: 'Course not found.' }
+
   const { data, error } = await supabase
     .from('content_pages')
     .insert({
       course_id:  courseId,
+      org_id:     course.org_id,
       title:      'Untitled Page',
       body:       { type: 'doc', content: [] },
       created_by: profile.uid,
