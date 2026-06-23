@@ -6,7 +6,7 @@ import {
   LayoutDashboard, BookOpen, BarChart3, BarChart2, Award, Trophy,
   MessageCircle, Megaphone, Calendar, Users, Shield, Zap,
   UserCog, Layers, Clock, FileText, Sparkles, Activity,
-  ChevronLeft, ChevronRight, GitBranch, CreditCard,
+  ChevronLeft, ChevronRight, GitBranch, CreditCard, Settings,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -51,6 +51,7 @@ const LINKS: NavLink[] = [
   { href: '/admin/ai-analytics', label: 'AI Analytics',    Icon: Sparkles,       adminOnly: true,       featureGate: 'ai_tutor' },
   { href: '/admin/billing',      label: 'Billing',         Icon: CreditCard,     adminOnly: true },
   { href: '/admin/health',       label: 'System Health',   Icon: Activity,       adminOnly: true,       healthBadge: true },
+  { href: '/admin/settings',    label: 'Org Settings',    Icon: Settings,       adminOnly: true },
   { href: '/platform',           label: 'Platform Admin',  Icon: Shield,         platformAdminOnly: true },
 ]
 

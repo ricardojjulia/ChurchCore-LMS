@@ -129,6 +129,164 @@ export async function softDeleteTenant(orgId: string) {
   redirect('/platform')
 }
 
+// ─── Reset Tenant to Empty (keep users) ──────────────────────────────────────
+export async function resetTenantToEmpty(orgId: string) {
+  const actor = await assertPlatformAdmin()
+  const service = createServiceClient()
+
+  // Delete leaf-level records first to avoid FK violations, then parent tables.
+  // courses cascades: course_blocks, course_enrollments, block_submissions,
+  //   content_pages, course_certificates, enrollment_audit_log.
+  // global_cohorts cascades: cohort_members, cohort_section_enrollments, enrollment_jobs.
+  // course_sections cascades: section_groups, section_group_members, access_windows.
+  // hq_sessions cascades: hq_tasks, hq_risks, hq_decisions.
+  // question_banks cascades: bank_questions.
+
+  await Promise.all([
+    service.from('announcements').delete().eq('org_id', orgId),
+    service.from('engagement_events').delete().eq('org_id', orgId),
+    service.from('engagement_streaks').delete().eq('org_id', orgId),
+  ])
+
+  await Promise.all([
+    service.from('hq_sessions').delete().eq('org_id', orgId),
+    service.from('courses').delete().eq('org_id', orgId),
+    service.from('question_banks').delete().eq('org_id', orgId),
+    service.from('course_blueprints').delete().eq('org_id', orgId),
+  ])
+
+  await Promise.all([
+    service.from('global_cohorts').delete().eq('org_id', orgId),
+    service.from('course_sections').delete().eq('org_id', orgId),
+    service.from('academic_terms').delete().eq('org_id', orgId),
+    service.from('program_tracks').delete().eq('org_id', orgId),
+  ])
+
+  await logAction(actor.id, 'reset_tenant_empty', orgId)
+  revalidatePath(`/platform/tenants/${orgId}`)
+}
+
+// ─── Reset Tenant to Demo Data ────────────────────────────────────────────────
+export async function resetTenantToDemo(orgId: string) {
+  // First wipe existing content
+  const actor = await assertPlatformAdmin()
+  const service = createServiceClient()
+
+  await Promise.all([
+    service.from('announcements').delete().eq('org_id', orgId),
+    service.from('engagement_events').delete().eq('org_id', orgId),
+    service.from('engagement_streaks').delete().eq('org_id', orgId),
+  ])
+  await Promise.all([
+    service.from('hq_sessions').delete().eq('org_id', orgId),
+    service.from('courses').delete().eq('org_id', orgId),
+    service.from('question_banks').delete().eq('org_id', orgId),
+    service.from('course_blueprints').delete().eq('org_id', orgId),
+  ])
+  await Promise.all([
+    service.from('global_cohorts').delete().eq('org_id', orgId),
+    service.from('course_sections').delete().eq('org_id', orgId),
+    service.from('academic_terms').delete().eq('org_id', orgId),
+    service.from('program_tracks').delete().eq('org_id', orgId),
+  ])
+
+  // Both courses (owner_id) and announcements (created_by) require a profiles.uid
+  const { data: adminProfile } = await service
+    .from('profiles')
+    .select('uid')
+    .eq('org_id', orgId)
+    .in('role', ['admin', 'manager'])
+    .limit(1)
+    .single()
+
+  if (!adminProfile) {
+    // No admin found — seed course and cohort only (no owner_id = skip course seed)
+    await service.from('global_cohorts').insert({
+      org_id: orgId,
+      name:   'Sample Group',
+      status: 'active',
+    })
+  } else {
+    // Seed demo course
+    const { data: course } = await service
+      .from('courses')
+      .insert({
+        org_id:      orgId,
+        owner_id:    adminProfile.uid,
+        title:       'Introduction to Faith & Learning',
+        description: 'A sample course to help you explore the ChurchCore LMS platform.',
+        status:      'published',
+      })
+      .select('id')
+      .single()
+
+    if (course) {
+      await service.from('course_blocks').insert([
+        {
+          course_id: course.id,
+          org_id:    orgId,
+          type:      'text',
+          position:  0,
+          content:   {
+            title: 'Welcome',
+            body:  '<h2>Welcome to ChurchCore LMS!</h2><p>This is a sample course to help you explore the platform. You can edit or delete this content at any time.</p>',
+          },
+        },
+        {
+          course_id: course.id,
+          org_id:    orgId,
+          type:      'video',
+          position:  1,
+          content:   {
+            title: 'Platform Overview',
+            url:   'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+          },
+        },
+        {
+          course_id: course.id,
+          org_id:    orgId,
+          type:      'quiz',
+          position:  2,
+          content:   {
+            title:     'Check Your Understanding',
+            questions: [
+              {
+                id:      'q1',
+                text:    'What is the primary purpose of ChurchCore LMS?',
+                type:    'multiple_choice',
+                options: ['Manage finances', 'Deliver ministry learning', 'Schedule services', 'Track attendance'],
+                answer:  1,
+              },
+            ],
+            pass_percent: 80,
+          },
+        },
+      ])
+    }
+
+    // Seed demo cohort
+    await service.from('global_cohorts').insert({
+      org_id: orgId,
+      name:   'Sample Group',
+      status: 'active',
+    })
+
+    // Seed demo announcement
+    await service.from('announcements').insert({
+      org_id:       orgId,
+      created_by:   adminProfile.uid,
+      title:        'Welcome to ChurchCore LMS!',
+      body:         'Your demo environment is ready. Explore courses, invite users, and customize your organization settings.',
+      scope:        'global',
+      is_published: true,
+      published_at: new Date().toISOString(),
+    })
+  }
+
+  await logAction(actor.id, 'reset_tenant_demo', orgId)
+  revalidatePath(`/platform/tenants/${orgId}`)
+}
+
 // ─── Update Tenant Settings ───────────────────────────────────────────────────
 export async function updateTenant(orgId: string, formData: FormData) {
   const actor = await assertPlatformAdmin()

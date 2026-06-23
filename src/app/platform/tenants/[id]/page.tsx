@@ -2,6 +2,7 @@ import Link                   from 'next/link'
 import { notFound }            from 'next/navigation'
 import { createServiceClient } from '@/utils/supabase/service'
 import TenantActions           from '../../TenantActions'
+import ResetActions            from './ResetActions'
 
 export default async function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -137,6 +138,14 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           </div>
         </Section>
       </div>
+
+      {/* Danger Zone — Reset */}
+      <Section title="Danger Zone" className="mt-8 border-rose-900/50 bg-rose-950/20">
+        <p className="text-sm text-slate-400 mb-4">
+          Reset this tenant&apos;s content. User accounts are always preserved.
+        </p>
+        <ResetActions orgId={org.id} orgName={org.name} />
+      </Section>
 
       {/* Audit log */}
       <Section title="Audit Log" className="mt-8">

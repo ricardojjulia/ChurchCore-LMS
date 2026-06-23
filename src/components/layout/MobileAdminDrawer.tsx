@@ -12,6 +12,7 @@ const ADMIN_LINKS = [
   { href: '/admin/blueprints', label: 'Blueprints',     Icon: FileText   },
   { href: '/admin/billing',    label: 'Billing',        Icon: CreditCard },
   { href: '/admin/health',     label: 'System Health',  Icon: Activity   },
+  { href: '/admin/settings',  label: 'Org Settings',   Icon: Settings   },
 ] as const
 
 interface Props {
