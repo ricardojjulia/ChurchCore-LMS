@@ -6,6 +6,11 @@ import Image from '@tiptap/extension-image'
 import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
 import TextAlign from '@tiptap/extension-text-align'
+import Link from '@tiptap/extension-link'
+import Highlight from '@tiptap/extension-highlight'
+import { TextStyle } from '@tiptap/extension-text-style'
+import Color from '@tiptap/extension-color'
+import Youtube from '@tiptap/extension-youtube'
 import { useEffect, useCallback, useRef } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -54,6 +59,22 @@ function Divider() {
 }
 
 function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload: () => void }) {
+  function handleLink() {
+    if (editor.isActive('link')) {
+      editor.chain().focus().unsetLink().run()
+      return
+    }
+    const url = window.prompt('Enter URL:', 'https://')
+    if (!url) return
+    editor.chain().focus().setLink({ href: url, target: '_blank' }).run()
+  }
+
+  function handleVideo() {
+    const url = window.prompt('Enter YouTube or Vimeo URL:')
+    if (!url) return
+    editor.commands.setYoutubeVideo({ src: url })
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-0.5 px-3 py-2 border-b border-border bg-slate-50 rounded-t-xl">
       {/* History */}
@@ -83,6 +104,38 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload: () 
       <ToolBtn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} label="Inline code">
         <code className="text-xs">{'<>'}</code>
       </ToolBtn>
+      <ToolBtn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} label="Highlight">
+        <span className="bg-yellow-300 px-0.5 rounded text-xs font-bold">ab</span>
+      </ToolBtn>
+      <Divider />
+
+      {/* Text color */}
+      <label
+        aria-label="Text color"
+        title="Text color"
+        className="relative flex items-center justify-center w-7 h-7 rounded cursor-pointer text-muted-foreground hover:bg-slate-100 hover:text-foreground transition-colors"
+      >
+        <span className="text-sm font-bold border-b-2 border-current">A</span>
+        <input
+          type="color"
+          className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+          onInput={(e) => editor.chain().focus().setColor((e.target as HTMLInputElement).value).run()}
+          title="Text color"
+        />
+      </label>
+      <ToolBtn
+        onClick={() => editor.chain().focus().unsetColor().run()}
+        label="Remove text color"
+        disabled={!editor.isActive('textStyle')}
+      >
+        <span className="text-xs line-through">A</span>
+      </ToolBtn>
+      <Divider />
+
+      {/* Link */}
+      <ToolBtn onClick={handleLink} active={editor.isActive('link')} label={editor.isActive('link') ? 'Remove link' : 'Insert link'}>
+        🔗
+      </ToolBtn>
       <Divider />
 
       {/* Lists */}
@@ -91,9 +144,10 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload: () 
       <Divider />
 
       {/* Alignment */}
-      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('left').run()}   active={editor.isActive({ textAlign: 'left' })}    label="Align left">⇤</ToolBtn>
-      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })}  label="Align center">⇔</ToolBtn>
-      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('right').run()}  active={editor.isActive({ textAlign: 'right' })}   label="Align right">⇥</ToolBtn>
+      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('left').run()}    active={editor.isActive({ textAlign: 'left' })}    label="Align left">⇤</ToolBtn>
+      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('center').run()}  active={editor.isActive({ textAlign: 'center' })}  label="Align center">⇔</ToolBtn>
+      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('right').run()}   active={editor.isActive({ textAlign: 'right' })}   label="Align right">⇥</ToolBtn>
+      <ToolBtn onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })} label="Justify">☰</ToolBtn>
       <Divider />
 
       {/* Block */}
@@ -103,7 +157,19 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload: () 
       </ToolBtn>
       <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} label="Horizontal rule">—</ToolBtn>
       <Divider />
+
+      {/* Media */}
       <ToolBtn onClick={onImageUpload} label="Insert image">🖼</ToolBtn>
+      <ToolBtn onClick={handleVideo} label="Embed video">▶</ToolBtn>
+      <Divider />
+
+      {/* Clear formatting */}
+      <ToolBtn
+        onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
+        label="Clear formatting"
+      >
+        <span className="text-xs font-mono">T✕</span>
+      </ToolBtn>
     </div>
   )
 }
@@ -144,6 +210,11 @@ export default function RichTextEditor({
       Underline,
       Placeholder.configure({ placeholder }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Link.configure({ openOnClick: false, HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' } }),
+      Highlight,
+      TextStyle,
+      Color,
+      Youtube.configure({ width: 640, height: 360, nocookie: true }),
     ],
     content:  content ?? { type: 'doc', content: [] },
     editable,
@@ -217,7 +288,9 @@ export default function RichTextEditor({
           '[&_.ProseMirror_p.is-editor-empty:first-child::before]:text-muted-foreground',
           '[&_.ProseMirror_p.is-editor-empty:first-child::before]:float-left',
           '[&_.ProseMirror_p.is-editor-empty:first-child::before]:pointer-events-none',
-          '[&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0'
+          '[&_.ProseMirror_p.is-editor-empty:first-child::before]:h-0',
+          '[&_.ProseMirror_a]:text-primary [&_.ProseMirror_a]:underline',
+          '[&_.ProseMirror_mark]:bg-yellow-200 [&_.ProseMirror_mark]:rounded-sm',
         )}
         style={{ minHeight: editable ? minHeight : undefined }}
       />
