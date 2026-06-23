@@ -72,7 +72,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
         type="button"
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
         aria-haspopup="dialog"
-        {...{ 'aria-expanded': (open ? 'true' : 'false') as 'true' | 'false' }}
+        aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
           'relative transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-400',

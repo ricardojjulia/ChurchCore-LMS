@@ -80,10 +80,19 @@ export default function LearningShell({
     setTimeout(() => setXpToast(null), 3000)
   }
 
+  function fireAnalyticsEvent(eventType: string, blockId: string) {
+    const payload = JSON.stringify({ eventType, courseId, moduleId: blockId })
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      navigator.sendBeacon('/api/analytics/events', new Blob([payload], { type: 'application/json' }))
+    }
+  }
+
   function trackCurrentBlock(viewedIndexAfter: number) {
     if (!current) return
     if (CONTENT_TYPES.has(current.block_type_id)) {
       const blockXp = (current.gamification as any)?.base_xp_reward ?? 0
+      const eventType = current.block_type_id === 'video_stream' ? 'video_watch' : 'module_view'
+      fireAnalyticsEvent(eventType, current.id)
       startTransition(async () => {
         const res = await markBlockViewed(courseId, current.id, navBlocks.length, viewedIndexAfter, blockXp)
         if (res.xpAwarded > 0) showXpToast(res.xpAwarded)
@@ -97,6 +106,10 @@ export default function LearningShell({
     if (!current) return
     setCompletedIds((prev) => new Set(prev).add(current.id))
     if (xpAwarded > 0) showXpToast(xpAwarded)
+    const eventType = current.block_type_id === 'quiz'       ? 'quiz_attempt'
+                    : current.block_type_id === 'assignment'  ? 'assignment_submit'
+                    : 'module_complete'
+    fireAnalyticsEvent(eventType, current.id)
     // Update enrollment progress without re-awarding XP (pass blockXp=0)
     startTransition(async () => {
       await markBlockViewed(courseId, current.id, navBlocks.length, currentIndex + 1, 0)

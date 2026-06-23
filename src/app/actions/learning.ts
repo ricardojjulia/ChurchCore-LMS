@@ -266,6 +266,39 @@ export async function markBlockViewed(
   return { justCompleted, xpAwarded }
 }
 
+// ── Mark a video block as watched (manual confirmation for must_view) ────────
+
+export async function markVideoWatched(blockId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('uid')
+    .eq('auth_id', user.id)
+    .single()
+  if (!profile) return { error: 'Profile not found' }
+
+  // Idempotent — do nothing if already recorded
+  const { data: existing } = await supabase
+    .from('block_submissions')
+    .select('id')
+    .eq('block_id', blockId)
+    .eq('user_id',  profile.uid)
+    .maybeSingle()
+  if (existing) return {}
+
+  const { error } = await supabase.from('block_submissions').insert({
+    block_id:     blockId,
+    user_id:      profile.uid,
+    status:       'submitted',
+    content:      { watched: true },
+    submitted_at: new Date().toISOString(),
+  })
+  return error ? { error: error.message } : {}
+}
+
 // ── Submit an assignment block ────────────────────────────────────────────────
 
 export async function submitAssignment(
@@ -394,6 +427,36 @@ export async function submitQuiz(
     .single()
   if (!profile) return { error: 'Profile not found' }
 
+  // Read block constraints (attempts_allowed, minimum_grade_pct)
+  const { data: block } = await supabase
+    .from('course_blocks')
+    .select('content')
+    .eq('id', blockId)
+    .single()
+  const blockContent     = (block?.content ?? {}) as Record<string, unknown>
+  const attemptsAllowed  = (blockContent.attempts_allowed as number | undefined) ?? 0
+  const minGradePct      = ((blockContent.requirements as Record<string, unknown> | undefined)?.minimum_grade_pct as number | undefined) ?? 0
+
+  // Enforce attempt limit
+  if (attemptsAllowed > 0) {
+    const { count } = await supabase
+      .from('block_submissions')
+      .select('id', { count: 'exact', head: true })
+      .eq('block_id', blockId)
+      .eq('user_id',  profile.uid)
+    if ((count ?? 0) >= attemptsAllowed) {
+      return { error: `No attempts remaining. This quiz allows ${attemptsAllowed} attempt${attemptsAllowed !== 1 ? 's' : ''}.` }
+    }
+  }
+
+  // Count prior attempts to derive attempt_number
+  const { count: priorCount } = await supabase
+    .from('block_submissions')
+    .select('id', { count: 'exact', head: true })
+    .eq('block_id', blockId)
+    .eq('user_id',  profile.uid)
+  const attemptNumber = (priorCount ?? 0) + 1
+
   // Auto-grade (supports multiple_choice, true_false, matching, fill_blank)
   let earnedScore = 0
   const answerMap = new Map(answers.map((a) => [a.questionId, a]))
@@ -414,22 +477,29 @@ export async function submitQuiz(
     }
   }
 
+  const gradePct    = maxScore > 0 ? Math.round((earnedScore / maxScore) * 100) : 0
+  const belowMin    = minGradePct > 0 && gradePct < minGradePct
+  const subStatus   = belowMin ? 'returned' : 'graded'
+  const subFeedback = belowMin
+    ? `Score of ${gradePct}% is below the required passing score of ${minGradePct}%. ${attemptsAllowed > 0 ? `You have ${attemptsAllowed - attemptNumber} attempt(s) remaining.` : 'Please review the material and try again.'}`
+    : null
+
   const { error } = await supabase
     .from('block_submissions')
     .insert({
-      block_id:     blockId,
-      user_id:      profile.uid,
-      status:       'graded',
-      content:      { answers },
-      score:        earnedScore,
-      max_score:    maxScore,
-      submitted_at: new Date().toISOString(),
-      graded_at:    new Date().toISOString(),
+      block_id:       blockId,
+      user_id:        profile.uid,
+      status:         subStatus,
+      content:        { answers },
+      score:          earnedScore,
+      max_score:      maxScore,
+      feedback:       subFeedback,
+      attempt_number: attemptNumber,
+      submitted_at:   new Date().toISOString(),
+      graded_at:      new Date().toISOString(),
     })
 
   if (error) return { error: error.message }
-
-  const gradePct = maxScore > 0 ? Math.round((earnedScore / maxScore) * 100) : 0
 
   // Record quiz engagement event — handles XP award + streak + deduplication atomically
   const quizXp = blockXp > 0
@@ -554,6 +624,42 @@ export async function gradeSubmission(
     } catch {
       // Email failure must never break the grading action
     }
+  }
+
+  // Queue guardian notification for grade event (fire-and-forget)
+  try {
+    const { data: studentAuthRow } = await service
+      .from('profiles')
+      .select('uid')
+      .eq('uid', sub.user_id)
+      .maybeSingle()
+
+    if (studentAuthRow?.uid) {
+      const { data: guardianLinks } = await service
+        .from('guardian_links')
+        .select('guardian_uid')
+        .eq('student_uid', studentAuthRow.uid)
+
+      if (guardianLinks?.length) {
+        const gradePct = sub.max_score ? Math.round((score / sub.max_score) * 100) : null
+        await service.from('guardian_notification_queue').insert(
+          guardianLinks.map((g) => ({
+            student_uid: studentAuthRow.uid,
+            event_type:  'assignment_graded',
+            payload:     {
+              guardian_uid: g.guardian_uid,
+              score,
+              max_score:  sub.max_score,
+              grade_pct:  gradePct,
+              feedback:   feedback.trim() || null,
+              block_id:   sub.block_id,
+            },
+          }))
+        )
+      }
+    }
+  } catch {
+    // Guardian notification must never break the grading action
   }
 
   revalidatePath('/courses/[id]/submissions', 'page')

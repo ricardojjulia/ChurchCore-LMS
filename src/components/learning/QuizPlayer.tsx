@@ -14,11 +14,14 @@ interface BankDraw {
 }
 
 interface Props {
-  blockId:           string
-  questions:         QuizQuestion[]
-  blockXp?:          number
-  timeLimitMinutes?: number | null
-  bankDraws?:        BankDraw[]
+  blockId:            string
+  questions:          QuizQuestion[]
+  blockXp?:           number
+  timeLimitMinutes?:  number | null
+  bankDraws?:         BankDraw[]
+  attemptsAllowed?:   number
+  attemptsUsed?:      number
+  minimumGradePct?:   number
   existingSub?: {
     status:    string
     grade_pct: number | null
@@ -52,6 +55,9 @@ export default function QuizPlayer({
   blockXp = 0,
   timeLimitMinutes,
   bankDraws,
+  attemptsAllowed = 0,
+  attemptsUsed = 0,
+  minimumGradePct = 0,
   existingSub,
   onComplete,
 }: Props) {
@@ -89,6 +95,19 @@ export default function QuizPlayer({
       <div className="mt-6 flex items-center gap-3 text-muted-foreground text-sm">
         <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
         <span>Preparing quiz…</span>
+      </div>
+    )
+  }
+
+  // Attempts exhausted — show locked state, no form
+  if (attemptsAllowed > 0 && attemptsUsed >= attemptsAllowed && !existingSub) {
+    return (
+      <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-5 py-6 text-center space-y-2">
+        <p className="text-2xl">🔒</p>
+        <p className="font-semibold text-foreground">No attempts remaining</p>
+        <p className="text-sm text-muted-foreground">
+          This quiz allows {attemptsAllowed} attempt{attemptsAllowed !== 1 ? 's' : ''}. You have used all of them.
+        </p>
       </div>
     )
   }
@@ -385,6 +404,22 @@ export default function QuizPlayer({
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-4">
+      {/* Attempt count + passing score info */}
+      {(attemptsAllowed > 0 || minimumGradePct > 0) && (
+        <div className="flex flex-wrap gap-2">
+          {attemptsAllowed > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600">
+              Attempt {attemptsUsed + 1} of {attemptsAllowed}
+            </span>
+          )}
+          {minimumGradePct > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700">
+              Passing score: {minimumGradePct}%
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Timer */}
       {timeLeft !== null && (
         <div className={cn(

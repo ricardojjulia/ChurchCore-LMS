@@ -47,7 +47,17 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   if (block.block_type_id === 'video_stream') {
     const url = content.url as string | undefined
     if (!url) return <p className="text-muted-foreground italic">No video URL configured.</p>
-    return <VideoPlayer url={url} title={block.title} />
+    return (
+      <VideoPlayer
+        url={url}
+        title={block.title}
+        blockId={block.id}
+        durationMinutes={(content.duration_minutes as number | undefined) ?? undefined}
+        mustView={((content.requirements as Record<string, unknown> | undefined)?.must_view as boolean | undefined) ?? false}
+        existingSub={submission as any}
+        onComplete={onComplete}
+      />
+    )
   }
 
   // ── File/Resource ──────────────────────────────────────────────────
@@ -149,6 +159,9 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
           blockXp={(block.gamification as any)?.base_xp_reward ?? 0}
           timeLimitMinutes={(content.time_limit_minutes as number | null | undefined) ?? null}
           bankDraws={(content.bank_draws as Array<{ bank_id: string; count: number }> | undefined) ?? []}
+          attemptsAllowed={(content.attempts_allowed as number | undefined) ?? 0}
+          attemptsUsed={(submission as any)?.attempt_number ?? (submission ? 1 : 0)}
+          minimumGradePct={((content.requirements as Record<string, unknown> | undefined)?.minimum_grade_pct as number | undefined) ?? 0}
           existingSub={submission as any}
           onComplete={onComplete}
         />
