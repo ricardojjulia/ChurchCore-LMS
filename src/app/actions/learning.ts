@@ -676,29 +676,37 @@ export async function createCourseFromOutline({
 
   if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
 
-  // Flatten module + block rows with sequential sort_order
+  // Flatten module + block rows, pre-generating module UUIDs so items can
+  // reference parent_block_id before the bulk insert runs.
   const totalBlocks = outline.modules.reduce((n, m) => n + 1 + m.blocks.length, 0)
   if (totalBlocks > 50) return { error: 'Outline too large — maximum 50 blocks.' }
 
   const rows: {
-    course_id:     string
-    org_id:        string
-    block_type_id: string
-    title:         string
-    content:       Record<string, unknown>
-    sort_order:    number
+    id?:             string
+    course_id:       string
+    org_id:          string
+    parent_block_id?: string
+    block_type_id:   string
+    title:           string
+    content:         Record<string, unknown>
+    sort_order:      number
   }[] = []
 
-  let order = 1
+  let moduleOrder = 1000
   for (const mod of outline.modules) {
+    const moduleId = crypto.randomUUID()
     rows.push({
+      id:            moduleId,
       course_id:     courseId,
       org_id:        pr.org_id,
       block_type_id: 'module_header',
       title:         mod.title,
       content:       {},
-      sort_order:    order++,
+      sort_order:    moduleOrder,
     })
+    moduleOrder += 1000
+
+    let itemOrder = 1000
     for (const block of mod.blocks) {
       const typeId =
         block.type === 'quiz'       ? 'quiz'       :
@@ -706,13 +714,15 @@ export async function createCourseFromOutline({
         'page'
 
       rows.push({
-        course_id:     courseId,
-        org_id:        pr.org_id,
-        block_type_id: typeId,
-        title:         block.title,
-        content:       { objective: block.objective },
-        sort_order:    order++,
+        course_id:       courseId,
+        org_id:          pr.org_id,
+        parent_block_id: moduleId,
+        block_type_id:   typeId,
+        title:           block.title,
+        content:         { objective: block.objective },
+        sort_order:      itemOrder,
       })
+      itemOrder += 1000
     }
   }
 

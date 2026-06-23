@@ -4,6 +4,8 @@ import { createClient } from '@/utils/supabase/server'
 import CourseBuilder from '@/components/builder/CourseBuilder'
 import type { CourseBlock } from '@/types/blocks'
 
+export const dynamic = 'force-dynamic'
+
 export default async function BuildCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
