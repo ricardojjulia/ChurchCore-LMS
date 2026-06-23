@@ -163,6 +163,7 @@ export async function resetTenantToEmpty(orgId: string) {
   ])
 
   await logAction(actor.id, 'reset_tenant_empty', orgId)
+  revalidatePath('/platform')
   revalidatePath(`/platform/tenants/${orgId}`)
 }
 
@@ -190,29 +191,21 @@ export async function resetTenantToDemo(orgId: string) {
     service.from('program_tracks').delete().eq('org_id', orgId),
   ])
 
-  // Both courses (owner_id) and announcements (created_by) require a profiles.uid
-  const { data: adminProfile } = await service
-    .from('profiles')
-    .select('uid')
-    .eq('org_id', orgId)
-    .in('role', ['admin', 'manager'])
-    .limit(1)
-    .single()
+  // courses.owner_id and announcements.created_by require a valid profiles.uid.
+  // Prefer an existing org admin; fall back to the platform actor's own profile
+  // so seeding always works even for empty tenants that have no users yet.
+  const [{ data: orgAdmin }, { data: actorProfile }] = await Promise.all([
+    service.from('profiles').select('uid').eq('org_id', orgId).in('role', ['admin', 'manager']).limit(1).single(),
+    service.from('profiles').select('uid').eq('auth_id', actor.id).single(),
+  ])
+  const ownerUid = orgAdmin?.uid ?? actorProfile?.uid
 
-  if (!adminProfile) {
-    // No admin found — seed course and cohort only (no owner_id = skip course seed)
-    await service.from('global_cohorts').insert({
-      org_id: orgId,
-      name:   'Sample Group',
-      status: 'active',
-    })
-  } else {
-    // Seed demo course
+  if (ownerUid) {
     const { data: course } = await service
       .from('courses')
       .insert({
         org_id:      orgId,
-        owner_id:    adminProfile.uid,
+        owner_id:    ownerUid,
         title:       'Introduction to Faith & Learning',
         description: 'A sample course to help you explore the ChurchCore LMS platform.',
         status:      'published',
@@ -264,17 +257,9 @@ export async function resetTenantToDemo(orgId: string) {
       ])
     }
 
-    // Seed demo cohort
-    await service.from('global_cohorts').insert({
-      org_id: orgId,
-      name:   'Sample Group',
-      status: 'active',
-    })
-
-    // Seed demo announcement
     await service.from('announcements').insert({
       org_id:       orgId,
-      created_by:   adminProfile.uid,
+      created_by:   ownerUid,
       title:        'Welcome to ChurchCore LMS!',
       body:         'Your demo environment is ready. Explore courses, invite users, and customize your organization settings.',
       scope:        'global',
@@ -283,7 +268,14 @@ export async function resetTenantToDemo(orgId: string) {
     })
   }
 
+  await service.from('global_cohorts').insert({
+    org_id: orgId,
+    name:   'Sample Group',
+    status: 'active',
+  })
+
   await logAction(actor.id, 'reset_tenant_demo', orgId)
+  revalidatePath('/platform')
   revalidatePath(`/platform/tenants/${orgId}`)
 }
 
