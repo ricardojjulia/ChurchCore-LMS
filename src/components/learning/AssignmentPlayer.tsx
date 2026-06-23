@@ -8,10 +8,11 @@ const ACCEPTED = '.pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.webp'
 const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 
 interface Props {
-  blockId:       string
-  instructions:  string
-  maxPoints:     number
-  onComplete?:   (xpAwarded: number) => void
+  blockId:        string
+  instructions:   string
+  maxPoints:      number
+  submissionType?: 'text' | 'file' | 'both'
+  onComplete?:    (xpAwarded: number) => void
   existingSub?: {
     status:    string
     content:   { text?: string; file_url?: string; file_name?: string }
@@ -22,7 +23,7 @@ interface Props {
   } | null
 }
 
-export default function AssignmentPlayer({ blockId, instructions, maxPoints, existingSub, onComplete }: Props) {
+export default function AssignmentPlayer({ blockId, instructions, maxPoints, submissionType = 'both', existingSub, onComplete }: Props) {
   const [body,    setBody]    = useState(existingSub?.content?.text ?? '')
   const [file,    setFile]    = useState<File | null>(null)
   const [fileErr, setFileErr] = useState<string | null>(null)
@@ -48,7 +49,9 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, exi
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!body.trim() && !file) return
+    if (submissionType === 'text' && !body.trim()) return
+    if (submissionType === 'file' && !file) return
+    if (submissionType === 'both' && !body.trim() && !file) return
     startTransition(async () => {
       let fileUrl: string | undefined
       let fileName: string | undefined
@@ -151,26 +154,32 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, exi
   return (
     <form onSubmit={handleSubmit} className="mt-6 space-y-4">
       <div className="rounded-xl border border-border bg-white p-5 space-y-4">
-        <div>
-          <label className="block text-sm font-semibold text-foreground mb-2">
-            Your Response
-          </label>
-          <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            rows={8}
-            placeholder="Write your response here…"
-            className="w-full text-sm text-foreground bg-slate-50 border border-border rounded-lg p-3 resize-y focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition"
-            aria-label="Assignment response"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            {body.length.toLocaleString()} characters · Max points: {maxPoints}
-          </p>
-        </div>
+        {submissionType !== 'file' && (
+          <div>
+            <label className="block text-sm font-semibold text-foreground mb-2">
+              Your Response
+            </label>
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={8}
+              placeholder="Write your response here…"
+              className="w-full text-sm text-foreground bg-slate-50 border border-border rounded-lg p-3 resize-y focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition"
+              aria-label="Assignment response"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {body.length.toLocaleString()} characters · Max points: {maxPoints}
+            </p>
+          </div>
+        )}
 
         {/* File attachment */}
+        {submissionType !== 'text' && (
         <div>
-          <p className="text-sm font-semibold text-foreground mb-2">Attachment <span className="font-normal text-muted-foreground">(optional)</span></p>
+          <p className="text-sm font-semibold text-foreground mb-2">
+            {submissionType === 'file' ? 'Upload File' : 'Attachment'}{' '}
+            {submissionType === 'both' && <span className="font-normal text-muted-foreground">(optional)</span>}
+          </p>
           {file ? (
             <div className="flex items-center gap-3 bg-slate-50 border border-border rounded-lg px-4 py-2.5">
               <span className="text-lg" aria-hidden="true">📎</span>
@@ -206,6 +215,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, exi
           )}
           {fileErr && <p className="text-xs text-rose-600 mt-1" role="alert">{fileErr}</p>}
         </div>
+        )}
       </div>
 
       {result?.error && (
@@ -214,7 +224,12 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, exi
 
       <button
         type="submit"
-        disabled={pending || (!body.trim() && !file)}
+        disabled={
+          pending ||
+          (submissionType === 'text' && !body.trim()) ||
+          (submissionType === 'file' && !file) ||
+          (submissionType === 'both' && !body.trim() && !file)
+        }
         className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
       >
         {pending ? 'Submitting…' : 'Submit Assignment'}

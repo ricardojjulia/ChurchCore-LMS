@@ -103,6 +103,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
     const maxPoints    = (content.max_points as number | undefined) ?? 100
     const dueDate      = content.due_date as string | undefined
 
+    const submissionType = (content.submission_type as 'text' | 'file' | 'both' | undefined) ?? 'both'
     return (
       <div>
         {instructions && (
@@ -119,6 +120,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
           blockId={block.id}
           instructions={instructions ?? ''}
           maxPoints={maxPoints}
+          submissionType={submissionType}
           existingSub={submission as any}
           onComplete={onComplete}
         />
