@@ -10,6 +10,7 @@ import QuizForm from './node-forms/QuizForm'
 import DiscussionForm from './node-forms/DiscussionForm'
 import LiveSessionForm from './node-forms/LiveSessionForm'
 import TeacherPlugForm from './node-forms/TeacherPlugForm'
+import AttendanceForm from './node-forms/AttendanceForm'
 
 interface Props {
   blockTypeId: BlockTypeId
@@ -37,6 +38,7 @@ export default function NodeForm({ blockTypeId, initial, onSave, onCancel }: Pro
     case 'discussion':    return <DiscussionForm {...props} />
     case 'live_session':  return <LiveSessionForm {...props} />
     case 'teacher_plug':  return <TeacherPlugForm {...props} />
+    case 'attendance':    return <AttendanceForm {...props} />
     default:              return null
   }
 }

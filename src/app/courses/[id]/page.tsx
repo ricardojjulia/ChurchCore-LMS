@@ -295,6 +295,12 @@ export default async function CoursePage({
                     >
                       Pages
                     </Link>
+                    <Link
+                      href={`/courses/${courseId}/attendance`}
+                      className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                    >
+                      🗓️ Attendance
+                    </Link>
                   </div>
                 )}
               </div>

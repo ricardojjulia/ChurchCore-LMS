@@ -2,7 +2,7 @@ export type BlockCategory = 'content' | 'activity' | 'structure'
 
 export type StructureBlockTypeId = 'module_header' | 'section' | 'certificate'
 export type ContentBlockTypeId   = 'page' | 'video_stream' | 'resource_file' | 'external_url' | 'scorm' | 'live_session' | 'teacher_plug'
-export type ActivityBlockTypeId  = 'assignment' | 'quiz' | 'discussion' | 'survey' | 'checklist' | 'flashcard_set'
+export type ActivityBlockTypeId  = 'assignment' | 'quiz' | 'discussion' | 'survey' | 'checklist' | 'flashcard_set' | 'attendance'
 export type BlockTypeId          = StructureBlockTypeId | ContentBlockTypeId | ActivityBlockTypeId
 
 export interface BlockTypeMeta {
@@ -34,6 +34,7 @@ export const BLOCK_TYPE_META: Record<BlockTypeId, BlockTypeMeta> = {
   survey:        { label: 'Survey',       icon: '📊', category: 'activity',  color: 'teal',    description: 'Anonymous feedback form',              is_active: false },
   checklist:     { label: 'Checklist',    icon: '✅', category: 'activity',  color: 'emerald', description: 'Student self-completion list',         is_active: false },
   flashcard_set: { label: 'Flashcards',   icon: '🗂️', category: 'activity',  color: 'amber',   description: 'Spaced-repetition study cards',        is_active: false },
+  attendance:    { label: 'Attendance',   icon: '🗓️', category: 'activity',  color: 'cyan',    description: 'Track student presence and engagement', is_active: true  },
 }
 
 export interface CourseBlock {

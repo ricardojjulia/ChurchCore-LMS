@@ -5,6 +5,7 @@ import QuizPlayer from './QuizPlayer'
 import DiscussionPlayer from './DiscussionPlayer'
 import LiveSessionPlayer from './LiveSessionPlayer'
 import TeacherPlugPlayer from './TeacherPlugPlayer'
+import AttendancePlayer from './AttendancePlayer'
 import type { CourseBlock, QuizQuestion } from '@/types/blocks'
 
 interface Submission {
@@ -190,6 +191,19 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   if (block.block_type_id === 'teacher_plug') {
     if (!orgId) return <p className="text-muted-foreground italic">Instructor card not available.</p>
     return <TeacherPlugPlayer blockContent={block.content} orgId={orgId} />
+  }
+
+  // ── Attendance ─────────────────────────────────────────────────────
+  if (block.block_type_id === 'attendance') {
+    return (
+      <AttendancePlayer
+        blockId={block.id}
+        sessionTitle={(content.session_title as string | null | undefined) ?? null}
+        trackingMode={(content.tracking_mode as 'auto' | 'manual' | 'both' | undefined) ?? 'both'}
+        points={(content.points_possible as number | undefined) ?? 0}
+        existingSub={submission as any}
+      />
+    )
   }
 
   return (
