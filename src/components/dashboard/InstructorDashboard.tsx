@@ -7,6 +7,7 @@ import DashboardMessagesPreview from './DashboardMessagesPreview'
 import DashboardAnnouncementsPreview from './DashboardAnnouncementsPreview'
 import DashboardUpcomingEvents from './DashboardUpcomingEvents'
 import InstructorActionPanel from './InstructorActionPanel'
+import Leaderboard from '@/components/engagement/Leaderboard'
 import type { DashboardContext } from '@/lib/dashboard/context'
 import { cn } from '@/lib/utils'
 
@@ -116,6 +117,7 @@ export default function InstructorDashboard({ ctx }: { ctx: DashboardContext }) 
         </section>
 
         <InstructorActionPanel uid={ctx.uid} courseIds={ctx.ownedCourses.map((c) => c.id)} />
+        <Leaderboard />
         <DashboardUpcomingEvents isStaff={ctx.isStaff} />
         <DashboardMessagesPreview uid={ctx.uid} />
         <DashboardAnnouncementsPreview uid={ctx.uid} isStaff={ctx.isStaff} />

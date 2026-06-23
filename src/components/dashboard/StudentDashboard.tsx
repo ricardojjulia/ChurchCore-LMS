@@ -9,6 +9,7 @@ import DashboardUpcomingEvents from './DashboardUpcomingEvents'
 import DashboardPerformancePanel from './DashboardPerformancePanel'
 import AiWeeklySummary from './AiWeeklySummary'
 import EngagementWidget from '@/components/engagement/EngagementWidget'
+import Leaderboard from '@/components/engagement/Leaderboard'
 import type { DashboardContext, EnrolledCourse } from '@/lib/dashboard/context'
 
 function Section({
@@ -76,6 +77,7 @@ export default function StudentDashboard({ ctx }: { ctx: DashboardContext }) {
       <div className="max-w-5xl mx-auto">
         <SmartSummaryCard ctx={ctx} />
         <EngagementWidget uid={ctx.uid} />
+        <Leaderboard />
         <AiWeeklySummary uid={ctx.uid} />
 
         {ctx.enrollments.length === 0 ? (

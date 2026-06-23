@@ -361,14 +361,19 @@ export async function submitAssignment(
 // ── Submit a quiz block (auto-graded) ────────────────────────────────────────
 
 interface QuizAnswer {
-  questionId:    string
-  selectedIndex: number
+  questionId:     string
+  selectedIndex?: number
+  matchedPairs?:  Record<string, string>
+  blankAnswers?:  Record<string, string>
 }
 
 interface QuizQuestion {
   id:            string
   points:        number
   correct_index: number
+  type?:         'multiple_choice' | 'true_false' | 'matching' | 'fill_blank'
+  pairs?:        Array<{ id: string; left: string; right: string }>
+  blanks?:       Array<{ id: string; acceptable_answers: string[] }>
 }
 
 export async function submitQuiz(
@@ -389,11 +394,24 @@ export async function submitQuiz(
     .single()
   if (!profile) return { error: 'Profile not found' }
 
-  // Auto-grade
+  // Auto-grade (supports multiple_choice, true_false, matching, fill_blank)
   let earnedScore = 0
-  const answerMap = new Map(answers.map((a) => [a.questionId, a.selectedIndex]))
+  const answerMap = new Map(answers.map((a) => [a.questionId, a]))
   for (const q of questions) {
-    if (answerMap.get(q.id) === q.correct_index) earnedScore += q.points
+    const answer = answerMap.get(q.id)
+    if (!answer) continue
+    if (q.type === 'matching' && q.pairs && answer.matchedPairs) {
+      if (q.pairs.every((p) => answer.matchedPairs![p.id] === p.right)) earnedScore += q.points
+    } else if (q.type === 'fill_blank' && q.blanks && answer.blankAnswers) {
+      const allCorrect = q.blanks.every((blank, idx) =>
+        blank.acceptable_answers.some(
+          (a) => a.toLowerCase().trim() === (answer.blankAnswers![String(idx)] ?? '').toLowerCase().trim()
+        )
+      )
+      if (allCorrect) earnedScore += q.points
+    } else {
+      if (answer.selectedIndex === q.correct_index) earnedScore += q.points
+    }
   }
 
   const { error } = await supabase
@@ -761,3 +779,54 @@ export async function reorderCourseBlocks({
   revalidatePath(`/courses/${courseId}/build`)
   return {}
 }
+
+// ── Load quiz questions (resolves bank draws server-side) ─────────────────────
+
+export async function loadQuizQuestions({
+  blockId,
+}: {
+  blockId: string
+}): Promise<{ questions: QuizQuestionPublic[]; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { questions: [], error: 'Not authenticated' }
+
+  const { data: block } = await supabase
+    .from('course_blocks')
+    .select('content')
+    .eq('id', blockId)
+    .single()
+
+  if (!block) return { questions: [], error: 'Block not found' }
+
+  const content = block.content as Record<string, unknown>
+  const staticQuestions = (content.questions as QuizQuestionPublic[] | undefined) ?? []
+  const bankDraws = (content.bank_draws as Array<{ bank_id: string; count: number }> | undefined) ?? []
+
+  if (!bankDraws.length) return { questions: staticQuestions }
+
+  const drawnQuestions: QuizQuestionPublic[] = []
+  for (const draw of bankDraws) {
+    const { data, error } = await supabase.rpc('draw_from_bank', {
+      p_bank_id: draw.bank_id,
+      p_count:   draw.count,
+    })
+    if (!error && data) {
+      for (const q of data as unknown[]) {
+        drawnQuestions.push(q as QuizQuestionPublic)
+      }
+    }
+  }
+
+  // Fisher-Yates shuffle of merged set
+  const combined = [...staticQuestions, ...drawnQuestions]
+  for (let i = combined.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[combined[i], combined[j]] = [combined[j], combined[i]]
+  }
+
+  return { questions: combined }
+}
+
+// Exported so QuizPlayer can type-check against it
+export type QuizQuestionPublic = import('@/types/blocks').QuizQuestion

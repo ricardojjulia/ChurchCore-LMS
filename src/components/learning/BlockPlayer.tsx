@@ -144,6 +144,8 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
           blockId={block.id}
           questions={questions}
           blockXp={(block.gamification as any)?.base_xp_reward ?? 0}
+          timeLimitMinutes={(content.time_limit_minutes as number | null | undefined) ?? null}
+          bankDraws={(content.bank_draws as Array<{ bank_id: string; count: number }> | undefined) ?? []}
           existingSub={submission as any}
           onComplete={onComplete}
         />

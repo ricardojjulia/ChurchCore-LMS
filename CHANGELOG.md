@@ -11,6 +11,44 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.25.1] — 2026-06-22
+
+### Added
+
+- **Community Leaderboard** (COUNCIL-2026-015) — top-10 XP ranking visible on learner and instructor dashboards
+- `get_leaderboard(p_limit)` SECURITY DEFINER Postgres function — `DENSE_RANK()` for correct tie handling; scoped to `current_user_org_id()` via `profile_roles` JOIN; `tenant_active = true` filter; guardians excluded; current learner's row always included (UNION outside top-N)
+- `Leaderboard` server component — rank medals (🥇🥈🥉), initials avatars, XP + level columns; current user row highlighted with left-border and `(you)` label; "· · ·" separator shown if learner is outside top 10; "You're #1!" badge for the leader; returns `null` if org has no data (graceful empty)
+- `CREATE INDEX IF NOT EXISTS idx_profiles_xp ON profiles(xp_points DESC)` — fast leaderboard sort
+
+---
+
+## [0.25.0] — 2026-06-22
+
+### Added
+
+- **Question Banks** (COUNCIL-2026-011) — reusable question pools with per-attempt random draws
+- `question_banks` and `bank_questions` tables with RLS (teachers can read; admin/manager can write; cross-org access blocked)
+- `draw_from_bank(p_bank_id, p_count)` SECURITY DEFINER Postgres RPC — `ORDER BY random()`, validates org ownership before drawing, returns only question content JSONB
+- `/admin/question-banks` list page — name, description, question count, delete
+- `/admin/question-banks/[id]` detail page — create/edit bank metadata; add questions of all four types (MC, T/F, matching, fill-blank); remove individual questions
+- Quiz builder (QuizForm) now has a "Draw from Bank" section — select a bank + count, add multiple draws; bank draws serialised into `content.bank_draws` JSONB
+- `loadQuizQuestions` server action — resolves `bank_draws` at quiz load time via `draw_from_bank` RPC, Fisher-Yates shuffles static + drawn questions, returns merged list to client
+- QuizPlayer resolves bank draws on mount (shows "Preparing quiz…" spinner); falls back to static questions if bank is empty
+
+---
+
+## [0.24.3] — 2026-06-22
+
+### Added
+
+- **Quiz Extended Types** (COUNCIL-2026-010) — two new question types and a countdown timer
+- **Matching questions** — pairs editor in course builder (left/right columns); player renders right-side options shuffled per session in dropdowns; all-or-nothing scoring
+- **Fill-in-the-blank questions** — template editor with `[blank]` placeholders auto-derives blank slots; per-blank acceptable answers (comma-separated, case-insensitive); player renders inline text inputs within the sentence; all-or-nothing scoring
+- **Quiz timer** — `time_limit_minutes` now active in the player; countdown displayed with urgency styling under 60 s; persisted in `localStorage` across page reloads; auto-submits on expiry with partial answers
+- `submitQuiz` server action extended to grade `matching` (compares matched pair IDs) and `fill_blank` (case-insensitive acceptable_answers match) in addition to existing `multiple_choice`/`true_false` logic
+
+---
+
 ## [0.24.2] — 2026-06-22
 
 ### Added

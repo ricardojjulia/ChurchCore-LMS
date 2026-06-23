@@ -61,10 +61,15 @@ export interface BlockFormData {
 
 // Quiz question shape (stored inside QuizBlock content.questions[])
 export interface QuizQuestion {
-  id: string
-  text: string
-  type: 'multiple_choice' | 'true_false'
-  options: string[]
+  id:            string
+  text:          string
+  type:          'multiple_choice' | 'true_false' | 'matching' | 'fill_blank'
+  options:       string[]
   correct_index: number
-  points: number
+  points:        number
+  // Matching question
+  pairs?:        Array<{ id: string; left: string; right: string }>
+  // Fill-in-the-blank question
+  template?:     string
+  blanks?:       Array<{ id: string; acceptable_answers: string[] }>
 }

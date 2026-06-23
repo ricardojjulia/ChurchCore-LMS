@@ -313,3 +313,150 @@ export async function deleteBadge(badgeId: string): Promise<{ error?: string }> 
   revalidatePath('/admin/badges')
   return {}
 }
+
+// ── Question Banks ────────────────────────────────────────────────────────────
+
+export async function upsertQuestionBank({
+  id,
+  name,
+  description,
+}: {
+  id?: string
+  name: string
+  description: string
+}): Promise<{ id?: string; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('role, org_id, uid')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr || !['admin', 'manager'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  if (id) {
+    const { data: existing } = await supabase
+      .from('question_banks')
+      .select('org_id')
+      .eq('id', id)
+      .single()
+    if (!existing || existing.org_id !== pr.org_id) return { error: 'Not found' }
+
+    const { error } = await supabase
+      .from('question_banks')
+      .update({ name: name.trim(), description: description.trim() })
+      .eq('id', id)
+    if (error) return { error: 'Failed to update question bank' }
+    revalidatePath('/admin/question-banks')
+    return { id }
+  }
+
+  const { data: inserted, error } = await supabase
+    .from('question_banks')
+    .insert({ org_id: pr.org_id, name: name.trim(), description: description.trim(), created_by: pr.uid })
+    .select('id')
+    .single()
+
+  if (error || !inserted) return { error: 'Failed to create question bank' }
+  revalidatePath('/admin/question-banks')
+  return { id: inserted.id }
+}
+
+export async function deleteQuestionBank(bankId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr || !['admin', 'manager'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const { data: bank } = await supabase
+    .from('question_banks')
+    .select('org_id')
+    .eq('id', bankId)
+    .single()
+
+  if (!bank || bank.org_id !== pr.org_id) return { error: 'Not found' }
+
+  const { error } = await supabase.from('question_banks').delete().eq('id', bankId)
+  if (error) return { error: 'Failed to delete question bank' }
+  revalidatePath('/admin/question-banks')
+  return {}
+}
+
+export async function addBankQuestion({
+  bankId,
+  questionType,
+  questionContent,
+}: {
+  bankId: string
+  questionType: string
+  questionContent: Record<string, unknown>
+}): Promise<{ id?: string; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr || !['admin', 'manager'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const { data: bank } = await supabase
+    .from('question_banks')
+    .select('org_id')
+    .eq('id', bankId)
+    .single()
+
+  if (!bank || bank.org_id !== pr.org_id) return { error: 'Not found' }
+
+  const { data: inserted, error } = await supabase
+    .from('bank_questions')
+    .insert({ bank_id: bankId, question_type: questionType, question_content: questionContent })
+    .select('id')
+    .single()
+
+  if (error || !inserted) return { error: 'Failed to add question' }
+  revalidatePath(`/admin/question-banks/${bankId}`)
+  return { id: inserted.id }
+}
+
+export async function deleteBankQuestion(questionId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr || !['admin', 'manager'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const { data: bq } = await supabase
+    .from('bank_questions')
+    .select('bank_id, question_banks!inner(org_id)')
+    .eq('id', questionId)
+    .single()
+
+  if (!bq) return { error: 'Not found' }
+  const orgId = (bq.question_banks as unknown as { org_id: string }).org_id
+  if (orgId !== pr.org_id) return { error: 'Unauthorized' }
+
+  const { error } = await supabase.from('bank_questions').delete().eq('id', questionId)
+  if (error) return { error: 'Failed to delete question' }
+  revalidatePath(`/admin/question-banks/${bq.bank_id}`)
+  return {}
+}
