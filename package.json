@@ -36,7 +36,7 @@
     "@supabase/supabase-js": "^2.43.4",
     "@tiptap/extension-image": "^3.26.1",
     "@tiptap/extension-placeholder": "^3.26.1",
-    "@tiptap/extension-text-align": "^3.27.1",
+    "@tiptap/extension-text-align": "3.26.1",
     "@tiptap/extension-underline": "^3.26.1",
     "@tiptap/html": "^3.26.1",
     "@tiptap/pm": "^3.26.1",
