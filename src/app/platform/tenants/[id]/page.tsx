@@ -3,6 +3,7 @@ import { notFound }            from 'next/navigation'
 import { createServiceClient } from '@/utils/supabase/service'
 import TenantActions           from '../../TenantActions'
 import ResetActions            from './ResetActions'
+import DemoLoginButton         from './DemoLoginButton'
 
 export default async function TenantDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -24,6 +25,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
 
   const features = org.settings?.features ?? {}
   const branding = org.settings?.branding ?? {}
+  const demo     = org.settings?.demo as { seeded_at?: string; admin_email?: string; teacher_email?: string; password?: string } | undefined
 
   return (
     <>
@@ -138,6 +140,32 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           </div>
         </Section>
       </div>
+
+      {/* Demo Credentials — shown only after a demo seed */}
+      {demo?.admin_email && (
+        <Section title="Demo Credentials" className="mt-8 border-indigo-900/50 bg-indigo-950/20">
+          <p className="text-xs text-slate-400 mb-4">
+            Seeded {demo.seeded_at ? new Date(demo.seeded_at).toLocaleString() : ''}.
+            Use these credentials or generate a one-time login link to access the tenant as a demo user.
+          </p>
+          <div className="space-y-3">
+            {[
+              { role: 'Admin',   email: demo.admin_email },
+              { role: 'Teacher', email: demo.teacher_email },
+            ].filter(u => u.email).map(u => (
+              <div key={u.email} className="flex items-center justify-between gap-4 rounded-lg border border-slate-800 bg-slate-900 px-4 py-2.5">
+                <div>
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-3">{u.role}</span>
+                  <span className="font-mono text-xs text-slate-300">{u.email}</span>
+                  <span className="text-slate-600 mx-2">/</span>
+                  <span className="font-mono text-xs text-slate-500">{demo.password}</span>
+                </div>
+                <DemoLoginButton orgId={org.id} email={u.email!} label={`Open as ${u.role}`} />
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* Danger Zone — Reset */}
       <Section title="Danger Zone" className="mt-8 border-rose-900/50 bg-rose-950/20">
