@@ -9,10 +9,12 @@ const SUPABASE_WS   = SUPABASE_URL
   : 'wss://*.supabase.co'
 
 const STRIPE_HOSTS = 'https://js.stripe.com https://checkout.stripe.com'
+const isDev = process.env.NODE_ENV === 'development'
 
 const ContentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com " + STRIPE_HOSTS,
+  // unsafe-eval only in dev: React uses it for call-stack reconstruction in dev mode only.
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://challenges.cloudflare.com ${STRIPE_HOSTS}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: https://${SUPABASE_HOST} https://*.supabase.co`,
   `connect-src 'self' https://${SUPABASE_HOST} ${SUPABASE_WS} https://*.supabase.co wss://*.supabase.co https://api.openai.com https://challenges.cloudflare.com`,
