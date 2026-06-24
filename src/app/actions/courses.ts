@@ -11,6 +11,8 @@ export interface CreateCourseInput {
   prerequisite_course_id?: string | null
   blueprint_id?:           string | null
   status:                  CourseStatus
+  age_min?:                number | null
+  age_max?:                number | null
 }
 
 export async function createCourse(
@@ -41,6 +43,8 @@ export async function createCourse(
       blueprint_id:            input.blueprint_id ?? null,
       status:                  input.status,
       owner_id:                pr.uid,
+      age_min:                 input.age_min ?? null,
+      age_max:                 input.age_max ?? null,
     })
     .select('id')
     .single()

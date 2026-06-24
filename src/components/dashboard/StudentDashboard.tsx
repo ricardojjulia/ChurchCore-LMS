@@ -7,6 +7,7 @@ import DashboardMessagesPreview from './DashboardMessagesPreview'
 import DashboardAnnouncementsPreview from './DashboardAnnouncementsPreview'
 import DashboardUpcomingEvents from './DashboardUpcomingEvents'
 import DashboardPerformancePanel from './DashboardPerformancePanel'
+import DashboardDiplomasSection from './DashboardDiplomasSection'
 import AiWeeklySummary from './AiWeeklySummary'
 import EngagementWidget from '@/components/engagement/EngagementWidget'
 import Leaderboard from '@/components/engagement/Leaderboard'
@@ -121,6 +122,8 @@ export default function StudentDashboard({ ctx }: { ctx: DashboardContext }) {
             {completed.length > 0 && <Section title="Completed" courses={completed} />}
           </>
         )}
+
+        <DashboardDiplomasSection uid={ctx.uid} />
 
         {/* Widgets: order flipped at night */}
         {showMessagesFirst ? (

@@ -2,6 +2,13 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import GroupsPanel from './GroupsPanel'
+import SectionEnrollmentTypeForm from './SectionEnrollmentTypeForm'
+
+const ENROLLMENT_TYPE_BADGE: Record<string, { label: string; className: string }> = {
+  open:          { label: 'Open Enrollment',  className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  cohort_gated:  { label: 'Cohort Required',  className: 'bg-amber-50  text-amber-700  border-amber-200'  },
+  invite_only:   { label: 'Invite Only',       className: 'bg-rose-50   text-rose-700   border-rose-200'   },
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -28,7 +35,7 @@ export default async function SectionDetailPage({
       .from('course_sections')
       .select(`
         id, section_code, delivery_format, is_active, max_enrollment,
-        enrollment_open_date, enrollment_close_date,
+        enrollment_open_date, enrollment_close_date, enrollment_type,
         course_blueprints ( id, title, course_code ),
         academic_terms ( term_name, term_code, start_date, end_date )
       `)
@@ -87,7 +94,7 @@ export default async function SectionDetailPage({
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-3 shrink-0 flex-wrap justify-end">
               {blueprint?.id && (
                 <Link
                   href={`/courses/${blueprint.id}/tutor?section=${sectionId}`}
@@ -103,6 +110,15 @@ export default async function SectionDetailPage({
               }`}>
                 {section.delivery_format}
               </span>
+              {(() => {
+                const enrollBadge = ENROLLMENT_TYPE_BADGE[section.enrollment_type ?? 'open']
+                  ?? ENROLLMENT_TYPE_BADGE.open
+                return (
+                  <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border ${enrollBadge.className}`}>
+                    {enrollBadge.label}
+                  </span>
+                )
+              })()}
             </div>
           </div>
         </div>
@@ -114,6 +130,20 @@ export default async function SectionDetailPage({
           initialGroups={groups as any}
           isAdmin={['admin', 'manager'].includes(me.role)}
         />
+
+        {/* Enrollment type settings (admin/manager only) */}
+        {['admin', 'manager'].includes(me.role) && (
+          <div className="bg-white border border-border rounded-2xl p-8 shadow-sm">
+            <h2 className="text-lg font-bold text-foreground mb-1">Enrollment Settings</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Control who can enroll in this section. Changes take effect immediately for new enrollments.
+            </p>
+            <SectionEnrollmentTypeForm
+              sectionId={sectionId}
+              currentType={section.enrollment_type ?? 'open'}
+            />
+          </div>
+        )}
       </div>
     </main>
   )

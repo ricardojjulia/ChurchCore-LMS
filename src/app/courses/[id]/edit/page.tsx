@@ -23,7 +23,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
   const [courseResult, allCoursesResult, blueprintsResult] = await Promise.all([
     supabase
       .from('courses')
-      .select('id, title, description, status, min_required_level, prerequisite_course_id, owner_id, blueprint_id')
+      .select('id, title, description, status, min_required_level, prerequisite_course_id, owner_id, blueprint_id, age_min, age_max')
       .eq('id', id)
       .single(),
     supabase
@@ -70,6 +70,8 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
             initialPrerequisiteId={course.prerequisite_course_id}
             initialStatus={course.status}
             initialBlueprintId={course.blueprint_id ?? null}
+            initialAgeMin={course.age_min ?? null}
+            initialAgeMax={course.age_max ?? null}
           />
         </div>
       </div>

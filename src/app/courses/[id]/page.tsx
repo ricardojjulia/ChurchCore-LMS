@@ -15,6 +15,8 @@ type CourseRow = {
   owner_id: string | null
   min_required_level: number
   prerequisite_course_id: string | null
+  age_min: number | null
+  age_max: number | null
   prereq: { id: string; title: string } | null
   blueprint: {
     id: string
@@ -101,19 +103,25 @@ export default async function CoursePage({
     id: string
     section_code: string
     delivery_format: string
+    enrollment_type: string
     is_active: boolean
     academic_terms: { term_name: string; term_code: string } | null
   }[] = []
 
-  if (isStaff && blueprint?.id) {
+  if (blueprint?.id) {
     const { data } = await supabase
       .from('course_sections')
-      .select('id, section_code, delivery_format, is_active, academic_terms(term_name, term_code)')
+      .select('id, section_code, delivery_format, enrollment_type, is_active, academic_terms(term_name, term_code)')
       .eq('blueprint_id', blueprint.id)
       .order('created_at', { ascending: false })
 
     blueprintSections = (data ?? []) as unknown as typeof blueprintSections
   }
+
+  // Derive student-facing enrollment notices from active sections
+  const activeSections = blueprintSections.filter((s) => s.is_active)
+  const hasInviteOnly  = activeSections.some((s) => s.enrollment_type === 'invite_only')
+  const hasCohortGated = activeSections.some((s) => s.enrollment_type === 'cohort_gated')
 
   // Check enrollment
   let enrollment: { transit_status: string; progress_percent: number } | null = null
@@ -233,6 +241,15 @@ export default async function CoursePage({
                       Requires: <span className="font-medium text-slate-700">{course.prereq.title}</span>
                     </span>
                   )}
+                  {(course.age_min != null || course.age_max != null) && (
+                    <span className="inline-flex items-center bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2 py-0.5 rounded font-medium">
+                      {course.age_min != null && course.age_max != null
+                        ? `Ages ${course.age_min}–${course.age_max}`
+                        : course.age_min != null
+                        ? `Ages ${course.age_min}+`
+                        : `Up to age ${course.age_max}`}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -270,7 +287,19 @@ export default async function CoursePage({
                     )}
                   </>
                 ) : !isStaff && user ? (
-                  <EnrollButton courseId={courseId} locked={enrollLocked} lockReason={enrollLockReason} />
+                  <>
+                    <EnrollButton courseId={courseId} locked={enrollLocked} lockReason={enrollLockReason} />
+                    {hasInviteOnly && (
+                      <p className="text-xs text-rose-600 font-medium mt-1">
+                        Enrollment by invitation only
+                      </p>
+                    )}
+                    {!hasInviteOnly && hasCohortGated && (
+                      <p className="text-xs text-amber-600 font-medium mt-1">
+                        Cohort enrollment required
+                      </p>
+                    )}
+                  </>
                 ) : !user ? (
                   <Link
                     href="/auth/login"
@@ -391,25 +420,39 @@ export default async function CoursePage({
                           <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Section</th>
                           <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Term</th>
                           <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Format</th>
+                          <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Enrollment</th>
                           <th className="px-4 py-2"><span className="sr-only">Actions</span></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {blueprintSections.map((section) => (
-                          <tr key={section.id}>
-                            <td className="px-4 py-3 font-mono text-foreground">{section.section_code}</td>
-                            <td className="px-4 py-3">
-                              <p className="text-foreground">{section.academic_terms?.term_name ?? '—'}</p>
-                              <p className="text-xs text-muted-foreground font-mono">{section.academic_terms?.term_code ?? ''}</p>
-                            </td>
-                            <td className="px-4 py-3 text-muted-foreground">{section.delivery_format}</td>
-                            <td className="px-4 py-3 text-right">
-                              <Link href={`/admin/sections/${section.id}`} className="text-sm font-semibold text-primary hover:underline">
-                                Manage →
-                              </Link>
-                            </td>
-                          </tr>
-                        ))}
+                        {blueprintSections.map((section) => {
+                          const enrollBadge =
+                            section.enrollment_type === 'cohort_gated'
+                              ? { label: 'Cohort Required', className: 'bg-amber-50 text-amber-700 border-amber-200' }
+                              : section.enrollment_type === 'invite_only'
+                              ? { label: 'Invite Only',     className: 'bg-rose-50  text-rose-700  border-rose-200'  }
+                              : { label: 'Open',            className: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+                          return (
+                            <tr key={section.id}>
+                              <td className="px-4 py-3 font-mono text-foreground">{section.section_code}</td>
+                              <td className="px-4 py-3">
+                                <p className="text-foreground">{section.academic_terms?.term_name ?? '—'}</p>
+                                <p className="text-xs text-muted-foreground font-mono">{section.academic_terms?.term_code ?? ''}</p>
+                              </td>
+                              <td className="px-4 py-3 text-muted-foreground">{section.delivery_format}</td>
+                              <td className="px-4 py-3">
+                                <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded border ${enrollBadge.className}`}>
+                                  {enrollBadge.label}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <Link href={`/admin/sections/${section.id}`} className="text-sm font-semibold text-primary hover:underline">
+                                  Manage →
+                                </Link>
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>

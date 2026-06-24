@@ -168,8 +168,255 @@ export async function resetTenantToEmpty(orgId: string) {
   revalidatePath(`/platform/tenants/${orgId}`)
 }
 
+// ─── Demo Scenario Config ─────────────────────────────────────────────────────
+
+type BlockDef = {
+  type: string
+  content: Record<string, unknown>
+}
+
+type CourseDef = {
+  title:       string
+  description: string
+  blocks:      BlockDef[]
+}
+
+type ScenarioConfig = {
+  label:          string
+  termType:       string
+  termName:       string
+  termCode:       string
+  termStartDays:  number   // days offset from today
+  termEndDays:    number   // days offset from today
+  courses:        CourseDef[]
+  cohortName?:    string
+  cohortCode?:    string
+  hasAgeGate:     boolean  // if true, set age_min=6, age_max=12 on first course
+  useProgramTrack:boolean  // if true, create a program_track and link courses
+  programTrackName?: string
+  programTrackCode?: string
+  openEnrollment: boolean  // true → 'open'; false → 'cohort_gated'
+}
+
+const DEMO_SCENARIOS: Record<string, ScenarioConfig> = {
+  wed_bible_school: {
+    label:          'Wednesday Bible School',
+    termType:       'series',
+    termName:       'Wednesday Bible Studies 2026',
+    termCode:       'WBS-2026',
+    termStartDays:  -180,
+    termEndDays:    185,
+    courses: [
+      {
+        title:       'The Life of Jesus',
+        description: 'A survey of the Gospels exploring the life, ministry, and teachings of Jesus Christ.',
+        blocks: [
+          { type: 'text',  content: { title: 'Welcome', body: '<h2>Welcome to The Life of Jesus</h2><p>We will walk through the four Gospels and discover who Jesus is through His own words and actions.</p>' } },
+          { type: 'video', content: { title: 'The Four Gospels', url: 'https://www.youtube.com/watch?v=ak06MSETeo4' } },
+          { type: 'quiz',  content: { title: 'Gospel Knowledge Check', pass_percent: 70, questions: [
+            { id: 'q1', text: 'Which Gospel is often called the "Gospel of the servant"?', type: 'multiple_choice', options: ['Matthew', 'Mark', 'Luke', 'John'], answer: 1 },
+          ] } },
+        ],
+      },
+      {
+        title:       'Epistles of Paul',
+        description: 'An in-depth study of Paul\'s letters and their theological significance for the church today.',
+        blocks: [
+          { type: 'text',  content: { title: 'Introduction', body: '<h2>Paul\'s Letters to the Church</h2><p>Paul\'s epistles form a significant portion of the New Testament and continue to shape Christian theology.</p>' } },
+          { type: 'video', content: { title: 'Overview of the Epistles', url: 'https://www.youtube.com/watch?v=AavLFNTkLEQ' } },
+          { type: 'assignment', content: { title: 'Letter Analysis', prompt: 'Choose one Pauline epistle and write a 300-word summary of its main theological themes.' } },
+        ],
+      },
+    ],
+    cohortName:     'Wednesday Night Group',
+    cohortCode:     'WNG-2026',
+    hasAgeGate:     false,
+    useProgramTrack:false,
+    openEnrollment: true,
+  },
+
+  summer_kids: {
+    label:          'Summer School for Kids',
+    termType:       'semester',
+    termName:       'Summer Kids 2026',
+    termCode:       'SKS-2026',
+    termStartDays:  7,
+    termEndDays:    63,
+    courses: [
+      {
+        title:       'Bible Stories for Kids',
+        description: 'Fun, age-appropriate lessons bringing beloved Bible stories to life for children ages 6–12.',
+        blocks: [
+          { type: 'text',  content: { title: 'Welcome, Kids!', body: '<h2>Welcome to Bible Stories!</h2><p>Get ready to explore amazing stories from the Bible — from Noah\'s Ark to David and Goliath!</p>' } },
+          { type: 'video', content: { title: 'The Story of Noah', url: 'https://www.youtube.com/watch?v=u6XAPnuFjJc' } },
+          { type: 'quiz',  content: { title: 'Bible Story Quiz', pass_percent: 60, questions: [
+            { id: 'q1', text: 'How many days and nights did it rain during Noah\'s flood?', type: 'multiple_choice', options: ['7', '40', '100', '365'], answer: 1 },
+          ] } },
+        ],
+      },
+    ],
+    cohortName:     'Summer Kids Cohort (Ages 6-12)',
+    cohortCode:     'SKC-2026',
+    hasAgeGate:     true,
+    useProgramTrack:false,
+    openEnrollment: false,
+  },
+
+  college_semester: {
+    label:          'College Semester (Default)',
+    termType:       'semester',
+    termName:       'Fall Semester 2026',
+    termCode:       'FALL-2026',
+    termStartDays:  0,
+    termEndDays:    112,
+    courses: [
+      {
+        title:       'Old Testament Survey',
+        description: 'A comprehensive survey of the Old Testament, covering its major divisions, themes, and historical context.',
+        blocks: [
+          { type: 'text',  content: { title: 'Welcome', body: '<h2>Welcome to Old Testament Survey</h2><p>We will explore the rich tapestry of the Hebrew Scriptures — from Creation through the return from exile.</p>' } },
+          { type: 'video', content: { title: 'Overview of the Old Testament', url: 'https://www.youtube.com/watch?v=ak06MSETeo4' } },
+          { type: 'quiz',  content: { title: 'OT Knowledge Check', pass_percent: 70, questions: [
+            { id: 'q1', text: 'How many books are in the Old Testament (Protestant canon)?', type: 'multiple_choice', options: ['27', '39', '46', '66'], answer: 1 },
+            { id: 'q2', text: 'Which book begins with "In the beginning"?', type: 'multiple_choice', options: ['Exodus', 'Genesis', 'Psalms', 'Isaiah'], answer: 1 },
+          ] } },
+          { type: 'assignment', content: { title: 'OT Reflection', prompt: 'Choose a psalm and write a 200-word reflection on its meaning for your life today.' } },
+        ],
+      },
+      {
+        title:       'New Testament Survey',
+        description: 'An overview of the New Testament — the Gospels, Acts, Epistles, and Revelation — and their theological significance.',
+        blocks: [
+          { type: 'text',  content: { title: 'Introduction', body: '<h2>The New Testament</h2><p>The New Testament reveals Jesus as the fulfillment of the Old Testament promises and the foundation of the Christian faith.</p>' } },
+          { type: 'video', content: { title: 'Overview of the New Testament', url: 'https://www.youtube.com/watch?v=AavLFNTkLEQ' } },
+          { type: 'quiz',  content: { title: 'NT Knowledge Check', pass_percent: 70, questions: [
+            { id: 'q1', text: 'How many books are in the New Testament?', type: 'multiple_choice', options: ['21', '25', '27', '30'], answer: 2 },
+          ] } },
+        ],
+      },
+      {
+        title:       'Christian Doctrine 101',
+        description: 'An introduction to core Christian doctrines: the Trinity, salvation, the church, and eschatology.',
+        blocks: [
+          { type: 'text',  content: { title: 'Welcome', body: '<h2>What Do Christians Believe?</h2><p>Doctrine shapes how we live. In this course we will examine the foundational beliefs of the Christian faith.</p>' } },
+          { type: 'video', content: { title: 'The Trinity Explained', url: 'https://www.youtube.com/watch?v=u6XAPnuFjJc' } },
+          { type: 'quiz',  content: { title: 'Doctrine Quiz', pass_percent: 70, questions: [
+            { id: 'q1', text: 'Which doctrine refers to God as three persons in one essence?', type: 'multiple_choice', options: ['Tritheism', 'Modalism', 'The Trinity', 'Arianism'], answer: 2 },
+          ] } },
+          { type: 'assignment', content: { title: 'Creed Reflection', prompt: 'Read the Apostles\' Creed and write a 300-word reflection on which article of faith means most to you and why.' } },
+        ],
+      },
+    ],
+    cohortName:     'Fall 2026 Cohort',
+    cohortCode:     'F26-COHORT',
+    hasAgeGate:     false,
+    useProgramTrack:false,
+    openEnrollment: false,
+  },
+
+  diploma_yearly: {
+    label:          '1-Year Bible Diploma',
+    termType:       'academic_year',
+    termName:       '2026–2027 Ministry Year',
+    termCode:       'MIN-2026',
+    termStartDays:  0,
+    termEndDays:    365,
+    courses: [
+      {
+        title:       'Foundations of Faith',
+        description: 'Lays the biblical and theological groundwork for all subsequent courses in the diploma program.',
+        blocks: [
+          { type: 'text',  content: { title: 'Welcome', body: '<h2>Begin Your Journey</h2><p>This foundational course sets the stage for a year of deep biblical formation and ministry preparation.</p>' } },
+          { type: 'assignment', content: { title: 'Faith Statement', prompt: 'Write a personal statement of faith in 400 words.' } },
+        ],
+      },
+      {
+        title:       'Biblical Hermeneutics',
+        description: 'Teaches the principles and methods of interpreting Scripture faithfully and accurately.',
+        blocks: [
+          { type: 'text',  content: { title: 'Introduction to Hermeneutics', body: '<h2>How to Read the Bible</h2><p>Hermeneutics is the science and art of biblical interpretation. We will learn principles that unlock the meaning of Scripture.</p>' } },
+          { type: 'video', content: { title: 'Principles of Interpretation', url: 'https://www.youtube.com/watch?v=AavLFNTkLEQ' } },
+          { type: 'quiz',  content: { title: 'Hermeneutics Check', pass_percent: 70, questions: [
+            { id: 'q1', text: 'What does "exegesis" mean?', type: 'multiple_choice', options: ['Reading into the text', 'Drawing meaning out of the text', 'Translating the text', 'Memorizing the text'], answer: 1 },
+          ] } },
+        ],
+      },
+      {
+        title:       'Church History',
+        description: 'Surveys the history of Christianity from the apostolic age to the modern era.',
+        blocks: [
+          { type: 'text',  content: { title: 'The Story of the Church', body: '<h2>2,000 Years of Christianity</h2><p>Understanding where the church has been helps us navigate where it is going.</p>' } },
+          { type: 'video', content: { title: 'The Apostolic Age', url: 'https://www.youtube.com/watch?v=AavLFNTkLEQ' } },
+        ],
+      },
+      {
+        title:       'Practical Ministry',
+        description: 'Prepares students for active ministry roles through practical training in preaching, counseling, and leadership.',
+        blocks: [
+          { type: 'text',  content: { title: 'Ministry in Practice', body: '<h2>From Classroom to Calling</h2><p>Ministry knowledge must translate into action. This course bridges theory and real-world ministry service.</p>' } },
+          { type: 'assignment', content: { title: 'Ministry Practicum', prompt: 'Document 10 hours of ministry service and write a 500-word reflection on what you learned.' } },
+        ],
+      },
+    ],
+    cohortName:       'Diploma Class of 2027',
+    cohortCode:       'DIPL-2027',
+    hasAgeGate:       false,
+    useProgramTrack:  true,
+    programTrackName: 'Bible Diploma Track',
+    programTrackCode: 'BIBL-DIPL',
+    openEnrollment:   false,
+  },
+
+  ministry_leaders: {
+    label:          'Ministry Education for Leaders',
+    termType:       'self_paced',
+    termName:       'Ministry Leadership Program',
+    termCode:       'MLP-OPEN',
+    termStartDays:  0,
+    termEndDays:    730,
+    courses: [
+      {
+        title:       'Leadership in the Church',
+        description: 'Explores biblical models of leadership and equips ministry leaders to lead with integrity and vision.',
+        blocks: [
+          { type: 'text',  content: { title: 'What Makes a Leader?', body: '<h2>Leadership in the Church</h2><p>Effective church leadership begins with character, not competency. We will examine biblical models from Moses to Paul.</p>' } },
+          { type: 'video', content: { title: 'Servant Leadership', url: 'https://www.youtube.com/watch?v=u6XAPnuFjJc' } },
+          { type: 'assignment', content: { title: 'Leadership Self-Assessment', prompt: 'Complete the leadership self-assessment and write a 300-word reflection on your strengths and growth areas.' } },
+        ],
+      },
+      {
+        title:       'Preaching & Teaching',
+        description: 'Develops practical skills in sermon preparation, delivery, and effective teaching methodology.',
+        blocks: [
+          { type: 'text',  content: { title: 'The Art of Preaching', body: '<h2>Rightly Dividing the Word</h2><p>Effective preaching requires careful exegesis, clear structure, and Spirit-led delivery.</p>' } },
+          { type: 'assignment', content: { title: 'Sermon Outline', prompt: 'Prepare a 20-minute sermon outline on a passage of your choosing, including introduction, three main points, and conclusion.' } },
+        ],
+      },
+      {
+        title:       'Pastoral Care',
+        description: 'Equips leaders with the skills to provide compassionate care, counseling, and support to their congregations.',
+        blocks: [
+          { type: 'text',  content: { title: 'Caring for the Flock', body: '<h2>Pastoral Care in Practice</h2><p>Shepherding a congregation means being present in both celebration and suffering. This course prepares you for both.</p>' } },
+          { type: 'video', content: { title: 'Principles of Pastoral Counseling', url: 'https://www.youtube.com/watch?v=ak06MSETeo4' } },
+          { type: 'quiz',  content: { title: 'Pastoral Care Principles', pass_percent: 70, questions: [
+            { id: 'q1', text: 'What is the primary role of a pastor during a crisis?', type: 'multiple_choice', options: ['Provide solutions immediately', 'Offer presence and prayerful support', 'Refer everyone to professional counselors', 'Share a relevant sermon'], answer: 1 },
+          ] } },
+        ],
+      },
+    ],
+    cohortName:     undefined,
+    cohortCode:     undefined,
+    hasAgeGate:     false,
+    useProgramTrack:false,
+    openEnrollment: true,
+  },
+}
+
 // ─── Reset Tenant to Demo Data ────────────────────────────────────────────────
-export async function resetTenantToDemo(orgId: string) {
+export async function resetTenantToDemo(
+  orgId:    string,
+  scenario: string = 'college_semester',
+) {
   const actor = await assertPlatformAdmin()
   const service = createServiceClient()
 
@@ -239,94 +486,153 @@ export async function resetTenantToDemo(orgId: string) {
     ownerUid = p?.uid ?? null
   }
 
-  // ── 4. Create 3 courses with blocks ──────────────────────────────────────
-  const courseDefs = [
-    {
-      title:       'Introduction to Biblical Studies',
-      description: 'A foundational course exploring the structure, history, and major themes of Scripture.',
-      blocks: [
-        { type: 'text',  content: { title: 'Welcome', body: '<h2>Welcome to Biblical Studies</h2><p>In this course you will explore the foundations of Scripture — its history, structure, and enduring relevance.</p>' } },
-        { type: 'video', content: { title: 'Overview of the Bible', url: 'https://www.youtube.com/watch?v=ak06MSETeo4' } },
-        { type: 'quiz',  content: { title: 'Check Your Understanding', pass_percent: 70, questions: [
-          { id: 'q1', text: 'How many books are in the Protestant Bible?', type: 'multiple_choice', options: ['39', '66', '73', '81'], answer: 1 },
-          { id: 'q2', text: 'What language was most of the New Testament originally written in?', type: 'multiple_choice', options: ['Hebrew', 'Latin', 'Greek', 'Aramaic'], answer: 2 },
-        ] } },
-        { type: 'assignment', content: { title: 'Scripture Journal Entry', prompt: 'Choose a passage from the Psalms and write a 200-word reflection on its meaning to you.' } },
-      ],
-    },
-    {
-      title:       'Church History I: The Early Church',
-      description: 'Traces Christianity from the apostolic age through the first ecumenical councils.',
-      blocks: [
-        { type: 'text',  content: { title: 'Introduction', body: '<h2>The Story of the Early Church</h2><p>Christianity spread rapidly across the Roman Empire in the first centuries, facing persecution, theological controversy, and remarkable growth.</p>' } },
-        { type: 'video', content: { title: 'The Apostolic Age', url: 'https://www.youtube.com/watch?v=AavLFNTkLEQ' } },
-        { type: 'quiz',  content: { title: 'Early Church Quiz', pass_percent: 70, questions: [
-          { id: 'q1', text: 'In what year did the Council of Nicaea take place?', type: 'multiple_choice', options: ['AD 100', 'AD 325', 'AD 451', 'AD 800'], answer: 1 },
-          { id: 'q2', text: 'Who was the primary author of the Nicene Creed?', type: 'multiple_choice', options: ['Augustine', 'Origen', 'Athanasius', 'Tertullian'], answer: 2 },
-        ] } },
-      ],
-    },
-    {
-      title:       'Ministry Leadership Foundations',
-      description: 'Equips ministry leaders with practical skills in servant leadership, vision, and team development.',
-      blocks: [
-        { type: 'text',  content: { title: 'Servant Leadership', body: '<h2>Leading Like Jesus</h2><p>The greatest leaders in ministry history exemplified servant leadership — placing the needs of others above their own ambitions.</p>' } },
-        { type: 'video', content: { title: 'Vision and Mission', url: 'https://www.youtube.com/watch?v=u6XAPnuFjJc' } },
-        { type: 'quiz',  content: { title: 'Leadership Principles', pass_percent: 70, questions: [
-          { id: 'q1', text: 'Which best describes servant leadership?', type: 'multiple_choice', options: ['Leading from authority', 'Serving the needs of others first', 'Delegating all tasks', 'Maintaining hierarchy'], answer: 1 },
-        ] } },
-        { type: 'assignment', content: { title: 'Personal Leadership Statement', prompt: 'Write a 300-word personal leadership philosophy grounded in Scripture.' } },
-      ],
-    },
-  ]
+  const studentAuthIds = ['student1', 'student2', 'student3']
+    .map(p => createdAuthIds[p])
+    .filter(Boolean)
 
-  const createdCourseIds: string[] = []
-  for (const cd of courseDefs) {
-    if (!ownerUid) continue
-    const { data: course } = await service
-      .from('courses')
-      .insert({ org_id: orgId, owner_id: ownerUid, title: cd.title, description: cd.description, status: 'published' })
-      .select('id').single()
-    if (course) {
-      createdCourseIds.push(course.id)
-      await service.from('course_blocks').insert(
-        cd.blocks.map((b, i) => ({ course_id: course.id, org_id: orgId, type: b.type, position: i, content: b.content }))
-      )
+  // ── 4. Determine which scenarios to seed ─────────────────────────────────
+  const scenarioKeys: string[] = scenario === 'all_scenarios'
+    ? ['wed_bible_school', 'summer_kids', 'college_semester', 'diploma_yearly', 'ministry_leaders']
+    : [scenario in DEMO_SCENARIOS ? scenario : 'college_semester']
+
+  const allCourseIds: string[] = []
+
+  for (const key of scenarioKeys) {
+    const cfg = DEMO_SCENARIOS[key]
+    if (!cfg) continue
+
+    const prefix = scenario === 'all_scenarios'
+      ? `[${key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).replace('Wed ', 'Weds ')}] `
+      : ''
+
+    // ── 4a. Create academic term ──────────────────────────────────────────
+    const now      = Date.now()
+    const startISO = new Date(now + cfg.termStartDays * 86_400_000).toISOString().slice(0, 10)
+    const endISO   = new Date(now + cfg.termEndDays   * 86_400_000).toISOString().slice(0, 10)
+
+    const { data: term } = await service.from('academic_terms').insert({
+      org_id:     orgId,
+      term_name:  cfg.termName,
+      term_code:  scenario === 'all_scenarios' ? `${key.toUpperCase().slice(0, 4)}-${cfg.termCode}` : cfg.termCode,
+      type:       cfg.termType,
+      start_date: startISO,
+      end_date:   endISO,
+      created_by: adminAuthId ?? actor.id,
+      is_active:  true,
+    }).select('id').single()
+
+    // ── 4b. Create courses ────────────────────────────────────────────────
+    const scenarioCourseIds: string[] = []
+    for (let ci = 0; ci < cfg.courses.length; ci++) {
+      if (!ownerUid) continue
+      const cd = cfg.courses[ci]
+
+      const { data: course } = await service
+        .from('courses')
+        .insert({
+          org_id:      orgId,
+          owner_id:    ownerUid,
+          title:       `${prefix}${cd.title}`,
+          description: cd.description,
+          status:      'published',
+          ...(cfg.hasAgeGate && ci === 0 ? { age_min: 6, age_max: 12 } : {}),
+        })
+        .select('id').single()
+
+      if (course) {
+        scenarioCourseIds.push(course.id)
+        allCourseIds.push(course.id)
+
+        await service.from('course_blocks').insert(
+          cd.blocks.map((b, i) => ({
+            course_id: course.id,
+            org_id:    orgId,
+            type:      b.type,
+            position:  i,
+            content:   b.content,
+          }))
+        )
+
+        // Create section linked to term
+        if (term) {
+          await service.from('course_sections').insert({
+            course_id:       course.id,
+            org_id:          orgId,
+            term_id:         term.id,
+            section_name:    `${prefix}${cd.title} — Section 1`,
+            enrollment_type: cfg.openEnrollment ? 'open' : 'cohort_gated',
+            is_active:       true,
+          })
+        }
+      }
+    }
+
+    // ── 4c. Create program track (if applicable) ──────────────────────────
+    if (cfg.useProgramTrack && cfg.programTrackName && cfg.programTrackCode && scenarioCourseIds.length) {
+      const { data: track } = await service.from('program_tracks').insert({
+        org_id:     orgId,
+        name:       cfg.programTrackName,
+        code:       cfg.programTrackCode,
+        created_by: adminAuthId ?? actor.id,
+        is_active:  true,
+      }).select('id').single()
+
+      if (track) {
+        await service.from('program_track_courses').insert(
+          scenarioCourseIds.map((courseId, idx) => ({
+            track_id:       track.id,
+            course_id:      courseId,
+            sequence_order: idx + 1,
+            is_required:    true,
+          }))
+        )
+      }
+    }
+
+    // ── 4d. Create cohort (if applicable) ────────────────────────────────
+    if (cfg.cohortName) {
+      const cohortCode = scenario === 'all_scenarios'
+        ? `${key.toUpperCase().slice(0, 4)}-${cfg.cohortCode ?? key.toUpperCase()}`
+        : (cfg.cohortCode ?? `${slug}-COHORT`)
+
+      const { data: cohort } = await service.from('global_cohorts').insert({
+        org_id:      orgId,
+        cohort_name: `${prefix}${cfg.cohortName}`,
+        cohort_code: cohortCode,
+        created_by:  actor.id,
+        is_active:   true,
+      }).select('id').single()
+
+      // Add students as cohort members
+      if (cohort && studentAuthIds.length) {
+        await service.from('cohort_members').insert(
+          studentAuthIds.map(authId => ({
+            cohort_id: cohort.id,
+            user_id:   authId,
+          }))
+        )
+      }
     }
   }
 
   // ── 5. Enroll students in all courses ────────────────────────────────────
-  const studentAuthIds = ['student1', 'student2', 'student3'].map(p => createdAuthIds[p]).filter(Boolean)
   const enrollments = studentAuthIds.flatMap(authId =>
-    createdCourseIds.map(courseId => ({
-      course_id: courseId, user_id: authId, role: 'student', status: 'active', source: 'admin',
+    allCourseIds.map(courseId => ({
+      course_id: courseId,
+      user_id:   authId,
+      role:      'student',
+      status:    'active',
+      source:    'admin',
     }))
   )
   if (enrollments.length) await service.from('course_enrollments').insert(enrollments)
 
-  // ── 6. Create cohort ──────────────────────────────────────────────────────
-  await service.from('global_cohorts').insert({
-    org_id:      orgId,
-    cohort_name: 'Fall 2026 Cohort',
-    cohort_code: `${slug}-F26`,
-    created_by:  actor.id,
-    is_active:   true,
-  })
-
-  // ── 7. Create term ────────────────────────────────────────────────────────
-  await service.from('academic_terms').insert({
-    org_id:     orgId,
-    term_name:  'Fall 2026',
-    term_code:  `${slug}-FALL-2026`,
-    type:       'semester',
-    start_date: '2026-09-01',
-    end_date:   '2026-12-15',
-    created_by: actor.id,
-    is_active:  true,
-  })
-
-  // ── 8. Create announcements ───────────────────────────────────────────────
+  // ── 6. Create welcome announcements ──────────────────────────────────────
   if (ownerUid) {
+    const scenarioLabel = scenario === 'all_scenarios'
+      ? 'All Scenarios (Full Demo)'
+      : (DEMO_SCENARIOS[scenario]?.label ?? 'College Semester (Default)')
+
     await service.from('announcements').insert([
       {
         org_id: orgId, created_by: ownerUid, scope: 'global', is_published: true,
@@ -337,26 +643,27 @@ export async function resetTenantToDemo(orgId: string) {
       {
         org_id: orgId, created_by: ownerUid, scope: 'global', is_published: true,
         published_at: new Date().toISOString(),
-        title: 'Fall 2026 Semester Begins September 1',
-        body:  'Enrollment for Fall 2026 is now open. Secure your spot in Biblical Studies, Church History, and Ministry Leadership by August 15th.',
+        title: `Demo Scenario: ${scenarioLabel}`,
+        body:  `This tenant has been seeded with the "${scenarioLabel}" demo scenario. Use the platform credentials to explore the experience.`,
       },
     ])
   }
 
-  // ── 9. Store demo credentials in org settings for display in platform UI ──
+  // ── 7. Store demo credentials + scenario in org settings ─────────────────
   await service.from('organizations').update({
     settings: {
       ...(org?.settings ?? {}),
       demo: {
-        seeded_at:    new Date().toISOString(),
-        admin_email:  `admin@${slug}.demo`,
-        teacher_email:`teacher@${slug}.demo`,
-        password:     DEMO_PASSWORD,
+        seeded_at:     new Date().toISOString(),
+        scenario,
+        admin_email:   `admin@${slug}.demo`,
+        teacher_email: `teacher@${slug}.demo`,
+        password:      DEMO_PASSWORD,
       },
     },
   }).eq('id', orgId)
 
-  await logAction(actor.id, 'reset_tenant_demo', orgId)
+  await logAction(actor.id, 'reset_tenant_demo', orgId, { scenario })
   revalidatePath('/platform')
   revalidatePath(`/platform/tenants/${orgId}`)
 }

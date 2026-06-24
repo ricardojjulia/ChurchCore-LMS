@@ -14,6 +14,12 @@ const FORMATS = [
   { value: 'self_paced',   label: 'Self-paced (no access window required)' },
 ]
 
+const ENROLLMENT_TYPES = [
+  { value: 'open',          label: 'Open Enrollment — anyone in the org can self-enroll' },
+  { value: 'cohort_gated',  label: 'Cohort Required — only cohort members can enroll' },
+  { value: 'invite_only',   label: 'Invite Only — enrollment by admin only' },
+]
+
 export default function SectionForm({
   blueprints, terms, initialBlueprintId = '',
 }: {
@@ -88,6 +94,18 @@ export default function SectionForm({
             {FORMATS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
           </select>
         </div>
+      </div>
+
+      {/* Enrollment type */}
+      <div>
+        <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="enrollment_type">
+          Enrollment Type <span className="text-rose-500">*</span>
+        </label>
+        <select id="enrollment_type" name="enrollment_type" defaultValue="open" className="input w-full">
+          {ENROLLMENT_TYPES.map(({ value, label }) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
       </div>
 
       {/* Enrollment limits */}

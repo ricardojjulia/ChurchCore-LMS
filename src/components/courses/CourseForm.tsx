@@ -36,6 +36,8 @@ interface Props {
   initialPrerequisiteId?: string | null
   initialStatus?: CourseStatus
   initialBlueprintId?: string | null
+  initialAgeMin?: number | null
+  initialAgeMax?: number | null
 }
 
 const STATUS_CONFIG: Record<CourseStatus, { label: string; active: string }> = {
@@ -63,6 +65,8 @@ export default function CourseForm({
   initialPrerequisiteId = null,
   initialStatus = 'draft',
   initialBlueprintId = null,
+  initialAgeMin = null,
+  initialAgeMax = null,
 }: Props) {
   const isEdit = !!courseId
 
@@ -72,6 +76,8 @@ export default function CourseForm({
   const [prerequisiteId, setPrerequisiteId] = useState(initialPrerequisiteId ?? '')
   const [blueprintId, setBlueprintId]   = useState<string | null>(initialBlueprintId)
   const [status, setStatus]             = useState<CourseStatus>(initialStatus)
+  const [ageMin, setAgeMin]             = useState<string>(initialAgeMin != null ? String(initialAgeMin) : '')
+  const [ageMax, setAgeMax]             = useState<string>(initialAgeMax != null ? String(initialAgeMax) : '')
   const [saving, setSaving]             = useState(false)
   const [deleting, setDeleting]         = useState(false)
   const [error, setError]               = useState<string | null>(null)
@@ -84,6 +90,15 @@ export default function CourseForm({
     setError(null)
 
     const supabase = createClient()
+    const ageMinVal = ageMin !== '' ? Number(ageMin) : null
+    const ageMaxVal = ageMax !== '' ? Number(ageMax) : null
+
+    if (ageMinVal !== null && ageMaxVal !== null && ageMinVal > ageMaxVal) {
+      setError('Min Age cannot be greater than Max Age.')
+      setSaving(false)
+      return
+    }
+
     const payload = {
       title: title.trim(),
       description: description.trim() || null,
@@ -91,6 +106,8 @@ export default function CourseForm({
       prerequisite_course_id: prerequisiteId || null,
       blueprint_id: blueprintId || null,
       status,
+      age_min: ageMinVal,
+      age_max: ageMaxVal,
     }
 
     if (isEdit) {
@@ -238,6 +255,45 @@ export default function CourseForm({
               ))}
           </select>
           <p className="text-xs text-muted-foreground mt-1">Student must pass this course first (≥ 80%).</p>
+        </div>
+      </div>
+
+      {/* Age Restriction */}
+      <div>
+        <p className="text-sm font-semibold text-slate-700 mb-1">
+          Age Restriction
+          <span className="ml-2 text-xs font-normal text-muted-foreground">(optional)</span>
+        </p>
+        <p className="text-xs text-muted-foreground mb-3">
+          Students outside this age range will be blocked from enrolling. Leave blank for no restriction.
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="age_min" className="block text-sm font-medium text-slate-700 mb-1">Min Age</label>
+            <input
+              id="age_min"
+              type="number"
+              min={0}
+              max={120}
+              value={ageMin}
+              placeholder="No minimum"
+              onChange={(e) => setAgeMin(e.target.value)}
+              className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
+            />
+          </div>
+          <div>
+            <label htmlFor="age_max" className="block text-sm font-medium text-slate-700 mb-1">Max Age</label>
+            <input
+              id="age_max"
+              type="number"
+              min={0}
+              max={120}
+              value={ageMax}
+              placeholder="No maximum"
+              onChange={(e) => setAgeMax(e.target.value)}
+              className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
+            />
+          </div>
         </div>
       </div>
 

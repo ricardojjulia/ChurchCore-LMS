@@ -56,23 +56,99 @@ export async function recordEngagement({
 
 // ── Enroll self in a course ───────────────────────────────────────────────────
 
-export async function enrollSelf(courseId: string): Promise<{ error?: string }> {
+export async function enrollSelf(
+  courseId:   string,
+  sectionId?: string,
+): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('uid, current_level, display_name, email')
+    .select('uid, current_level, display_name, email, date_of_birth')
     .eq('auth_id', user.id)
     .single()
 
   if (!profile) return { error: 'Profile not found' }
 
+  // ── Enrollment-type gate (COUNCIL-2026-016 Prompt A) ────────────────────
+  // Resolve which section governs this enrollment. When the caller passes an
+  // explicit sectionId we use it directly; otherwise we look up the most
+  // recently created active section linked to the course's blueprint (if any).
+  let resolvedSectionId: string | null = sectionId ?? null
+
+  if (!resolvedSectionId) {
+    const { data: courseForBlueprint } = await supabase
+      .from('courses')
+      .select('blueprint_id')
+      .eq('id', courseId)
+      .single()
+
+    if (courseForBlueprint?.blueprint_id) {
+      const { data: linkedSection } = await supabase
+        .from('course_sections')
+        .select('id')
+        .eq('blueprint_id', courseForBlueprint.blueprint_id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      resolvedSectionId = linkedSection?.id ?? null
+    }
+  }
+
+  if (resolvedSectionId) {
+    const { data: section } = await supabase
+      .from('course_sections')
+      .select('enrollment_type')
+      .eq('id', resolvedSectionId)
+      .single()
+
+    if (section) {
+      if (section.enrollment_type === 'invite_only') {
+        return { error: 'Enrollment by invitation only.' }
+      }
+
+      if (section.enrollment_type === 'cohort_gated') {
+        // Find active cohort memberships for this student.
+        // cohort_members.user_id is an FK to auth.users(id) — i.e. the auth_id.
+        const { data: membership } = await supabase
+          .from('cohort_members')
+          .select('cohort_id')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+
+        const cohortIds = (membership ?? []).map((m) => m.cohort_id) as string[]
+
+        let hasAccess = false
+        if (cohortIds.length > 0) {
+          // Confirm at least one of the student's cohorts is enrolled into
+          // this section via cohort_section_enrollments.
+          const { data: cse } = await supabase
+            .from('cohort_section_enrollments')
+            .select('id')
+            .eq('section_id', resolvedSectionId)
+            .in('cohort_id', cohortIds)
+            .limit(1)
+            .maybeSingle()
+
+          hasAccess = !!cse
+        }
+
+        if (!hasAccess) {
+          return { error: 'This course requires cohort membership.' }
+        }
+      }
+      // enrollment_type === 'open' → fall through and allow
+    }
+  }
+
   // Server-side prerequisite validation
   const { data: course } = await supabase
     .from('courses')
-    .select('title, min_required_level, prerequisite_course_id')
+    .select('title, min_required_level, prerequisite_course_id, age_min, age_max')
     .eq('id', courseId)
     .single()
 
@@ -92,6 +168,22 @@ export async function enrollSelf(courseId: string): Promise<{ error?: string }> 
         .maybeSingle()
       if (!prereq) {
         return { error: 'You must complete the prerequisite course first' }
+      }
+    }
+
+    // Server-side age gate — only enforced when at least one bound is set
+    // and the student has provided their date of birth.
+    const ageMin = course.age_min ?? null
+    const ageMax = course.age_max ?? null
+    if ((ageMin !== null || ageMax !== null) && profile.date_of_birth) {
+      const dob = new Date(profile.date_of_birth)
+      const now = Date.now()
+      const age = Math.floor((now - dob.getTime()) / (365.25 * 24 * 3600 * 1000))
+      if (ageMin !== null && age < ageMin) {
+        return { error: `This course is for ages ${ageMin}+.` }
+      }
+      if (ageMax !== null && age > ageMax) {
+        return { error: `This course is for ages up to ${ageMax}.` }
       }
     }
   }

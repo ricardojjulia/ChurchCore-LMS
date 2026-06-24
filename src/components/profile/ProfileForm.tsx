@@ -11,6 +11,7 @@ interface Props {
   initialFullName: string
   initialAvatarUrl: string
   role: string
+  initialDateOfBirth?: string | null
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -20,12 +21,13 @@ const ROLE_LABELS: Record<string, string> = {
   student: 'Student',
 }
 
-export default function ProfileForm({ userId, initialFullName, initialAvatarUrl, role }: Props) {
-  const [fullName, setFullName]     = useState(initialFullName)
-  const [avatarUrl, setAvatarUrl]   = useState(initialAvatarUrl)
-  const [saving, setSaving]         = useState(false)
-  const [success, setSuccess]       = useState(false)
-  const [error, setError]           = useState<string | null>(null)
+export default function ProfileForm({ userId, initialFullName, initialAvatarUrl, role, initialDateOfBirth = null }: Props) {
+  const [fullName, setFullName]         = useState(initialFullName)
+  const [avatarUrl, setAvatarUrl]       = useState(initialAvatarUrl)
+  const [dateOfBirth, setDateOfBirth]   = useState(initialDateOfBirth ?? '')
+  const [saving, setSaving]             = useState(false)
+  const [success, setSuccess]           = useState(false)
+  const [error, setError]               = useState<string | null>(null)
   const router = useRouter()
 
   async function handleSave(e: React.FormEvent) {
@@ -39,9 +41,10 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
-        display_name: fullName.trim(),
-        avatar_url: avatarUrl.trim() || null,
-        updated_at: new Date().toISOString(),
+        display_name:  fullName.trim(),
+        avatar_url:    avatarUrl.trim() || null,
+        date_of_birth: dateOfBirth.trim() || null,
+        updated_at:    new Date().toISOString(),
       })
       .eq('auth_id', userId)
 
@@ -96,6 +99,21 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
             <span className="text-xs text-muted-foreground">Preview</span>
           </div>
         )}
+      </div>
+
+      <div>
+        <label htmlFor="date_of_birth" className="block text-sm font-semibold text-slate-700 mb-1">
+          Date of Birth
+          <span className="ml-2 text-xs font-normal text-muted-foreground">(optional — used for age-restricted courses)</span>
+        </label>
+        <input
+          id="date_of_birth"
+          type="date"
+          value={dateOfBirth}
+          onChange={(e) => { setDateOfBirth(e.target.value); setSuccess(false) }}
+          max={new Date().toISOString().split('T')[0]}
+          className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
+        />
       </div>
 
       <div>

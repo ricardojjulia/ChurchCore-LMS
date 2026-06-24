@@ -207,16 +207,22 @@ export async function createSection(formData: FormData): Promise<{ error?: strin
   let ctx
   try { ctx = await requireAdmin() } catch (e: any) { return { error: e.message } }
 
-  const blueprintId    = (formData.get('blueprint_id')           as string)
-  const termId         = (formData.get('term_id')                as string)
-  const sectionCode    = (formData.get('section_code')           as string)?.trim().toUpperCase()
-  const deliveryFormat = (formData.get('delivery_format')        as string)
-  const maxEnrollment  = parseInt(formData.get('max_enrollment')  as string) || null
-  const enrollOpen     = (formData.get('enrollment_open_date')   as string) || null
-  const enrollClose    = (formData.get('enrollment_close_date')  as string) || null
-  const windowStart    = (formData.get('window_start')           as string) || null
-  const windowEnd      = (formData.get('window_end')             as string) || null
-  const graceDays      = parseInt(formData.get('grace_days')      as string) || 0
+  const blueprintId      = (formData.get('blueprint_id')           as string)
+  const termId           = (formData.get('term_id')                as string)
+  const sectionCode      = (formData.get('section_code')           as string)?.trim().toUpperCase()
+  const deliveryFormat   = (formData.get('delivery_format')        as string)
+  const maxEnrollment    = parseInt(formData.get('max_enrollment')  as string) || null
+  const enrollOpen       = (formData.get('enrollment_open_date')   as string) || null
+  const enrollClose      = (formData.get('enrollment_close_date')  as string) || null
+  const windowStart      = (formData.get('window_start')           as string) || null
+  const windowEnd        = (formData.get('window_end')             as string) || null
+  const graceDays        = parseInt(formData.get('grace_days')      as string) || 0
+  const rawEnrollType    = (formData.get('enrollment_type')        as string) || 'open'
+  const VALID_ENROLL_TYPES = ['open', 'cohort_gated', 'invite_only'] as const
+  type EnrollType = typeof VALID_ENROLL_TYPES[number]
+  const enrollmentType: EnrollType = (VALID_ENROLL_TYPES as readonly string[]).includes(rawEnrollType)
+    ? rawEnrollType as EnrollType
+    : 'open'
 
   if (!blueprintId || !termId || !sectionCode || !deliveryFormat)
     return { error: 'Blueprint, term, section code and delivery format are required' }
@@ -231,6 +237,7 @@ export async function createSection(formData: FormData): Promise<{ error?: strin
       max_enrollment:        maxEnrollment,
       enrollment_open_date:  enrollOpen   ? new Date(enrollOpen).toISOString()  : null,
       enrollment_close_date: enrollClose  ? new Date(enrollClose).toISOString() : null,
+      enrollment_type:       enrollmentType,
       created_by:            ctx.userId,
     })
     .select('id')
@@ -254,4 +261,30 @@ export async function createSection(formData: FormData): Promise<{ error?: strin
 
   revalidatePath('/admin/sections')
   redirect(`/admin/sections/${section!.id}`)
+}
+
+export async function updateSectionEnrollmentType(
+  sectionId: string,
+  formData: FormData,
+): Promise<{ error?: string }> {
+  let ctx
+  try { ctx = await requireAdmin() } catch (e: any) { return { error: e.message } }
+
+  const rawEnrollType    = (formData.get('enrollment_type') as string) || 'open'
+  const VALID_ENROLL_TYPES = ['open', 'cohort_gated', 'invite_only'] as const
+  type EnrollType = typeof VALID_ENROLL_TYPES[number]
+  const enrollmentType: EnrollType = (VALID_ENROLL_TYPES as readonly string[]).includes(rawEnrollType)
+    ? rawEnrollType as EnrollType
+    : 'open'
+
+  const { error } = await ctx.supabase
+    .from('course_sections')
+    .update({ enrollment_type: enrollmentType })
+    .eq('id', sectionId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/sections')
+  revalidatePath(`/admin/sections/${sectionId}`)
+  return {}
 }
