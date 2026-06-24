@@ -676,28 +676,40 @@ export async function generateDemoLoginLink(
   const actor = await assertPlatformAdmin()
   const service = createServiceClient()
 
-  // Derive the app origin from the incoming request so the callback URL works
-  // for both local dev and production without hardcoding.
   const hdrs   = await headers()
   const host   = hdrs.get('host') ?? 'localhost:3000'
   const proto  = hdrs.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https')
   const origin = `${proto}://${host}`
 
-  const { data, error } = await service.auth.admin.generateLink({
-    type: 'magiclink',
-    email,
-    options: {
-      redirectTo: `${origin}/auth/callback?next=/dashboard`,
-    },
-  })
+  // Verify the email belongs to this org's demo users
+  const { data: org } = await service.from('organizations').select('settings').eq('id', orgId).single()
+  if (!org) return { error: 'Organization not found' }
 
-  if (error || !data?.properties?.action_link) {
-    return { error: error?.message ?? 'Failed to generate link' }
+  const demo = org.settings?.demo as { password?: string; admin_email?: string; teacher_email?: string } | undefined
+  if (!demo?.password) return { error: 'No demo data seeded for this tenant' }
+  if (email !== demo.admin_email && email !== demo.teacher_email) {
+    return { error: 'Email is not a recognized demo user for this tenant' }
   }
+
+  // Store a one-time token in org settings (expires in 15 minutes).
+  // The /api/auth/demo-login route validates this token and signs in via password.
+  const token = crypto.randomUUID()
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
+  const pendingLogin = { token, email, org_id: orgId, expires_at: expiresAt }
+
+  const updatedSettings = {
+    ...org.settings,
+    demo: { ...demo, pending_login: pendingLogin },
+  }
+  const { error: updateErr } = await service
+    .from('organizations')
+    .update({ settings: updatedSettings })
+    .eq('id', orgId)
+  if (updateErr) return { error: 'Failed to prepare login token' }
 
   await logAction(actor.id, 'generate_demo_login', orgId, { email })
 
-  return { url: data.properties.action_link }
+  return { url: `${origin}/api/auth/demo-login?t=${token}&org=${orgId}` }
 }
 
 // ─── Update Tenant Settings ───────────────────────────────────────────────────
