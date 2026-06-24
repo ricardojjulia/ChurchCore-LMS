@@ -2,6 +2,7 @@
 
 import { revalidatePath }        from 'next/cache'
 import { redirect }              from 'next/navigation'
+import { headers }               from 'next/headers'
 import { createServerClient }    from '@/lib/supabase/server'
 import { createServiceClient }   from '@/utils/supabase/service'
 
@@ -365,24 +366,29 @@ export async function generateDemoLoginLink(
   orgId: string,
   email: string,
 ): Promise<{ url: string } | { error: string }> {
-  await assertPlatformAdmin()
+  const actor = await assertPlatformAdmin()
   const service = createServiceClient()
+
+  // Derive the app origin from the incoming request so the callback URL works
+  // for both local dev and production without hardcoding.
+  const hdrs   = await headers()
+  const host   = hdrs.get('host') ?? 'localhost:3000'
+  const proto  = hdrs.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https')
+  const origin = `${proto}://${host}`
 
   const { data, error } = await service.auth.admin.generateLink({
     type: 'magiclink',
     email,
+    options: {
+      redirectTo: `${origin}/auth/callback?next=/dashboard`,
+    },
   })
 
   if (error || !data?.properties?.action_link) {
     return { error: error?.message ?? 'Failed to generate link' }
   }
 
-  await logAction(
-    (await (await createServerClient()).auth.getUser()).data.user!.id,
-    'generate_demo_login',
-    orgId,
-    { email },
-  )
+  await logAction(actor.id, 'generate_demo_login', orgId, { email })
 
   return { url: data.properties.action_link }
 }
