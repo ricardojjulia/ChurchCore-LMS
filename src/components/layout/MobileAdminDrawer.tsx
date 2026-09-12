@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { Settings, X, Users, Layout, Layers, Clock, FileText, Activity, CreditCard } from 'lucide-react'
+import { Settings, X, Users, Layout, Layers, Clock, FileText, Activity, CreditCard, Plug } from 'lucide-react'
 
 const ADMIN_LINKS = [
   { href: '/admin/users',      label: 'Users',          Icon: Users      },
@@ -12,6 +12,7 @@ const ADMIN_LINKS = [
   { href: '/admin/blueprints', label: 'Blueprints',     Icon: FileText   },
   { href: '/admin/billing',    label: 'Billing',        Icon: CreditCard },
   { href: '/admin/health',     label: 'System Health',  Icon: Activity   },
+  { href: '/admin/integrations/oneroster', label: 'OneRoster', Icon: Plug },
   { href: '/admin/settings',  label: 'Org Settings',   Icon: Settings   },
 ] as const
 

@@ -130,9 +130,22 @@ export async function updateTerm(
   try { config = JSON.parse(configRaw) }
   catch { return { error: 'Config must be valid JSON' } }
 
+  const { data: managedLink, error: managedError } = await ctx.supabase
+    .from('external_entity_links')
+    .select('id')
+    .eq('local_table', 'academic_terms')
+    .eq('local_id', termId)
+    .eq('managed_by_external_system', true)
+    .limit(1)
+    .maybeSingle()
+  if (managedError) return { error: 'Unable to verify term ownership' }
+
+  const changes = managedLink
+    ? { config }
+    : { term_name: name, start_date: startDate, end_date: endDate, is_active: isActive, config }
   const { error } = await ctx.supabase
     .from('academic_terms')
-    .update({ term_name: name, start_date: startDate, end_date: endDate, is_active: isActive, config })
+    .update(changes)
     .eq('id', termId)
 
   if (error) return { error: error.message }
@@ -189,9 +202,22 @@ export async function updateBlueprint(
 
   if (!title) return { error: 'Title is required' }
 
+  const { data: managedLink, error: managedError } = await ctx.supabase
+    .from('external_entity_links')
+    .select('id')
+    .eq('local_table', 'course_blueprints')
+    .eq('local_id', blueprintId)
+    .eq('managed_by_external_system', true)
+    .limit(1)
+    .maybeSingle()
+  if (managedError) return { error: 'Unable to verify blueprint ownership' }
+
+  const changes = managedLink
+    ? { description, credits, program_track_id: trackId }
+    : { title, description, credits, program_track_id: trackId, is_active: isActive }
   const { error } = await ctx.supabase
     .from('course_blueprints')
-    .update({ title, description, credits, program_track_id: trackId, is_active: isActive })
+    .update(changes)
     .eq('id', blueprintId)
 
   if (error) return { error: error.message }

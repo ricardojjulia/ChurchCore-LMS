@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import GroupsPanel from './GroupsPanel'
 import SectionEnrollmentTypeForm from './SectionEnrollmentTypeForm'
+import { Database } from 'lucide-react'
 
 const ENROLLMENT_TYPE_BADGE: Record<string, { label: string; className: string }> = {
   open:          { label: 'Open Enrollment',  className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
@@ -30,7 +31,7 @@ export default async function SectionDetailPage({
 
   if (!me || !['admin', 'manager', 'teacher'].includes(me.role)) redirect('/dashboard')
 
-  const [sectionResult, groupsResult] = await Promise.all([
+  const [sectionResult, groupsResult, managedLinkResult] = await Promise.all([
     supabase
       .from('course_sections')
       .select(`
@@ -49,6 +50,14 @@ export default async function SectionDetailPage({
       `)
       .eq('section_id', sectionId)
       .order('group_name'),
+    supabase
+      .from('external_entity_links')
+      .select('source_system')
+      .eq('local_table', 'course_sections')
+      .eq('local_id', sectionId)
+      .eq('managed_by_external_system', true)
+      .limit(1)
+      .maybeSingle(),
   ])
 
   const section = sectionResult.data
@@ -95,6 +104,12 @@ export default async function SectionDetailPage({
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0 flex-wrap justify-end">
+              {managedLinkResult.data && (
+                <span className="flex items-center gap-1.5 rounded-md border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-xs font-bold uppercase text-sky-800">
+                  <Database className="h-3.5 w-3.5" aria-hidden="true" />
+                  OneRoster managed
+                </span>
+              )}
               {blueprint?.id && (
                 <Link
                   href={`/courses/${blueprint.id}/tutor?section=${sectionId}`}

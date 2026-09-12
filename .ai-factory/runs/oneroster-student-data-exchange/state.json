@@ -1,0 +1,42 @@
+{
+  "task": "oneroster-student-data-exchange",
+  "created_at": "2026-09-05",
+  "status": "in_progress",
+  "repo": "/Users/rjulia/ChurchCore LMS",
+  "branch": "main",
+  "council_doc": "docs/council/COUNCIL-2026-017.md",
+  "standalone_contract": "LMS must run with no Academy or OneRoster configuration. Organization mode defaults to standalone.",
+  "implementation_started": true,
+  "current_phase": "identity_linking_verified",
+  "last_verified_at": "2026-09-08",
+  "verification": {
+    "unit_tests": "passed: 22 files, 192 tests",
+    "linked_database_tests": "passed: 31 apply checks; 5 preview/cleanup checks with course, class, and academic-session bulk omission assertions; 9 provenance guard checks; 3 identity-link checks plus transactional assertions",
+    "typecheck_lint_version_build": "passed",
+    "linked_database_lint": "passed",
+    "authenticated_browser": "passed: invalid quarantine, initial create, idempotent replay, soft deactivation, preview diffs, history, and managed-field locking",
+    "migration_applied": "through 20260908130000_oneroster_identity_linking.sql"
+  },
+  "started_at": "2026-09-07",
+  "known_blockers_before_implementation": [
+    "src/lib/dashboard/context.ts still references courses.is_published while live schema uses courses.status",
+    "tests/e2e/enrollment-bridge.test.ts references stale student_uid and enrollment_status names",
+    "supabase db lint --linked reports existing function errors in get_block_discussion_replies, get_guardian_students, get_guardian_student_overview, record_engagement_event, and resolve_term_config",
+    "npm install csv-parse jszip reported existing audit debt: 43 vulnerabilities",
+    "Identity linking and Academy synchronization remain later phases"
+  ],
+  "subagents_used": [
+    {
+      "id": "01a074a9-6130-7d20-9b9b-5272c3308327",
+      "focus": "OneRoster standards, security architecture, FERPA posture"
+    },
+    {
+      "id": "01a074a9-7323-7193-a451-dda9c11e5794",
+      "focus": "ChurchCore LMS code and schema impact"
+    },
+    {
+      "id": "01a074a9-8800-7072-95c8-587186886d4d",
+      "focus": "ChurchCore Academy export assumptions and mappings"
+    }
+  ]
+}

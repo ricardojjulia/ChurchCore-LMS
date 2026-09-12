@@ -13,7 +13,7 @@ export default async function EditTermPage({ params }: { params: Promise<{ id: s
   const { data: me } = await supabase.from('profiles').select('role').eq('auth_id', user.id).single()
   if (!me || !['admin', 'manager'].includes(me.role)) redirect('/dashboard')
 
-  const [{ data: term }, { data: parentTerms }] = await Promise.all([
+  const [{ data: term }, { data: parentTerms }, { data: managedLink }] = await Promise.all([
     supabase.from('academic_terms')
       .select('id, term_name, term_code, type, start_date, end_date, parent_term_id, config, is_active')
       .eq('id', termId).single(),
@@ -22,6 +22,13 @@ export default async function EditTermPage({ params }: { params: Promise<{ id: s
       .eq('is_active', true)
       .neq('id', termId)
       .order('term_name'),
+    supabase.from('external_entity_links')
+      .select('source_system')
+      .eq('local_table', 'academic_terms')
+      .eq('local_id', termId)
+      .eq('managed_by_external_system', true)
+      .limit(1)
+      .maybeSingle(),
   ])
 
   if (!term) notFound()
@@ -39,6 +46,7 @@ export default async function EditTermPage({ params }: { params: Promise<{ id: s
           <TermForm
             mode="edit"
             termId={termId}
+            managedSource={managedLink?.source_system ?? null}
             parentTerms={parentTerms ?? []}
             initial={{
               term_name:      term.term_name,

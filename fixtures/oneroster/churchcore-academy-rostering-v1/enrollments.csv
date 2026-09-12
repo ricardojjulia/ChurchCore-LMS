@@ -1,0 +1,4 @@
+sourcedId,status,dateLastModified,classSourcedId,schoolSourcedId,userSourcedId,role,primary,beginDate,endDate
+academy:enrollment:registration-active,active,2026-09-12T00:00:00.000Z,academy:class:section-bibl-101-a,academy:org:tenant-shared-oneroster,academy:person:person-student-1,student,,2026-08-24,
+academy:enrollment:registration-withdrawn,tobedeleted,2026-09-12T00:00:00.000Z,academy:class:section-bibl-101-a,academy:org:tenant-shared-oneroster,academy:person:person-student-2,student,,2026-08-25,
+academy:enrollment:section-bibl-101-a:teacher:person-teacher-1,active,2026-09-12T00:00:00.000Z,academy:class:section-bibl-101-a,academy:org:tenant-shared-oneroster,academy:person:person-teacher-1,teacher,true,,

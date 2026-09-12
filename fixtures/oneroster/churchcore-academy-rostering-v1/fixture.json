@@ -1,0 +1,50 @@
+{
+  "name": "churchcore-academy-rostering-v1",
+  "standard": "OneRoster",
+  "version": "1.2",
+  "profile": "churchcore-oneroster-rostering-csv-provider",
+  "generatedAt": "2026-09-12T18:00:00.000Z",
+  "packageHash": "f237318c0526c65b291d6293eb7c4210d118e2dc07f6a9a50248fa9ec3c8fafd",
+  "files": [
+    {
+      "filename": "manifest.csv",
+      "sha256": "66fd7ac212cb7d1ce353e1c7ef52feb40bb0ae945eeb28277b3c9915f93e3fe0",
+      "bytes": 201
+    },
+    {
+      "filename": "orgs.csv",
+      "sha256": "f237b216975bf7440b0f267ad86bd20b98f6123e8a603a7661a6d9bd5b463239",
+      "bytes": 207
+    },
+    {
+      "filename": "users.csv",
+      "sha256": "6b40c6c795357537033000c93ac828e14b075ce6b088668db84b0d346973323a",
+      "bytes": 688
+    },
+    {
+      "filename": "roles.csv",
+      "sha256": "4993cd5ef61476ffd6cd5b1753a21424e7c4a564f8fb592d6f0bd38b9316572a",
+      "bytes": 576
+    },
+    {
+      "filename": "academicSessions.csv",
+      "sha256": "9d5d186c5fad03525ba897227a07f024e79ac847e33e547cb93de784924cbbe9",
+      "bytes": 346
+    },
+    {
+      "filename": "courses.csv",
+      "sha256": "74e74f95fdc554e99badc4a98be4096f1a9469e9eb153f806d6e24ea5bde6139",
+      "bytes": 276
+    },
+    {
+      "filename": "classes.csv",
+      "sha256": "9f9affadc8d8a5755021aa61ebea7fb298320d1491e9cd53a934452d82b3319a",
+      "bytes": 376
+    },
+    {
+      "filename": "enrollments.csv",
+      "sha256": "0587422e84341150ac2756608a80a3d23a94e17f7b811a72dbf3b8dcf9338778",
+      "bytes": 715
+    }
+  ]
+}

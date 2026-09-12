@@ -1,0 +1,4 @@
+sourcedId,status,dateLastModified,userSourcedId,roleType,role,beginDate,endDate,orgSourcedId,userProfile
+academy:role:person-student-1:student,active,2026-09-12T00:00:00.000Z,academy:person:person-student-1,primary,student,,,academy:org:tenant-shared-oneroster,
+academy:role:person-student-2:student,active,2026-09-12T00:00:00.000Z,academy:person:person-student-2,primary,student,,,academy:org:tenant-shared-oneroster,
+academy:role:person-teacher-1:teacher,active,2026-09-12T00:00:00.000Z,academy:person:person-teacher-1,primary,teacher,,,academy:org:tenant-shared-oneroster,

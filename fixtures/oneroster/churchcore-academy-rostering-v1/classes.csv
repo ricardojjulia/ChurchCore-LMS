@@ -1,0 +1,2 @@
+sourcedId,status,dateLastModified,title,classCode,classType,location,grades,courseSourcedId,schoolSourcedId,termSourcedIds,subjects,subjectCodes,periods
+academy:class:section-bibl-101-a,active,2026-09-12T00:00:00.000Z,Biblical Foundations,BIBL-101-A,scheduled,online,,academy:course:course-bibl-101,academy:org:tenant-shared-oneroster,academy:academicPeriod:period-fall,,,MWF
