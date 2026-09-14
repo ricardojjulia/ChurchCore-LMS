@@ -6,7 +6,7 @@
 npm run test              # unit tests in watch mode
 npm run test:run          # unit tests, single pass
 npm run test:ci           # unit tests + coverage report (mirrors CI)
-npm run test:e2e          # e2e suite (requires test env — see below)
+npm run test:e2e          # e2e suite; fails if no e2e specs are discovered
 ```
 
 ## Unit test environment
@@ -62,29 +62,38 @@ Run `npm run test:ci` to see current coverage. The thresholds are enforced in CI
 
 ### Prerequisites
 
-1. Provision a separate Supabase project for testing (never use production)
-2. Add the following to `.env.test.local` (never commit this file):
+1. Start the local Supabase stack:
+   ```bash
+   supabase start
+   supabase db reset --local
    ```
-   TEST_SUPABASE_URL=https://your-test-project.supabase.co
+2. Export the values from `supabase status --output env` into `.env.test.local` (never commit this file):
+   ```
+   TEST_SUPABASE_URL=http://127.0.0.1:54321
    TEST_SUPABASE_ANON_KEY=...
    TEST_SUPABASE_SERVICE_ROLE_KEY=...
-   TEST_DATABASE_URL=postgresql://postgres:password@db.xxx.supabase.co:5432/postgres
+   TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+   NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+   SUPABASE_SERVICE_ROLE_KEY=...
    APP_BASE_URL=http://localhost:3000
-   TEST_USER_PASSWORD=TestPassword!2025
+   TEST_USER_PASSWORD=<strong-random-test-only-password>
    ```
-3. Apply migrations:
+3. Create or update the disposable Auth users:
    ```bash
-   supabase db push --db-url "$TEST_DATABASE_URL"
+   SUPABASE_URL="$TEST_SUPABASE_URL" \
+   SUPABASE_SERVICE_ROLE_KEY="$TEST_SUPABASE_SERVICE_ROLE_KEY" \
+   node scripts/ci-setup-test-env.mjs
    ```
 4. Seed test data:
    ```bash
-   psql "$TEST_DATABASE_URL" -f supabase/seed.test.sql
+   psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/seed.test.sql
    ```
-5. Set test user passwords:
+5. Serve the Edge Functions in a separate terminal:
    ```bash
-   node scripts/ci-setup-test-env.mjs
+   supabase functions serve
    ```
-6. Start the dev server:
+6. Start the dev server in another terminal:
    ```bash
    npm run dev
    ```
@@ -100,7 +109,9 @@ Run `npm run test:ci` to see current coverage. The thresholds are enforced in CI
 | `admin@test.churchcore.dev` | admin | `0002-000000000001` |
 | `teacher@test.churchcore.dev` | teacher | `0002-000000000002` |
 | `student@test.churchcore.dev` | student | `0002-000000000003` |
-| `student2@test.churchcore.dev` | student | `0002-000000000004` |
+| `admin-b@test.churchcore.dev` | admin | `0002-000000000004` |
+| `student-b@test.churchcore.dev` | student | `0002-000000000005` |
+| `guardian@test.churchcore.dev` | guardian | `0002-000000000006` |
 
 All test user passwords are set by `scripts/ci-setup-test-env.mjs` — never hardcode them in test files.
 
@@ -123,6 +134,6 @@ Never hardcode credentials in spec files — always use `process.env.*`.
 ## CI integration
 
 - **`ci.yml`** — runs lint → typecheck → unit tests with coverage → build
-- **`e2e.yml`** — runs on PR to main only; requires test Supabase project secrets to be set
+- **`e2e.yml`** — runs on PR to main only; starts and seeds an isolated local Supabase stack in the runner
 
-Unit tests are safe to run in CI without any external services. E2E tests require the test project secrets listed in `docs/github-setup.md`.
+Neither unit nor E2E tests require access to an external Supabase project in CI.

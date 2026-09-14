@@ -15,7 +15,8 @@
 --     "teacher@test.churchcore.dev|teacher|ORG_A|Test Teacher A" \
 --     "student@test.churchcore.dev|student|ORG_A|Test Student A" \
 --     "admin-b@test.churchcore.dev|admin|ORG_B|Test Admin B" \
---     "student-b@test.churchcore.dev|student|ORG_B|Test Student B"; do
+--     "student-b@test.churchcore.dev|student|ORG_B|Test Student B" \
+--     "guardian@test.churchcore.dev|guardian|ORG_A|Test Guardian A"; do
 --     IFS='|' read -r email role org_id name <<< "$row"
 --     curl -s -X POST "$TEST_SUPABASE_URL/auth/v1/admin/users" \
 --       -H "apikey: $TEST_SUPABASE_SERVICE_ROLE_KEY" \
@@ -38,6 +39,7 @@
 --   student-a  = 00000000-0000-0000-0002-000000000003
 --   admin-b    = 00000000-0000-0000-0002-000000000004
 --   student-b  = 00000000-0000-0000-0002-000000000005
+--   guardian-a = 00000000-0000-0000-0002-000000000006
 --
 -- auth.users IDs: GoTrue-assigned. Resolved at seed time via:
 --   (SELECT id FROM auth.users WHERE email = '...')
@@ -51,6 +53,16 @@
 -- Delete in FK dependency order.
 -- Never touch auth.users — GoTrue users are managed outside this file.
 
+DELETE FROM public.course_certificates
+  WHERE user_id IN (
+    '00000000-0000-0000-0002-000000000003',
+    '00000000-0000-0000-0002-000000000005'
+  );
+DELETE FROM public.enrollments
+  WHERE user_id IN (
+    '00000000-0000-0000-0002-000000000003',
+    '00000000-0000-0000-0002-000000000005'
+  );
 DELETE FROM public.direct_enrollments
   WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
 DELETE FROM public.course_enrollments
@@ -67,6 +79,8 @@ DELETE FROM public.course_blueprints
   WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
 DELETE FROM public.academic_terms
   WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
+DELETE FROM public.guardian_links
+  WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
 DELETE FROM public.profile_roles
   WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
 -- Also catch trigger-created profiles that may not yet have org_id set
@@ -75,13 +89,13 @@ DELETE FROM public.profile_roles
     SELECT id FROM auth.users
     WHERE email IN (
       'admin@test.churchcore.dev','teacher@test.churchcore.dev','student@test.churchcore.dev',
-      'admin-b@test.churchcore.dev','student-b@test.churchcore.dev'
+      'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev'
     )
   );
 DELETE FROM public.profiles
   WHERE email IN (
     'admin@test.churchcore.dev','teacher@test.churchcore.dev','student@test.churchcore.dev',
-    'admin-b@test.churchcore.dev','student-b@test.churchcore.dev'
+    'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev'
   );
 DELETE FROM public.organizations
   WHERE id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
@@ -176,6 +190,12 @@ VALUES
     (SELECT id FROM auth.users WHERE email = 'student-b@test.churchcore.dev'),
     'Test Student B', 'student-b@test.churchcore.dev', 'student', 'active',
     '00000000-0000-0000-0010-000000000002'
+  ),
+  (
+    '00000000-0000-0000-0002-000000000006',
+    (SELECT id FROM auth.users WHERE email = 'guardian@test.churchcore.dev'),
+    'Test Guardian A', 'guardian@test.churchcore.dev', 'guardian', 'active',
+    '00000000-0000-0000-0010-000000000001'
   )
 ON CONFLICT (auth_id) DO UPDATE
   SET uid          = EXCLUDED.uid,
@@ -227,6 +247,13 @@ VALUES
     'student', 'active', 1,
     '00000000-0000-0000-0010-000000000002',
     true
+  ),
+  (
+    (SELECT id FROM auth.users WHERE email = 'guardian@test.churchcore.dev'),
+    '00000000-0000-0000-0002-000000000006',
+    'guardian', 'active', 1,
+    '00000000-0000-0000-0010-000000000001',
+    true
   )
 ON CONFLICT (auth_id) DO UPDATE
   SET uid           = EXCLUDED.uid,
@@ -244,7 +271,7 @@ VALUES
   (
     '00000000-0000-0000-0011-000000000001',
     '00000000-0000-0000-0010-000000000001',
-    'Alpha Course',
+    'Introduction to ChurchCore',
     'published',
     '00000000-0000-0000-0002-000000000002'   -- teacher-a uid
   ),
@@ -254,6 +281,27 @@ VALUES
     'Beta Course',
     'published',
     '00000000-0000-0000-0002-000000000004'   -- admin-b uid
+  ),
+  (
+    '00000000-0000-0000-0011-000000000003',
+    '00000000-0000-0000-0010-000000000001',
+    'Standalone Course',
+    'published',
+    '00000000-0000-0000-0002-000000000002'
+  ),
+  (
+    '00000000-0000-0000-0011-000000000004',
+    '00000000-0000-0000-0010-000000000001',
+    'Draft Introduction Course',
+    'draft',
+    '00000000-0000-0000-0002-000000000002'
+  ),
+  (
+    '00000000-0000-0000-0011-000000000005',
+    '00000000-0000-0000-0010-000000000001',
+    'Introduction: Advanced Practices',
+    'published',
+    '00000000-0000-0000-0002-000000000002'
   )
 ON CONFLICT (id) DO NOTHING;
 
@@ -317,8 +365,27 @@ VALUES
     'TEST-BETA-BP-001', 'Beta Blueprint', true,
     (SELECT id FROM auth.users WHERE email = 'admin-b@test.churchcore.dev'),
     '00000000-0000-0000-0010-000000000002'
+  ),
+  (
+    '00000000-0000-0000-0021-000000000003',
+    'TEST-UNLINKED-BP-001', 'Unlinked Blueprint', true,
+    (SELECT id FROM auth.users WHERE email = 'admin@test.churchcore.dev'),
+    '00000000-0000-0000-0010-000000000001'
   )
 ON CONFLICT (id) DO NOTHING;
+
+UPDATE public.courses
+SET blueprint_id = CASE id
+  WHEN '00000000-0000-0000-0011-000000000001'::uuid
+    THEN '00000000-0000-0000-0021-000000000001'::uuid
+  WHEN '00000000-0000-0000-0011-000000000002'::uuid
+    THEN '00000000-0000-0000-0021-000000000002'::uuid
+  ELSE blueprint_id
+END
+WHERE id IN (
+  '00000000-0000-0000-0011-000000000001',
+  '00000000-0000-0000-0011-000000000002'
+);
 
 -- ─── course_sections ─────────────────────────────────────────────────────────
 
@@ -341,6 +408,14 @@ VALUES
     'BETA-001', 'self_paced', true,
     (SELECT id FROM auth.users WHERE email = 'admin-b@test.churchcore.dev'),
     '00000000-0000-0000-0010-000000000002'
+  ),
+  (
+    '00000000-0000-0000-0022-000000000003',
+    '00000000-0000-0000-0021-000000000003',
+    '00000000-0000-0000-0020-000000000001',
+    'UNLINKED-001', 'self_paced', true,
+    (SELECT id FROM auth.users WHERE email = 'admin@test.churchcore.dev'),
+    '00000000-0000-0000-0010-000000000001'
   )
 ON CONFLICT (id) DO NOTHING;
 
@@ -364,6 +439,43 @@ VALUES
     '00000000-0000-0000-0010-000000000002'
   )
 ON CONFLICT (user_id, section_id) DO NOTHING;
+
+-- ─── Delivery enrollments ───────────────────────────────────────────────────
+
+INSERT INTO public.enrollments (
+  user_id, course_id, section_id, transit_status, progress_percent, org_id
+)
+VALUES
+  (
+    '00000000-0000-0000-0002-000000000003',
+    '00000000-0000-0000-0011-000000000001',
+    '00000000-0000-0000-0022-000000000001',
+    'in_progress', 25,
+    '00000000-0000-0000-0010-000000000001'
+  ),
+  (
+    '00000000-0000-0000-0002-000000000005',
+    '00000000-0000-0000-0011-000000000002',
+    '00000000-0000-0000-0022-000000000002',
+    'in_progress', 25,
+    '00000000-0000-0000-0010-000000000002'
+  )
+ON CONFLICT (user_id, course_id) DO UPDATE
+  SET section_id = EXCLUDED.section_id,
+      transit_status = EXCLUDED.transit_status,
+      progress_percent = EXCLUDED.progress_percent,
+      org_id = EXCLUDED.org_id;
+
+-- ─── Guardian fixtures ──────────────────────────────────────────────────────
+
+INSERT INTO public.guardian_links (guardian_uid, student_uid, created_by, org_id)
+VALUES (
+  '00000000-0000-0000-0002-000000000006',
+  '00000000-0000-0000-0002-000000000003',
+  '00000000-0000-0000-0002-000000000001',
+  '00000000-0000-0000-0010-000000000001'
+)
+ON CONFLICT (guardian_uid, student_uid) DO NOTHING;
 
 -- ─── Notifications ───────────────────────────────────────────────────────────
 

@@ -6,6 +6,7 @@ SET LOCAL search_path = public, extensions;
 SELECT no_plan();
 SELECT ok(true, 'identity linking transaction assertions execute');
 SELECT ok(has_function_privilege('service_role', 'public.link_oneroster_user(uuid,uuid,text,uuid,uuid,uuid)', 'EXECUTE'), 'service role can link roster users');
+SELECT ok(has_function_privilege('service_role', 'public.oneroster_safe_role(text)', 'EXECUTE'), 'service role can map safe roster roles');
 SELECT ok(NOT has_function_privilege('authenticated', 'public.link_oneroster_user(uuid,uuid,text,uuid,uuid,uuid)', 'EXECUTE'), 'authenticated cannot link roster users directly');
 
 DO $$

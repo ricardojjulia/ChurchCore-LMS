@@ -32,14 +32,11 @@ Configure in **GitHub → Repository → Settings → Secrets and variables → 
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (build-time) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (build-time) |
-| `TEST_SUPABASE_URL` | Test project URL (e2e only) |
-| `TEST_SUPABASE_ANON_KEY` | Test project anon key (e2e only) |
-| `TEST_SUPABASE_SERVICE_ROLE_KEY` | Test project service role key (e2e seed only) |
-| `TEST_DATABASE_URL` | Postgres connection string for test DB (e2e only) |
-| `TEST_BASE_URL` | Base URL of the test deployment (e2e only) |
 | `DEPLOY_WEBHOOK_URL` | Slack/Discord webhook URL (optional — skipped if missing) |
 | `SUPABASE_ACCESS_TOKEN` | Supabase CLI personal access token (release deploy) |
 | `SUPABASE_PROJECT_REF` | Production Supabase project ref (release deploy) |
+
+The E2E workflow starts an isolated local Supabase stack in its GitHub-hosted runner and generates a disposable password at runtime. It does not require repository secrets or access to a shared cloud database.
 
 ## Staging Environment
 
@@ -88,4 +85,4 @@ The following checks must all pass before a PR can be merged:
 3. **unit-tests** — `npx vitest run --coverage`
 4. **build** — `npx next build`
 
-E2E tests run separately on PR to main and are a recommended (not required) check until the test infrastructure is fully provisioned.
+E2E tests run separately on PRs to `main` using an isolated local Supabase stack. Add `E2E Tests` to the required status checks after its first successful run.

@@ -14,14 +14,9 @@ jobs:
                # use branch protection to require ci workflow to pass first.
 
     env:
-      TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
-      TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
-      TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
-      TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-      APP_BASE_URL: ${{ secrets.TEST_BASE_URL }}
-      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      TEST_USER_A_EMAIL: ${{ secrets.TEST_USER_A_EMAIL }}
-      TEST_USER_B_EMAIL: ${{ secrets.TEST_USER_B_EMAIL }}
+      APP_BASE_URL: http://127.0.0.1:3000
+      TEST_USER_A_EMAIL: admin@test.churchcore.dev
+      TEST_USER_B_EMAIL: admin-b@test.churchcore.dev
 
     steps:
       - uses: actions/checkout@v4
@@ -40,17 +35,80 @@ jobs:
         with:
           version: latest
 
-      - name: Push migrations to test database
-        run: supabase db push --db-url "$TEST_DATABASE_URL"
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Export local test environment
+        shell: bash
+        run: |
+          eval "$(supabase status --output env)"
+          TEST_USER_PASSWORD="$(openssl rand -base64 32)"
+
+          echo "::add-mask::$ANON_KEY"
+          echo "::add-mask::$SERVICE_ROLE_KEY"
+          echo "::add-mask::$TEST_USER_PASSWORD"
+
+          {
+            echo "TEST_SUPABASE_URL=$API_URL"
+            echo "TEST_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "TEST_SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "TEST_DATABASE_URL=$DB_URL"
+            echo "SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "TEST_USER_PASSWORD=$TEST_USER_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Wait for test services
+        run: |
+          for attempt in {1..120}; do
+            if curl --fail --silent --output /dev/null "$SUPABASE_URL/auth/v1/health"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          supabase status
+          exit 1
+
+      - name: Prepare test users
+        run: node scripts/ci-setup-test-env.mjs
 
       - name: Seed test database
-        run: psql "$TEST_DATABASE_URL" -f supabase/seed.test.sql
+        run: psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/seed.test.sql
 
-      - name: Set test user passwords
-        run: node scripts/ci-setup-test-env.mjs
-        env:
-          SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Serve Edge Functions
+        run: |
+          supabase functions serve > "$RUNNER_TEMP/churchcore-functions.log" 2>&1 &
+          for attempt in {1..60}; do
+            if curl --fail --silent --output /dev/null \
+              --header "apikey: $TEST_SUPABASE_ANON_KEY" \
+              --header "Authorization: Bearer $TEST_SUPABASE_ANON_KEY" \
+              "$TEST_SUPABASE_URL/functions/v1/system-health-check"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/churchcore-functions.log"
+          exit 1
+
+      - name: Start test application
+        run: |
+          npm run dev -- --hostname 127.0.0.1 > "$RUNNER_TEMP/churchcore-e2e.log" 2>&1 &
+          for attempt in {1..60}; do
+            if curl --fail --silent --output /dev/null "$APP_BASE_URL/login"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/churchcore-e2e.log"
+          exit 1
 
       - name: Run E2E tests
         run: npm run test:e2e
+
+      - name: Print service logs on failure
+        if: failure()
+        run: |
+          test ! -f "$RUNNER_TEMP/churchcore-functions.log" || cat "$RUNNER_TEMP/churchcore-functions.log"
+          test ! -f "$RUNNER_TEMP/churchcore-e2e.log" || cat "$RUNNER_TEMP/churchcore-e2e.log"

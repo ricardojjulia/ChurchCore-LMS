@@ -308,6 +308,33 @@
 - Academy export shipment/merge state belongs to the Academy repo workflow.
 - Scheduled pulls, REST, guardians, and result return remain deferred.
 
+## 2026-09-14 E2E Gate Restoration
+
+- Replaced the shared-cloud E2E dependency with a disposable local Supabase
+  stack inside each GitHub Actions runner. CI now generates its test password,
+  rebuilds the schema, creates Auth users, seeds deterministic tenant fixtures,
+  serves Edge Functions, and starts Next.js before running tests.
+- Added a dedicated Vitest E2E configuration so both E2E directories are
+  discovered and an empty suite fails instead of reporting a false pass.
+- Repaired Auth session setup, tenant fixtures, enrollment bridge identity
+  mapping, API-role table privileges, stale profile policies, tenant suspension
+  propagation, enrollment audit actors, and certificate tenant validation.
+- Kept the newly provisioned cloud Supabase development project untouched; it
+  is not required by the PR test gate.
+
+### Verification
+
+- Fresh `supabase db reset --local`: PASS through migration
+  `20260914154000_restore_anon_table_read_privileges.sql`.
+- Fresh Auth setup and deterministic SQL seed: PASS, 6 users and 6 profiles.
+- `npm run test:e2e`: PASS, 8 files / 77 tests against the rebuilt stack.
+- `npm run test:ci`: PASS, 24 files / 201 tests.
+- `npm run typecheck`, `npm run lint`, `npm run version:check`,
+  `npm run build`, workflow YAML parsing, and `git diff --check`: PASS.
+- Local OneRoster pgTAP suites: PASS, 31 apply, 5 preview/cleanup,
+  9 provenance guard, and 4 identity-link checks.
+- Public schema audit: every ordinary table has RLS enabled.
+
 ## 2026-09-14 Authenticated Browser Verification Refresh
 
 - Verified the local dev server was running on `http://localhost:3002`.
