@@ -90,28 +90,6 @@ export default function QuizPlayer({
   const formRef          = useRef<HTMLFormElement>(null)
   const autoSubmittedRef = useRef(false)
 
-  if (loadingBank) {
-    return (
-      <div className="mt-6 flex items-center gap-3 text-muted-foreground text-sm">
-        <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-        <span>Preparing quiz…</span>
-      </div>
-    )
-  }
-
-  // Attempts exhausted — show locked state, no form
-  if (attemptsAllowed > 0 && attemptsUsed >= attemptsAllowed && !existingSub) {
-    return (
-      <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-5 py-6 text-center space-y-2">
-        <p className="text-2xl">🔒</p>
-        <p className="font-semibold text-foreground">No attempts remaining</p>
-        <p className="text-sm text-muted-foreground">
-          This quiz allows {attemptsAllowed} attempt{attemptsAllowed !== 1 ? 's' : ''}. You have used all of them.
-        </p>
-      </div>
-    )
-  }
-
   const isGraded = existingSub?.status === 'graded' || (result !== null && !result.error)
   const submitted = isGraded
 
@@ -173,6 +151,28 @@ export default function QuizPlayer({
     }, 1000)
     return () => clearTimeout(id)
   }, [timeLeft, timerKey, submitted])
+
+  if (loadingBank) {
+    return (
+      <div className="mt-6 flex items-center gap-3 text-muted-foreground text-sm">
+        <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        <span>Preparing quiz…</span>
+      </div>
+    )
+  }
+
+  // Attempts exhausted — show locked state, no form
+  if (attemptsAllowed > 0 && attemptsUsed >= attemptsAllowed && !existingSub) {
+    return (
+      <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-5 py-6 text-center space-y-2">
+        <p className="text-2xl">🔒</p>
+        <p className="font-semibold text-foreground">No attempts remaining</p>
+        <p className="text-sm text-muted-foreground">
+          This quiz allows {attemptsAllowed} attempt{attemptsAllowed !== 1 ? 's' : ''}. You have used all of them.
+        </p>
+      </div>
+    )
+  }
 
   // ── Answer setters ──────────────────────────────────────────────────────────
 

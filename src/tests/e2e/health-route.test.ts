@@ -13,21 +13,34 @@
  *
  * Prerequisites:
  *   - A test runner (Jest / Vitest) must be configured before these run.
- *   - APP_BASE_URL, SUPABASE_TEST_URL, SUPABASE_TEST_SERVICE_KEY env vars must be set.
- *   - TEST_ADMIN_TOKEN must be a valid Supabase access token for an admin profile.
- *   - TEST_STUDENT_TOKEN must be a valid Supabase access token for a student profile.
+ *   - APP_BASE_URL, TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY,
+ *     TEST_SUPABASE_SERVICE_ROLE_KEY and TEST_USER_PASSWORD must be set.
  *   - The system-health-check Edge Function must be deployed in the test project.
  *
  * Run: npx vitest src/tests/e2e/health-route.test.ts
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { beforeAll } from 'vitest'
+import { signInTestUser } from './test-session'
 
 const BASE_URL     = process.env.APP_BASE_URL                ?? 'http://localhost:3000'
-const TEST_URL     = process.env.SUPABASE_TEST_URL           ?? ''
-const SERVICE_KEY  = process.env.SUPABASE_TEST_SERVICE_KEY   ?? ''
-const ADMIN_TOKEN  = process.env.TEST_ADMIN_TOKEN            ?? ''
-const STUDENT_TOKEN = process.env.TEST_STUDENT_TOKEN         ?? ''
+const TEST_URL     = process.env.TEST_SUPABASE_URL            ?? ''
+const ANON_KEY     = process.env.TEST_SUPABASE_ANON_KEY       ?? ''
+const SERVICE_KEY  = process.env.TEST_SUPABASE_SERVICE_ROLE_KEY ?? ''
+const PASSWORD     = process.env.TEST_USER_PASSWORD           ?? ''
+
+let adminCookie = ''
+let studentCookie = ''
+
+beforeAll(async () => {
+  const [admin, student] = await Promise.all([
+    signInTestUser(TEST_URL, ANON_KEY, 'admin@test.churchcore.dev', PASSWORD),
+    signInTestUser(TEST_URL, ANON_KEY, 'student@test.churchcore.dev', PASSWORD),
+  ])
+  adminCookie = admin.cookieHeader
+  studentCookie = student.cookieHeader
+})
 
 function serviceClient(): SupabaseClient {
   return createClient(TEST_URL, SERVICE_KEY)
@@ -36,10 +49,10 @@ function serviceClient(): SupabaseClient {
 async function getJson(
   path: string,
   method: 'GET' | 'POST' = 'GET',
-  token?: string,
+  cookie?: string,
 ): Promise<{ status: number; body: unknown }> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (token) headers['Authorization'] = `Bearer ${token}`
+  if (cookie) headers.Cookie = cookie
 
   const res = await fetch(`${BASE_URL}${path}`, { method, headers })
   let body: unknown
@@ -61,7 +74,7 @@ describe('GET /api/health — auth guards', () => {
   })
 
   it('returns 403 when authenticated as a non-admin (student)', async () => {
-    const { status } = await getJson('/api/health', 'GET', STUDENT_TOKEN)
+    const { status } = await getJson('/api/health', 'GET', studentCookie)
     expect(status).toBe(403)
   })
 })
@@ -70,7 +83,7 @@ describe('GET /api/health — auth guards', () => {
 
 describe('GET /api/health — admin access', () => {
   it('returns 200 with a checks array for an admin user', async () => {
-    const { status, body } = await getJson('/api/health', 'GET', ADMIN_TOKEN)
+    const { status, body } = await getJson('/api/health', 'GET', adminCookie)
 
     expect(status).toBe(200)
     expect(body).toHaveProperty('checks')
@@ -78,7 +91,7 @@ describe('GET /api/health — admin access', () => {
   })
 
   it('returns a timestamp field alongside the checks', async () => {
-    const { body } = await getJson('/api/health', 'GET', ADMIN_TOKEN)
+    const { body } = await getJson('/api/health', 'GET', adminCookie)
     const typed = body as { timestamp?: string }
     expect(typeof typed.timestamp).toBe('string')
     // Should parse as a valid ISO date
@@ -97,7 +110,7 @@ describe('POST /api/health — trigger + persist', () => {
   })
 
   it('returns 200 and persists check rows after invoking the Edge Function', async () => {
-    const { status, body } = await getJson('/api/health', 'POST', ADMIN_TOKEN)
+    const { status, body } = await getJson('/api/health', 'POST', adminCookie)
 
     expect(status).toBe(200)
     const typed = body as { checks: { check_name: string; status: string }[] }

@@ -8,32 +8,34 @@
  *
  * Prerequisites:
  *   - A test runner (Jest / Vitest) must be configured before these run.
- *   - SUPABASE_TEST_URL and SUPABASE_TEST_ANON_KEY env vars must be set.
+ *   - TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY and TEST_USER_PASSWORD
+ *     env vars must be set.
  *   - The database must have been seeded with test fixtures.
  *   - All credentials MUST be supplied via environment variables — never hardcoded.
- *     Required: GUARDIAN_A_TEST_EMAIL, GUARDIAN_A_TEST_PASSWORD,
- *               STUDENT_A_TEST_EMAIL, STUDENT_A_TEST_PASSWORD
+ *   - Test emails are fixed fixture identifiers; the shared password is secret.
  *
  * Run: npx vitest run tests/e2e/guardian-rpcs.test.ts
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const TEST_URL  = process.env.SUPABASE_TEST_URL      ?? ''
-const TEST_ANON = process.env.SUPABASE_TEST_ANON_KEY ?? ''
+const TEST_URL  = process.env.TEST_SUPABASE_URL      ?? ''
+const TEST_ANON = process.env.TEST_SUPABASE_ANON_KEY ?? ''
+const TEST_PASSWORD = process.env.TEST_USER_PASSWORD ?? ''
 
-// ── Test fixture credentials (env vars — never hardcode) ──────────────────────
-const GUARDIAN_A_EMAIL    = process.env.GUARDIAN_A_TEST_EMAIL    ?? ''
-const GUARDIAN_A_PASSWORD = process.env.GUARDIAN_A_TEST_PASSWORD ?? ''
-const STUDENT_A_EMAIL     = process.env.STUDENT_A_TEST_EMAIL     ?? ''
-const STUDENT_A_PASSWORD  = process.env.STUDENT_A_TEST_PASSWORD  ?? ''
+const GUARDIAN_A_EMAIL = 'guardian@test.churchcore.dev'
+const STUDENT_A_EMAIL  = 'student@test.churchcore.dev'
+
+if (!TEST_URL || !TEST_ANON || !TEST_PASSWORD) {
+  throw new Error('Guardian RPC tests: missing required test environment')
+}
 
 // ── Test fixture UIDs (must match seed data) ─────────────────────────────────
 // SENTINEL_UNKNOWN_UUID is a deliberately non-existent UUID used to confirm
 // the RPC raises an exception for unknown users. Not a real user's UUID.
 const SENTINEL_UNKNOWN_UUID = '00000000-0000-0000-0000-000000000099'
-const STUDENT_LINKED_UID    = process.env.TEST_STUDENT_LINKED_UID ?? '' // linked to guardian A
-const STUDENT_OTHER_UID     = process.env.TEST_STUDENT_OTHER_UID  ?? '' // not linked to guardian A
+const STUDENT_LINKED_UID = '00000000-0000-0000-0002-000000000003'
+const STUDENT_OTHER_UID  = '00000000-0000-0000-0002-000000000005'
 
 async function signInAs(email: string, password: string): Promise<SupabaseClient> {
   const client = createClient(TEST_URL, TEST_ANON)
@@ -48,7 +50,7 @@ describe('get_guardian_students()', () => {
   let guardianClient: SupabaseClient
 
   beforeAll(async () => {
-    guardianClient = await signInAs(GUARDIAN_A_EMAIL, GUARDIAN_A_PASSWORD)
+    guardianClient = await signInAs(GUARDIAN_A_EMAIL, TEST_PASSWORD)
   })
 
   it('returns only students linked to the calling guardian', async () => {
@@ -60,7 +62,7 @@ describe('get_guardian_students()', () => {
   })
 
   it('returns empty array when called by a non-guardian user', async () => {
-    const studentClient = await signInAs(STUDENT_A_EMAIL, STUDENT_A_PASSWORD)
+    const studentClient = await signInAs(STUDENT_A_EMAIL, TEST_PASSWORD)
     const { data, error } = await studentClient.rpc('get_guardian_students')
     expect(error).toBeNull()
     expect(data).toHaveLength(0)
@@ -73,7 +75,7 @@ describe('get_guardian_student_overview(p_student_uid)', () => {
   let guardianClient: SupabaseClient
 
   beforeAll(async () => {
-    guardianClient = await signInAs(GUARDIAN_A_EMAIL, GUARDIAN_A_PASSWORD)
+    guardianClient = await signInAs(GUARDIAN_A_EMAIL, TEST_PASSWORD)
   })
 
   it('returns data for a linked student', async () => {
@@ -105,7 +107,7 @@ describe('get_guardian_student_overview(p_student_uid)', () => {
 
 describe('get_my_academic_performance()', () => {
   it("returns only the calling user's own academic records", async () => {
-    const studentClient = await signInAs(STUDENT_A_EMAIL, STUDENT_A_PASSWORD)
+    const studentClient = await signInAs(STUDENT_A_EMAIL, TEST_PASSWORD)
     const { data, error } = await studentClient.rpc('get_my_academic_performance')
     expect(error).toBeNull()
 

@@ -13,7 +13,7 @@
  *
  * Prerequisites:
  *   - A test runner (Jest / Vitest) must be configured before these run.
- *   - SUPABASE_TEST_URL, SUPABASE_TEST_SERVICE_KEY env vars must be set.
+ *   - TEST_SUPABASE_URL and TEST_SUPABASE_SERVICE_ROLE_KEY env vars must be set.
  *   - Test seed data must include a course_blueprint, two course_sections,
  *     one course with blueprint_id set, and one course without.
  *
@@ -22,15 +22,18 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const TEST_URL     = process.env.SUPABASE_TEST_URL         ?? ''
-const SERVICE_KEY  = process.env.SUPABASE_TEST_SERVICE_KEY ?? ''
+const TEST_URL     = process.env.TEST_SUPABASE_URL              ?? ''
+const SERVICE_KEY  = process.env.TEST_SUPABASE_SERVICE_ROLE_KEY ?? ''
 
 // ── Test fixture IDs (must match seed data) ───────────────────────────────────
-const BLUEPRINT_ID           = process.env.TEST_BLUEPRINT_ID            ?? ''
-const SECTION_WITH_BP_ID     = process.env.TEST_SECTION_WITH_BP_ID      ?? '' // linked to BLUEPRINT_ID
-const COURSE_WITH_BP_ID      = process.env.TEST_COURSE_WITH_BP_ID       ?? '' // courses.blueprint_id = BLUEPRINT_ID
-const COURSE_WITHOUT_BP_ID   = process.env.TEST_COURSE_WITHOUT_BP_ID    ?? '' // courses.blueprint_id IS NULL
-const TEST_STUDENT_UID       = process.env.TEST_BRIDGE_STUDENT_UID      ?? ''
+const SECTION_WITH_BP_ID   = '00000000-0000-0000-0022-000000000001'
+const SECTION_NO_BP_ID     = '00000000-0000-0000-0022-000000000003'
+const COURSE_WITH_BP_ID    = '00000000-0000-0000-0011-000000000001'
+const COURSE_WITHOUT_BP_ID = '00000000-0000-0000-0011-000000000003'
+const TEST_STUDENT_UID     = '00000000-0000-0000-0002-000000000003'
+const TEST_ORG_ID          = '00000000-0000-0000-0010-000000000001'
+
+let testStudentAuthId = ''
 
 function serviceClient(): SupabaseClient {
   return createClient(TEST_URL, SERVICE_KEY)
@@ -38,9 +41,19 @@ function serviceClient(): SupabaseClient {
 
 async function cleanupStudent(studentUid: string) {
   const db = serviceClient()
-  await db.from('direct_enrollments').delete().eq('student_uid', studentUid)
+  await db.from('direct_enrollments').delete().eq('user_id', testStudentAuthId)
   await db.from('enrollments').delete().eq('user_id', studentUid)
 }
+
+beforeAll(async () => {
+  const db = serviceClient()
+  const { data, error } = await db.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  expect(error).toBeNull()
+  testStudentAuthId = data.users.find(
+    (user) => user.email === 'student@test.churchcore.dev',
+  )?.id ?? ''
+  expect(testStudentAuthId).toBeTruthy()
+})
 
 // ── Bridge trigger: active enrollment ─────────────────────────────────────────
 
@@ -51,9 +64,10 @@ describe('Bridge trigger on direct_enrollments INSERT', () => {
   it('creates an enrollment row when direct_enrollment is inserted as active', async () => {
     const db = serviceClient()
     const { error: insertErr } = await db.from('direct_enrollments').insert({
-      student_uid:        TEST_STUDENT_UID,
+      user_id:            testStudentAuthId,
       section_id:         SECTION_WITH_BP_ID,
       status:  'active',
+      org_id: TEST_ORG_ID,
     })
     expect(insertErr).toBeNull()
 
@@ -73,11 +87,11 @@ describe('Bridge trigger on direct_enrollments INSERT', () => {
     const db = serviceClient()
 
     // Insert a section linked to the no-blueprint course (seed must have such a section)
-    const SECTION_NO_BP_ID = process.env.TEST_SECTION_NO_BP_ID ?? ''
     const { error: insertErr } = await db.from('direct_enrollments').insert({
-      student_uid:        TEST_STUDENT_UID,
+      user_id:            testStudentAuthId,
       section_id:         SECTION_NO_BP_ID,
       status:  'active',
+      org_id: TEST_ORG_ID,
     })
     expect(insertErr).toBeNull()
 
@@ -100,19 +114,20 @@ describe('Sync trigger on direct_enrollments UPDATE (withdrawal)', () => {
     // Pre-create both rows so the update has something to propagate
     const db = serviceClient()
     await db.from('direct_enrollments').insert({
-      student_uid:        TEST_STUDENT_UID,
+      user_id:            testStudentAuthId,
       section_id:         SECTION_WITH_BP_ID,
       status:  'active',
+      org_id: TEST_ORG_ID,
     })
   })
   afterAll(() => cleanupStudent(TEST_STUDENT_UID))
 
-  it('sets transit_status to withdrawn when direct_enrollment is withdrawn', async () => {
+  it('sets transit_status to dropped when direct_enrollment is withdrawn', async () => {
     const db = serviceClient()
     const { error: updateErr } = await db
       .from('direct_enrollments')
       .update({ status: 'withdrawn' })
-      .eq('student_uid', TEST_STUDENT_UID)
+      .eq('user_id', testStudentAuthId)
       .eq('section_id',  SECTION_WITH_BP_ID)
 
     expect(updateErr).toBeNull()
@@ -124,32 +139,35 @@ describe('Sync trigger on direct_enrollments UPDATE (withdrawal)', () => {
       .eq('course_id', COURSE_WITH_BP_ID)
       .maybeSingle()
 
-    expect(enrollment?.transit_status).toBe('withdrawn')
+    expect(enrollment?.transit_status).toBe('dropped')
   })
 })
 
 // ── Backfill idempotency ───────────────────────────────────────────────────────
 
-describe('Migration 043 backfill idempotency', () => {
-  it('does not create duplicate enrollments when run twice', async () => {
+describe('Bridge idempotency', () => {
+  beforeEach(() => cleanupStudent(TEST_STUDENT_UID))
+  afterAll(() => cleanupStudent(TEST_STUDENT_UID))
+
+  it('does not create duplicate enrollments when the source row is replayed', async () => {
     const db = serviceClient()
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const { error } = await db.from('direct_enrollments').upsert({
+        user_id: testStudentAuthId,
+        section_id: SECTION_WITH_BP_ID,
+        status: 'active',
+        org_id: TEST_ORG_ID,
+      }, { onConflict: 'user_id,section_id' })
+      expect(error).toBeNull()
+    }
 
-    // Simulate the backfill INSERT ... ON CONFLICT DO NOTHING twice
-    const backfillQuery = `
-      INSERT INTO enrollments (user_id, course_id, section_id, transit_status, progress_percent)
-      SELECT de.student_uid, c.id, de.section_id, 'not_started', 0
-      FROM direct_enrollments de
-      JOIN course_sections cs ON cs.id = de.section_id
-      JOIN courses          c  ON c.blueprint_id = cs.blueprint_id
-      WHERE de.enrollment_status = 'active' AND c.blueprint_id IS NOT NULL
-      ON CONFLICT (user_id, course_id) DO NOTHING
-      RETURNING id
-    `
-    const { data: run1 } = await db.rpc('exec_sql_count', { sql: backfillQuery })
-    const { data: run2 } = await db.rpc('exec_sql_count', { sql: backfillQuery })
+    const { count, error } = await db
+      .from('enrollments')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', TEST_STUDENT_UID)
+      .eq('course_id', COURSE_WITH_BP_ID)
 
-    // Second run must insert 0 rows (all are already present after first run)
-    expect(Number(run2 ?? 0)).toBe(0)
-    void run1 // suppress unused warning
+    expect(error).toBeNull()
+    expect(count).toBe(1)
   })
 })

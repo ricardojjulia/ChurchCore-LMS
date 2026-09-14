@@ -10,6 +10,7 @@ export interface EnrolledCourse {
   courseId:       string
   title:          string
   description:    string | null
+  status:         string
   isPublished:    boolean
   transitStatus:  TransitStatus
   progressPercent: number
@@ -21,6 +22,7 @@ export interface OwnedCourse {
   id:          string
   title:       string
   description: string | null
+  status:      string
   isPublished: boolean
   createdAt:   string
 }
@@ -94,7 +96,7 @@ export async function resolveUserDashboardContext(): Promise<DashboardContext> {
           id,
           title,
           description,
-          is_published
+          status
         )
       `)
       .eq('user_id', profile.uid)
@@ -104,7 +106,7 @@ export async function resolveUserDashboardContext(): Promise<DashboardContext> {
     isStaff
       ? supabase
           .from('courses')
-          .select('id, title, description, is_published, created_at')
+          .select('id, title, description, status, created_at')
           .eq('owner_id', profile.uid)
           .order('created_at', { ascending: false })
       : Promise.resolve({ data: [] as OwnedCourse[], error: null }),
@@ -128,7 +130,8 @@ export async function resolveUserDashboardContext(): Promise<DashboardContext> {
     courseId:        e.course_id,
     title:           e.courses?.title ?? 'Course',
     description:     e.courses?.description ?? null,
-    isPublished:     e.courses?.is_published ?? false,
+    status:          e.courses?.status ?? 'draft',
+    isPublished:     e.courses?.status === 'published',
     transitStatus:   (e.transit_status ?? 'not_started') as TransitStatus,
     progressPercent: Number(e.progress_percent ?? 0),
     lastAccessedAt:  e.last_accessed_at ?? null,
@@ -139,7 +142,8 @@ export async function resolveUserDashboardContext(): Promise<DashboardContext> {
     id:          c.id,
     title:       c.title,
     description: c.description ?? null,
-    isPublished: c.is_published ?? false,
+    status:      c.status ?? 'draft',
+    isPublished: c.status === 'published',
     createdAt:   c.created_at,
   }))
 

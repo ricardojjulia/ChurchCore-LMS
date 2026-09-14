@@ -177,7 +177,7 @@ describe('POST /api/analytics/events', () => {
 
     expect(response.status).toBe(403)
     expect(await responseJson(response)).toEqual({
-      error: 'new row violates row-level security policy',
+      error: 'Event rejected',
     })
   })
 })

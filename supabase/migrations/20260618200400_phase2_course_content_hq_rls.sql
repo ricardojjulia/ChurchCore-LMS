@@ -234,6 +234,10 @@ UPDATE public.hq_tasks
 SET org_id = (SELECT id FROM public.organizations ORDER BY created_at LIMIT 1)
 WHERE org_id IS NULL;
 
+-- Fresh projects have no tenant until test/application seed runs. The legacy HQ
+-- bootstrap rows are documentation artifacts and cannot be tenant-scoped.
+DELETE FROM public.hq_tasks WHERE org_id IS NULL;
+
 ALTER TABLE public.hq_tasks ALTER COLUMN org_id SET NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_hq_tasks_org ON public.hq_tasks(org_id);
 
@@ -291,6 +295,8 @@ WHERE p.auth_id = t.created_by
 UPDATE public.hq_decisions
 SET org_id = (SELECT id FROM public.organizations ORDER BY created_at LIMIT 1)
 WHERE org_id IS NULL;
+
+DELETE FROM public.hq_decisions WHERE org_id IS NULL;
 
 ALTER TABLE public.hq_decisions ALTER COLUMN org_id SET NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_hq_decisions_org ON public.hq_decisions(org_id);
@@ -350,6 +356,8 @@ UPDATE public.hq_risks
 SET org_id = (SELECT id FROM public.organizations ORDER BY created_at LIMIT 1)
 WHERE org_id IS NULL;
 
+DELETE FROM public.hq_risks WHERE org_id IS NULL;
+
 ALTER TABLE public.hq_risks ALTER COLUMN org_id SET NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_hq_risks_org ON public.hq_risks(org_id);
 
@@ -407,6 +415,8 @@ WHERE p.auth_id = s.user_id
 UPDATE public.hq_sessions
 SET org_id = (SELECT id FROM public.organizations ORDER BY created_at LIMIT 1)
 WHERE org_id IS NULL;
+
+DELETE FROM public.hq_sessions WHERE org_id IS NULL;
 
 ALTER TABLE public.hq_sessions ALTER COLUMN org_id SET NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_hq_sessions_org ON public.hq_sessions(org_id);
