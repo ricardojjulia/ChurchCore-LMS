@@ -270,3 +270,75 @@
   existing-profile-only.
 - Academy export, scheduled pulls, REST, guardians, and result return remain
   deferred behind the existing approval boundary.
+
+## 2026-09-14 Certification Verification Refresh
+
+- Reconfirmed repo connection: `/Users/rjulia/ChurchCore LMS`, branch `main`,
+  remote `https://github.com/ricardojjulia/ChurchCore-LMS.git`.
+- Continued from `COUNCIL-2026-018`, `ADR-2026-009`, and factory phase
+  `identity_linking_verified`.
+- Added forward migration
+  `20260914121000_fix_oneroster_preview_lint_warning.sql` to redefine
+  `preview_oneroster_job` with the enrollment class lookup used directly.
+- Applied the migration to linked Supabase.
+
+### Verification
+
+- `npx vitest run src/lib/oneroster/*.test.ts`: PASS, 7 files / 39 tests.
+- `npm run test:run`: PASS, 24 files / 201 tests.
+- `npm run typecheck`, `npm run lint`, `npm run version:check`, `npm run build`,
+  and `git diff --check`: PASS.
+- `supabase --version`: PASS, 2.107.0.
+- `supabase db lint --linked`: PASS, no schema errors and no warnings after the
+  forward migration.
+- Linked OneRoster pgTAP suites: PASS.
+  - `oneroster_apply_test.sql`: 31 tests.
+  - `oneroster_preview_cleanup_test.sql`: 5 tests.
+  - `oneroster_provenance_guard_test.sql`: 9 tests.
+  - `oneroster_identity_linking_test.sql`: 3 tests.
+- `node scripts/oneroster-concurrency-test.mjs`: PASS; contended apply was
+  rejected and post-release apply created one course.
+- Local unauthenticated route smoke on `http://localhost:3002`: admin page
+  redirects to `/login`; validation and jobs APIs return `401 Unauthorized`.
+
+### Remaining Scope
+
+- Automatic Auth user provisioning remains intentionally deferred; linking is
+  existing-profile-only.
+- Academy export shipment/merge state belongs to the Academy repo workflow.
+- Scheduled pulls, REST, guardians, and result return remain deferred.
+
+## 2026-09-14 Authenticated Browser Verification Refresh
+
+- Verified the local dev server was running on `http://localhost:3002`.
+- Connected an isolated browser session through a one-time seeded demo-admin
+  login for the `Biblos` demo tenant.
+- Generated `/tmp/oneroster-verification/{invalid,valid,deactivate}.zip` with
+  `scripts/oneroster-verification-fixtures.mjs`.
+
+### Browser Evidence
+
+- Authenticated `/admin/integrations/oneroster` rendered the OneRoster upload
+  workflow and recent-import history.
+- Invalid package upload showed 13 rows with 1 quarantined `classes.csv` row:
+  `Unknown courseSourcedId.` Apply remained disabled.
+- Valid package upload passed validation; apply created 3 academic changes and
+  added an `Applied` history row with 13 rows, 3 changes, 0 quarantined.
+- Replaying the same valid package applied idempotently with 13 rows, 0 changes,
+  0 quarantined.
+- Deactivation package applied with 13 rows, 3 changes, 0 quarantined.
+- Managed term and blueprint pages showed `OneRoster managed`; source-owned
+  active/type controls were disabled; local-only save labels remained
+  `Save LMS Settings`.
+- Managed section page showed `ONEROSTER MANAGED`; enrollment settings remained
+  editable for local LMS policy.
+- Mobile viewport `390x844` rendered the OneRoster history and managed section
+  page with no Next.js error overlay.
+- Browser page-error check reported no page errors.
+
+### Remaining Scope
+
+- Automatic Auth user provisioning remains intentionally deferred; linking is
+  existing-profile-only.
+- Academy export shipment/merge state belongs to the Academy repo workflow.
+- Scheduled pulls, REST, guardians, and result return remain deferred.

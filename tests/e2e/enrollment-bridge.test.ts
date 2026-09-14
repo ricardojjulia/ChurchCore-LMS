@@ -38,7 +38,7 @@ function serviceClient(): SupabaseClient {
 
 async function cleanupStudent(studentUid: string) {
   const db = serviceClient()
-  await db.from('direct_enrollments').delete().eq('student_uid', studentUid)
+  await db.from('direct_enrollments').delete().eq('user_id', studentUid)
   await db.from('enrollments').delete().eq('user_id', studentUid)
 }
 
@@ -51,7 +51,7 @@ describe('Bridge trigger on direct_enrollments INSERT', () => {
   it('creates an enrollment row when direct_enrollment is inserted as active', async () => {
     const db = serviceClient()
     const { error: insertErr } = await db.from('direct_enrollments').insert({
-      student_uid:        TEST_STUDENT_UID,
+      user_id:            TEST_STUDENT_UID,
       section_id:         SECTION_WITH_BP_ID,
       status:  'active',
     })
@@ -75,7 +75,7 @@ describe('Bridge trigger on direct_enrollments INSERT', () => {
     // Insert a section linked to the no-blueprint course (seed must have such a section)
     const SECTION_NO_BP_ID = process.env.TEST_SECTION_NO_BP_ID ?? ''
     const { error: insertErr } = await db.from('direct_enrollments').insert({
-      student_uid:        TEST_STUDENT_UID,
+      user_id:            TEST_STUDENT_UID,
       section_id:         SECTION_NO_BP_ID,
       status:  'active',
     })
@@ -100,7 +100,7 @@ describe('Sync trigger on direct_enrollments UPDATE (withdrawal)', () => {
     // Pre-create both rows so the update has something to propagate
     const db = serviceClient()
     await db.from('direct_enrollments').insert({
-      student_uid:        TEST_STUDENT_UID,
+      user_id:            TEST_STUDENT_UID,
       section_id:         SECTION_WITH_BP_ID,
       status:  'active',
     })
@@ -112,7 +112,7 @@ describe('Sync trigger on direct_enrollments UPDATE (withdrawal)', () => {
     const { error: updateErr } = await db
       .from('direct_enrollments')
       .update({ status: 'withdrawn' })
-      .eq('student_uid', TEST_STUDENT_UID)
+      .eq('user_id', TEST_STUDENT_UID)
       .eq('section_id',  SECTION_WITH_BP_ID)
 
     expect(updateErr).toBeNull()
@@ -137,11 +137,11 @@ describe('Migration 043 backfill idempotency', () => {
     // Simulate the backfill INSERT ... ON CONFLICT DO NOTHING twice
     const backfillQuery = `
       INSERT INTO enrollments (user_id, course_id, section_id, transit_status, progress_percent)
-      SELECT de.student_uid, c.id, de.section_id, 'not_started', 0
+      SELECT de.user_id, c.id, de.section_id, 'not_started', 0
       FROM direct_enrollments de
       JOIN course_sections cs ON cs.id = de.section_id
       JOIN courses          c  ON c.blueprint_id = cs.blueprint_id
-      WHERE de.enrollment_status = 'active' AND c.blueprint_id IS NOT NULL
+      WHERE de.status = 'active' AND c.blueprint_id IS NOT NULL
       ON CONFLICT (user_id, course_id) DO NOTHING
       RETURNING id
     `

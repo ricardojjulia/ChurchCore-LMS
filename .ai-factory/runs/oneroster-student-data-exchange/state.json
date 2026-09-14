@@ -7,15 +7,18 @@
   "council_doc": "docs/council/COUNCIL-2026-017.md",
   "standalone_contract": "LMS must run with no Academy or OneRoster configuration. Organization mode defaults to standalone.",
   "implementation_started": true,
-  "current_phase": "identity_linking_verified",
-  "last_verified_at": "2026-09-08",
+  "current_phase": "certification_verification_refreshed",
+  "last_verified_at": "2026-09-14",
   "verification": {
-    "unit_tests": "passed: 22 files, 192 tests",
-    "linked_database_tests": "passed: 31 apply checks; 5 preview/cleanup checks with course, class, and academic-session bulk omission assertions; 9 provenance guard checks; 3 identity-link checks plus transactional assertions",
-    "typecheck_lint_version_build": "passed",
-    "linked_database_lint": "passed",
-    "authenticated_browser": "passed: invalid quarantine, initial create, idempotent replay, soft deactivation, preview diffs, history, and managed-field locking",
-    "migration_applied": "through 20260908130000_oneroster_identity_linking.sql"
+    "unit_tests": "passed: 24 files, 201 tests",
+    "focused_oneroster_tests": "passed: 7 files, 39 tests",
+    "linked_database_tests": "passed: 31 apply checks; 5 preview/cleanup checks; 9 provenance guard checks; 3 identity-link checks",
+    "typecheck_lint_version_build": "passed on 2026-09-14",
+    "linked_database_lint": "passed with no schema errors or warnings after 20260914121000_fix_oneroster_preview_lint_warning.sql",
+    "concurrency": "passed: contended apply rejected; post-release apply created one course",
+    "local_unauthenticated_smoke": "passed: admin page redirects to /login; validate and jobs APIs return 401",
+    "authenticated_browser": "passed on 2026-09-14: invalid quarantine with disabled apply, valid apply with 3 changes, idempotent replay with 0 changes, deactivation with 3 changes, history rendering, managed term/blueprint/section markers, and mobile 390x844 no error overlay",
+    "migration_applied": "through 20260914121000_fix_oneroster_preview_lint_warning.sql"
   },
   "started_at": "2026-09-07",
   "known_blockers_before_implementation": [
