@@ -1,0 +1,32 @@
+{
+  "runId": "release-staging-configuration-fix",
+  "state": "BLOCKED",
+  "status": "blocked_vercel_production_sequencing",
+  "createdAt": "2026-09-15T13:49:47+00:00",
+  "updatedAt": "2026-09-15T16:15:32+00:00",
+  "dryRun": false,
+  "repairLoops": 0,
+  "branch": "codex/fix-staging-release",
+  "base": "7f97f79cc1c7c83a485e5dec237d2587e913e322",
+  "authority": "User requested release-failure repair; COUNCIL-2025-017 and COUNCIL-2026-019 existing environment-separation mandate",
+  "implementationStatus": "review_followup_token_scope_and_canonical_guidance",
+  "stagingProject": "gytbfezrfrpsltdyfdgj",
+  "stagingAssignment": "explicitly confirmed by user on 2026-09-15",
+  "githubConfiguration": "Both STAGING_SUPABASE_PROJECT_REF and SUPABASE_ACCESS_TOKEN exist in GitHub staging; reference reasserted at 16:09:25Z and token saved at 16:10:06Z",
+  "blocker": "Vercel Git integration can deploy main before the Supabase staging and production gates; inspect and replace that sequencing before merge",
+  "verification": {
+    "unit": "PASS: 29 files, 221 tests, coverage thresholds met",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "version": "PASS: 0.26.2",
+    "build": "PASS",
+    "workflow": "PASS: actionlint 1.7.12 and 13 executed checks for missing settings, step-level token scope, redaction, literal arguments, approval placement and migration/function order",
+    "database": "No schema/data changes or migrations run",
+    "browser": "Not rerun; no UI changes",
+    "dependencyAudit": "npm ci reported existing 47 vulnerabilities (37 moderate, 9 high, 1 critical); dependency versions unchanged",
+    "hosted": "PASS on prior head ade7792; review follow-up pending publication and CI"
+  },
+  "releasePromotion": "Not run. GitHub environment metadata is complete, target identities are pinned, and releases are serialized; Vercel sequencing remains unresolved.",
+  "onerosterM5Plan": "OpenAPI 3 contract at required discovery paths; authenticated Swagger UI is optional tooling; REST OAuth credentials remain separate from signed CSV keys",
+  "secondaryRepositories": "Untouched"
+}

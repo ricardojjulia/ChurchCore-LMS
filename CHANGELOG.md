@@ -11,6 +11,36 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.26.2] — 2026-09-15
+
+### Fixed
+
+- Release access tokens are available only to validation and Supabase deployment steps.
+- Canonical factory release guidance now matches the actual environment secrets, approval placement, migration order, CLI pin, and required check names.
+- Releases are serialized, stale production promotions are rejected, and both Supabase targets must match their reviewed project references before mutation.
+
+### Documentation
+
+- Clarified temporary database login credentials and multiple-function support in the pinned Supabase CLI.
+
+---
+
+## [0.26.1] — 2026-09-15
+
+### Fixed
+
+- Release jobs report missing Supabase project references and access tokens before invoking the CLI, without exposing their values.
+- Production deployment uses the production environment's credentials and approval rules on the actual deployment job.
+- Production migrations run after environment approval and before production Edge Functions.
+- Supabase release commands quote project references and pin the verified CLI version; staging migration push runs non-interactively.
+
+### Documentation
+
+- Documented environment-scoped deployment tokens, staging assignment, and failed-release recovery.
+- Added the OpenAPI-first REST contract and optional Swagger UI to the M5 OneRoster plan.
+
+---
+
 ## [0.26.0] — 2026-09-14
 
 ### Added
