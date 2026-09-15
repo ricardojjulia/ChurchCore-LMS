@@ -579,6 +579,8 @@ CI suite → staging migrations/functions → production environment approval �
 - Bind `SUPABASE_ACCESS_TOKEN` only to validation and Supabase deployment steps.
   Checkout, CLI installation, and notifications do not receive the token.
 - Production migrations run before Edge Functions; a failed migration stops the job.
+- Release runs are serialized. Production verifies its commit is still the latest
+  `main`, and both project references must match reviewed workflow constants.
 - Required production reviewers must be configured in GitHub. The environment name
   alone does not establish an approval gate. Vercel status is tracked separately.
 

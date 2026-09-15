@@ -17,6 +17,7 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Release access tokens are available only to validation and Supabase deployment steps.
 - Canonical factory release guidance now matches the actual environment secrets, approval placement, migration order, CLI pin, and required check names.
+- Releases are serialized, stale production promotions are rejected, and both Supabase targets must match their reviewed project references before mutation.
 
 ### Documentation
 

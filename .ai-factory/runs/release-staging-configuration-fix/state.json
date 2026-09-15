@@ -1,7 +1,7 @@
 {
   "runId": "release-staging-configuration-fix",
   "state": "BLOCKED",
-  "status": "blocked_review_and_release_validation",
+  "status": "blocked_vercel_production_sequencing",
   "createdAt": "2026-09-15T13:49:47+00:00",
   "updatedAt": "2026-09-15T16:15:32+00:00",
   "dryRun": false,
@@ -13,7 +13,7 @@
   "stagingProject": "gytbfezrfrpsltdyfdgj",
   "stagingAssignment": "explicitly confirmed by user on 2026-09-15",
   "githubConfiguration": "Both STAGING_SUPABASE_PROJECT_REF and SUPABASE_ACCESS_TOKEN exist in GitHub staging; reference reasserted at 16:09:25Z and token saved at 16:10:06Z",
-  "blocker": "Architect review required before merging workflow changes; production credentials and review gate must be configured before release promotion",
+  "blocker": "Vercel Git integration can deploy main before the Supabase staging and production gates; inspect and replace that sequencing before merge",
   "verification": {
     "unit": "PASS: 29 files, 221 tests, coverage thresholds met",
     "typecheck": "PASS",
@@ -26,7 +26,7 @@
     "dependencyAudit": "npm ci reported existing 47 vulnerabilities (37 moderate, 9 high, 1 critical); dependency versions unchanged",
     "hosted": "PASS on prior head ade7792; review follow-up pending publication and CI"
   },
-  "releasePromotion": "Not run. Token value and staging deployment remain unverified; GitHub reveals only secret metadata.",
+  "releasePromotion": "Not run. GitHub environment metadata is complete, target identities are pinned, and releases are serialized; Vercel sequencing remains unresolved.",
   "onerosterM5Plan": "OpenAPI 3 contract at required discovery paths; authenticated Swagger UI is optional tooling; REST OAuth credentials remain separate from signed CSV keys",
   "secondaryRepositories": "Untouched"
 }

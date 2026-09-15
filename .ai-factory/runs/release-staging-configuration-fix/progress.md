@@ -66,3 +66,14 @@ Hosted checks are pending; no merge or deployment is claimed.
 - Replaced the stale canonical release example with the checked-in workflow reference and synchronized environment settings and CI check names.
 - Verified Supabase CLI 2.116.0 accepts multiple function names and obtains temporary database credentials through the Management API. The review's mandatory-password and single-function claims do not apply to this pinned version; setup documentation links the versioned upstream source.
 - Version 0.26.2 records this follow-up. Architect review and production configuration remain gates before promotion. Local follow-up verification passed: 221 tests with coverage, typecheck, lint, build, version, actionlint, diff/credential review, and 13 executed workflow checks. Hosted follow-up checks will run after publication.
+
+## Council review follow-up
+
+- Added workflow-level release serialization and a latest-`main` SHA check before
+  production mutation to prevent stale approval from deploying older functions.
+- Pinned the reviewed staging and production project references in workflow code;
+  mismatched or identical targets fail before Supabase setup or mutation.
+- Production secrets, the `main` deployment-branch restriction, and the required
+  reviewer rule are now configured in GitHub without exposing secret values.
+- Vercel production sequencing remains a merge blocker. Chrome is not signed in,
+  so its project settings could not be inspected or changed in this run.

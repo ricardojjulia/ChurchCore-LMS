@@ -81,6 +81,12 @@ whose `db push --project-ref` syntax is verified locally. The access token is
 provided only to validation and Supabase deployment steps; checkout, CLI setup,
 and notification steps do not inherit it.
 
+The reviewed staging and production project references are also pinned as
+non-secret workflow constants. A secret that does not match its environment's
+reviewed target, or a staging reference that matches production, stops before
+any migration. Changing either project assignment requires a reviewed workflow
+change as well as updating the environment secret.
+
 For this pinned CLI, the token-based database connection obtains a temporary
 login role when no database password is supplied. This release therefore does
 not require a separate database-password secret. The token needs permission to
@@ -113,7 +119,7 @@ References: [Supabase environment deployment](https://supabase.com/docs/guides/d
 
 ### Pipeline order
 
-After this setup, `release.yml` enforces: **CI → staging migration/functions → production environment approval → production migration/functions**. A failed migration blocks every later deployment step automatically.
+After this setup, `release.yml` serializes releases and enforces: **CI → staging migration/functions → production environment approval → latest-main check → production migration/functions**. A failed migration or stale release blocks every later deployment step automatically.
 
 ---
 

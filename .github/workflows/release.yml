@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   ci:
     name: Run CI Suite
@@ -17,6 +21,8 @@ jobs:
     environment: staging
     env:
       STAGING_SUPABASE_PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+      EXPECTED_STAGING_SUPABASE_PROJECT_REF: gytbfezrfrpsltdyfdgj
+      PRODUCTION_SUPABASE_PROJECT_REF: tpyvciujsrllvowqgeyq
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +38,14 @@ jobs:
               missing=1
             fi
           done
+          if [[ -n "$STAGING_SUPABASE_PROJECT_REF" && "$STAGING_SUPABASE_PROJECT_REF" != "$EXPECTED_STAGING_SUPABASE_PROJECT_REF" ]]; then
+            printf '::error::STAGING_SUPABASE_PROJECT_REF does not match the reviewed staging target.\n'
+            missing=1
+          fi
+          if [[ "$STAGING_SUPABASE_PROJECT_REF" == "$PRODUCTION_SUPABASE_PROJECT_REF" ]]; then
+            printf '::error::The staging project reference matches production.\n'
+            missing=1
+          fi
           exit "$missing"
 
       - name: Setup Supabase CLI
@@ -60,8 +74,18 @@ jobs:
     environment: production
     env:
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF: tpyvciujsrllvowqgeyq
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify this is the latest main release
+        shell: bash
+        run: |
+          git fetch --no-tags origin main
+          if [[ "$GITHUB_SHA" != "$(git rev-parse origin/main)" ]]; then
+            printf '::error::A newer main commit exists; refusing to deploy this stale release.\n'
+            exit 1
+          fi
 
       - name: Validate production deployment configuration
         env:
@@ -75,6 +99,10 @@ jobs:
               missing=1
             fi
           done
+          if [[ -n "$SUPABASE_PROJECT_REF" && "$SUPABASE_PROJECT_REF" != "$EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF" ]]; then
+            printf '::error::SUPABASE_PROJECT_REF does not match the reviewed production target.\n'
+            missing=1
+          fi
           exit "$missing"
 
       - name: Setup Supabase CLI
