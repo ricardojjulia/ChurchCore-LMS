@@ -20,7 +20,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('oneroster_import_jobs')
-    .select('id, status, total_rows, created_count, updated_count, unchanged_count, deactivated_count, quarantined_count, error_count, created_at, completed_at')
+    .select('id, connection_id, source_system, status, total_rows, created_count, updated_count, unchanged_count, deactivated_count, quarantined_count, error_count, created_at, completed_at')
     .eq('org_id', profile.org_id)
     .order('created_at', { ascending: false })
     .limit(20)
@@ -28,6 +28,8 @@ export async function GET() {
   if (error) return NextResponse.json({ error: 'Unable to load import history' }, { status: 500 })
   const jobs = (data ?? []).map((job) => ({
     id: job.id,
+    connection_id: job.connection_id,
+    source_system: job.source_system,
     status: job.status,
     total_rows: job.total_rows,
     error_count: job.error_count,

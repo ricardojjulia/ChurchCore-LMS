@@ -11,6 +11,25 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.26.0] — 2026-09-14
+
+### Added
+
+- **Signed OneRoster Delivery** (COUNCIL-2026-019) — tenant-scoped ChurchCore Academy connections accept Ed25519-signed ZIP deliveries, enforce timestamp and replay protection, and stage packages for explicit admin review
+- OneRoster connection and delivery-status admin view with public-key configuration, expected cadence, copyable endpoint, immutable attempt history, and received-job review actions
+- `oneroster_transport_attempts` audit ledger, scheduled package idempotency, active-tenant RLS, service-role insert-only grants, and pgTAP coverage
+
+### Changed
+
+- Manual uploads and signed deliveries now share one redacted validate-and-stage path
+- CI can run as both a normal workflow and the reusable prerequisite for the gated release workflow
+
+### Security
+
+- Signed receipt never applies roster changes or provisions Auth users; LMS stores public verification material only, and invalid signatures are rejected before attacker-controlled metadata is persisted
+
+---
+
 ## [0.25.1] — 2026-06-22
 
 ### Added

@@ -308,6 +308,55 @@
 - Academy export shipment/merge state belongs to the Academy repo workflow.
 - Scheduled pulls, REST, guardians, and result return remain deferred.
 
+## 2026-09-14 M3 Signed Scheduled Delivery
+
+- Ratified `COUNCIL-2026-019` by a 6/6 council vote and implemented its numbered
+  LMS scope on branch `codex/oneroster-scheduled-exchange` in a clean worktree.
+- Added Ed25519-signed, connection-specific inbound delivery with a five-minute
+  clock window, delivery-ID replay protection, package-hash idempotency, 10 MB
+  compressed limit, and stable redacted error responses.
+- Extracted manual and scheduled package staging into one server-only path.
+  Scheduled receipt validates and stages only; authenticated admin/manager
+  preview, identity linking, and apply remain separate mandatory actions.
+- Added public-key and cadence connection configuration, transport history,
+  received-job review, and responsive Imports/Connection admin views.
+- Added the tenant-scoped immutable `oneroster_transport_attempts` ledger.
+  Authenticated users have read-only RLS access in their active tenant and the
+  service role has insert/select privileges only.
+- Repaired `ci.yml` with `workflow_call` while preserving push and pull-request
+  triggers. Bumped the LMS release metadata to `0.26.0`.
+- Did not edit, commit, or push ChurchCore Academy. Did not link or modify the
+  newly provisioned cloud Supabase project.
+
+### Verification
+
+- Fresh `supabase db reset --local`: PASS through
+  `20260914160000_oneroster_signed_delivery.sql`.
+- Five OneRoster pgTAP files: PASS, 58 assertions covering apply, preview,
+  identity linking, provenance, replay uniqueness, active-tenant RLS, invalid
+  connection constraints, and immutable service-role behavior.
+- Full repository unit suite: PASS, 29 files / 221 tests.
+- Focused OneRoster suite: PASS, 12 files / 59 tests.
+- Disposable-local E2E: PASS, 8 files / 77 tests.
+- `npm run typecheck`, `npm run lint`, `npm run version:check`, production
+  `npm run build`, workflow YAML parsing, secret-pattern scan, and
+  `git diff --check`: PASS.
+- `supabase db lint --local`: PASS with no schema errors.
+- Authenticated Chrome verification on `http://127.0.0.1:3011`: desktop and
+  `390x844` Imports/Connection views rendered without horizontal overflow or
+  application-origin console errors; the temporary viewport was reset.
+- The full legacy `supabase test db` directory remains red because eight
+  unrelated inherited suites assume older schemas or pgTAP syntax. All five
+  OneRoster SQL files passed both within that run and in an isolated rerun.
+
+### Remaining Scope
+
+- Open the LMS PR and require hosted CI/E2E before merge.
+- Explicitly assign and gate a staging Supabase project before release promotion.
+- Implement and prove the Academy sender in a separately authorized Academy
+  worktree and PR.
+- REST transport, guardians, and result return remain deferred.
+
 ## 2026-09-14 E2E Gate Restoration
 
 - Replaced the shared-cloud E2E dependency with a disposable local Supabase
