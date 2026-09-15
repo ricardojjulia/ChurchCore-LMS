@@ -50,6 +50,13 @@ Status: started on 2026-09-12. The LMS Academy-contract test now accepts the Aca
 - Reuse the current validate, stage, preview, apply pipeline.
 - Make retries idempotent and audit-visible.
 
+Status: LMS implementation verified locally on 2026-09-14 under
+`COUNCIL-2026-019`. The LMS accepts connection-specific Ed25519-signed package
+delivery, stages without automatic apply, exposes immutable tenant-scoped
+attempt history, and requires authenticated preview/link/apply. Hosted LMS CI,
+staging assignment, and the separately authorized Academy sender PR remain
+required before M3 is complete.
+
 ### M4 - Gradebook return
 
 - Map LMS assignments/quizzes/results to OneRoster gradebook files or REST objects.

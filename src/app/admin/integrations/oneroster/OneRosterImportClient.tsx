@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertCircle, CheckCircle2, FileArchive, History, Link2, RotateCcw, Upload } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Eye, FileArchive, History, Link2, RotateCcw, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
@@ -75,6 +75,8 @@ interface IdentityLinksResult {
 
 interface ImportJob extends OneRosterCounts {
   id: string
+  connection_id: string | null
+  source_system: string
   status: string
   total_rows: number
   error_count: number
@@ -95,6 +97,7 @@ export function OneRosterImportClient() {
   const [identityLoading, setIdentityLoading] = useState(false)
   const [identitySelections, setIdentitySelections] = useState<Record<string, string>>({})
   const [linkingSourceId, setLinkingSourceId] = useState<string | null>(null)
+  const [reviewingJobId, setReviewingJobId] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const loadHistory = useCallback(async () => {
@@ -220,6 +223,28 @@ export function OneRosterImportClient() {
       setError('Unable to apply import')
     } finally {
       setApplying(false)
+    }
+  }
+
+  async function handleReviewJob(jobId: string) {
+    if (reviewingJobId) return
+    setReviewingJobId(jobId)
+    setError(null)
+    setApplyResult(null)
+    try {
+      const response = await fetch(`/api/integrations/oneroster/jobs/${jobId}/preview`, { method: 'POST' })
+      const body = await response.json()
+      if (!response.ok) {
+        setError(body.error ?? 'Unable to prepare import review')
+        return
+      }
+      setResult(body as PreviewResult)
+      await loadIdentityLinks(jobId)
+      setStep('preview')
+    } catch {
+      setError('Unable to prepare import review')
+    } finally {
+      setReviewingJobId(null)
     }
   }
 
@@ -354,7 +379,7 @@ export function OneRosterImportClient() {
             {applying ? 'Applying...' : 'Apply Import'}
           </Button>
         </div>
-        <ImportHistory jobs={history} loading={historyLoading} />
+        <ImportHistory jobs={history} loading={historyLoading} reviewingJobId={reviewingJobId} onReview={handleReviewJob} />
       </div>
     )
   }
@@ -394,7 +419,7 @@ export function OneRosterImportClient() {
       <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
         Users must be linked to existing LMS profiles before identity data can apply. Unsupported roles and unresolved references remain quarantined.
       </div>
-      <ImportHistory jobs={history} loading={historyLoading} />
+      <ImportHistory jobs={history} loading={historyLoading} reviewingJobId={reviewingJobId} onReview={handleReviewJob} />
     </div>
   )
 }
@@ -455,7 +480,17 @@ function IdentityLinkPanel({
   )
 }
 
-function ImportHistory({ jobs, loading }: { jobs: ImportJob[]; loading: boolean }) {
+function ImportHistory({
+  jobs,
+  loading,
+  reviewingJobId,
+  onReview,
+}: {
+  jobs: ImportJob[]
+  loading: boolean
+  reviewingJobId: string | null
+  onReview: (jobId: string) => void
+}) {
   return (
     <section aria-labelledby="import-history-heading" className="pt-2">
       <div className="mb-3 flex items-center gap-2">
@@ -476,6 +511,7 @@ function ImportHistory({ jobs, loading }: { jobs: ImportJob[]; loading: boolean 
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Rows</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Changes</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Quarantine</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -486,6 +522,21 @@ function ImportHistory({ jobs, loading }: { jobs: ImportJob[]; loading: boolean 
                   <td className="px-4 py-3 text-right">{job.total_rows}</td>
                   <td className="px-4 py-3 text-right">{job.created + job.updated + job.deactivated}</td>
                   <td className="px-4 py-3 text-right text-rose-700">{job.quarantined}</td>
+                  <td className="px-4 py-3 text-right">
+                    {job.connection_id && ['validated', 'ready'].includes(job.status) ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={reviewingJobId !== null}
+                        onClick={() => onReview(job.id)}
+                      >
+                        <Eye className="mr-2 h-4 w-4" aria-hidden="true" />
+                        {reviewingJobId === job.id ? 'Opening...' : 'Review'}
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
