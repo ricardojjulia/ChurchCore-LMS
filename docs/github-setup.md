@@ -10,19 +10,23 @@ Configure in **GitHub → Repository → Settings → Branches → Branch protec
 | Required approving reviews | **1** minimum |
 | Dismiss stale pull request approvals when new commits are pushed | **YES** |
 | Require status checks to pass before merging | **YES** |
-| Required status checks | `lint`, `typecheck`, `unit-tests`, `build` |
+| Required status checks | `Lint`, `Type Check`, `Unit Tests`, `Build` |
 | Require branches to be up to date before merging | **YES** |
 | Restrict who can push to matching branches | Admins only |
 | Allow force pushes | **NO** |
 | Allow deletions | **NO** |
 
-## Production Environment (for release.yml manual approval gate)
+## Production Environment (release approval and deployment credentials)
 
 Configure in **GitHub → Repository → Settings → Environments → New environment**.
 
 - Name: `production`
 - Required reviewers: add the architects team or specific individuals
 - Deployment branches: `main` only
+
+The production deployment job itself references this environment, so its required reviewers
+and environment secrets apply to the job that deploys the functions. Configure reviewers
+before enabling release promotion; an environment name alone does not create an approval gate.
 
 ## Required Secrets
 
@@ -33,8 +37,6 @@ Configure in **GitHub → Repository → Settings → Secrets and variables → 
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (build-time) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (build-time) |
 | `DEPLOY_WEBHOOK_URL` | Slack/Discord webhook URL (optional — skipped if missing) |
-| `SUPABASE_ACCESS_TOKEN` | Supabase CLI personal access token (release deploy) |
-| `SUPABASE_PROJECT_REF` | Production Supabase project ref (release deploy) |
 
 The E2E workflow starts an isolated local Supabase stack in its GitHub-hosted runner and generates a disposable password at runtime. It does not require repository secrets or access to a shared cloud database.
 
@@ -54,17 +56,49 @@ In **GitHub → Settings → Environments → New environment**:
 - No approval gate (auto-deploys on every push to `main`)
 - Deployment branches: `main` only
 
-### Required secrets (staging)
+### Deployment secrets
 
-| Secret | Purpose |
-|---|---|
-| `STAGING_SUPABASE_PROJECT_REF` | Staging Supabase project ref (used by `deploy-staging` job) |
+Configure these under **Settings → Environments → staging / production → Environment secrets**.
 
-`SUPABASE_ACCESS_TOKEN` is shared between staging and production (same token, different project refs).
+| Environment | Secret | Purpose |
+|---|---|---|
+| `staging` | `STAGING_SUPABASE_PROJECT_REF` | Confirmed, dedicated staging project reference |
+| `staging` | `SUPABASE_ACCESS_TOKEN` | Supabase personal access token with access to the staging project |
+| `production` | `SUPABASE_PROJECT_REF` | Production project reference |
+| `production` | `SUPABASE_ACCESS_TOKEN` | Supabase personal access token with access to the production project |
+
+A project URL supplies the reference (the part before `.supabase.co`), but does not
+provide deployment authorization. Use a personal access token from an account with
+access to the target project. An anon, publishable, secret API, or service-role key
+is not a Management API personal access token. Keep token values out of issues,
+chat, and workflow files. Environment-scoped tokens can differ between projects;
+repository secrets remain a fallback when the same account can access both.
+
+The release checks required variable names before installing the CLI or invoking
+Supabase and reports every missing setting without printing its value. Project
+references are quoted shell arguments; the release pins Supabase CLI `2.116.0`,
+whose `db push --project-ref` syntax is verified locally.
+
+### Recovery from a failed staging release
+
+1. Confirm the staging project assignment before setting its reference. Keep it
+   separate from the existing production project.
+2. Populate both staging secrets above and verify the token's account can see that
+   project in Supabase. A 403 response requires an account or project-access fix.
+3. Ensure production environment reviewers are configured before retrying a release
+   that can reach the production job.
+4. Re-run the failed release in GitHub Actions. Missing configuration and permission
+   failures must remain failed; do not replace required secrets with placeholders
+   or skip deployment steps to obtain a green result.
+5. Confirm staging migration and function deployment succeeded, then approve
+   production separately. Vercel's status is independent of the Supabase release.
+
+References: [Supabase environment deployment](https://supabase.com/docs/guides/deployment/managing-environments),
+[GitHub deployment environments](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments).
 
 ### Pipeline order
 
-After this setup, `release.yml` enforces: **CI → staging deploy → manual production approval → production deploy**. A failed staging migration blocks the production gate automatically.
+After this setup, `release.yml` enforces: **CI → staging deploy → production environment approval → production deploy**. A failed staging migration blocks the production gate automatically.
 
 ---
 
@@ -80,9 +114,9 @@ After this setup, `release.yml` enforces: **CI → staging deploy → manual pro
 
 The following checks must all pass before a PR can be merged:
 
-1. **lint** — `npx next lint --max-warnings 0`
-2. **typecheck** — `npx tsc --noEmit`
-3. **unit-tests** — `npx vitest run --coverage`
-4. **build** — `npx next build`
+1. **Lint** — `npm run lint`
+2. **Type Check** — `npm run typecheck`
+3. **Unit Tests** — `npm run test:ci`
+4. **Build** — `npm run build`
 
 E2E tests run separately on PRs to `main` using an isolated local Supabase stack. Add `E2E Tests` to the required status checks after its first successful run.

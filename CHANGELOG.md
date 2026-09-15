@@ -11,6 +11,20 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.26.1] — 2026-09-15
+
+### Fixed
+
+- Release jobs report missing Supabase project references and access tokens before invoking the CLI, without exposing their values.
+- Production deployment uses the production environment's credentials and approval rules on the actual deployment job.
+- Supabase release commands quote project references and pin the verified CLI version; staging migration push runs non-interactively.
+
+### Documentation
+
+- Documented environment-scoped deployment tokens, staging assignment, and failed-release recovery.
+
+---
+
 ## [0.26.0] — 2026-09-14
 
 ### Added
