@@ -7,7 +7,7 @@
   "council_doc": "docs/council/COUNCIL-2026-019.md",
   "standalone_contract": "LMS must run with no Academy or OneRoster configuration. Organization mode defaults to standalone.",
   "implementation_started": true,
-  "current_phase": "m3_lms_implementation_verified_locally",
+  "current_phase": "m3_lms_pr_green",
   "last_verified_at": "2026-09-14",
   "verification": {
     "unit_tests": "passed: 29 files, 221 tests",
@@ -25,7 +25,8 @@
     "local_database_lint": "passed with no schema errors after signed delivery migration",
     "full_legacy_database_suite": "failed in 8 unrelated inherited suites with stale schema or pgTAP assumptions; all OneRoster suites passed",
     "m3_cloud_state": "unlinked and untouched; staging assignment still requires explicit confirmation",
-    "academy_sender": "not started; separate Academy repository authorization required"
+    "academy_sender": "not started; separate Academy repository authorization required",
+    "lms_pull_request": "PR #3 opened; implementation head passed hosted CI, E2E, and Vercel preview"
   },
   "started_at": "2026-09-07",
   "known_blockers_before_implementation": [

@@ -351,7 +351,8 @@
 
 ### Remaining Scope
 
-- Open the LMS PR and require hosted CI/E2E before merge.
+- LMS PR #3 opened from `codex/oneroster-scheduled-exchange`; its implementation
+  head passed both hosted CI lanes, disposable E2E, and Vercel preview.
 - Explicitly assign and gate a staging Supabase project before release promotion.
 - Implement and prove the Academy sender in a separately authorized Academy
   worktree and PR.
