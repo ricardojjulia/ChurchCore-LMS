@@ -17,11 +17,13 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Release jobs report missing Supabase project references and access tokens before invoking the CLI, without exposing their values.
 - Production deployment uses the production environment's credentials and approval rules on the actual deployment job.
+- Production migrations run after environment approval and before production Edge Functions.
 - Supabase release commands quote project references and pin the verified CLI version; staging migration push runs non-interactively.
 
 ### Documentation
 
 - Documented environment-scoped deployment tokens, staging assignment, and failed-release recovery.
+- Added the OpenAPI-first REST contract and optional Swagger UI to the M5 OneRoster plan.
 
 ---
 

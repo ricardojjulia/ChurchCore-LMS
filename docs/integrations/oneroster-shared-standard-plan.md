@@ -67,6 +67,15 @@ required before M3 is complete.
 ### M5 - REST and certification readiness
 
 - Implement selected OneRoster REST consumer/provider operations.
+- Treat the localized OpenAPI 3 documents as the REST contract and serve them at
+  the OneRoster 1.2 discovery paths required for each implemented provider role.
+- Generate an authenticated Swagger UI from those documents for operator and
+  integrator use; the UI is optional tooling and is not a conformance dependency.
+- Keep M3 signed CSV delivery routes outside the public OneRoster REST contract.
+- Use OAuth 2.0 client credentials for REST operations; do not reuse the
+  Ed25519 CSV transport keys as API credentials.
+- Add contract-drift checks plus negative authentication, authorization, and
+  tenant-isolation coverage against the published OpenAPI documents.
 - Add conformance-oriented test fixtures.
 - Document exact supported profile claims.
 

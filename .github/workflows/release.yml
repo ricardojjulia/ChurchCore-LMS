@@ -76,6 +76,11 @@ jobs:
         with:
           version: 2.116.0
 
+      - name: Push migrations to production
+        run: |
+          supabase db push \
+            --project-ref "$SUPABASE_PROJECT_REF" --yes
+
       - name: Deploy Edge Functions
         run: |
           supabase functions deploy search-users weekly-digest \

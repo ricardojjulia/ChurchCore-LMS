@@ -3,13 +3,13 @@
   "state": "BLOCKED",
   "status": "blocked_credentials",
   "createdAt": "2026-09-15T13:49:47+00:00",
-  "updatedAt": "2026-09-15T13:49:47+00:00",
+  "updatedAt": "2026-09-15T14:05:00+00:00",
   "dryRun": false,
   "repairLoops": 0,
   "branch": "codex/fix-staging-release",
   "base": "7f97f79cc1c7c83a485e5dec237d2587e913e322",
   "authority": "User requested release-failure repair; COUNCIL-2025-017 and COUNCIL-2026-019 existing environment-separation mandate",
-  "implementationStatus": "verified_locally",
+  "implementationStatus": "release_hardening_and_m5_contract_plan_updated",
   "stagingProject": "gytbfezrfrpsltdyfdgj",
   "stagingAssignment": "explicitly confirmed by user on 2026-09-15",
   "githubConfiguration": "STAGING_SUPABASE_PROJECT_REF configured in staging environment",
@@ -20,12 +20,13 @@
     "lint": "PASS",
     "version": "PASS: 0.26.1",
     "build": "PASS",
-    "workflow": "PASS: actionlint 1.7.12; 13 executed guard, redaction and shell-argument checks against local CLI stub",
+    "workflow": "PASS: actionlint 1.7.12; prior 13 guard, redaction and shell-argument checks plus production approval/migration/function order check",
     "database": "No schema/data changes or migrations run",
     "browser": "Not rerun; no UI changes",
     "dependencyAudit": "npm ci reported existing 47 vulnerabilities (37 moderate, 9 high, 1 critical); dependency versions unchanged",
-    "hosted": "Pending PR creation"
+    "hosted": "PR #4 open; checks pending after follow-up commit"
   },
-  "releasePromotion": "Not run; staging credential remains unavailable and production approval rules must be configured",
+  "releasePromotion": "Not run; staging credential remains unavailable and production approval rules must be configured. Production migration is ordered after approval and before Edge Functions.",
+  "onerosterM5Plan": "OpenAPI 3 contract at required discovery paths; authenticated Swagger UI is optional tooling; REST OAuth credentials remain separate from signed CSV keys",
   "secondaryRepositories": "Untouched"
 }

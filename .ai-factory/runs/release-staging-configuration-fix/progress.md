@@ -20,6 +20,11 @@ environments. No new product feature or data model is introduced.
 - Moved the production environment reference to the actual deployment job,
   preserving the staging-before-production dependency and applying environment
   credentials and reviewer rules at the operation they protect.
+- Added production migration deployment after approval and before production
+  Edge Functions, preventing application/function rollout against stale schema.
+- Amended M5 so localized OpenAPI 3 documents are the REST source of truth and
+  Swagger UI is generated, authenticated operator tooling rather than a
+  certification dependency. M3 signed CSV routes remain a separate contract.
 - Updated release setup/recovery documentation and version/changelog to 0.26.1.
 
 ### Verification
@@ -47,6 +52,9 @@ credentials remain required before release promotion.
 
 ### Publication
 
-Local verification complete; prepare the LMS repair PR. This record describes
-the pre-publication snapshot. The automation memory and execution report record
-the eventual PR URL and hosted results.
+LMS PR #4 is open at
+`https://github.com/ricardojjulia/ChurchCore-LMS/pull/4`. Local verification was
+rerun after adding the production migration ordering and M5 OpenAPI amendment:
+lint, typecheck, 221 unit tests, actionlint, JSON validation, version consistency,
+and the focused production approval/migration/function order check all pass.
+Hosted checks are pending; no merge or deployment is claimed.

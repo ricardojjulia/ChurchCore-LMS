@@ -91,14 +91,15 @@ whose `db push --project-ref` syntax is verified locally.
    failures must remain failed; do not replace required secrets with placeholders
    or skip deployment steps to obtain a green result.
 5. Confirm staging migration and function deployment succeeded, then approve
-   production separately. Vercel's status is independent of the Supabase release.
+   production separately. Confirm the production migration runs before the Edge
+   Functions deploy. Vercel's status is independent of the Supabase release.
 
 References: [Supabase environment deployment](https://supabase.com/docs/guides/deployment/managing-environments),
 [GitHub deployment environments](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments).
 
 ### Pipeline order
 
-After this setup, `release.yml` enforces: **CI → staging deploy → production environment approval → production deploy**. A failed staging migration blocks the production gate automatically.
+After this setup, `release.yml` enforces: **CI → staging migration/functions → production environment approval → production migration/functions**. A failed migration blocks every later deployment step automatically.
 
 ---
 
