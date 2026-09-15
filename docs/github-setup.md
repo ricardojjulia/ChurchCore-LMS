@@ -25,7 +25,7 @@ Configure in **GitHub → Repository → Settings → Environments → New envir
 - Deployment branches: `main` only
 
 The production deployment job itself references this environment, so its required reviewers
-and environment secrets apply to the job that deploys the functions. Configure reviewers
+and environment secrets apply to the job that deploys migrations and functions. Configure reviewers
 before enabling release promotion; an environment name alone does not create an approval gate.
 
 ## Required Secrets
@@ -77,7 +77,21 @@ repository secrets remain a fallback when the same account can access both.
 The release checks required variable names before installing the CLI or invoking
 Supabase and reports every missing setting without printing its value. Project
 references are quoted shell arguments; the release pins Supabase CLI `2.116.0`,
-whose `db push --project-ref` syntax is verified locally.
+whose `db push --project-ref` syntax is verified locally. The access token is
+provided only to validation and Supabase deployment steps; checkout, CLI setup,
+and notification steps do not inherit it.
+
+For this pinned CLI, the token-based database connection obtains a temporary
+login role when no database password is supplied. This release therefore does
+not require a separate database-password secret. The token needs permission to
+create that login role and access the project's pooler configuration, in addition
+to the required deployment access. An authorization failure in that flow must be
+resolved before deployment; successful secret creation alone does not prove access.
+See the [2.116.0 database connection implementation](https://github.com/supabase/cli/blob/v2.116.0/apps/cli/src/legacy/shared/legacy-db-config.layer.ts#L102-L117).
+
+The pinned CLI also accepts multiple function names, so the release deploys only
+`search-users` and `weekly-digest`; it does not implicitly deploy every local
+function. See the [2.116.0 function argument definition](https://github.com/supabase/cli/blob/v2.116.0/apps/cli/src/legacy/commands/functions/deploy/deploy.command.ts#L11-L15).
 
 ### Recovery from a failed staging release
 

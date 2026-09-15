@@ -11,6 +11,19 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.26.2] — 2026-09-15
+
+### Fixed
+
+- Release access tokens are available only to validation and Supabase deployment steps.
+- Canonical factory release guidance now matches the actual environment secrets, approval placement, migration order, CLI pin, and required check names.
+
+### Documentation
+
+- Clarified temporary database login credentials and multiple-function support in the pinned Supabase CLI.
+
+---
+
 ## [0.26.1] — 2026-09-15
 
 ### Fixed

@@ -17,11 +17,12 @@ jobs:
     environment: staging
     env:
       STAGING_SUPABASE_PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Validate staging deployment configuration
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         shell: bash
         run: |
           missing=0
@@ -39,11 +40,15 @@ jobs:
           version: 2.116.0
 
       - name: Push migrations to staging
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           supabase db push \
             --project-ref "$STAGING_SUPABASE_PROJECT_REF" --yes
 
       - name: Deploy Edge Functions to staging
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           supabase functions deploy search-users weekly-digest \
             --project-ref "$STAGING_SUPABASE_PROJECT_REF"
@@ -55,11 +60,12 @@ jobs:
     environment: production
     env:
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Validate production deployment configuration
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         shell: bash
         run: |
           missing=0
@@ -77,11 +83,15 @@ jobs:
           version: 2.116.0
 
       - name: Push migrations to production
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           supabase db push \
             --project-ref "$SUPABASE_PROJECT_REF" --yes
 
       - name: Deploy Edge Functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           supabase functions deploy search-users weekly-digest \
             --project-ref "$SUPABASE_PROJECT_REF"

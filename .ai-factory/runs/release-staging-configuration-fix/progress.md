@@ -58,3 +58,11 @@ rerun after adding the production migration ordering and M5 OpenAPI amendment:
 lint, typecheck, 221 unit tests, actionlint, JSON validation, version consistency,
 and the focused production approval/migration/function order check all pass.
 Hosted checks are pending; no merge or deployment is claimed.
+
+## Review follow-up — 2026-09-15T16:13:28+00:00
+
+- Confirmed both required GitHub staging secret names after user saved the token. Stored values remain hidden; no real deployment is claimed.
+- Reduced access-token scope to validation and Supabase execution steps.
+- Replaced the stale canonical release example with the checked-in workflow reference and synchronized environment settings and CI check names.
+- Verified Supabase CLI 2.116.0 accepts multiple function names and obtains temporary database credentials through the Management API. The review's mandatory-password and single-function claims do not apply to this pinned version; setup documentation links the versioned upstream source.
+- Version 0.26.2 records this follow-up. Architect review and production configuration remain gates before promotion. Local follow-up verification passed: 221 tests with coverage, typecheck, lint, build, version, actionlint, diff/credential review, and 13 executed workflow checks. Hosted follow-up checks will run after publication.
