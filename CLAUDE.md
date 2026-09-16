@@ -14,7 +14,7 @@ This is a **separate** project from `/Users/rjulia/ChurchCore` and `/Users/rjuli
 
 ## Stack
 
-- **Framework**: Next.js 15 App Router, TypeScript (strict), Tailwind CSS
+- **Framework**: Next.js 16 App Router, TypeScript (strict), Tailwind CSS
 - **Backend**: Supabase — Postgres, Row Level Security, Auth, Storage, Edge Functions (Deno)
 - **Deploy**: Vercel (frontend + serverless), Supabase cloud
 - **Email**: Resend via `src/lib/email.ts`, React Email components in `src/emails/`

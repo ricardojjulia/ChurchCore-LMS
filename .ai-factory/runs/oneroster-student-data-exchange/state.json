@@ -19,11 +19,11 @@
     "local_unauthenticated_smoke": "passed: admin page redirects to /login; validate and jobs APIs return 401",
     "authenticated_browser": "passed on 2026-09-14: M3 Imports and Connection views rendered on desktop and mobile 390x844 with no overflow or application-origin console error",
     "migration_applied": "cloud remains unchanged; fresh local reset passed through 20260914160000_oneroster_signed_delivery.sql",
-    "e2e": "passed locally from a fresh Supabase reset: 8 files, 77 tests",
+    "e2e": "September 16 PR #5 b1c4a37: hosted clean stack passed 8 files/77 tests",
     "ci_e2e_environment": "disposable local Supabase stack; no shared cloud secrets required",
     "local_oneroster_database_tests": "passed: 58 assertions across apply, preview/cleanup, provenance guard, identity linking, and signed delivery",
     "local_database_lint": "passed with no schema errors after signed delivery migration",
-    "full_legacy_database_suite": "September 16 repair branch: all 14 suites / 302 assertions pass in transactional local checks; hosted fresh-stack verification pending",
+    "full_legacy_database_suite": "September 16 PR #5 b1c4a37: all 14 files/302 assertions passed on hosted clean stack, run 35114858821",
     "m3_cloud_state": "September 15 release 35030408024 succeeded in staging and production; no repeat deployment",
     "academy_sender": "not started; separate Academy repository authorization required",
     "lms_pull_request": "PR #3 and release repair PR #4 merged; origin/main 8d1c453 verified",
@@ -52,5 +52,5 @@
     }
   ],
   "state": "IMPLEMENTED",
-  "updatedAt": "2026-09-16T15:20:58.069132+00:00"
+  "updatedAt": "2026-09-16T15:26:27.982086+00:00"
 }

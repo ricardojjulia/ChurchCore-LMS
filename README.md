@@ -224,7 +224,7 @@ graph LR
 
 | Layer | Technology | Notes |
 |---|---|---|
-| Framework | [Next.js 15](https://nextjs.org) (App Router) | Server Components, Server Actions, Turbopack |
+| Framework | [Next.js 16](https://nextjs.org) (App Router) | Server Components, Server Actions, Turbopack |
 | Language | TypeScript 5 | Strict mode |
 | Database | Supabase (PostgreSQL 15) | RLS on all tables, pg_cron, `SECURITY DEFINER` functions |
 | Auth | Supabase Auth | Email/password + magic link; SSR session via `@supabase/ssr` |

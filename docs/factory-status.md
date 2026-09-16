@@ -11,7 +11,7 @@ Updated September 16, 2026. Application version 0.26.3 is prepared for review.
 | OneRoster M3 LMS | PR #3 and release repair #4 merged; September 15 staging and production release succeeded. Signed receipt stages for explicit review and never creates Auth users. |
 | OneRoster shared milestone | Academy sender and cross-repository delivery proof remain open and require separate repository authorization. M4 Gradebook and M5 REST/OpenAPI are later milestones. No certification claim. |
 | Dependencies | Next.js 16.3.5, TipTap 3.31.3, Vitest 4.1.11. Lockfile audit: zero vulnerabilities at verification time. |
-| Verification | 237 unit tests and current coverage gates pass; 302 real SQL assertions, database lint, concurrency, type/lint/version/build checks pass locally. Fresh full-stack hosted checks are required before release. |
+| Verification | 237 unit tests and current coverage gates pass; 302 real SQL assertions, database lint, concurrency, type/lint/version/build checks pass locally. Hosted fresh-stack migration + 302 SQL assertions + 77 E2E tests pass at implementation head b1c4a37 (run 35114858821). Final PR checks and architect review remain release gates. |
 
 The daily run records live in `.ai-factory/runs/daily-churchcore-lms-2026-09-16/`.
 Its migration and CI changes require an architect review under CODEOWNERS.

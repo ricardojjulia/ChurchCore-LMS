@@ -437,3 +437,7 @@ M3 remains incomplete pending separate Academy sender authorization and
 cross-repository delivery proof. Auth creation, automatic apply, Gradebook and
 REST are not enabled by this repair. No new general-memory implementation plan
 is appropriate while the approved shared plan remains unfinished.
+
+Hosted follow-up: PR #5 implementation b1c4a37 passed fresh migration application,
+all 14 SQL suites/302 assertions and 8 E2E files/77 tests in run 35114858821.
+The former legacy SQL-suite blocker is resolved; architect review is pending.
