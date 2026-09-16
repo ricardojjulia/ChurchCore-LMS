@@ -2,7 +2,8 @@
 -- Run with: supabase test db
 
 BEGIN;
-SELECT plan(42);
+SELECT plan(30);
+\ir helpers/fixtures.inc
 
 -- ============================================================
 -- TABLE EXISTENCE
@@ -31,24 +32,24 @@ SELECT col_is_unique('public', 'section_group_members', ARRAY['group_id','user_i
 -- CHECK CONSTRAINTS
 -- ============================================================
 SELECT throws_ok(
-  $$INSERT INTO section_groups(section_id, group_name, purpose, created_by)
-    SELECT id, 'BadPurpose', 'homework', auth.uid() FROM course_sections LIMIT 1$$,
+  $$INSERT INTO section_groups(org_id, section_id, group_name, purpose, created_by)
+SELECT  public.current_user_org_id(), id, 'BadPurpose', 'homework', auth.uid() FROM course_sections LIMIT 1$$,
   '23514',
   NULL,
   'section_groups rejects invalid purpose value'
 );
 
 SELECT throws_ok(
-  $$INSERT INTO section_group_members(group_id, user_id, role)
-    SELECT id, auth.uid(), 'admin' FROM section_groups LIMIT 1$$,
+  $$INSERT INTO section_group_members(org_id, group_id, user_id, role)
+SELECT  public.current_user_org_id(), id, auth.uid(), 'admin' FROM section_groups LIMIT 1$$,
   '23514',
   NULL,
   'section_group_members rejects invalid role value'
 );
 
 SELECT throws_ok(
-  $$INSERT INTO group_posts(thread_id, group_id, author_id, body)
-    SELECT gt.id, gt.group_id, auth.uid(), '  '
+  $$INSERT INTO group_posts(org_id, thread_id, group_id, author_id, body)
+SELECT  public.current_user_org_id(), gt.id, gt.group_id, auth.uid(), '  '
     FROM group_threads gt LIMIT 1$$,
   '23514',
   NULL,
@@ -56,8 +57,8 @@ SELECT throws_ok(
 );
 
 SELECT throws_ok(
-  $$INSERT INTO group_threads(group_id, title, created_by)
-    SELECT id, '   ', auth.uid() FROM section_groups LIMIT 1$$,
+  $$INSERT INTO group_threads(org_id, group_id, title, created_by)
+SELECT  public.current_user_org_id(), id, '   ', auth.uid() FROM section_groups LIMIT 1$$,
   '23514',
   NULL,
   'group_threads rejects blank title'
@@ -82,110 +83,118 @@ SELECT is(
 -- ============================================================
 -- is_group_member: returns TRUE after adding current user
 -- ============================================================
+SAVEPOINT test_membership;
 DO $$
 DECLARE
   v_section_id UUID;
   v_group_id   UUID;
   v_result     BOOLEAN;
 BEGIN
-  SELECT id INTO v_section_id FROM course_sections LIMIT 1;
-  IF v_section_id IS NULL THEN RETURN; END IF;
+  SELECT id INTO v_section_id FROM course_sections WHERE id = pg_temp.fixture_id('section-a');
+  ASSERT v_section_id IS NOT NULL, 'required section fixture missing';
 
-  INSERT INTO section_groups(section_id, group_name, purpose, created_by)
-  VALUES (v_section_id, 'Test Group Alpha', 'collaboration', auth.uid())
+  INSERT INTO section_groups(org_id, section_id, group_name, purpose, created_by)
+VALUES ( public.current_user_org_id(), v_section_id, 'Test Group Alpha', 'collaboration', auth.uid())
   RETURNING id INTO v_group_id;
 
-  INSERT INTO section_group_members(group_id, user_id, role)
-  VALUES (v_group_id, auth.uid(), 'member');
+  INSERT INTO section_group_members(org_id, group_id, user_id, role)
+VALUES ( public.current_user_org_id(), v_group_id, auth.uid(), 'member');
 
   v_result := is_group_member(v_group_id);
   ASSERT v_result = TRUE, 'is_group_member returns TRUE after membership insert';
 
-  ROLLBACK TO SAVEPOINT test_membership;
+
 END;
 $$;
+ROLLBACK TO SAVEPOINT test_membership;
 
 SELECT pass('is_group_member TRUE-after-insert test passed');
 
 -- ============================================================
 -- Duplicate group member: rejected
 -- ============================================================
+SAVEPOINT test_dup_member;
 DO $$
 DECLARE
   v_section_id UUID;
   v_group_id   UUID;
 BEGIN
-  SELECT id INTO v_section_id FROM course_sections LIMIT 1;
-  IF v_section_id IS NULL THEN RETURN; END IF;
+  SELECT id INTO v_section_id FROM course_sections WHERE id = pg_temp.fixture_id('section-a');
+  ASSERT v_section_id IS NOT NULL, 'required section fixture missing';
 
-  INSERT INTO section_groups(section_id, group_name, purpose, created_by)
-  VALUES (v_section_id, 'Dup Test Group', 'general', auth.uid())
+  INSERT INTO section_groups(org_id, section_id, group_name, purpose, created_by)
+VALUES ( public.current_user_org_id(), v_section_id, 'Dup Test Group', 'general', auth.uid())
   RETURNING id INTO v_group_id;
 
-  INSERT INTO section_group_members(group_id, user_id, role)
-  VALUES (v_group_id, auth.uid(), 'member');
+  INSERT INTO section_group_members(org_id, group_id, user_id, role)
+VALUES ( public.current_user_org_id(), v_group_id, auth.uid(), 'member');
 
   BEGIN
-    INSERT INTO section_group_members(group_id, user_id, role)
-    VALUES (v_group_id, auth.uid(), 'leader');
+    INSERT INTO section_group_members(org_id, group_id, user_id, role)
+VALUES ( public.current_user_org_id(), v_group_id, auth.uid(), 'leader');
     ASSERT FALSE, 'Should have raised a unique violation';
   EXCEPTION WHEN unique_violation THEN
     NULL; -- expected
   END;
 
-  ROLLBACK TO SAVEPOINT test_dup_member;
+
 END;
 $$;
+ROLLBACK TO SAVEPOINT test_dup_member;
 
 SELECT pass('duplicate group member is rejected test passed');
 
 -- ============================================================
 -- Duplicate group name within a section: rejected
 -- ============================================================
+SAVEPOINT test_dup_name;
 DO $$
 DECLARE
   v_section_id UUID;
 BEGIN
-  SELECT id INTO v_section_id FROM course_sections LIMIT 1;
-  IF v_section_id IS NULL THEN RETURN; END IF;
+  SELECT id INTO v_section_id FROM course_sections WHERE id = pg_temp.fixture_id('section-a');
+  ASSERT v_section_id IS NOT NULL, 'required section fixture missing';
 
-  INSERT INTO section_groups(section_id, group_name, created_by)
-  VALUES (v_section_id, 'NameConflict', auth.uid());
+  INSERT INTO section_groups(org_id, section_id, group_name, created_by)
+VALUES ( public.current_user_org_id(), v_section_id, 'NameConflict', auth.uid());
 
   BEGIN
-    INSERT INTO section_groups(section_id, group_name, created_by)
-    VALUES (v_section_id, 'NameConflict', auth.uid());
+    INSERT INTO section_groups(org_id, section_id, group_name, created_by)
+VALUES ( public.current_user_org_id(), v_section_id, 'NameConflict', auth.uid());
     ASSERT FALSE, 'Should have raised a unique violation';
   EXCEPTION WHEN unique_violation THEN
     NULL; -- expected
   END;
 
-  ROLLBACK TO SAVEPOINT test_dup_name;
+
 END;
 $$;
+ROLLBACK TO SAVEPOINT test_dup_name;
 
 SELECT pass('duplicate group name within section is rejected test passed');
 
 -- ============================================================
 -- get_group_thread_posts: non-member raises exception
 -- ============================================================
+SAVEPOINT test_nonmember_access;
 DO $$
 DECLARE
   v_section_id UUID;
   v_group_id   UUID;
   v_thread_id  UUID;
 BEGIN
-  SELECT id INTO v_section_id FROM course_sections LIMIT 1;
-  IF v_section_id IS NULL THEN RETURN; END IF;
+  SELECT id INTO v_section_id FROM course_sections WHERE id = pg_temp.fixture_id('section-a');
+  ASSERT v_section_id IS NOT NULL, 'required section fixture missing';
 
-  INSERT INTO section_groups(section_id, group_name, purpose, created_by)
-  VALUES (v_section_id, 'Private Group', 'grading', auth.uid())
+  INSERT INTO section_groups(org_id, section_id, group_name, purpose, created_by)
+VALUES ( public.current_user_org_id(), v_section_id, 'Private Group', 'grading', auth.uid())
   RETURNING id INTO v_group_id;
 
-  INSERT INTO group_threads(group_id, title, created_by)
-  VALUES (v_group_id, 'Secret Thread', auth.uid())
+  INSERT INTO group_threads(org_id, group_id, title, created_by)
+VALUES ( public.current_user_org_id(), v_group_id, 'Secret Thread', auth.uid())
   RETURNING id INTO v_thread_id;
 
+  PERFORM pg_temp.actor('nonmember');
   -- Current user is NOT a member — should raise exception
   BEGIN
     PERFORM get_group_thread_posts(v_thread_id);
@@ -195,15 +204,17 @@ BEGIN
       'Raised exception should mention group membership';
   END;
 
-  ROLLBACK TO SAVEPOINT test_nonmember_access;
+
 END;
 $$;
+ROLLBACK TO SAVEPOINT test_nonmember_access;
 
 SELECT pass('get_group_thread_posts rejects non-member access test passed');
 
 -- ============================================================
 -- get_group_thread_posts: member can read posts
 -- ============================================================
+SAVEPOINT test_member_read;
 DO $$
 DECLARE
   v_section_id UUID;
@@ -211,36 +222,38 @@ DECLARE
   v_thread_id  UUID;
   v_row        RECORD;
 BEGIN
-  SELECT id INTO v_section_id FROM course_sections LIMIT 1;
-  IF v_section_id IS NULL THEN RETURN; END IF;
+  SELECT id INTO v_section_id FROM course_sections WHERE id = pg_temp.fixture_id('section-a');
+  ASSERT v_section_id IS NOT NULL, 'required section fixture missing';
 
-  INSERT INTO section_groups(section_id, group_name, purpose, created_by)
-  VALUES (v_section_id, 'Open Group', 'discussion', auth.uid())
+  INSERT INTO section_groups(org_id, section_id, group_name, purpose, created_by)
+VALUES ( public.current_user_org_id(), v_section_id, 'Open Group', 'discussion', auth.uid())
   RETURNING id INTO v_group_id;
 
-  INSERT INTO section_group_members(group_id, user_id, role)
-  VALUES (v_group_id, auth.uid(), 'leader');
+  INSERT INTO section_group_members(org_id, group_id, user_id, role)
+VALUES ( public.current_user_org_id(), v_group_id, auth.uid(), 'leader');
 
-  INSERT INTO group_threads(group_id, title, created_by)
-  VALUES (v_group_id, 'Our Thread', auth.uid())
+  INSERT INTO group_threads(org_id, group_id, title, created_by)
+VALUES ( public.current_user_org_id(), v_group_id, 'Our Thread', auth.uid())
   RETURNING id INTO v_thread_id;
 
-  INSERT INTO group_posts(thread_id, group_id, author_id, body)
-  VALUES (v_thread_id, v_group_id, auth.uid(), 'Hello from the group!');
+  INSERT INTO group_posts(org_id, thread_id, group_id, author_id, body)
+VALUES ( public.current_user_org_id(), v_thread_id, v_group_id, auth.uid(), 'Hello from the group!');
 
   SELECT * INTO v_row FROM get_group_thread_posts(v_thread_id) LIMIT 1;
   ASSERT v_row.body = 'Hello from the group!', 'Member can read group post body';
   ASSERT v_row.is_own = TRUE, 'is_own is TRUE for the author';
 
-  ROLLBACK TO SAVEPOINT test_member_read;
+
 END;
 $$;
+ROLLBACK TO SAVEPOINT test_member_read;
 
 SELECT pass('get_group_thread_posts member read access test passed');
 
 -- ============================================================
 -- group_posts: soft-delete keeps row, hides from reader
 -- ============================================================
+SAVEPOINT test_soft_delete;
 DO $$
 DECLARE
   v_section_id UUID;
@@ -249,22 +262,22 @@ DECLARE
   v_post_id    UUID;
   v_count      INTEGER;
 BEGIN
-  SELECT id INTO v_section_id FROM course_sections LIMIT 1;
-  IF v_section_id IS NULL THEN RETURN; END IF;
+  SELECT id INTO v_section_id FROM course_sections WHERE id = pg_temp.fixture_id('section-a');
+  ASSERT v_section_id IS NOT NULL, 'required section fixture missing';
 
-  INSERT INTO section_groups(section_id, group_name, created_by)
-  VALUES (v_section_id, 'Soft Delete Test Group', auth.uid())
+  INSERT INTO section_groups(org_id, section_id, group_name, created_by)
+VALUES ( public.current_user_org_id(), v_section_id, 'Soft Delete Test Group', auth.uid())
   RETURNING id INTO v_group_id;
 
-  INSERT INTO section_group_members(group_id, user_id)
-  VALUES (v_group_id, auth.uid());
+  INSERT INTO section_group_members(org_id, group_id, user_id)
+VALUES ( public.current_user_org_id(), v_group_id, auth.uid());
 
-  INSERT INTO group_threads(group_id, title, created_by)
-  VALUES (v_group_id, 'Soft Delete Thread', auth.uid())
+  INSERT INTO group_threads(org_id, group_id, title, created_by)
+VALUES ( public.current_user_org_id(), v_group_id, 'Soft Delete Thread', auth.uid())
   RETURNING id INTO v_thread_id;
 
-  INSERT INTO group_posts(thread_id, group_id, author_id, body)
-  VALUES (v_thread_id, v_group_id, auth.uid(), 'To be deleted')
+  INSERT INTO group_posts(org_id, thread_id, group_id, author_id, body)
+VALUES ( public.current_user_org_id(), v_thread_id, v_group_id, auth.uid(), 'To be deleted')
   RETURNING id INTO v_post_id;
 
   UPDATE group_posts SET is_deleted = TRUE WHERE id = v_post_id;
@@ -279,15 +292,17 @@ BEGIN
   ASSERT EXISTS (SELECT 1 FROM group_posts WHERE id = v_post_id),
     'Soft-deleted post still exists in group_posts table';
 
-  ROLLBACK TO SAVEPOINT test_soft_delete;
+
 END;
 $$;
+ROLLBACK TO SAVEPOINT test_soft_delete;
 
 SELECT pass('group_posts soft-delete hides post from reader test passed');
 
 -- ============================================================
 -- updated_at trigger fires on thread update
 -- ============================================================
+SAVEPOINT test_trigger;
 DO $$
 DECLARE
   v_section_id UUID;
@@ -296,27 +311,28 @@ DECLARE
   v_before     TIMESTAMPTZ;
   v_after      TIMESTAMPTZ;
 BEGIN
-  SELECT id INTO v_section_id FROM course_sections LIMIT 1;
-  IF v_section_id IS NULL THEN RETURN; END IF;
+  SELECT id INTO v_section_id FROM course_sections WHERE id = pg_temp.fixture_id('section-a');
+  ASSERT v_section_id IS NOT NULL, 'required section fixture missing';
 
-  INSERT INTO section_groups(section_id, group_name, created_by)
-  VALUES (v_section_id, 'Trigger Test Group', auth.uid())
+  INSERT INTO section_groups(org_id, section_id, group_name, created_by)
+VALUES ( public.current_user_org_id(), v_section_id, 'Trigger Test Group', auth.uid())
   RETURNING id INTO v_group_id;
 
-  INSERT INTO group_threads(group_id, title, created_by)
-  VALUES (v_group_id, 'Trigger Thread', auth.uid())
+  INSERT INTO group_threads(org_id, group_id, title, created_by, updated_at)
+VALUES ( public.current_user_org_id(), v_group_id, 'Trigger Thread', auth.uid(), NOW() - INTERVAL '1 day')
   RETURNING id, updated_at INTO v_thread_id, v_before;
 
-  PERFORM pg_sleep(0.01);  -- ensure clock advances
+
 
   UPDATE group_threads SET title = 'Trigger Thread Updated' WHERE id = v_thread_id;
 
   SELECT updated_at INTO v_after FROM group_threads WHERE id = v_thread_id;
   ASSERT v_after > v_before, 'updated_at advances on thread update';
 
-  ROLLBACK TO SAVEPOINT test_trigger;
+
 END;
 $$;
+ROLLBACK TO SAVEPOINT test_trigger;
 
 SELECT pass('group_threads updated_at trigger test passed');
 
@@ -324,33 +340,37 @@ SELECT pass('group_threads updated_at trigger test passed');
 -- RLS POLICIES — exact names
 -- ============================================================
 SELECT policies_are('public', 'section_groups', ARRAY[
-  'admin_manager_all_section_groups',
-  'teacher_all_section_groups',
-  'learner_read_own_section_groups'
-], 'section_groups has exactly the expected RLS policies');
+  'section_groups: active tenant boundary',
+  'section_groups: learners read own',
+  'section_groups: staff read own org',
+  'section_groups: teachers manage own org'
+], 'section_groups has the expected tenant policies');
 
 SELECT policies_are('public', 'section_group_members', ARRAY[
-  'admin_manager_all_group_members',
-  'teacher_all_group_members',
-  'learner_read_own_membership'
-], 'section_group_members has exactly the expected RLS policies');
+  'section_group_members: active tenant boundary',
+  'section_group_members: learners read own',
+  'section_group_members: managers manage own org',
+  'section_group_members: staff read own org'
+], 'section_group_members has the expected tenant policies');
 
 SELECT policies_are('public', 'group_threads', ARRAY[
-  'admin_manager_all_group_threads',
-  'teacher_all_group_threads',
-  'group_member_read_threads',
-  'group_member_insert_threads',
-  'group_member_delete_own_thread',
-  'teacher_update_thread_flags'
-], 'group_threads has exactly the expected RLS policies');
+  'group_threads: active tenant boundary',
+  'group_threads: members delete own own org',
+  'group_threads: members insert own org',
+  'group_threads: members read own org',
+  'group_threads: staff read own org',
+  'group_threads: teachers moderate own org'
+], 'group_threads has the expected tenant policies');
 
 SELECT policies_are('public', 'group_posts', ARRAY[
-  'admin_manager_all_group_posts',
-  'teacher_all_group_posts',
-  'group_member_read_posts',
-  'group_member_insert_posts',
-  'author_update_own_post'
-], 'group_posts has exactly the expected RLS policies');
+  'group_posts: active tenant boundary',
+  'group_posts: authors update own org',
+  'group_posts: members insert own org',
+  'group_posts: members read own org',
+  'group_posts: staff delete own org',
+  'group_posts: staff read own org',
+  'group_posts: teachers moderate own org'
+], 'group_posts has the expected tenant policies');
 
 SELECT * FROM finish();
 ROLLBACK;

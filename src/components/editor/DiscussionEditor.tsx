@@ -2,7 +2,6 @@
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
 import { useCallback } from 'react'
 import { cn } from '@/lib/utils'
@@ -50,6 +49,7 @@ export default function DiscussionEditor({
   )
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         // Disable block types that don't belong in discussion replies
@@ -58,10 +58,9 @@ export default function DiscussionEditor({
         horizontalRule: false,
         blockquote:   false,
       }),
-      Underline,
       Placeholder.configure({ placeholder }),
     ],
-    content: value ? `<p>${value}</p>` : '',
+    content: { type: 'doc', content: [{ type: 'paragraph', content: value ? [{ type: 'text', text: value }] : [] }] },
     onUpdate: handleUpdate,
     editorProps: {
       attributes: { class: 'outline-none' },

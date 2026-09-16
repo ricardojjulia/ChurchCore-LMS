@@ -16,10 +16,9 @@ const PURPOSE_ICONS: Record<string, string> = {
 export default async function MyGroupsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_my_groups RPC return type is not in generated Supabase types
-  const { data: { data: groups }, error } = await supabase.rpc('get_my_groups') as any
+  const { data: groups, error } = await supabase.rpc('get_my_groups')
 
   return (
     <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -33,7 +32,7 @@ export default async function MyGroupsPage() {
 
         {error && (
           <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-rose-800 text-sm mb-6">
-            {error.message}
+            Unable to load your groups. Please try again.
           </div>
         )}
 
@@ -47,8 +46,7 @@ export default async function MyGroupsPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- get_my_groups RPC return not typed */}
-            {(groups as any[]).map((g) => (
+            {groups.map((g: { group_id: string; group_name: string; group_code: string | null; purpose: string; member_role: string; blueprint_title: string; section_code: string; member_count: number }) => (
               <Link
                 key={g.group_id}
                 href={`/my-groups/${g.group_id}`}

@@ -419,3 +419,21 @@
   existing-profile-only.
 - Academy export shipment/merge state belongs to the Academy repo workflow.
 - Scheduled pulls, REST, guardians, and result return remain deferred.
+
+
+## 2026-09-16 Daily Factory Reconciliation
+
+PR #3 and release repair PR #4 are merged; origin/main is 8d1c453. Release
+35030408024 completed staging and production on September 15. The earlier
+unassigned-staging/open-LMS-PR notes above are historical and resolved.
+
+COUNCIL-2026-020 repairs inherited SQL verification, tenant boundaries and group
+UX in a separate LMS branch, codex/daily-lms-2026-09-16. Local unit coverage,
+type, lint, production build, 302 transactional SQL assertions and two-session
+OneRoster concurrency checks pass. Full fresh-stack hosted verification remains
+the publication gate; the local isolated service startup stalled.
+
+M3 remains incomplete pending separate Academy sender authorization and
+cross-repository delivery proof. Auth creation, automatic apply, Gradebook and
+REST are not enabled by this repair. No new general-memory implementation plan
+is appropriate while the approved shared plan remains unfinished.

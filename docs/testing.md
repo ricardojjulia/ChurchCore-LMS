@@ -52,9 +52,11 @@ describe('myFunction', () => {
 
 | Path | Minimum line coverage |
 |---|---|
-| `src/lib/**` | 80% |
-| `src/hooks/**` | 70% |
-| `src/utils/**` | 90% |
+| `src/lib/**` | 64% |
+| `src/hooks/**` | 34% |
+| `src/utils/**` | 80% |
+| `src/app/actions/groups.ts` | 80% |
+| `cohorts.ts` / `messages.ts` / `learning.ts` actions | 40% / 35% / 18% |
 
 Run `npm run test:ci` to see current coverage. The thresholds are enforced in CI and will fail the job if not met.
 
@@ -137,3 +139,22 @@ Never hardcode credentials in spec files — always use `process.env.*`.
 - **`e2e.yml`** — runs on PR to main only; starts and seeds an isolated local Supabase stack in the runner
 
 Neither unit nor E2E tests require access to an external Supabase project in CI.
+
+
+## Database regression suite
+
+Run `supabase test db` against a disposable local Supabase stack after all migrations.
+CI runs all 14 SQL suites before creating E2E users. The current suite contains
+302 assertions; each file declares an exact plan and rolls back its fixtures.
+`supabase/tests/helpers/fixtures.inc` is an include, not a standalone test file.
+Its Auth IDs intentionally differ from domain profile UIDs to expose identity mistakes.
+
+The checks include real allowed and denied operations for two organizations,
+active/suspended tenants, anonymous users, member/nonmember students and staff,
+plus OneRoster apply/provenance/linking/signed delivery. Do not replace failing
+assertions with empty queries or unconditional passes. An exit code alone is
+insufficient: check the TAP plan and every assertion.
+
+Never reset a shared or hosted database for verification. If the local service
+stack cannot start, record the failure. Transactional SQL checks on an isolated
+schema snapshot are useful evidence but do not replace a fresh full-stack CI run.

@@ -53,9 +53,11 @@ Status: started on 2026-09-12. The LMS Academy-contract test now accepts the Aca
 Status: LMS implementation verified locally on 2026-09-14 under
 `COUNCIL-2026-019`. The LMS accepts connection-specific Ed25519-signed package
 delivery, stages without automatic apply, exposes immutable tenant-scoped
-attempt history, and requires authenticated preview/link/apply. Hosted LMS CI,
-staging assignment, and the separately authorized Academy sender PR remain
-required before M3 is complete.
+attempt history, and requires authenticated preview/link/apply. PR #3 and release
+repair PR #4 are merged; hosted CI and the September 15 staging/production release
+passed at main `8d1c453`. The separately authorized Academy sender and cross-repo
+delivery proof remain required before M3 is complete. The September 16 LMS
+security repair is a separate review, not completion of the shared milestone.
 
 ### M4 - Gradebook return
 

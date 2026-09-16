@@ -71,6 +71,9 @@ jobs:
           supabase status
           exit 1
 
+      - name: Verify database policies and functions
+        run: supabase test db
+
       - name: Prepare test users
         run: node scripts/ci-setup-test-env.mjs
 

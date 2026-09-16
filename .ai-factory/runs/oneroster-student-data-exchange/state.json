@@ -7,8 +7,8 @@
   "council_doc": "docs/council/COUNCIL-2026-019.md",
   "standalone_contract": "LMS must run with no Academy or OneRoster configuration. Organization mode defaults to standalone.",
   "implementation_started": true,
-  "current_phase": "m3_lms_pr_green",
-  "last_verified_at": "2026-09-14",
+  "current_phase": "m3_lms_released_awaiting_academy",
+  "last_verified_at": "2026-09-16",
   "verification": {
     "unit_tests": "passed: 29 files, 221 tests",
     "focused_oneroster_tests": "passed: 12 files, 59 tests",
@@ -23,10 +23,11 @@
     "ci_e2e_environment": "disposable local Supabase stack; no shared cloud secrets required",
     "local_oneroster_database_tests": "passed: 58 assertions across apply, preview/cleanup, provenance guard, identity linking, and signed delivery",
     "local_database_lint": "passed with no schema errors after signed delivery migration",
-    "full_legacy_database_suite": "failed in 8 unrelated inherited suites with stale schema or pgTAP assumptions; all OneRoster suites passed",
-    "m3_cloud_state": "unlinked and untouched; staging assignment still requires explicit confirmation",
+    "full_legacy_database_suite": "September 16 repair branch: all 14 suites / 302 assertions pass in transactional local checks; hosted fresh-stack verification pending",
+    "m3_cloud_state": "September 15 release 35030408024 succeeded in staging and production; no repeat deployment",
     "academy_sender": "not started; separate Academy repository authorization required",
-    "lms_pull_request": "PR #3 opened; implementation head passed hosted CI, E2E, and Vercel preview"
+    "lms_pull_request": "PR #3 and release repair PR #4 merged; origin/main 8d1c453 verified",
+    "dependency_audit": "September 16 repair branch: 0 vulnerabilities; new version 0.26.3 pending review"
   },
   "started_at": "2026-09-07",
   "known_blockers_before_implementation": [
@@ -49,5 +50,7 @@
       "id": "01a074a9-8800-7072-95c8-587186886d4d",
       "focus": "ChurchCore Academy export assumptions and mappings"
     }
-  ]
+  ],
+  "state": "IMPLEMENTED",
+  "updatedAt": "2026-09-16T15:20:58.069132+00:00"
 }
