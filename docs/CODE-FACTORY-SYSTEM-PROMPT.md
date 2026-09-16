@@ -566,7 +566,7 @@ The checked-in [release workflow](../.github/workflows/release.yml) is the execu
 source of truth. It runs on push to `main` in this order:
 
 ```
-CI suite → staging migrations/functions → production environment approval → production migrations/functions
+CI suite → staging migrations/functions → production environment approval → production migrations/functions → verified Vercel production deploy
 ```
 
 - Both deployment jobs validate their required project reference and access token
@@ -581,8 +581,11 @@ CI suite → staging migrations/functions → production environment approval �
 - Production migrations run before Edge Functions; a failed migration stops the job.
 - Release runs are serialized. Production verifies its commit is still the latest
   `main`, and both project references must match reviewed workflow constants.
+- Vercel automatic deployment from `main` is disabled. The approved production
+  job triggers the project deploy hook after Supabase and verifies the resulting
+  GitHub deployment status before reporting success.
 - Required production reviewers must be configured in GitHub. The environment name
-  alone does not establish an approval gate. Vercel status is tracked separately.
+  alone does not establish an approval gate.
 
 See [GitHub setup](github-setup.md) for environment secrets and release recovery.
 
@@ -617,7 +620,7 @@ Required settings for `main`:
 **`production` environment:**
 - Required reviewers: architects team
 - Deployment branches: `main` only
-- Secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` with access to production; optional `DEPLOY_WEBHOOK_URL`
+- Secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` with access to production, `VERCEL_DEPLOY_HOOK_URL`; optional `DEPLOY_WEBHOOK_URL`
 
 Staging and production must be separate, fully isolated infrastructure instances. Never share a database between staging and production. Never use a schema prefix as a substitute for project isolation.
 
@@ -634,6 +637,7 @@ Staging and production must be separate, fully isolated infrastructure instances
 | `SUPABASE_ACCESS_TOKEN` | Personal access token configured separately in each deployment environment with access to that environment's project |
 | `SUPABASE_PROJECT_REF` | Production Supabase project ref |
 | `STAGING_SUPABASE_PROJECT_REF` | Staging Supabase project ref |
+| `VERCEL_DEPLOY_HOOK_URL` | Vercel `main` production deploy hook URL (production environment only) |
 | `DEPLOY_WEBHOOK_URL` | Slack/Discord webhook (optional, skipped if absent) |
 | `CRON_SECRET` | Bearer token for cron route authorization |
 | `OPENAI_API_KEY` | OpenAI API key (server-side only, AI features) |
