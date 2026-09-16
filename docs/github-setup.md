@@ -66,6 +66,7 @@ Configure these under **Settings → Environments → staging / production → E
 | `staging` | `SUPABASE_ACCESS_TOKEN` | Supabase personal access token with access to the staging project |
 | `production` | `SUPABASE_PROJECT_REF` | Production project reference |
 | `production` | `SUPABASE_ACCESS_TOKEN` | Supabase personal access token with access to the production project |
+| `production` | `VERCEL_DEPLOY_HOOK_URL` | Secret URL for the ChurchCore LMS `main` production deploy hook |
 
 A project URL supplies the reference (the part before `.supabase.co`), but does not
 provide deployment authorization. Use a personal access token from an account with
@@ -112,14 +113,14 @@ function. See the [2.116.0 function argument definition](https://github.com/supa
    or skip deployment steps to obtain a green result.
 5. Confirm staging migration and function deployment succeeded, then approve
    production separately. Confirm the production migration runs before the Edge
-   Functions deploy. Vercel's status is independent of the Supabase release.
+   Functions deploy and that the release waits for Vercel production success.
 
 References: [Supabase environment deployment](https://supabase.com/docs/guides/deployment/managing-environments),
 [GitHub deployment environments](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments).
 
 ### Pipeline order
 
-After this setup, `release.yml` serializes releases and enforces: **CI → staging migration/functions → production environment approval → latest-main check → production migration/functions**. A failed migration or stale release blocks every later deployment step automatically.
+After this setup, `release.yml` serializes releases and enforces: **CI → staging migration/functions → production environment approval → latest-main check → production migration/functions → Vercel production deployment/verification**. Automatic Git deployment from `main` is disabled in `vercel.json`; pull-request preview deployments remain enabled. A failed migration, stale release, or failed Vercel deployment blocks success notification.
 
 ---
 

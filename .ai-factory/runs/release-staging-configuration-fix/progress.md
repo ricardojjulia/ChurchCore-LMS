@@ -77,3 +77,27 @@ Hosted checks are pending; no merge or deployment is claimed.
   reviewer rule are now configured in GitHub without exposing secret values.
 - Vercel production sequencing remains a merge blocker. Chrome is not signed in,
   so its project settings could not be inspected or changed in this run.
+
+## Controlled Vercel promotion
+
+- Authenticated Vercel inspection confirmed the LMS project has no deploy hook.
+- Prepared `main` auto-deployment disablement while preserving PR previews.
+- Prepared production-hook triggering after Supabase and GitHub deployment-status
+  polling before success notification.
+- Creating the persistent deploy hook and storing its secret URL require explicit
+  user confirmation before the browser action.
+
+## 2026-09-16 continuation
+
+- PR #4 was merged as `8d1c453`; its release run `35030408024` succeeded at
+  staging migrations/functions, production migrations/functions, and Vercel Git
+  deployment. The latter still ran independently of the approval gate.
+- Started a separate branch `codex/controlled-vercel-promotion` from merged main.
+- Verified Vercel still has no LMS deploy hooks and GitHub has no production hook
+  secret. The controlled path is therefore still needed for future releases.
+- Corrected the GitHub polling filter to import its timestamp through `jq`'s
+  environment and tested the exact `gh api --jq` expression against live
+  deployment metadata. Added a second latest-main guard before hook triggering
+  and verification that the resulting deployment ref equals the approved SHA.
+- Local lint, typecheck, 221 unit tests, production build, actionlint, JSON,
+  version, and diff checks passed. No new cloud deployment was triggered.

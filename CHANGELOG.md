@@ -11,6 +11,15 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.26.3] - 2026-09-16
+
+### Fixed
+
+- Production app deployment now runs through a reviewed Vercel deploy hook only after approved Supabase migrations and Edge Functions succeed.
+- The release verifies Vercel's GitHub deployment status before reporting success.
+
+---
+
 ## [0.26.2] — 2026-09-15
 
 ### Fixed
