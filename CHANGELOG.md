@@ -9,10 +9,6 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
----
-
-## [0.26.3] — 2026-09-16
-
 ### Security
 
 - Remove legacy content and embedding policies that bypassed tenant restrictions. Scope group, tutor and related-concept reads to active tenants and the authenticated actor.
@@ -31,6 +27,15 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Repair eight inherited SQL suites with transactional fixtures and actual role/constraint checks; add tenant-boundary regressions and group-action unit tests.
 - Run the full database suite in the disposable E2E CI environment before API tests. Preserve existing coverage gates and add an 80% group-action line threshold.
 - Refresh README, testing guidance, MVP status and OneRoster progress without claiming Academy integration complete.
+
+---
+
+## [0.26.3] - 2026-09-16
+
+### Fixed
+
+- Production app deployment now runs through a reviewed Vercel deploy hook only after approved Supabase migrations and Edge Functions succeed.
+- The release verifies Vercel's GitHub deployment status before reporting success.
 
 ---
 
