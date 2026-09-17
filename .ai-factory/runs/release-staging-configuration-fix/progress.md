@@ -101,3 +101,11 @@ Hosted checks are pending; no merge or deployment is claimed.
   and verification that the resulting deployment ref equals the approved SHA.
 - Local lint, typecheck, 221 unit tests, production build, actionlint, JSON,
   version, and diff checks passed. No new cloud deployment was triggered.
+
+## September 17 preflight reconciliation
+
+PR #6 merged as f3c384c. CI and staging deployment in run 35148363218 succeeded;
+Production is waiting for required reviewer approval. Production secret metadata
+includes SUPABASE_ACCESS_TOKEN, SUPABASE_PROJECT_REF and VERCEL_DEPLOY_HOOK_URL.
+The former missing-hook note is historical; the hook's execution remains
+unverified until the approved production job runs. No approval or retry today.

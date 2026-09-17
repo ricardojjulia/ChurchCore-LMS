@@ -4,7 +4,7 @@
  * COUNCIL-2025-005 GAP-008 — /admin/health page wiring
  *
  * Verifies that:
- *   1. GET /admin/health redirects to /auth/login for unauthenticated requests.
+ *   1. GET /admin/health redirects to /login for unauthenticated requests.
  *   2. GET /admin/health redirects to /dashboard for authenticated non-admins.
  *   3. GET /admin/health returns 200 and renders the System Health heading for admins.
  *   4. The page renders a "Run Checks" button (wired to POST /api/health).
@@ -92,9 +92,9 @@ async function cleanupHealthRow(id: string) {
 // ── Auth redirects ─────────────────────────────────────────────────────────────
 
 describe('/admin/health — auth guards', () => {
-  it('redirects unauthenticated requests to /auth/login', async () => {
+  it('redirects unauthenticated requests to /login', async () => {
     const { redirectUrl } = await getPage('/admin/health')
-    expect(redirectUrl).toContain('/auth/login')
+    expect(new URL(redirectUrl!, BASE_URL).pathname).toBe('/login')
   })
 
   it('redirects non-admin authenticated users to /dashboard', async () => {

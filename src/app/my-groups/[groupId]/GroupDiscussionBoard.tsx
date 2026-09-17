@@ -112,6 +112,7 @@ export default function GroupDiscussionBoard({
       {showNewThread && (
         <form onSubmit={handleCreateThread} className="bg-white border border-border rounded-xl p-4 flex gap-2">
           <input
+            aria-label="Thread title"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="Thread title…"

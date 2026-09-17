@@ -9,6 +9,10 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+---
+
+## [0.26.4] — 2026-09-17
+
 ### Security
 
 - Remove legacy content and embedding policies that bypassed tenant restrictions. Scope group, tutor and related-concept reads to active tenants and the authenticated actor.
@@ -17,6 +21,10 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Preserve platform-admin group reads while retaining existing mutation checks and ordinary tenant boundaries (COUNCIL-2026-021).
+- Validate the section before removing a group member, redact lookup errors, and name the new-thread title and reply fields for assistive technology.
+- Preserve date-only term boundaries in the Terms and Section screens regardless of server timezone.
+- Send unauthenticated System Health requests to the canonical `/login` page and verify it against the production build.
 - Resolve Auth IDs correctly for group membership, replies, active sections and tutor context while retaining distinct domain profile IDs.
 - Render My Groups safely, display new threads and replies immediately, and fit discussion pages on mobile screens.
 - Initialize the discussion editor after hydration and treat initial text as text rather than HTML.

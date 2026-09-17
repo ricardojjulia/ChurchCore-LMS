@@ -144,8 +144,8 @@ Neither unit nor E2E tests require access to an external Supabase project in CI.
 ## Database regression suite
 
 Run `supabase test db` against a disposable local Supabase stack after all migrations.
-CI runs all 14 SQL suites before creating E2E users. The current suite contains
-302 assertions; each file declares an exact plan and rolls back its fixtures.
+CI runs all 15 SQL suites before creating E2E users. The current suite contains
+327 assertions; each file declares an exact plan and rolls back its fixtures.
 `supabase/tests/helpers/fixtures.inc` is an include, not a standalone test file.
 Its Auth IDs intentionally differ from domain profile UIDs to expose identity mistakes.
 
@@ -158,3 +158,9 @@ insufficient: check the TAP plan and every assertion.
 Never reset a shared or hosted database for verification. If the local service
 stack cannot start, record the failure. Transactional SQL checks on an isolated
 schema snapshot are useful evidence but do not replace a fresh full-stack CI run.
+
+E2E suites mutate their seed state, including enrollment removal. Re-run the
+local seed before each full suite invocation. Use separate synthetic accounts
+for simultaneous browser checks: test sign-out can invalidate another session
+for the same user. Production-build smoke should use `npm run build` followed
+by `npm run start`, as well as the development server used by hosted E2E.

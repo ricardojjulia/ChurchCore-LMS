@@ -80,6 +80,10 @@ export async function addGroupMember(sectionId: string, groupId: string, userId:
 export async function removeGroupMember(sectionId: string, groupId: string, userId: string): Promise<{ error?: string }> {
   const actor = await requireActor(true)
   if ('error' in actor) return { error: actor.error }
+  const { data: group, error: groupError } = await actor.supabase.from('section_groups')
+    .select('id').eq('id', groupId).eq('section_id', sectionId).eq('org_id', actor.orgId).maybeSingle()
+  if (groupError) return { error: SAVE_ERROR }
+  if (!group) return { error: 'Group not found' }
   const { error } = await actor.supabase.from('section_group_members').delete()
     .eq('group_id', groupId).eq('user_id', userId).eq('org_id', actor.orgId)
   if (error) return { error: SAVE_ERROR }

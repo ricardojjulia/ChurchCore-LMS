@@ -63,7 +63,7 @@ export default function DiscussionEditor({
     content: { type: 'doc', content: [{ type: 'paragraph', content: value ? [{ type: 'text', text: value }] : [] }] },
     onUpdate: handleUpdate,
     editorProps: {
-      attributes: { class: 'outline-none' },
+      attributes: { class: 'outline-none', role: 'textbox', 'aria-label': 'Reply', 'aria-multiline': 'true' },
       handleKeyDown(_, event) {
         // Cmd/Ctrl+Enter submits
         if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {

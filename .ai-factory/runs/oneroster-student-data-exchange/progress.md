@@ -441,3 +441,13 @@ is appropriate while the approved shared plan remains unfinished.
 Hosted follow-up: PR #5 implementation b1c4a37 passed fresh migration application,
 all 14 SQL suites/302 assertions and 8 E2E files/77 tests in run 35114858821.
 The former legacy SQL-suite blocker is resolved; architect review is pending.
+
+## 2026-09-17 Daily Factory Reconciliation
+
+Main f3c384c adds controlled Vercel promotion (PR #6). Release 35148363218 passed
+staging and is waiting for production approval. No approval submitted today.
+PR #5 now incorporates main, COUNCIL-2026-021 and version 0.26.4. Local proof:
+239 unit tests, 327 SQL assertions, 77 E2E tests on a production build, fresh
+isolated Supabase, database lint/concurrency and authenticated desktop/mobile
+checks. The Academy sender and cross-repository proof remain outside this run;
+M3 is still incomplete and no new major-feature plan is initiated.

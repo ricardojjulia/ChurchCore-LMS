@@ -1,29 +1,34 @@
 # LMS MVP and verification status
 
-Updated September 16, 2026. Application version 0.26.3 is prepared for review.
+Updated September 17, 2026. Application version 0.26.4 is prepared in PR #5 for architect review.
 
 | Area | Evidence and remaining scope |
 |---|---|
-| Standalone LMS | Admin and learner dashboards, login, OneRoster configuration and group views exercised with synthetic local accounts. Core course/assessment/certificate features remain implemented; this daily smoke is not an exhaustive product certification. |
-| Academic structure and content | Repaired transactional SQL tests cover hierarchy, enrollment, access windows and published content. Auth and domain IDs are deliberately distinct in regression fixtures. |
-| Groups | Tenant-scoped actions and database guards; threads/replies update without navigation; mobile discussion layout fits 390 px. |
-| AI retrieval | Tenant, active-account, enrollment and inactive-embedding checks pass at the database boundary. No live paid model generation was run. |
-| OneRoster M3 LMS | PR #3 and release repair #4 merged; September 15 staging and production release succeeded. Signed receipt stages for explicit review and never creates Auth users. |
-| OneRoster shared milestone | Academy sender and cross-repository delivery proof remain open and require separate repository authorization. M4 Gradebook and M5 REST/OpenAPI are later milestones. No certification claim. |
-| Dependencies | Next.js 16.3.5, TipTap 3.31.3, Vitest 4.1.11. Lockfile audit: zero vulnerabilities at verification time. |
-| Verification | 237 unit tests and current coverage gates pass; 302 real SQL assertions, database lint, concurrency, type/lint/version/build checks pass locally. Hosted fresh-stack migration + 302 SQL assertions + 77 E2E tests pass at implementation head b1c4a37 (run 35114858821). Final PR checks and architect review remain release gates. |
+| Standalone LMS | Admin/learner login and dashboards, courses, sections, health, reports, certificates, OneRoster and group views exercised locally. Core enrollment, XP, certificate, guardian, reporting and health behavior is covered by E2E; this is not exhaustive product certification. |
+| Academic structure and content | Real transactional hierarchy, enrollment, access-window and published-content tests. Terms and section headers preserve date-only boundaries across server timezones. |
+| Groups | Active-tenant RLS, author/parent guards, existing platform-admin reads, section-bound member removal and redacted errors. Accessible title/reply fields; create/reply/delete and membership removal/reassignment verified with distinct Auth/domain identities. Desktop 1280 px and mobile 390 px have no settled horizontal overflow. |
+| AI retrieval | Tenant, active-account, enrollment and inactive-embedding checks pass in the database. No paid model invocation. |
+| OneRoster M3 LMS | Receiver PR #3 and release repair #4 merged and released. Signed receipt stages for explicit review and never creates Auth users. |
+| Shared OneRoster milestone | Academy sender and cross-repository delivery proof remain open, requiring separate repository authorization. M4 Gradebook and M5 REST/OpenAPI remain later work. No certification claim. |
+| Dependencies | Next.js 16.3.5, TipTap 3.31.3, Vitest 4.1.11. Current lockfile audit: zero vulnerabilities. No further dependency upgrade in September 17 follow-up. |
+| Verification | 239 unit tests with existing coverage gates; 15 SQL suites/327 assertions; 8 E2E files/77 tests against a production build on a fresh isolated local Supabase stack. Type/lint/version/build, application DB lint, migration reapply, OneRoster concurrency, RLS and client-secret scans pass. |
+| Publication | PR #5 remains subject to current-head CI and architect review. Main f3c384c includes controlled Vercel promotion from PR #6; release 35148363218 completed staging and awaits production approval. Its new Vercel hook has not yet executed in that gated job. |
 
-The daily run records live in `.ai-factory/runs/daily-churchcore-lms-2026-09-16/`.
-Its migration and CI changes require an architect review under CODEOWNERS.
-The local isolated Supabase stack stalled while starting services; the SQL
-fallback used a separate database with preserved owners and grants. Browser
-smoke used synthetic data on the existing local service stack, without applying
-this migration there. Those checks do not imply cloud deployment.
+Current evidence is in `.ai-factory/runs/daily-churchcore-lms-2026-09-17/`.
+Previous daily snapshots remain historical. This run uses its own disposable
+Supabase stack on ports 62321/62322; it does not alter the original local or cloud
+schema. Realtime, studio and analytics services were excluded to reduce local
+resource use, so live subscription delivery is not part of the browser proof.
+Read-only reports emitted initial chart-size warnings; final group/date views
+had no new application console errors. Hosted CI results are on
+[PR #5](https://github.com/ricardojjulia/ChurchCore-LMS/pull/5).
 
 ```mermaid
 flowchart LR
-  A[LMS signed delivery released] --> B[Academy sender authorization]
+  A[LMS receiver released] --> B[Academy authorization and sender]
   B --> C[Cross-repository delivery proof]
   C --> D[M3 complete]
   D --> E[M4 Gradebook and M5 REST]
+  F[LMS security repair verified locally] --> G[PR 5 CI and architect review]
+  G --> H[Staging then approved production release]
 ```

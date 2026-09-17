@@ -21,6 +21,7 @@ function mockActor(role = 'student', overrides: Record<string, Result> = {}, sig
       for (const method of ['select', 'insert', 'update', 'delete', 'eq', 'single', 'maybeSingle']) {
         query[method] = (...args: unknown[]) => {
           if (method === 'insert' || method === 'update') writes[table] = args[0]
+          if (method === 'delete') writes[table] = 'delete'
           if (method === 'eq') (filters[table] ??= []).push(args)
           return query
         }
@@ -90,6 +91,17 @@ describe('group mutations', () => {
     expect(await removeGroupMember('section', 'group', 'member-auth')).toEqual({})
     expect(filters.section_groups).toContainEqual(['section_id', 'section'])
     expect(filters.section_group_members).toContainEqual(['org_id', 'org-a'])
+  })
+  it('does not remove members when the group is outside the supplied section', async () => {
+    const { writes, filters } = mockActor('admin', { section_groups: { data: null, error: null } })
+    expect(await removeGroupMember('other-section', 'group', 'member-auth')).toEqual({ error: 'Group not found' })
+    expect(filters.section_groups).toContainEqual(['section_id', 'other-section'])
+    expect(writes.section_group_members).toBeUndefined()
+  })
+  it('does not remove members when the parent lookup fails', async () => {
+    const { writes } = mockActor('admin', { section_groups: { data: null, error: { message: 'private database details' } } })
+    expect(await removeGroupMember('section', 'group', 'member-auth')).toEqual({ error: 'Unable to save group changes. Please try again.' })
+    expect(writes.section_group_members).toBeUndefined()
   })
   it('creates threads with tenant and Auth creator', async () => {
     const { writes } = mockActor()
