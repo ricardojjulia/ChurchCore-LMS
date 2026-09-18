@@ -106,6 +106,7 @@ CREATE POLICY "table: action description"
 - `profile_roles` — RLS hot-path: `auth_id, uid, role, org_id, tenant_active`
 - `courses` — `status` enum (not `is_published`), `org_id` FK
 - `platform_audit_log` — Stripe webhook idempotency + platform admin actions
+- `platform_feedback` — pilot/demo feedback & auto error-capture triage queue (COUNCIL-2026-019); platform-plane only, RLS restricted to `is_platform_admin()` + `service_role`
 - `hq_sessions / hq_tasks / hq_risks / hq_decisions` — HQ governance tables
 
 Migration naming: `YYYYMMDDHHMMSS_description.sql`. Always `supabase db push` to apply.
@@ -169,6 +170,10 @@ ADR format: `ADR-YYYY-NNN.md` — see `docs/decisions/`.
 The council document contains the implementation prompt. Implement from the prompt, not from memory.
 
 See `docs/CODE-FACTORY-SYSTEM-PROMPT.md` for the full council governance rules.
+
+**PR review gate:** run the `pr-review` skill (`pr-reviewer` subagent, Critical/Important/Minor) against every PR before merge, non-trivial or not. This is in addition to `implementation-validator`'s Gate 3 inside `build-feature`/`run-factory` — a small change that skips the full factory pipeline still goes through `pr-review`.
+
+**Pilot feedback loop:** the platform-only `platform_feedback` table + `/platform/feedback` triage workspace (COUNCIL-2026-019) is how uncoached pilot/demo usage gets instrumented — not a one-time build. Check the triage queue daily during an active pilot, weekly at minimum otherwise. Treat a cluster of related feedback as a legitimate trigger for the next `council-review` cycle.
 
 ---
 
