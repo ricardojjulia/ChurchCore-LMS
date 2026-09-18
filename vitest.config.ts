@@ -30,6 +30,8 @@ export default defineConfig({
         'src/utils/**',
         // Measure all action files; per-file thresholds enforced only on tested ones below
         'src/app/actions/**',
+        // Feedback route — measured for per-file threshold (COUNCIL-2026-019)
+        'src/app/api/feedback/**',
       ],
       exclude: [
         '**/node_modules/**',
@@ -61,6 +63,10 @@ export default defineConfig({
         'src/app/actions/cohorts.ts':          { lines: 40 },
         'src/app/actions/messages.ts':         { lines: 35 },
         'src/app/actions/learning.ts':         { lines: 18 },
+        // COUNCIL-2026-019: Pilot Feedback & Error-Triage — per-file thresholds.
+        // Raise and broaden as coverage expands.
+        'src/lib/feedback.ts':                 { lines: 95 },  // measured 100%, threshold 95%
+        'src/app/api/feedback/route.ts':       { lines: 91 },  // measured 96.55%, threshold 91%
       },
     },
   },

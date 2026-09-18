@@ -31,6 +31,9 @@ export const heavyLimiter   = makeLimiter('heavy',    5,    60)
 // 5 req / 3600 s per user — AI outline generator (expensive inference)
 export const outlineLimiter = makeLimiter('outline',  5, 3600)
 
+// 20 req / 60 s per session — pilot feedback & error-report submissions
+export const feedbackLimiter = makeLimiter('feedback', 20, 60)
+
 export interface RateLimitResult {
   limited:   boolean
   retryAfter: number  // seconds

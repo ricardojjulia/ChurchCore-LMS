@@ -8,6 +8,8 @@ import { SidebarProvider } from '@/components/layout/SidebarContext'
 import MobileBottomNavServer from '@/components/layout/MobileBottomNavServer'
 import MobileAdminDrawerServer from '@/components/layout/MobileAdminDrawerServer'
 import { Toaster } from '@/components/ui/toaster'
+import { FeedbackSessionProvider } from '@/components/feedback/FeedbackSessionProvider'
+import { FeedbackButton }          from '@/components/feedback/FeedbackButton'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -64,16 +66,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           Skip to main content
         </a>
 
-        <SidebarProvider>
-          <Sidebar />
-          <SidebarMain>
-            {children}
-          </SidebarMain>
-        </SidebarProvider>
+        <FeedbackSessionProvider>
+          <SidebarProvider>
+            <Sidebar />
+            <SidebarMain>
+              {children}
+            </SidebarMain>
+          </SidebarProvider>
 
-        <MobileBottomNavServer />
-        <MobileAdminDrawerServer />
-        <Toaster />
+          <MobileBottomNavServer />
+          <MobileAdminDrawerServer />
+          <Toaster />
+          <FeedbackButton />
+        </FeedbackSessionProvider>
       </body>
     </html>
   )

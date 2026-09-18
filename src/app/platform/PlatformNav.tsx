@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 const PLATFORM_LINKS = [
   { href: '/platform', label: 'Tenants' },
   { href: '/platform/audit', label: 'Audit Log' },
+  { href: '/platform/feedback', label: 'Feedback' },
 ]
 
 export function PlatformNav() {
