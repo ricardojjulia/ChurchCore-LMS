@@ -41,7 +41,8 @@ SELECT  public.current_user_org_id(), id, 'BadPurpose', 'homework', auth.uid() F
 
 SELECT throws_ok(
   $$INSERT INTO section_group_members(org_id, group_id, user_id, role)
-SELECT  public.current_user_org_id(), id, auth.uid(), 'admin' FROM section_groups LIMIT 1$$,
+SELECT public.current_user_org_id(), id, auth.uid(), 'admin'
+FROM section_groups WHERE id = pg_temp.fixture_id('group-a')$$,
   '23514',
   NULL,
   'section_group_members rejects invalid role value'

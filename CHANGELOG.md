@@ -11,6 +11,21 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.26.5] — 2026-09-18
+
+### Fixed
+
+- Enforce configured group capacity in Postgres for direct inserts, member moves and reduced limits, including competing requests for the last place (COUNCIL-2026-022).
+- Return a fixed capacity message to staff without exposing database details; retain duplicate-member errors and unlimited groups.
+- Bind the membership-role SQL test to its own fixture instead of an arbitrary group from another tenant.
+- Remove an invalid empty E2E workflow dependency list; CI and E2E remain independent checks.
+
+### Verification
+
+- Add transactional capacity regressions and CI concurrency checks under READ COMMITTED and REPEATABLE READ. Existing over-capacity groups retain their members; removal and role edits remain available.
+
+---
+
 ## [0.26.4] — 2026-09-17
 
 ### Security

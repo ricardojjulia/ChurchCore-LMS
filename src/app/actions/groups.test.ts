@@ -85,6 +85,10 @@ describe('group mutations', () => {
     mockActor('admin', { section_groups: { data: null, error: null } })
     expect(await addGroupMember('section', 'missing', 'member-auth')).toEqual({ error: 'Group or member not found' })
   })
+  it('reports the database capacity rejection without exposing error details', async () => {
+    mockActor('admin', { section_group_members: { data: null, error: { code: 'PCC01', message: 'private details' } } })
+    expect(await addGroupMember('section', 'group', 'member-auth')).toEqual({ error: 'This group has reached its maximum number of members.' })
+  })
   it('scopes staff deletions to their tenant', async () => {
     const { filters } = mockActor('admin')
     expect(await deleteGroup('section', 'group')).toEqual({})

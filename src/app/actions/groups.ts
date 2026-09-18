@@ -72,6 +72,7 @@ export async function addGroupMember(sectionId: string, groupId: string, userId:
   const { error } = await actor.supabase.from('section_group_members').insert({
     group_id: groupId, user_id: member.auth_id, org_id: actor.orgId, role,
   })
+  if (error?.code === 'PCC01') return { error: 'This group has reached its maximum number of members.' }
   if (error) return { error: error.code === '23505' ? 'User is already in this group' : SAVE_ERROR }
   revalidatePath(`/admin/sections/${sectionId}`)
   return {}

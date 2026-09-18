@@ -4,15 +4,11 @@ on:
   pull_request:
     branches: [main]
 
-# Require CI to pass first
+# Branch protection requires both CI and this independent E2E workflow.
 jobs:
   e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-    # Only run after all CI jobs pass
-    needs: []  # GitHub Actions doesn't support cross-workflow needs directly;
-               # use branch protection to require ci workflow to pass first.
-
     env:
       APP_BASE_URL: http://127.0.0.1:3000
       TEST_USER_A_EMAIL: admin@test.churchcore.dev
@@ -73,6 +69,9 @@ jobs:
 
       - name: Verify database policies and functions
         run: supabase test db
+
+      - name: Verify concurrent group capacity
+        run: node scripts/group-capacity-concurrency-test.mjs
 
       - name: Prepare test users
         run: node scripts/ci-setup-test-env.mjs

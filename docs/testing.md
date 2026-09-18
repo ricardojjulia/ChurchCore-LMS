@@ -144,8 +144,8 @@ Neither unit nor E2E tests require access to an external Supabase project in CI.
 ## Database regression suite
 
 Run `supabase test db` against a disposable local Supabase stack after all migrations.
-CI runs all 15 SQL suites before creating E2E users. The current suite contains
-327 assertions; each file declares an exact plan and rolls back its fixtures.
+CI runs all 16 SQL suites before creating E2E users. The current suite contains
+340 assertions; each file declares an exact plan and rolls back its fixtures.
 `supabase/tests/helpers/fixtures.inc` is an include, not a standalone test file.
 Its Auth IDs intentionally differ from domain profile UIDs to expose identity mistakes.
 
@@ -164,3 +164,19 @@ local seed before each full suite invocation. Use separate synthetic accounts
 for simultaneous browser checks: test sign-out can invalidate another session
 for the same user. Production-build smoke should use `npm run build` followed
 by `npm run start`, as well as the development server used by hosted E2E.
+
+
+### Group capacity races
+
+After migrations, run `node scripts/group-capacity-concurrency-test.mjs` with
+`TEST_DATABASE_URL` pointing to a disposable loopback database. CI runs this
+before seeding API E2E accounts. Two authenticated writers compete for the last
+place: READ COMMITTED rejects the loser with `PCC01`; REPEATABLE READ rejects
+its stale transaction with `40001`. Both cases persist exactly one member.
+The script creates and removes only its uniquely identified synthetic fixtures.
+A same-value parent update creates a row version as well as taking a lock; a
+lock alone does not invalidate a stale REPEATABLE READ snapshot.
+
+Group capacity applies to new assignments and moves. Staff cannot reduce a
+maximum below the current count. Existing over-capacity data is preserved;
+removals and role edits remain possible, and unlimited groups remain unlimited.
