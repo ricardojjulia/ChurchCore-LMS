@@ -56,11 +56,12 @@ export default defineConfig({
         'src/lib/**':                          { lines: 64 },
         'src/hooks/**':                        { lines: 34 },
         'src/utils/**':                        { lines: 80 },
-        // Thresholds applied only to the three tested action files (COUNCIL-2025-009 G1).
+        // Thresholds applied only to the tested action files (COUNCIL-2025-009 G1).
         // Raise and broaden as coverage expands.
         'src/app/actions/cohorts.ts':          { lines: 40 },
         'src/app/actions/messages.ts':         { lines: 35 },
         'src/app/actions/learning.ts':         { lines: 18 },
+        'src/app/actions/groups.ts':           { lines: 80 },
       },
     },
   },

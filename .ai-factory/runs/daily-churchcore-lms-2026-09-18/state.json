@@ -1,0 +1,28 @@
+{
+  "task": "daily-churchcore-lms-2026-09-18",
+  "state": "READY_FOR_PR",
+  "status": "awaiting_hosted_checks_and_architect_review",
+  "createdAt": "2026-09-18T10:20:57.813799+00:00",
+  "updatedAt": "2026-09-18T15:29:43.499035+00:00",
+  "repo": "/Users/rjulia/ChurchCore LMS",
+  "worktree": "/Users/rjulia/Documents/Codex/2026-09-18/run-the-daily-churchcore-lms-factory/work/lms-verification",
+  "branch": "codex/daily-lms-2026-09-16",
+  "starting_head": "0692106647cade4b3782f172b8ec8e2503736d7a",
+  "base_main": "be17a76c763a76ed89936e2d35eb9bd26fbad3e8",
+  "version": "0.26.5",
+  "council_doc": "docs/council/COUNCIL-2026-022.md",
+  "dryRun": false,
+  "pull_request": "https://github.com/ricardojjulia/ChurchCore-LMS/pull/5",
+  "merged": false,
+  "deployed": false,
+  "subagents_used": [],
+  "verification": {
+    "unit": "240 passed with coverage",
+    "sql": "16 files / 340 assertions passed on fresh replay",
+    "e2e": "8 files / 77 tests passed after fresh reseed",
+    "type_lint_build_version_actionlint": "passed",
+    "audit": "0 vulnerabilities",
+    "database_lint_concurrency": "passed",
+    "browser": "admin/learner/OneRoster/groups/capacity/mobile verified"
+  }
+}

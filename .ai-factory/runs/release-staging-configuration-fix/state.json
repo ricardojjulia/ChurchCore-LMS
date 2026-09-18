@@ -1,9 +1,9 @@
 {
   "runId": "release-staging-configuration-fix",
-  "state": "BLOCKED",
-  "status": "blocked_vercel_production_sequencing",
+  "state": "IMPLEMENTED",
+  "status": "awaiting_production_approval",
   "createdAt": "2026-09-15T13:49:47+00:00",
-  "updatedAt": "2026-09-16T20:23:50+00:00",
+  "updatedAt": "2026-09-17T10:22:00.197036+00:00",
   "dryRun": false,
   "repairLoops": 0,
   "branch": "codex/controlled-vercel-promotion",
@@ -13,7 +13,7 @@
   "stagingProject": "gytbfezrfrpsltdyfdgj",
   "stagingAssignment": "explicitly confirmed by user on 2026-09-15",
   "githubConfiguration": "Both STAGING_SUPABASE_PROJECT_REF and SUPABASE_ACCESS_TOKEN exist in GitHub staging; reference reasserted at 16:09:25Z and token saved at 16:10:06Z",
-  "blocker": "Vercel main deploy hook and GitHub production secret are not configured; PR must not merge before both are verified",
+  "blocker": "Release 35148363218 awaits required Production environment approval after successful staging",
   "verification": {
     "unit": "PASS: 29 files, 221 tests, coverage thresholds met",
     "typecheck": "PASS",
@@ -24,9 +24,9 @@
     "database": "No schema/data changes or migrations run",
     "browser": "Not rerun; no UI changes",
     "dependencyAudit": "npm ci reported existing 47 vulnerabilities (37 moderate, 9 high, 1 critical); dependency versions unchanged",
-    "hosted": "Pending PR for controlled Vercel promotion"
+    "hosted": "PR6 checks and main CI passed; staging passed; production waiting"
   },
-  "releasePromotion": "PR #4 merged and its staging, production Supabase, and automatic Vercel jobs succeeded. Controlled Vercel promotion is implemented locally but its deploy hook credential is not yet configured.",
+  "releasePromotion": "PR6 merged as f3c384c; controlled Vercel workflow is on main. Production SUPABASE_ACCESS_TOKEN, SUPABASE_PROJECT_REF and VERCEL_DEPLOY_HOOK_URL names exist. New hook has not executed in pending production job.",
   "onerosterM5Plan": "OpenAPI 3 contract at required discovery paths; authenticated Swagger UI is optional tooling; REST OAuth credentials remain separate from signed CSV keys",
   "secondaryRepositories": "Untouched"
 }

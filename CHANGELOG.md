@@ -11,6 +11,48 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.26.5] — 2026-09-18
+
+### Fixed
+
+- Enforce configured group capacity in Postgres for direct inserts, member moves and reduced limits, including competing requests for the last place (COUNCIL-2026-022).
+- Return a fixed capacity message to staff without exposing database details; retain duplicate-member errors and unlimited groups.
+- Bind the membership-role SQL test to its own fixture instead of an arbitrary group from another tenant.
+- Remove an invalid empty E2E workflow dependency list; CI and E2E remain independent checks.
+
+### Verification
+
+- Add transactional capacity regressions and CI concurrency checks under READ COMMITTED and REPEATABLE READ. Existing over-capacity groups retain their members; removal and role edits remain available.
+
+---
+
+## [0.26.4] — 2026-09-17
+
+### Security
+
+- Remove legacy content and embedding policies that bypassed tenant restrictions. Scope group, tutor and related-concept reads to active tenants and the authenticated actor.
+- Bind discussion authors and thread relationships at the database boundary; validate group actions and redact database errors.
+- Update Next.js to 16.3.5, TipTap to 3.31.3 and Vitest to 4.1.11, plus compatible transitive security fixes. The current lockfile audit reports zero vulnerabilities.
+
+### Fixed
+
+- Preserve platform-admin group reads while retaining existing mutation checks and ordinary tenant boundaries (COUNCIL-2026-021).
+- Validate the section before removing a group member, redact lookup errors, and name the new-thread title and reply fields for assistive technology.
+- Preserve date-only term boundaries in the Terms and Section screens regardless of server timezone.
+- Send unauthenticated System Health requests to the canonical `/login` page and verify it against the production build.
+- Resolve Auth IDs correctly for group membership, replies, active sections and tutor context while retaining distinct domain profile IDs.
+- Render My Groups safely, display new threads and replies immediately, and fit discussion pages on mobile screens.
+- Initialize the discussion editor after hydration and treat initial text as text rather than HTML.
+- Extract TipTap text once per text node and include newly enrolled learners in published-page access.
+
+### Verification
+
+- Repair eight inherited SQL suites with transactional fixtures and actual role/constraint checks; add tenant-boundary regressions and group-action unit tests.
+- Run the full database suite in the disposable E2E CI environment before API tests. Preserve existing coverage gates and add an 80% group-action line threshold.
+- Refresh README, testing guidance, MVP status and OneRoster progress without claiming Academy integration complete.
+
+---
+
 ## [0.26.3] - 2026-09-16
 
 ### Fixed

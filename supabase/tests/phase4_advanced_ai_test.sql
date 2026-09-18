@@ -3,7 +3,8 @@
 -- Gate: migrations 038 + 039 must be applied.
 
 BEGIN;
-SELECT plan(22);
+SELECT plan(21);
+\ir helpers/fixtures.inc
 
 -- ============================================================
 -- FUNCTION EXISTENCE
@@ -107,14 +108,14 @@ SELECT ok(
 -- ============================================================
 -- search_content_chunks_multi: RAISES for unenrolled section
 -- ============================================================
-SELECT throws_ok(
+SELECT throws_like(
   $$SELECT * FROM search_content_chunks_multi(
     array_fill(0, ARRAY[1536])::vector(1536),
     ARRAY[gen_random_uuid()],
     8,
     0.72
   )$$,
-  'Access denied to one or more sections in multi-search',
+  'Access denied to one or more sections in multi-search%',
   'search_content_chunks_multi raises for unenrolled section'
 );
 
@@ -125,7 +126,7 @@ SELECT function_returns(
   'public',
   'list_user_active_sections',
   ARRAY['uuid'],
-  'table',
+  'setof record',
   'list_user_active_sections returns a table'
 );
 
@@ -148,7 +149,7 @@ SELECT pass('list_user_active_sections returns 0 rows for unknown user without e
 -- ============================================================
 SELECT throws_ok(
   $$SELECT * FROM find_related_concepts(gen_random_uuid(), 5)$$,
-  NULL,   -- exception message varies (role error OR chunk-not-found)
+  'P0001', NULL,
   'find_related_concepts raises for unknown chunk_id or insufficient role'
 );
 
@@ -192,9 +193,9 @@ SELECT function_returns(
   'public',
   'search_content_chunks_multi',
   ARRAY['vector','uuid[]','integer','double precision'],
-  'table',
+  'setof record',
   'search_content_chunks_multi returns a table (with section_code)'
 );
 
-SELECT finish();
+SELECT * FROM finish();
 ROLLBACK;

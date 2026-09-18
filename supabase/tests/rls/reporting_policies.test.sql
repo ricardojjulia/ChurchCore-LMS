@@ -29,12 +29,12 @@ INSERT INTO auth.users (
   updated_at
 )
 VALUES
-  ('20000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'student-a@example.test', 'test-password', NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
-  ('20000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'instructor-a@example.test', 'test-password', NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
-  ('20000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'admin-a@example.test', 'test-password', NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
-  ('20000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'student-b@example.test', 'test-password', NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
-  ('20000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'admin-b@example.test', 'test-password', NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
-  ('20000000-0000-4000-8000-000000000006', 'authenticated', 'authenticated', 'instructor-b@example.test', 'test-password', NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW())
+  ('20000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'student-a@example.test', NULL, NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
+  ('20000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'instructor-a@example.test', NULL, NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
+  ('20000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'admin-a@example.test', NULL, NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
+  ('20000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'student-b@example.test', NULL, NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
+  ('20000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'admin-b@example.test', NULL, NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()),
+  ('20000000-0000-4000-8000-000000000006', 'authenticated', 'authenticated', 'instructor-b@example.test', NULL, NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.profiles (uid, auth_id, display_name, email, role, status, org_id, current_level)
@@ -73,10 +73,10 @@ ON CONFLICT (id) DO UPDATE SET
   org_id = EXCLUDED.org_id,
   status = EXCLUDED.status;
 
-INSERT INTO public.enrollments (user_id, course_id, transit_status, progress_percent)
+INSERT INTO public.enrollments (user_id, course_id, transit_status, progress_percent, org_id)
 VALUES
-  ('30000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000001', 'in_progress', 25.00),
-  ('30000000-0000-4000-8000-000000000004', '40000000-0000-4000-8000-000000000003', 'in_progress', 40.00)
+  ('30000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000001', 'in_progress', 25.00, '10000000-0000-4000-8000-000000000001'),
+  ('30000000-0000-4000-8000-000000000004', '40000000-0000-4000-8000-000000000003', 'in_progress', 40.00, '10000000-0000-4000-8000-000000000002')
 ON CONFLICT (user_id, course_id) DO UPDATE SET
   transit_status = EXCLUDED.transit_status,
   progress_percent = EXCLUDED.progress_percent;

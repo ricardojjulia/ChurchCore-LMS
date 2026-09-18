@@ -419,3 +419,35 @@
   existing-profile-only.
 - Academy export shipment/merge state belongs to the Academy repo workflow.
 - Scheduled pulls, REST, guardians, and result return remain deferred.
+
+
+## 2026-09-16 Daily Factory Reconciliation
+
+PR #3 and release repair PR #4 are merged; origin/main is 8d1c453. Release
+35030408024 completed staging and production on September 15. The earlier
+unassigned-staging/open-LMS-PR notes above are historical and resolved.
+
+COUNCIL-2026-020 repairs inherited SQL verification, tenant boundaries and group
+UX in a separate LMS branch, codex/daily-lms-2026-09-16. Local unit coverage,
+type, lint, production build, 302 transactional SQL assertions and two-session
+OneRoster concurrency checks pass. Full fresh-stack hosted verification remains
+the publication gate; the local isolated service startup stalled.
+
+M3 remains incomplete pending separate Academy sender authorization and
+cross-repository delivery proof. Auth creation, automatic apply, Gradebook and
+REST are not enabled by this repair. No new general-memory implementation plan
+is appropriate while the approved shared plan remains unfinished.
+
+Hosted follow-up: PR #5 implementation b1c4a37 passed fresh migration application,
+all 14 SQL suites/302 assertions and 8 E2E files/77 tests in run 35114858821.
+The former legacy SQL-suite blocker is resolved; architect review is pending.
+
+## 2026-09-17 Daily Factory Reconciliation
+
+Main f3c384c adds controlled Vercel promotion (PR #6). Release 35148363218 passed
+staging and is waiting for production approval. No approval submitted today.
+PR #5 now incorporates main, COUNCIL-2026-021 and version 0.26.4. Local proof:
+239 unit tests, 327 SQL assertions, 77 E2E tests on a production build, fresh
+isolated Supabase, database lint/concurrency and authenticated desktop/mobile
+checks. The Academy sender and cross-repository proof remain outside this run;
+M3 is still incomplete and no new major-feature plan is initiated.
