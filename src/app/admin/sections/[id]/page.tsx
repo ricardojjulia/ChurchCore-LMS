@@ -92,7 +92,7 @@ export default async function SectionDetailPage({
               <p className="text-sm text-muted-foreground mt-0.5 font-mono">{section.section_code}</p>
               {term && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  {term.term_name} · {new Date(term.start_date).toLocaleDateString()} – {new Date(term.end_date).toLocaleDateString()}
+                  {term.term_name} · {new Date(term.start_date).toLocaleDateString(undefined, { timeZone: 'UTC' })} – {new Date(term.end_date).toLocaleDateString(undefined, { timeZone: 'UTC' })}
                 </p>
               )}
               <div className="flex gap-6 mt-4 text-sm text-muted-foreground">

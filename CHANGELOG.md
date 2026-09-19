@@ -11,23 +11,24 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [0.27.0] — 2026-09-18
+## [0.28.0] — 2026-09-19
 
 ### Added
 
-- **Cookie-based i18n — English / Spanish** (COUNCIL-2026-020) — full EN/ES translation for all student- and parent/guardian-facing UI; locale stored in `NEXT_LOCALE` cookie (no URL segments), default `en`
-- `messages/en.json` and `messages/es.json` — 562 ICU-format message keys covering courses, learning player, assignments, quiz, discussion, live session, attendance, certificates, calendar, announcements, reports, groups, messages, profile, notifications, leaderboard, onboarding, guardian, performance, join, offline, and all shared layout strings
+- **Cookie-based i18n — English / Spanish** (COUNCIL-2026-024) — full EN/ES translation for all student- and parent/guardian-facing UI; locale stored in `NEXT_LOCALE` cookie (no URL segments), default `en`
+- `messages/en.json` and `messages/es.json` — 508 ICU-format message keys covering courses, learning player, assignments, quiz, discussion, live session, attendance, certificates, calendar, announcements, reports, groups, messages, profile, notifications, leaderboard, onboarding, guardian, performance, join, offline, and all shared layout strings
 - `src/i18n/request.ts` — `getRequestConfig` reads `NEXT_LOCALE` cookie server-side, loads the matching message bundle
-- `src/components/layout/LocaleSwitcher.tsx` — EN/ES toggle button; sets `NEXT_LOCALE` cookie and calls `router.refresh()` to reload locale without a full navigation; mounted inside `SidebarClient`
+- `src/components/layout/LocaleSwitcher.tsx` — EN/ES toggle button, with an icon-only variant when the sidebar is collapsed; sets `NEXT_LOCALE` cookie and calls `router.refresh()` to reload locale without a full navigation; mounted inside `SidebarClient`
 - `NextIntlClientProvider` added to root layout wrapping body; `getMessages()` + `getLocale()` passed from server; `<html lang={locale}>` kept in sync
 - `next.config.mjs` updated to wrap config with `createNextIntlPlugin`
 
 ### Changed
 
-- All student/guardian-facing pages and client components now use `getTranslations()` (Server Components) or `useTranslations()` (Client Components) — hardcoded strings fully removed from ~50 in-scope files
+- All student/guardian-facing pages and client components now use `getTranslations()` (Server Components) or `useTranslations()` (Client Components) — hardcoded strings fully removed from the in-scope surface
 - `EnrollmentTable` converted to `async` Server Component to support `getTranslations()`
 - `BlockPlayer` gained an explicit `'use client'` directive (was already in a client tree; directive required for `useTranslations()` hook)
 - Static label objects (`ROLE_LABELS`, `CATEGORIES`, `PROVIDER_LABEL`, `STATUS_META`, `PRIORITY_STYLE`) that contained hardcoded strings were refactored: values-only arrays or inline ternary `t()` calls replace them
+- `CalendarView` month/weekday names now derive from `Intl.DateTimeFormat` for the active locale instead of static English arrays
 
 ### Scope
 
@@ -35,17 +36,117 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [0.26.0] — 2026-09-18
+## [0.27.0] — 2026-09-18
 
 ### Added
 
-- **Pilot Feedback & Error-Triage System** (COUNCIL-2026-019) — in-product feedback capture and automatic error reporting for pilot/demo sessions, feature-gated behind `NEXT_PUBLIC_DEMO_MODE` (server-enforced, not just client-hidden)
+- **Pilot Feedback & Error-Triage System** (COUNCIL-2026-023) — in-product feedback capture and automatic error reporting for pilot/demo sessions, feature-gated behind `NEXT_PUBLIC_DEMO_MODE` (server-enforced, not just client-hidden)
 - `platform_feedback` table — platform-plane only, RLS restricted to `is_platform_admin()` reads/updates and `service_role` writes; server-derived identity and SHA-256 dedupe fingerprint; upsert-on-conflict increments `hit_count` and reopens previously-triaged rows
 - `POST /api/feedback` — the one submission endpoint; validates and bounds every field, rate-limited via a new `feedbackLimiter` (Upstash-backed, 20/60s per session)
 - `FeedbackSessionProvider` / `FeedbackButton` — SSR-safe session context (sessionStorage UUID, last-5-route breadcrumbs, elapsed duration) and a fixed-position feedback button (BUG / ERROR / UNEXPECTED_RESULT / IMPROVEMENT), both fully inert when the gate is off
 - `src/app/error.tsx` now reports unhandled render errors automatically when the gate is on (capped `error.message` only — never `error.stack` or `error.digest`), swallowing its own reporting failures
 - `/platform/feedback` — staff triage workspace: open/done/all views, category/identity/date filters, unprocessed-first sort, detail drawer, optimistic triage-action and processed updates
 - `.claude/agents/pr-reviewer.md` + `.claude/skills/pr-review/SKILL.md` — a PR review gate (Critical/Important/Minor) that runs on every PR, including changes small enough to skip the full council/factory pipeline
+
+---
+
+## [0.26.5] — 2026-09-18
+
+### Fixed
+
+- Enforce configured group capacity in Postgres for direct inserts, member moves and reduced limits, including competing requests for the last place (COUNCIL-2026-022).
+- Return a fixed capacity message to staff without exposing database details; retain duplicate-member errors and unlimited groups.
+- Bind the membership-role SQL test to its own fixture instead of an arbitrary group from another tenant.
+- Remove an invalid empty E2E workflow dependency list; CI and E2E remain independent checks.
+
+### Verification
+
+- Add transactional capacity regressions and CI concurrency checks under READ COMMITTED and REPEATABLE READ. Existing over-capacity groups retain their members; removal and role edits remain available.
+
+---
+
+## [0.26.4] — 2026-09-17
+
+### Security
+
+- Remove legacy content and embedding policies that bypassed tenant restrictions. Scope group, tutor and related-concept reads to active tenants and the authenticated actor.
+- Bind discussion authors and thread relationships at the database boundary; validate group actions and redact database errors.
+- Update Next.js to 16.3.5, TipTap to 3.31.3 and Vitest to 4.1.11, plus compatible transitive security fixes. The current lockfile audit reports zero vulnerabilities.
+
+### Fixed
+
+- Preserve platform-admin group reads while retaining existing mutation checks and ordinary tenant boundaries (COUNCIL-2026-021).
+- Validate the section before removing a group member, redact lookup errors, and name the new-thread title and reply fields for assistive technology.
+- Preserve date-only term boundaries in the Terms and Section screens regardless of server timezone.
+- Send unauthenticated System Health requests to the canonical `/login` page and verify it against the production build.
+- Resolve Auth IDs correctly for group membership, replies, active sections and tutor context while retaining distinct domain profile IDs.
+- Render My Groups safely, display new threads and replies immediately, and fit discussion pages on mobile screens.
+- Initialize the discussion editor after hydration and treat initial text as text rather than HTML.
+- Extract TipTap text once per text node and include newly enrolled learners in published-page access.
+
+### Verification
+
+- Repair eight inherited SQL suites with transactional fixtures and actual role/constraint checks; add tenant-boundary regressions and group-action unit tests.
+- Run the full database suite in the disposable E2E CI environment before API tests. Preserve existing coverage gates and add an 80% group-action line threshold.
+- Refresh README, testing guidance, MVP status and OneRoster progress without claiming Academy integration complete.
+
+---
+
+## [0.26.3] - 2026-09-16
+
+### Fixed
+
+- Production app deployment now runs through a reviewed Vercel deploy hook only after approved Supabase migrations and Edge Functions succeed.
+- The release verifies Vercel's GitHub deployment status before reporting success.
+
+---
+
+## [0.26.2] — 2026-09-15
+
+### Fixed
+
+- Release access tokens are available only to validation and Supabase deployment steps.
+- Canonical factory release guidance now matches the actual environment secrets, approval placement, migration order, CLI pin, and required check names.
+- Releases are serialized, stale production promotions are rejected, and both Supabase targets must match their reviewed project references before mutation.
+
+### Documentation
+
+- Clarified temporary database login credentials and multiple-function support in the pinned Supabase CLI.
+
+---
+
+## [0.26.1] — 2026-09-15
+
+### Fixed
+
+- Release jobs report missing Supabase project references and access tokens before invoking the CLI, without exposing their values.
+- Production deployment uses the production environment's credentials and approval rules on the actual deployment job.
+- Production migrations run after environment approval and before production Edge Functions.
+- Supabase release commands quote project references and pin the verified CLI version; staging migration push runs non-interactively.
+
+### Documentation
+
+- Documented environment-scoped deployment tokens, staging assignment, and failed-release recovery.
+- Added the OpenAPI-first REST contract and optional Swagger UI to the M5 OneRoster plan.
+
+---
+
+## [0.26.0] — 2026-09-14
+
+### Added
+
+- **Signed OneRoster Delivery** (COUNCIL-2026-019) — tenant-scoped ChurchCore Academy connections accept Ed25519-signed ZIP deliveries, enforce timestamp and replay protection, and stage packages for explicit admin review
+- OneRoster connection and delivery-status admin view with public-key configuration, expected cadence, copyable endpoint, immutable attempt history, and received-job review actions
+- `oneroster_transport_attempts` audit ledger, scheduled package idempotency, active-tenant RLS, service-role insert-only grants, and pgTAP coverage
+
+### Changed
+
+- Manual uploads and signed deliveries now share one redacted validate-and-stage path
+- CI can run as both a normal workflow and the reusable prerequisite for the gated release workflow
+
+### Security
+
+- Signed receipt never applies roster changes or provisions Auth users; LMS stores public verification material only, and invalid signatures are rejected before attacker-controlled metadata is persisted
 
 ---
 

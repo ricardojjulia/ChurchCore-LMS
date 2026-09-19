@@ -52,7 +52,7 @@ export default async function AdminTermsPage() {
             {TYPE_LABELS[t.type] ?? t.type}
           </span>
           <span className="text-xs text-muted-foreground hidden sm:block">
-            {new Date(t.start_date).toLocaleDateString()} – {new Date(t.end_date).toLocaleDateString()}
+            {new Date(t.start_date).toLocaleDateString(undefined, { timeZone: 'UTC' })} – {new Date(t.end_date).toLocaleDateString(undefined, { timeZone: 'UTC' })}
           </span>
           <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
             t.is_active

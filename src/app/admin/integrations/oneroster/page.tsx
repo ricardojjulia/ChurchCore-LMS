@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { OneRosterImportClient } from './OneRosterImportClient'
+import { OneRosterWorkspace } from './OneRosterWorkspace'
 import { createClient } from '@/utils/supabase/server'
 
 export default async function OneRosterIntegrationPage() {
@@ -24,7 +24,7 @@ export default async function OneRosterIntegrationPage() {
         <h1 className="mt-1 text-2xl font-semibold text-foreground">OneRoster</h1>
       </div>
 
-      <OneRosterImportClient />
+      <OneRosterWorkspace />
     </main>
   )
 }

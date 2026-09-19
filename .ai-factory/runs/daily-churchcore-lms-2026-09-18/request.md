@@ -1,0 +1,1 @@
+Run the daily LMS factory: preserve all checkouts; perform real local/security/UI/database checks; fix errors; continue approved LMS scope; publish verified changes and report release gates. Academy is outside this run.

@@ -14,7 +14,7 @@ This is a **separate** project from `/Users/rjulia/ChurchCore` and `/Users/rjuli
 
 ## Stack
 
-- **Framework**: Next.js 15 App Router, TypeScript (strict), Tailwind CSS
+- **Framework**: Next.js 16 App Router, TypeScript (strict), Tailwind CSS
 - **Backend**: Supabase — Postgres, Row Level Security, Auth, Storage, Edge Functions (Deno)
 - **Deploy**: Vercel (frontend + serverless), Supabase cloud
 - **Email**: Resend via `src/lib/email.ts`, React Email components in `src/emails/`
@@ -106,7 +106,7 @@ CREATE POLICY "table: action description"
 - `profile_roles` — RLS hot-path: `auth_id, uid, role, org_id, tenant_active`
 - `courses` — `status` enum (not `is_published`), `org_id` FK
 - `platform_audit_log` — Stripe webhook idempotency + platform admin actions
-- `platform_feedback` — pilot/demo feedback & auto error-capture triage queue (COUNCIL-2026-019); platform-plane only, RLS restricted to `is_platform_admin()` + `service_role`
+- `platform_feedback` — pilot/demo feedback & auto error-capture triage queue (COUNCIL-2026-023); platform-plane only, RLS restricted to `is_platform_admin()` + `service_role`
 - `hq_sessions / hq_tasks / hq_risks / hq_decisions` — HQ governance tables
 
 Migration naming: `YYYYMMDDHHMMSS_description.sql`. Always `supabase db push` to apply.
@@ -173,7 +173,7 @@ See `docs/CODE-FACTORY-SYSTEM-PROMPT.md` for the full council governance rules.
 
 **PR review gate:** run the `pr-review` skill (`pr-reviewer` subagent, Critical/Important/Minor) against every PR before merge, non-trivial or not. This is in addition to `implementation-validator`'s Gate 3 inside `build-feature`/`run-factory` — a small change that skips the full factory pipeline still goes through `pr-review`.
 
-**Pilot feedback loop:** the platform-only `platform_feedback` table + `/platform/feedback` triage workspace (COUNCIL-2026-019) is how uncoached pilot/demo usage gets instrumented — not a one-time build. Check the triage queue daily during an active pilot, weekly at minimum otherwise. Treat a cluster of related feedback as a legitimate trigger for the next `council-review` cycle.
+**Pilot feedback loop:** the platform-only `platform_feedback` table + `/platform/feedback` triage workspace (COUNCIL-2026-023) is how uncoached pilot/demo usage gets instrumented — not a one-time build. Check the triage queue daily during an active pilot, weekly at minimum otherwise. Treat a cluster of related feedback as a legitimate trigger for the next `council-review` cycle.
 
 ---
 

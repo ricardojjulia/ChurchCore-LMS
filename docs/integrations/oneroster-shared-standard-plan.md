@@ -50,6 +50,15 @@ Status: started on 2026-09-12. The LMS Academy-contract test now accepts the Aca
 - Reuse the current validate, stage, preview, apply pipeline.
 - Make retries idempotent and audit-visible.
 
+Status: LMS implementation verified locally on 2026-09-14 under
+`COUNCIL-2026-019`. The LMS accepts connection-specific Ed25519-signed package
+delivery, stages without automatic apply, exposes immutable tenant-scoped
+attempt history, and requires authenticated preview/link/apply. PR #3 and release
+repair PR #4 are merged; hosted CI and the September 15 staging/production release
+passed at main `8d1c453`. The separately authorized Academy sender and cross-repo
+delivery proof remain required before M3 is complete. The September 16 LMS
+security repair is a separate review, not completion of the shared milestone.
+
 ### M4 - Gradebook return
 
 - Map LMS assignments/quizzes/results to OneRoster gradebook files or REST objects.
@@ -60,6 +69,15 @@ Status: started on 2026-09-12. The LMS Academy-contract test now accepts the Aca
 ### M5 - REST and certification readiness
 
 - Implement selected OneRoster REST consumer/provider operations.
+- Treat the localized OpenAPI 3 documents as the REST contract and serve them at
+  the OneRoster 1.2 discovery paths required for each implemented provider role.
+- Generate an authenticated Swagger UI from those documents for operator and
+  integrator use; the UI is optional tooling and is not a conformance dependency.
+- Keep M3 signed CSV delivery routes outside the public OneRoster REST contract.
+- Use OAuth 2.0 client credentials for REST operations; do not reuse the
+  Ed25519 CSV transport keys as API credentials.
+- Add contract-drift checks plus negative authentication, authorization, and
+  tenant-isolation coverage against the published OpenAPI documents.
 - Add conformance-oriented test fixtures.
 - Document exact supported profile claims.
 

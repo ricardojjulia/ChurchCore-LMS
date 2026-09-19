@@ -1,0 +1,29 @@
+{
+  "task": "daily-churchcore-lms-2026-09-17",
+  "state": "READY_FOR_PR",
+  "status": "awaiting_architect_review",
+  "createdAt": "2026-09-17T10:12:36.566814+00:00",
+  "updatedAt": "2026-09-17T10:22:00.197036+00:00",
+  "repo": "/Users/rjulia/ChurchCore LMS",
+  "worktree": "/Users/rjulia/Documents/Codex/2026-09-16/run-the-daily-churchcore-lms-factory/work/lms",
+  "branch": "codex/daily-lms-2026-09-16",
+  "base_main": "f3c384c6a44074b97dbe5c490c1a402212ae6720",
+  "starting_head": "e3c34ef71b1d8d80bcf6d70fc1099808510a3a6f",
+  "council_doc": "docs/council/COUNCIL-2026-021.md",
+  "version": "0.26.4",
+  "pull_request": "https://github.com/ricardojjulia/ChurchCore-LMS/pull/5",
+  "merged": false,
+  "deployed": false,
+  "subagents_used": [],
+  "next_step": "Verify current PR checks and obtain architect review before merge; production approval remains separate",
+  "verification": {
+    "unit": "239 passed with coverage",
+    "sql": "15 files / 327 assertions passed",
+    "e2e": "8 files / 77 tests passed against production build",
+    "type_lint_build_version": "passed",
+    "audit": "0 vulnerabilities",
+    "database_lint_concurrency": "passed",
+    "browser": "passed with documented limits",
+    "hosted": "See current PR5 checks and published execution report"
+  }
+}

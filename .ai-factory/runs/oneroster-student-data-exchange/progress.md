@@ -308,6 +308,56 @@
 - Academy export shipment/merge state belongs to the Academy repo workflow.
 - Scheduled pulls, REST, guardians, and result return remain deferred.
 
+## 2026-09-14 M3 Signed Scheduled Delivery
+
+- Ratified `COUNCIL-2026-019` by a 6/6 council vote and implemented its numbered
+  LMS scope on branch `codex/oneroster-scheduled-exchange` in a clean worktree.
+- Added Ed25519-signed, connection-specific inbound delivery with a five-minute
+  clock window, delivery-ID replay protection, package-hash idempotency, 10 MB
+  compressed limit, and stable redacted error responses.
+- Extracted manual and scheduled package staging into one server-only path.
+  Scheduled receipt validates and stages only; authenticated admin/manager
+  preview, identity linking, and apply remain separate mandatory actions.
+- Added public-key and cadence connection configuration, transport history,
+  received-job review, and responsive Imports/Connection admin views.
+- Added the tenant-scoped immutable `oneroster_transport_attempts` ledger.
+  Authenticated users have read-only RLS access in their active tenant and the
+  service role has insert/select privileges only.
+- Repaired `ci.yml` with `workflow_call` while preserving push and pull-request
+  triggers. Bumped the LMS release metadata to `0.26.0`.
+- Did not edit, commit, or push ChurchCore Academy. Did not link or modify the
+  newly provisioned cloud Supabase project.
+
+### Verification
+
+- Fresh `supabase db reset --local`: PASS through
+  `20260914160000_oneroster_signed_delivery.sql`.
+- Five OneRoster pgTAP files: PASS, 58 assertions covering apply, preview,
+  identity linking, provenance, replay uniqueness, active-tenant RLS, invalid
+  connection constraints, and immutable service-role behavior.
+- Full repository unit suite: PASS, 29 files / 221 tests.
+- Focused OneRoster suite: PASS, 12 files / 59 tests.
+- Disposable-local E2E: PASS, 8 files / 77 tests.
+- `npm run typecheck`, `npm run lint`, `npm run version:check`, production
+  `npm run build`, workflow YAML parsing, secret-pattern scan, and
+  `git diff --check`: PASS.
+- `supabase db lint --local`: PASS with no schema errors.
+- Authenticated Chrome verification on `http://127.0.0.1:3011`: desktop and
+  `390x844` Imports/Connection views rendered without horizontal overflow or
+  application-origin console errors; the temporary viewport was reset.
+- The full legacy `supabase test db` directory remains red because eight
+  unrelated inherited suites assume older schemas or pgTAP syntax. All five
+  OneRoster SQL files passed both within that run and in an isolated rerun.
+
+### Remaining Scope
+
+- LMS PR #3 opened from `codex/oneroster-scheduled-exchange`; its implementation
+  head passed both hosted CI lanes, disposable E2E, and Vercel preview.
+- Explicitly assign and gate a staging Supabase project before release promotion.
+- Implement and prove the Academy sender in a separately authorized Academy
+  worktree and PR.
+- REST transport, guardians, and result return remain deferred.
+
 ## 2026-09-14 E2E Gate Restoration
 
 - Replaced the shared-cloud E2E dependency with a disposable local Supabase
@@ -369,3 +419,35 @@
   existing-profile-only.
 - Academy export shipment/merge state belongs to the Academy repo workflow.
 - Scheduled pulls, REST, guardians, and result return remain deferred.
+
+
+## 2026-09-16 Daily Factory Reconciliation
+
+PR #3 and release repair PR #4 are merged; origin/main is 8d1c453. Release
+35030408024 completed staging and production on September 15. The earlier
+unassigned-staging/open-LMS-PR notes above are historical and resolved.
+
+COUNCIL-2026-020 repairs inherited SQL verification, tenant boundaries and group
+UX in a separate LMS branch, codex/daily-lms-2026-09-16. Local unit coverage,
+type, lint, production build, 302 transactional SQL assertions and two-session
+OneRoster concurrency checks pass. Full fresh-stack hosted verification remains
+the publication gate; the local isolated service startup stalled.
+
+M3 remains incomplete pending separate Academy sender authorization and
+cross-repository delivery proof. Auth creation, automatic apply, Gradebook and
+REST are not enabled by this repair. No new general-memory implementation plan
+is appropriate while the approved shared plan remains unfinished.
+
+Hosted follow-up: PR #5 implementation b1c4a37 passed fresh migration application,
+all 14 SQL suites/302 assertions and 8 E2E files/77 tests in run 35114858821.
+The former legacy SQL-suite blocker is resolved; architect review is pending.
+
+## 2026-09-17 Daily Factory Reconciliation
+
+Main f3c384c adds controlled Vercel promotion (PR #6). Release 35148363218 passed
+staging and is waiting for production approval. No approval submitted today.
+PR #5 now incorporates main, COUNCIL-2026-021 and version 0.26.4. Local proof:
+239 unit tests, 327 SQL assertions, 77 E2E tests on a production build, fresh
+isolated Supabase, database lint/concurrency and authenticated desktop/mobile
+checks. The Academy sender and cross-repository proof remain outside this run;
+M3 is still incomplete and no new major-feature plan is initiated.

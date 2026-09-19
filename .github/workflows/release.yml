@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   ci:
     name: Run CI Suite
@@ -15,62 +19,173 @@ jobs:
     runs-on: ubuntu-latest
     needs: ci
     environment: staging
+    env:
+      STAGING_SUPABASE_PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+      EXPECTED_STAGING_SUPABASE_PROJECT_REF: gytbfezrfrpsltdyfdgj
+      PRODUCTION_SUPABASE_PROJECT_REF: tpyvciujsrllvowqgeyq
     steps:
       - uses: actions/checkout@v4
+
+      - name: Validate staging deployment configuration
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          missing=0
+          for name in STAGING_SUPABASE_PROJECT_REF SUPABASE_ACCESS_TOKEN; do
+            if [[ -z "${!name}" ]]; then
+              printf '::error::Missing %s. Configure it in the staging GitHub environment.\n' "$name"
+              missing=1
+            fi
+          done
+          if [[ -n "$STAGING_SUPABASE_PROJECT_REF" && "$STAGING_SUPABASE_PROJECT_REF" != "$EXPECTED_STAGING_SUPABASE_PROJECT_REF" ]]; then
+            printf '::error::STAGING_SUPABASE_PROJECT_REF does not match the reviewed staging target.\n'
+            missing=1
+          fi
+          if [[ "$STAGING_SUPABASE_PROJECT_REF" == "$PRODUCTION_SUPABASE_PROJECT_REF" ]]; then
+            printf '::error::The staging project reference matches production.\n'
+            missing=1
+          fi
+          exit "$missing"
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.116.0
 
       - name: Push migrations to staging
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           supabase db push \
-            --project-ref ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+            --project-ref "$STAGING_SUPABASE_PROJECT_REF" --yes
 
       - name: Deploy Edge Functions to staging
-        run: |
-          supabase functions deploy search-users weekly-digest \
-            --project-ref ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-  approve:
-    name: Manual Approval
-    runs-on: ubuntu-latest
-    needs: [deploy-staging]
-    environment: production   # Requires manual approval in GitHub → Settings → Environments
-    steps:
-      - name: Approved for production
-        run: echo "Manual approval granted — proceeding to deploy"
+        run: |
+          supabase functions deploy search-users weekly-digest \
+            --project-ref "$STAGING_SUPABASE_PROJECT_REF"
 
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: approve
+    needs: deploy-staging
+    environment: production
+    permissions:
+      contents: read
+      deployments: read
+    env:
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF: tpyvciujsrllvowqgeyq
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify this is the latest main release
+        shell: bash
+        run: |
+          git fetch --no-tags origin main
+          if [[ "$GITHUB_SHA" != "$(git rev-parse origin/main)" ]]; then
+            printf '::error::A newer main commit exists; refusing to deploy this stale release.\n'
+            exit 1
+          fi
+
+      - name: Validate production deployment configuration
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        shell: bash
+        run: |
+          missing=0
+          for name in SUPABASE_PROJECT_REF SUPABASE_ACCESS_TOKEN VERCEL_DEPLOY_HOOK_URL; do
+            if [[ -z "${!name}" ]]; then
+              printf '::error::Missing %s. Configure it in the production GitHub environment.\n' "$name"
+              missing=1
+            fi
+          done
+          if [[ -n "$SUPABASE_PROJECT_REF" && "$SUPABASE_PROJECT_REF" != "$EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF" ]]; then
+            printf '::error::SUPABASE_PROJECT_REF does not match the reviewed production target.\n'
+            missing=1
+          fi
+          exit "$missing"
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.116.0
 
-      - name: Deploy Edge Functions
-        run: |
-          supabase functions deploy search-users weekly-digest \
-            --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+      - name: Push migrations to production
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      # Vercel picks up the push to main automatically via its GitHub integration.
-      # This step exists only to confirm the deploy succeeded and notify.
-      - name: Wait for Vercel deploy
         run: |
-          echo "Vercel production deploy triggered by push to main."
-          echo "Monitor at: https://vercel.com/dashboard"
+          supabase db push \
+            --project-ref "$SUPABASE_PROJECT_REF" --yes
+
+      - name: Deploy Edge Functions
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions deploy search-users weekly-digest \
+            --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Trigger Vercel production deployment
+        id: vercel-trigger
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          git fetch --no-tags origin main
+          if [[ "$GITHUB_SHA" != "$(git rev-parse origin/main)" ]]; then
+            printf '::error::A newer main commit exists; refusing to trigger Vercel for this stale release.\n'
+            exit 1
+          fi
+          echo "triggered_at=$(date -u +%s)" >> "$GITHUB_OUTPUT"
+          response="$(curl --fail --silent --show-error --request POST "$VERCEL_DEPLOY_HOOK_URL")"
+          job_id="$(jq -r '.job.id // empty' <<< "$response")"
+          if [[ -z "$job_id" ]]; then
+            printf '::error::Vercel did not return a deployment job id.\n'
+            exit 1
+          fi
+          echo "Vercel deployment job accepted."
+
+      - name: Verify Vercel production deployment
+        timeout-minutes: 20
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRIGGERED_AT: ${{ steps.vercel-trigger.outputs.triggered_at }}
+        run: |
+          deadline=$((SECONDS + 900))
+          while (( SECONDS < deadline )); do
+            deployment_id="$(
+              gh api \
+                "repos/$GITHUB_REPOSITORY/deployments?ref=$GITHUB_SHA&environment=Production&per_page=20" \
+                --jq '[.[] | select(.creator.login == "vercel[bot]") | select((.created_at | fromdateiso8601) >= (env.TRIGGERED_AT | tonumber))][0].id // empty'
+            )"
+
+            if [[ -n "$deployment_id" ]]; then
+              deployment_ref="$(gh api "repos/$GITHUB_REPOSITORY/deployments/$deployment_id" --jq '.ref // empty')"
+              if [[ "$deployment_ref" != "$GITHUB_SHA" ]]; then
+                printf '::error::Vercel deployed a different commit than the approved release.\n'
+                exit 1
+              fi
+              state="$(gh api "repos/$GITHUB_REPOSITORY/deployments/$deployment_id/statuses" --jq '.[0].state // empty')"
+              case "$state" in
+                success)
+                  url="$(gh api "repos/$GITHUB_REPOSITORY/deployments/$deployment_id/statuses" --jq '.[0].environment_url // empty')"
+                  echo "Vercel production deployment succeeded: $url" >> "$GITHUB_STEP_SUMMARY"
+                  exit 0
+                  ;;
+                error|failure|inactive)
+                  printf '::error::Vercel production deployment ended with state %s.\n' "$state"
+                  exit 1
+                  ;;
+              esac
+            fi
+
+            sleep 10
+          done
+
+          printf '::error::Timed out waiting for Vercel production deployment.\n'
+          exit 1
 
       - name: Notify on success
         if: success()
