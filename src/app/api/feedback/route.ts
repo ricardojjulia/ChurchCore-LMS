@@ -20,12 +20,6 @@ export async function POST(req: NextRequest) {
   }
   const body = parsed.data
 
-  // D4: Rate limit keyed by session ID (Upstash-backed, atomic).
-  const { limited } = await checkLimit(feedbackLimiter, body.sessionId)
-  if (limited) {
-    return Response.json({ error: 'Rate limited' }, { status: 429 })
-  }
-
   try {
     // D3: Identity is always server-derived — the request body is never consulted for user fields.
     const supabase = await createClient()
@@ -46,6 +40,19 @@ export async function POST(req: NextRequest) {
       userRole = roleRow?.role ?? null
     }
 
+    // D4: Rate limit keyed by server-derived identity, not client-supplied state.
+    // Authenticated callers are keyed by their verified user id (cannot be forged
+    // by rotating a client-generated sessionId). Anonymous callers are keyed by
+    // client IP (from the platform-set x-forwarded-for header) so a fresh
+    // sessionId alone can't reset the limit; sessionId is only the last resort
+    // for local/dev environments with no proxy header.
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+    const rateLimitKey = user?.id ?? clientIp ?? body.sessionId
+    const { limited } = await checkLimit(feedbackLimiter, rateLimitKey)
+    if (limited) {
+      return Response.json({ error: 'Rate limited' }, { status: 429 })
+    }
+
     // D3: Fingerprint is always computed server-side from normalized fields.
     // Any fingerprint field in the request body is simply never read.
     // Manual ERROR reports (FeedbackButton) arrive in `note`, not `errorMessage` —
@@ -58,15 +65,17 @@ export async function POST(req: NextRequest) {
     // All writes use the service client — never exposed to the browser.
     const service = createServiceClient()
 
-    const { data: existing } = await service
+    const { data: existing, error: selectError } = await service
       .from('platform_feedback')
       .select('id, hit_count')
       .eq('fingerprint', fingerprint)
       .maybeSingle()
 
+    if (selectError) throw selectError
+
     if (existing) {
       // Upsert: increment hit_count and reopen a previously-processed row.
-      await service
+      const { error: updateError } = await service
         .from('platform_feedback')
         .update({
           hit_count:               existing.hit_count + 1,
@@ -81,8 +90,10 @@ export async function POST(req: NextRequest) {
           updated_at:              new Date().toISOString(),
         })
         .eq('id', existing.id)
+
+      if (updateError) throw updateError
     } else {
-      await service
+      const { error: insertError } = await service
         .from('platform_feedback')
         .insert({
           fingerprint,
@@ -97,6 +108,8 @@ export async function POST(req: NextRequest) {
           app_version:             body.appVersion,
           session_duration_seconds: body.sessionDurationSeconds,
         })
+
+      if (insertError) throw insertError
     }
 
     return Response.json({ ok: true }, { status: 201 })

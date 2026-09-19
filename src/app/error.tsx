@@ -25,24 +25,30 @@ export default function GlobalError({
 
     // Automatic error capture for pilot/demo sessions.
     // Never includes error.stack or error.digest — only the capped message.
-    // Swallows its own failures so a reporting error can never cause a second crash.
+    // The whole block is wrapped in try/catch (not just the fetch) because
+    // sessionStorage access itself can throw (blocked storage, private mode,
+    // browser policy) — reporting must never cause a second crash.
     if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
-      const sessionId = typeof window !== 'undefined'
-        ? window.sessionStorage.getItem('cc_feedback_session') : null
-      if (sessionId) {
-        fetch('/api/feedback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId,
-            route: window.location.pathname,
-            category: 'ERROR',
-            errorMessage: error.message.slice(0, 500),
-            breadcrumbs: [],
-            appVersion: process.env.NEXT_PUBLIC_APP_VERSION ?? 'dev',
-            sessionDurationSeconds: null,
-          }),
-        }).catch(() => { /* reporting must never cause a second crash */ })
+      try {
+        const sessionId = typeof window !== 'undefined'
+          ? window.sessionStorage.getItem('cc_feedback_session') : null
+        if (sessionId) {
+          fetch('/api/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId,
+              route: window.location.pathname,
+              category: 'ERROR',
+              errorMessage: error.message.slice(0, 500),
+              breadcrumbs: [],
+              appVersion: process.env.NEXT_PUBLIC_APP_VERSION ?? 'dev',
+              sessionDurationSeconds: null,
+            }),
+          }).catch(() => { /* reporting must never cause a second crash */ })
+        }
+      } catch {
+        /* reporting must never cause a second crash */
       }
     }
   }, [error])

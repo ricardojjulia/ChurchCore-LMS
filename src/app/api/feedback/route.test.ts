@@ -398,4 +398,145 @@ describe('internal error handling (criterion 8)', () => {
     expect(res.status).toBe(500)
     expect(await res.json()).toEqual({ error: 'Something went wrong' })
   })
+
+  it('returns generic 500 and does not report success when the dedupe SELECT returns an error', async () => {
+    let callIndex = 0
+    mocks.serviceFrom.mockImplementation((table: string) => {
+      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
+      callIndex += 1
+      // select().eq().maybeSingle() returns a DB error, not a thrown exception —
+      // Supabase reports failures in the `error` field, so this must not be
+      // treated as "no existing row" and silently continue to insert.
+      return {
+        select:      vi.fn().mockReturnThis(),
+        eq:          vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: { message: 'db unreachable' } }),
+      }
+    })
+
+    const res = await POST(makeRequest())
+    expect(res.status).toBe(500)
+    expect(await res.json()).toEqual({ error: 'Something went wrong' })
+    // Only the SELECT should have run — no insert attempted on top of a failed lookup
+    expect(callIndex).toBe(1)
+  })
+
+  it('returns generic 500 and does not report success when the INSERT returns an error', async () => {
+    let callIndex = 0
+    mocks.serviceFrom.mockImplementation((table: string) => {
+      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
+      callIndex += 1
+      if (callIndex === 1) {
+        return {
+          select:      vi.fn().mockReturnThis(),
+          eq:          vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+        }
+      }
+      // INSERT reports a constraint/connection failure via its `error` field
+      return { insert: vi.fn().mockResolvedValue({ error: { message: 'unique_violation' } }) }
+    })
+
+    const res = await POST(makeRequest())
+    expect(res.status).toBe(500)
+    expect(await res.json()).toEqual({ error: 'Something went wrong' })
+  })
+
+  it('returns generic 500 and does not report success when the UPDATE (reopen) returns an error', async () => {
+    let callIndex = 0
+    mocks.serviceFrom.mockImplementation((table: string) => {
+      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
+      callIndex += 1
+      if (callIndex === 1) {
+        // An existing row IS found this time, so the handler takes the update path
+        return {
+          select:      vi.fn().mockReturnThis(),
+          eq:          vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'row-1', hit_count: 3 }, error: null }),
+        }
+      }
+      return {
+        update: vi.fn().mockReturnThis(),
+        eq:     vi.fn().mockResolvedValue({ error: { message: 'row locked' } }),
+      }
+    })
+
+    const res = await POST(makeRequest())
+    expect(res.status).toBe(500)
+    expect(await res.json()).toEqual({ error: 'Something went wrong' })
+  })
+})
+
+// ── Existing-row (dedupe/reopen) branch ──────────────────────────────────────
+
+describe('existing-row upsert branch', () => {
+  beforeEach(() => { process.env.NEXT_PUBLIC_DEMO_MODE = 'true' })
+
+  it('when a matching fingerprint exists, updates hit_count/processed/triage_action instead of inserting', async () => {
+    const updateSpy = vi.fn().mockReturnThis()
+    const eqSpy     = vi.fn().mockResolvedValue({ error: null })
+    let callIndex = 0
+    mocks.serviceFrom.mockImplementation((table: string) => {
+      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
+      callIndex += 1
+      if (callIndex === 1) {
+        return {
+          select:      vi.fn().mockReturnThis(),
+          eq:          vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'existing-row-id', hit_count: 4 }, error: null }),
+        }
+      }
+      return { update: updateSpy, eq: eqSpy }
+    })
+
+    const res = await POST(makeRequest())
+    expect(res.status).toBe(201)
+    expect(updateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hit_count:     5,
+        processed:     false,
+        triage_action: null,
+      })
+    )
+    expect(eqSpy).toHaveBeenCalledWith('id', 'existing-row-id')
+  })
+})
+
+// ── D4: rate-limit key derivation ────────────────────────────────────────────
+
+describe('rate-limit key derivation', () => {
+  beforeEach(() => { process.env.NEXT_PUBLIC_DEMO_MODE = 'true' })
+
+  it('authenticated requests are rate-limited by the verified user id, not the client-supplied sessionId', async () => {
+    mocks.getUser.mockResolvedValue({
+      data: { user: { id: 'auth-server-derived-id', email: 'user@org.com' } },
+      error: null,
+    })
+    mocks.serviceFrom.mockImplementation(defaultServiceMock())
+
+    await POST(makeRequest())
+    expect(mocks.checkLimit).toHaveBeenCalledWith(null, 'auth-server-derived-id')
+  })
+
+  it('anonymous requests are rate-limited by client IP (x-forwarded-for) when present, not sessionId', async () => {
+    mocks.getUser.mockResolvedValue({ data: { user: null }, error: null })
+    mocks.serviceFrom.mockImplementation(defaultServiceMock())
+
+    const req = new NextRequest('http://localhost/api/feedback', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '203.0.113.7, 10.0.0.1' },
+      body:    JSON.stringify(VALID_PAYLOAD),
+    })
+    await POST(req)
+    // Only the first IP in the list is used
+    expect(mocks.checkLimit).toHaveBeenCalledWith(null, '203.0.113.7')
+  })
+
+  it('falls back to the client-supplied sessionId only when neither user id nor IP is available', async () => {
+    mocks.getUser.mockResolvedValue({ data: { user: null }, error: null })
+    mocks.serviceFrom.mockImplementation(defaultServiceMock())
+
+    await POST(makeRequest())
+    expect(mocks.checkLimit).toHaveBeenCalledWith(null, VALID_PAYLOAD.sessionId)
+  })
 })

@@ -43,7 +43,15 @@ function ActiveFeedbackButton() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!category || !sessionId) return
+    if (!category) return
+    if (!sessionId) {
+      // Session id is set by FeedbackSessionProvider's mount effect, which can
+      // still be pending on the very first render. Surface this rather than
+      // silently no-op'ing — the Send button is also disabled until sessionId
+      // is ready (see below), so this is a defensive fallback, not the primary guard.
+      setStatus('error')
+      return
+    }
     setStatus('loading')
 
     try {
@@ -184,7 +192,7 @@ function ActiveFeedbackButton() {
                     </button>
                     <button
                       type="submit"
-                      disabled={!category || status === 'loading'}
+                      disabled={!category || !sessionId || status === 'loading'}
                       className="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50 transition-colors"
                     >
                       {status === 'loading' ? t('feedback.sendingButton') : t('feedback.sendButton')}

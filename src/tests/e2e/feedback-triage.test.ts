@@ -27,6 +27,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { computeFingerprint } from '@/lib/feedback'
 
 // ── Env-var extraction ─────────────────────────────────────────────────────────
+const APP_BASE_URL = process.env.APP_BASE_URL              ?? 'http://localhost:3000'
 const URL     = process.env.TEST_SUPABASE_URL              ?? ''
 const ANON    = process.env.TEST_SUPABASE_ANON_KEY         ?? ''
 const SVC_KEY = process.env.TEST_SUPABASE_SERVICE_ROLE_KEY ?? ''
@@ -47,8 +48,9 @@ if (!URL || !ANON || !SVC_KEY || !PWD || !ADMIN_EMAIL || !NONADMIN_EMAIL) {
 }
 
 // ── Deterministic UUIDs for test rows (never collide with production seeds) ────
-const TEST_ROW_A = '00000000-feed-bac0-0000-000000000001'  // first submission fingerprint seed
+// Row A has no fixed id — it's created dynamically by the route itself (criterion 9).
 const TEST_ROW_B = '00000000-feed-bac0-0000-000000000002'  // reopen test fingerprint seed
+const SESSION_ID_A = '00000000-feed-5e55-0000-00000000000a'  // sessionId used by the real POST calls for row A
 
 // Compute deterministic fingerprints the same way the route does
 const FINGERPRINT_A = computeFingerprint('/test/e2e-a', 'BUG', 'e2e test button failure')
@@ -59,7 +61,8 @@ let svc:      SupabaseClient   // service role — setup, teardown, criterion 12
 let adminClient: SupabaseClient // platform admin JWT — criterion 12
 let nonAdminClient: SupabaseClient // regular user JWT — criterion 11
 let anonClient: SupabaseClient  // no session — criterion 11
-let insertedAdminAuthId: string | null = null  // tracked for cleanup
+let adminAuthId: string          // tracked so afterAll cleanup can be scoped correctly
+let createdPlatformAdminRow = false // only true if THIS run inserted the platform_admins row
 
 // ── Setup ──────────────────────────────────────────────────────────────────────
 beforeAll(async () => {
@@ -94,32 +97,37 @@ beforeAll(async () => {
   })
   if (adminSignInErr) throw new Error(`Platform admin sign-in failed: ${adminSignInErr.message}`)
 
-  const adminAuthId = adminSignIn.user?.id
-  if (!adminAuthId) throw new Error('Platform admin sign-in returned no user id')
+  const signedInAdminAuthId = adminSignIn.user?.id
+  if (!signedInAdminAuthId) throw new Error('Platform admin sign-in returned no user id')
+  adminAuthId = signedInAdminAuthId
 
-  // Insert into platform_admins via service role — idempotent via ON CONFLICT
-  const { error: insertErr } = await svc
+  // Check whether this user is ALREADY a platform admin before touching the table —
+  // afterAll must only remove what this run actually created, not a legitimate
+  // pre-existing entry for the configured fixture user (see afterAll below).
+  const { data: preExisting, error: preExistingErr } = await svc
     .from('platform_admins')
-    .upsert({ auth_id: adminAuthId, display_name: 'E2E Test Platform Admin' }, { onConflict: 'auth_id' })
-  if (insertErr) throw new Error(`Failed to insert platform admin: ${insertErr.message}`)
-  insertedAdminAuthId = adminAuthId
+    .select('auth_id')
+    .eq('auth_id', adminAuthId)
+    .maybeSingle()
+  if (preExistingErr) throw new Error(`Failed to check existing platform_admins row: ${preExistingErr.message}`)
+
+  if (!preExisting) {
+    const { error: insertErr } = await svc
+      .from('platform_admins')
+      .insert({ auth_id: adminAuthId, display_name: 'E2E Test Platform Admin' })
+    if (insertErr) throw new Error(`Failed to insert platform admin: ${insertErr.message}`)
+    createdPlatformAdminRow = true
+  }
 
   // ── Seed test feedback rows ────────────────────────────────────────────────
   // Clean up any leftover rows from a previous run first
   await svc.from('platform_feedback').delete().in('fingerprint', [FINGERPRINT_A, FINGERPRINT_B])
 
-  // Insert the initial rows (simulating first submission)
+  // Only row B is pre-seeded directly: criterion 10 needs a row that already
+  // exists and has been marked "processed" before the reopen-via-route
+  // assertion runs. Row A is intentionally NOT pre-seeded — the criterion 9
+  // test creates it itself via two real POST /api/feedback calls.
   const { error: seedErr } = await svc.from('platform_feedback').insert([
-    {
-      id:          TEST_ROW_A,
-      fingerprint: FINGERPRINT_A,
-      session_id:  '00000000-feed-5e55-0000-000000000001',
-      route:       '/test/e2e-a',
-      category:    'BUG',
-      note:        'e2e test button failure',
-      breadcrumbs: [],
-      hit_count:   1,
-    },
     {
       id:          TEST_ROW_B,
       fingerprint: FINGERPRINT_B,
@@ -143,10 +151,12 @@ afterAll(async () => {
     console.warn('afterAll: feedback row cleanup failed —', e)
   }
 
-  // Remove the temporary platform admin entry we created
-  if (insertedAdminAuthId) {
+  // Remove the platform_admins row ONLY if this run created it — if the
+  // configured fixture user was already a legitimate platform admin before
+  // this test ran, that access must not be revoked as a side effect.
+  if (createdPlatformAdminRow) {
     try {
-      await svc.from('platform_admins').delete().eq('auth_id', insertedAdminAuthId)
+      await svc.from('platform_admins').delete().eq('auth_id', adminAuthId)
     } catch (e) {
       console.warn('afterAll: platform_admins cleanup failed —', e)
     }
@@ -166,40 +176,54 @@ afterAll(async () => {
 // ── Criterion 9: deduplicate on re-submission ─────────────────────────────────
 
 describe('deduplication (criterion 9)', () => {
-  it('simulates second equivalent submission — hit_count increments to 2', async () => {
-    // Fetch the existing row (service client can always read)
-    const { data: existing, error: fetchErr } = await svc
+  it('two real POST /api/feedback submissions with equivalent route/category/note collapse to one row with hit_count = 2', async () => {
+    const payload = {
+      sessionId:   SESSION_ID_A,
+      route:       '/test/e2e-a',
+      category:    'BUG',
+      note:        'e2e test button failure',
+      breadcrumbs: [],
+    }
+
+    // First submission — creates the row via the real route (not a direct insert).
+    const firstRes = await fetch(`${APP_BASE_URL}/api/feedback`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    })
+    expect(firstRes.status).toBe(201)
+
+    const { data: afterFirst, error: firstFetchErr } = await svc
       .from('platform_feedback')
       .select('id, hit_count')
       .eq('fingerprint', FINGERPRINT_A)
       .single()
 
-    expect(fetchErr).toBeNull()
-    expect(existing).not.toBeNull()
-    expect(existing!.hit_count).toBe(1)
+    expect(firstFetchErr).toBeNull()
+    expect(afterFirst).not.toBeNull()
+    expect(afterFirst!.hit_count).toBe(1)
 
-    // Simulate route upsert: increment hit_count, reopen processed flag
-    const { error: updateErr } = await svc
-      .from('platform_feedback')
-      .update({
-        hit_count:     existing!.hit_count + 1,
-        processed:     false,
-        triage_action: null,
-        updated_at:    new Date().toISOString(),
-      })
-      .eq('id', existing!.id)
-
-    expect(updateErr).toBeNull()
+    // Second, equivalent submission — must go through the same route and hit
+    // the update/reopen branch, not a fresh insert. A broken dedupe path in
+    // the route itself (not just the DB's unique constraint) would surface here.
+    const secondRes = await fetch(`${APP_BASE_URL}/api/feedback`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    })
+    expect(secondRes.status).toBe(201)
 
     // Verify exactly one row and hit_count = 2
     const { data: after, error: afterErr } = await svc
       .from('platform_feedback')
-      .select('hit_count')
+      .select('id, hit_count')
       .eq('fingerprint', FINGERPRINT_A)
       .single()
 
     expect(afterErr).toBeNull()
     expect(after!.hit_count).toBe(2)
+    // Same row, not a duplicate insert
+    expect(after!.id).toBe(afterFirst!.id)
   })
 
   it('fingerprint UNIQUE constraint prevents a second INSERT with the same fingerprint', async () => {
@@ -219,12 +243,16 @@ describe('deduplication (criterion 9)', () => {
 // ── Criterion 10: marking processed then resubmitting reopens the row ─────────
 
 describe('reopen on re-submission (criterion 10)', () => {
-  it('marks a row processed, then simulates resubmission — processed becomes false and triage_action null', async () => {
-    // Mark the row as processed with a triage action
-    const { error: markErr } = await svc
+  it('marks a row processed, then a real resubmission through the route reopens it', async () => {
+    // Mark the row as processed with a triage action — simulates a staff
+    // triage action taken via the platform UI (legitimately a direct write,
+    // not something the submission route itself does).
+    const { data: beforeReopen, error: markErr } = await svc
       .from('platform_feedback')
       .update({ processed: true, triage_action: 'fixed' })
       .eq('fingerprint', FINGERPRINT_B)
+      .select('hit_count')
+      .single()
 
     expect(markErr).toBeNull()
 
@@ -238,24 +266,20 @@ describe('reopen on re-submission (criterion 10)', () => {
     expect(marked?.processed).toBe(true)
     expect(marked?.triage_action).toBe('fixed')
 
-    // Simulate route re-submit: fetch existing row and upsert (route always sets processed=false, triage_action=null on update)
-    const { data: existing } = await svc
-      .from('platform_feedback')
-      .select('id, hit_count')
-      .eq('fingerprint', FINGERPRINT_B)
-      .single()
-
-    const { error: reopenErr } = await svc
-      .from('platform_feedback')
-      .update({
-        hit_count:     existing!.hit_count + 1,
-        processed:     false,
-        triage_action: null,
-        updated_at:    new Date().toISOString(),
-      })
-      .eq('id', existing!.id)
-
-    expect(reopenErr).toBeNull()
+    // Resubmit through the real route — this is what must actually reopen the
+    // row. A broken update/reopen branch in the route would leave it processed.
+    const res = await fetch(`${APP_BASE_URL}/api/feedback`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId:    '00000000-feed-5e55-0000-000000000002',
+        route:        '/test/e2e-b',
+        category:     'ERROR',
+        errorMessage: 'e2e test crash scenario',
+        breadcrumbs:  [],
+      }),
+    })
+    expect(res.status).toBe(201)
 
     // Verify the row is now reopened
     const { data: after } = await svc
@@ -266,7 +290,7 @@ describe('reopen on re-submission (criterion 10)', () => {
 
     expect(after?.processed).toBe(false)
     expect(after?.triage_action).toBeNull()
-    expect(after!.hit_count).toBeGreaterThan(1)
+    expect(after!.hit_count).toBeGreaterThan(beforeReopen!.hit_count)
   })
 })
 
