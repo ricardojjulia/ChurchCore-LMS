@@ -75,6 +75,7 @@ jobs:
     permissions:
       contents: read
       deployments: read
+      statuses: read
     env:
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
       EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF: tpyvciujsrllvowqgeyq
