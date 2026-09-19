@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_call:
   push:
     branches: ['**']
   pull_request:
@@ -26,7 +27,7 @@ jobs:
         run: npm run version:check
 
       - name: Lint
-        run: npx next lint --max-warnings 0
+        run: npm run lint
 
   typecheck:
     name: Type Check

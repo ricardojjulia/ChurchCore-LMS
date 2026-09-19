@@ -6,8 +6,8 @@
 **built for churches, seminaries, and faith communities**
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-0.22.1-brightgreen)](./CHANGELOG.md)
-[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
+[![Version](https://img.shields.io/badge/version-0.26.6-brightgreen)](./CHANGELOG.md)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss)](https://tailwindcss.com)
@@ -22,7 +22,7 @@
 
 ## What is ChurchCore LMS?
 
-ChurchCore LMS is an **open-source, production-ready learning platform** purpose-built for churches and faith communities. It handles the full academic lifecycle — from defining ministry programs and scheduling courses, to enrolling students in cohorts, tracking progress block-by-block, and issuing completion certificates.
+ChurchCore LMS is an **open-source learning platform** purpose-built for churches and faith communities. It handles the full academic lifecycle — from defining ministry programs and scheduling courses, to enrolling students in cohorts, tracking progress block-by-block, and issuing completion certificates.
 
 **This is not a generic LMS wrapper.** Every design decision reflects the specific needs of ministry education:
 
@@ -34,6 +34,10 @@ ChurchCore LMS is an **open-source, production-ready learning platform** purpose
 - AGPL-3.0 licensed — free to self-host; commercial/white-label requires a commercial license
 
 ---
+
+## Current delivery status
+
+Version 0.26.6 repairs tenant isolation and group discussions, preserves platform-admin read access, enforces group capacity in the database, and verifies deploy-hook releases through Vercel's commit status. The LMS side of signed OneRoster delivery is released; Academy sender integration and the later Gradebook/REST milestones remain open. See [MVP and verification status](./docs/factory-status.md) for tested behavior and release gates.
 
 ## Features
 
@@ -220,7 +224,7 @@ graph LR
 
 | Layer | Technology | Notes |
 |---|---|---|
-| Framework | [Next.js 15](https://nextjs.org) (App Router) | Server Components, Server Actions, Turbopack |
+| Framework | [Next.js 16](https://nextjs.org) (App Router) | Server Components, Server Actions, Turbopack |
 | Language | TypeScript 5 | Strict mode |
 | Database | Supabase (PostgreSQL 15) | RLS on all tables, pg_cron, `SECURITY DEFINER` functions |
 | Auth | Supabase Auth | Email/password + magic link; SSR session via `@supabase/ssr` |

@@ -6,7 +6,7 @@
 npm run test              # unit tests in watch mode
 npm run test:run          # unit tests, single pass
 npm run test:ci           # unit tests + coverage report (mirrors CI)
-npm run test:e2e          # e2e suite (requires test env — see below)
+npm run test:e2e          # e2e suite; fails if no e2e specs are discovered
 ```
 
 ## Unit test environment
@@ -52,9 +52,11 @@ describe('myFunction', () => {
 
 | Path | Minimum line coverage |
 |---|---|
-| `src/lib/**` | 80% |
-| `src/hooks/**` | 70% |
-| `src/utils/**` | 90% |
+| `src/lib/**` | 64% |
+| `src/hooks/**` | 34% |
+| `src/utils/**` | 80% |
+| `src/app/actions/groups.ts` | 80% |
+| `cohorts.ts` / `messages.ts` / `learning.ts` actions | 40% / 35% / 18% |
 
 Run `npm run test:ci` to see current coverage. The thresholds are enforced in CI and will fail the job if not met.
 
@@ -62,29 +64,38 @@ Run `npm run test:ci` to see current coverage. The thresholds are enforced in CI
 
 ### Prerequisites
 
-1. Provision a separate Supabase project for testing (never use production)
-2. Add the following to `.env.test.local` (never commit this file):
+1. Start the local Supabase stack:
+   ```bash
+   supabase start
+   supabase db reset --local
    ```
-   TEST_SUPABASE_URL=https://your-test-project.supabase.co
+2. Export the values from `supabase status --output env` into `.env.test.local` (never commit this file):
+   ```
+   TEST_SUPABASE_URL=http://127.0.0.1:54321
    TEST_SUPABASE_ANON_KEY=...
    TEST_SUPABASE_SERVICE_ROLE_KEY=...
-   TEST_DATABASE_URL=postgresql://postgres:password@db.xxx.supabase.co:5432/postgres
+   TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+   NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+   SUPABASE_SERVICE_ROLE_KEY=...
    APP_BASE_URL=http://localhost:3000
-   TEST_USER_PASSWORD=TestPassword!2025
+   TEST_USER_PASSWORD=<strong-random-test-only-password>
    ```
-3. Apply migrations:
+3. Create or update the disposable Auth users:
    ```bash
-   supabase db push --db-url "$TEST_DATABASE_URL"
+   SUPABASE_URL="$TEST_SUPABASE_URL" \
+   SUPABASE_SERVICE_ROLE_KEY="$TEST_SUPABASE_SERVICE_ROLE_KEY" \
+   node scripts/ci-setup-test-env.mjs
    ```
 4. Seed test data:
    ```bash
-   psql "$TEST_DATABASE_URL" -f supabase/seed.test.sql
+   psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/seed.test.sql
    ```
-5. Set test user passwords:
+5. Serve the Edge Functions in a separate terminal:
    ```bash
-   node scripts/ci-setup-test-env.mjs
+   supabase functions serve
    ```
-6. Start the dev server:
+6. Start the dev server in another terminal:
    ```bash
    npm run dev
    ```
@@ -100,7 +111,9 @@ Run `npm run test:ci` to see current coverage. The thresholds are enforced in CI
 | `admin@test.churchcore.dev` | admin | `0002-000000000001` |
 | `teacher@test.churchcore.dev` | teacher | `0002-000000000002` |
 | `student@test.churchcore.dev` | student | `0002-000000000003` |
-| `student2@test.churchcore.dev` | student | `0002-000000000004` |
+| `admin-b@test.churchcore.dev` | admin | `0002-000000000004` |
+| `student-b@test.churchcore.dev` | student | `0002-000000000005` |
+| `guardian@test.churchcore.dev` | guardian | `0002-000000000006` |
 
 All test user passwords are set by `scripts/ci-setup-test-env.mjs` — never hardcode them in test files.
 
@@ -123,6 +136,47 @@ Never hardcode credentials in spec files — always use `process.env.*`.
 ## CI integration
 
 - **`ci.yml`** — runs lint → typecheck → unit tests with coverage → build
-- **`e2e.yml`** — runs on PR to main only; requires test Supabase project secrets to be set
+- **`e2e.yml`** — runs on PR to main only; starts and seeds an isolated local Supabase stack in the runner
 
-Unit tests are safe to run in CI without any external services. E2E tests require the test project secrets listed in `docs/github-setup.md`.
+Neither unit nor E2E tests require access to an external Supabase project in CI.
+
+
+## Database regression suite
+
+Run `supabase test db` against a disposable local Supabase stack after all migrations.
+CI runs all 16 SQL suites before creating E2E users. The current suite contains
+340 assertions; each file declares an exact plan and rolls back its fixtures.
+`supabase/tests/helpers/fixtures.inc` is an include, not a standalone test file.
+Its Auth IDs intentionally differ from domain profile UIDs to expose identity mistakes.
+
+The checks include real allowed and denied operations for two organizations,
+active/suspended tenants, anonymous users, member/nonmember students and staff,
+plus OneRoster apply/provenance/linking/signed delivery. Do not replace failing
+assertions with empty queries or unconditional passes. An exit code alone is
+insufficient: check the TAP plan and every assertion.
+
+Never reset a shared or hosted database for verification. If the local service
+stack cannot start, record the failure. Transactional SQL checks on an isolated
+schema snapshot are useful evidence but do not replace a fresh full-stack CI run.
+
+E2E suites mutate their seed state, including enrollment removal. Re-run the
+local seed before each full suite invocation. Use separate synthetic accounts
+for simultaneous browser checks: test sign-out can invalidate another session
+for the same user. Production-build smoke should use `npm run build` followed
+by `npm run start`, as well as the development server used by hosted E2E.
+
+
+### Group capacity races
+
+After migrations, run `node scripts/group-capacity-concurrency-test.mjs` with
+`TEST_DATABASE_URL` pointing to a disposable loopback database. CI runs this
+before seeding API E2E accounts. Two authenticated writers compete for the last
+place: READ COMMITTED rejects the loser with `PCC01`; REPEATABLE READ rejects
+its stale transaction with `40001`. Both cases persist exactly one member.
+The script creates and removes only its uniquely identified synthetic fixtures.
+A same-value parent update creates a row version as well as taking a lock; a
+lock alone does not invalidate a stale REPEATABLE READ snapshot.
+
+Group capacity applies to new assignments and moves. Staff cannot reduce a
+maximum below the current count. Existing over-capacity data is preserved;
+removals and role edits remain possible, and unlimited groups remain unlimited.

@@ -562,63 +562,33 @@ jobs:
 
 ### 7.2 Release pipeline (`release.yml`)
 
-The release pipeline runs on push to `main`. It enforces a staging gate before production:
+The checked-in [release workflow](../.github/workflows/release.yml) is the executable
+source of truth. It runs on push to `main` in this order:
 
 ```
-CI suite → deploy to staging → manual approval gate → deploy to production
+CI suite → staging migrations/functions → production environment approval → production migrations/functions → verified Vercel production deploy
 ```
 
-```yaml
-name: Release
-on:
-  push: { branches: [main] }
+- Both deployment jobs validate their required project reference and access token
+  before installing Supabase CLI `2.116.0` or making deployment calls.
+- Staging uses `STAGING_SUPABASE_PROJECT_REF`; production uses `SUPABASE_PROJECT_REF`.
+  References are quoted shell arguments. Migration pushes use `--yes`.
+- Each job references its own GitHub environment. The production environment must
+  be on the actual deployment job, which depends on staging; a separate approval
+  job does not pass environment secrets to a later job.
+- Bind `SUPABASE_ACCESS_TOKEN` only to validation and Supabase deployment steps.
+  Checkout, CLI installation, and notifications do not receive the token.
+- Production migrations run before Edge Functions; a failed migration stops the job.
+- Release runs are serialized. Production verifies its commit is still the latest
+  `main`, and both project references must match reviewed workflow constants.
+- Vercel automatic deployment from `main` is disabled. The approved production
+  job triggers the project deploy hook after Supabase and verifies the resulting
+  exact-commit Vercel status (created after the hook) and its Vercel target URL
+  before reporting success. Deploy hooks do not create GitHub Deployment records.
+- Required production reviewers must be configured in GitHub. The environment name
+  alone does not establish an approval gate.
 
-jobs:
-  ci:
-    uses: ./.github/workflows/ci.yml
-    secrets: inherit
-
-  deploy-staging:
-    needs: ci
-    environment: staging
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
-        with: { version: latest }
-      - name: Push migrations to staging
-        run: supabase db push --project-ref ${{ secrets.STAGING_PROJECT_REF }}
-        env: { SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }} }
-      - name: Deploy functions to staging
-        run: supabase functions deploy [function-name] --project-ref ${{ secrets.STAGING_PROJECT_REF }}
-        env: { SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }} }
-
-  approve:
-    needs: [deploy-staging]
-    environment: production   # manual gate in GitHub → Settings → Environments
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Approved"
-
-  deploy:
-    needs: approve
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
-        with: { version: latest }
-      - name: Deploy functions to production
-        run: supabase functions deploy [function-name] --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
-        env: { SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }} }
-      - name: Notify
-        if: success()
-        env: { WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }} }
-        run: |
-          if [ -n "$WEBHOOK_URL" ]; then
-            curl -s -X POST "$WEBHOOK_URL" -H "Content-Type: application/json" \
-              -d "{\"text\": \"✅ Deployed ${{ github.sha }} by ${{ github.actor }}\"}"
-          fi
-```
+See [GitHub setup](github-setup.md) for environment secrets and release recovery.
 
 ### 7.3 Branch protection (configure in GitHub → Settings → Branches)
 
@@ -626,7 +596,7 @@ Required settings for `main`:
 - Require pull request before merging
 - Require 1 approving review minimum
 - Dismiss stale reviews on new push
-- Require status checks: `lint`, `typecheck`, `unit-tests`, `build`
+- Require status checks: `Lint`, `Type Check`, `Unit Tests`, `Build`
 - Require branches to be up to date before merging
 - No force pushes
 - No deletions
@@ -646,12 +616,12 @@ Required settings for `main`:
 **`staging` environment:**
 - No approval gate (auto-deploys on push to main after CI passes)
 - Deployment branches: `main` only
-- Secrets: `STAGING_PROJECT_REF` (separate from production)
+- Secrets: `STAGING_SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` with access to the dedicated staging project
 
 **`production` environment:**
 - Required reviewers: architects team
 - Deployment branches: `main` only
-- Secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN`, `DEPLOY_WEBHOOK_URL`
+- Secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` with access to production, `VERCEL_DEPLOY_HOOK_URL`; optional `DEPLOY_WEBHOOK_URL`
 
 Staging and production must be separate, fully isolated infrastructure instances. Never share a database between staging and production. Never use a schema prefix as a substitute for project isolation.
 
@@ -665,9 +635,10 @@ Staging and production must be separate, fully isolated infrastructure instances
 | `TEST_SUPABASE_ANON_KEY` | Test project anon key (e2e only) |
 | `TEST_SUPABASE_SERVICE_ROLE_KEY` | Test service role key (e2e seed only) |
 | `TEST_USER_PASSWORD` | Shared password for seed test users |
-| `SUPABASE_ACCESS_TOKEN` | Supabase CLI personal access token (deploy) |
+| `SUPABASE_ACCESS_TOKEN` | Personal access token configured separately in each deployment environment with access to that environment's project |
 | `SUPABASE_PROJECT_REF` | Production Supabase project ref |
 | `STAGING_SUPABASE_PROJECT_REF` | Staging Supabase project ref |
+| `VERCEL_DEPLOY_HOOK_URL` | Vercel `main` production deploy hook URL (production environment only) |
 | `DEPLOY_WEBHOOK_URL` | Slack/Discord webhook (optional, skipped if absent) |
 | `CRON_SECRET` | Bearer token for cron route authorization |
 | `OPENAI_API_KEY` | OpenAI API key (server-side only, AI features) |

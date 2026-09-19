@@ -13,7 +13,7 @@ export default async function GroupDiscussionPage({
   const { groupId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -21,7 +21,7 @@ export default async function GroupDiscussionPage({
     .eq('auth_id', user.id)
     .single()
 
-  if (!profile) redirect('/auth/login')
+  if (!profile) redirect('/login')
 
   // Verify membership (is_group_member enforced server-side in the RLS;
   // we check here for the redirect UX, not as a security gate)
@@ -29,7 +29,7 @@ export default async function GroupDiscussionPage({
     .from('section_group_members')
     .select('role')
     .eq('group_id', groupId)
-    .eq('user_id', profile.uid)
+    .eq('user_id', user.id)
     .maybeSingle()
 
   const isStaff = ['admin', 'manager', 'teacher'].includes(profile.role)
@@ -91,10 +91,7 @@ export default async function GroupDiscussionPage({
         {/* Discussion board */}
         <GroupDiscussionBoard
           groupId={groupId}
-          uid={profile.uid}
-          displayName={profile.display_name ?? user.email ?? 'You'}
           initialThreads={threads}
-          isLocked={false}
         />
       </div>
     </main>

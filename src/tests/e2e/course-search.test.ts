@@ -12,8 +12,8 @@
  *
  * Prerequisites:
  *   - A test runner (Jest / Vitest) must be configured before these run.
- *   - APP_BASE_URL, SUPABASE_TEST_URL, SUPABASE_TEST_SERVICE_KEY env vars must be set.
- *   - TEST_STUDENT_TOKEN must be a valid Supabase access token for any authenticated user.
+ *   - APP_BASE_URL, TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY and
+ *     TEST_USER_PASSWORD env vars must be set.
  *   - Seed data must include:
  *       • At least one course with status='published' and title matching TEST_SEARCH_TERM
  *       • At least one course with status='draft' and title matching TEST_SEARCH_TERM
@@ -22,25 +22,34 @@
  * Run: npx vitest src/tests/e2e/course-search.test.ts
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { beforeAll } from 'vitest'
+import { signInTestUser } from './test-session'
 
 const BASE_URL       = process.env.APP_BASE_URL              ?? 'http://localhost:3000'
-const TEST_URL       = process.env.SUPABASE_TEST_URL         ?? ''
-const SERVICE_KEY    = process.env.SUPABASE_TEST_SERVICE_KEY ?? ''
-const STUDENT_TOKEN  = process.env.TEST_STUDENT_TOKEN        ?? ''
+const TEST_URL       = process.env.TEST_SUPABASE_URL         ?? ''
+const ANON_KEY       = process.env.TEST_SUPABASE_ANON_KEY    ?? ''
+const PASSWORD       = process.env.TEST_USER_PASSWORD        ?? ''
 const SEARCH_TERM    = process.env.TEST_SEARCH_TERM          ?? 'Introduction'
 const DRAFT_TITLE    = process.env.TEST_DRAFT_COURSE_TITLE   ?? 'Draft Introduction Course'
 
-function serviceClient(): SupabaseClient {
-  return createClient(TEST_URL, SERVICE_KEY)
-}
+let studentCookie = ''
+
+beforeAll(async () => {
+  const student = await signInTestUser(
+    TEST_URL,
+    ANON_KEY,
+    'student@test.churchcore.dev',
+    PASSWORD,
+  )
+  studentCookie = student.cookieHeader
+})
 
 async function searchCourses(
   q: string,
-  token?: string,
+  cookie?: string,
 ): Promise<{ status: number; body: unknown }> {
   const headers: Record<string, string> = {}
-  if (token) headers['Authorization'] = `Bearer ${token}`
+  if (cookie) headers.Cookie = cookie
 
   const url = `${BASE_URL}/api/search?q=${encodeURIComponent(q)}`
   const res = await fetch(url, { headers })
@@ -62,7 +71,7 @@ describe('GET /api/search — auth guard', () => {
 
 describe('GET /api/search — published-only results', () => {
   it('returns only courses with status="published", not draft courses', async () => {
-    const { status, body } = await searchCourses(SEARCH_TERM, STUDENT_TOKEN)
+    const { status, body } = await searchCourses(SEARCH_TERM, studentCookie)
     expect(status).toBe(200)
 
     const courses = (body as { courses: { title: string; status?: string }[] }).courses
@@ -71,7 +80,7 @@ describe('GET /api/search — published-only results', () => {
   })
 
   it('includes at least one published course when the search term matches', async () => {
-    const { body } = await searchCourses(SEARCH_TERM, STUDENT_TOKEN)
+    const { body } = await searchCourses(SEARCH_TERM, studentCookie)
     const courses = (body as { courses: unknown[] }).courses
     expect(courses.length).toBeGreaterThan(0)
   })
@@ -83,7 +92,7 @@ describe('GET /api/search — empty state', () => {
   it('returns an empty courses array with a user-facing message for an unmatched query', async () => {
     const { status, body } = await searchCourses(
       '__no_course_will_ever_match_this_xyz987__',
-      STUDENT_TOKEN,
+      studentCookie,
     )
     expect(status).toBe(200)
 
@@ -98,7 +107,7 @@ describe('GET /api/search — empty state', () => {
 
 describe('GET /api/search — blueprint join', () => {
   it('includes course_blueprints data on courses that have a blueprint_id', async () => {
-    const { body } = await searchCourses(SEARCH_TERM, STUDENT_TOKEN)
+    const { body } = await searchCourses(SEARCH_TERM, studentCookie)
     const courses = (body as { courses: { course_blueprints?: unknown }[] }).courses
 
     // At least one result should carry blueprint data (seed data must include one)
@@ -111,7 +120,7 @@ describe('GET /api/search — blueprint join', () => {
 
 describe('GET /api/search — result ordering', () => {
   it('returns results sorted alphabetically by title ascending', async () => {
-    const { body } = await searchCourses('', STUDENT_TOKEN)
+    const { body } = await searchCourses(SEARCH_TERM, studentCookie)
     const courses = (body as { courses: { title: string }[] }).courses
 
     if (courses.length < 2) return // not enough data to assert ordering

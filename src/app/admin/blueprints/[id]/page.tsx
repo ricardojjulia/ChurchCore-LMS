@@ -13,11 +13,18 @@ export default async function EditBlueprintPage({ params }: { params: Promise<{ 
   const { data: me } = await supabase.from('profiles').select('role').eq('auth_id', user.id).single()
   if (!me || !['admin', 'manager'].includes(me.role)) redirect('/dashboard')
 
-  const [{ data: bp }, { data: tracks }] = await Promise.all([
+  const [{ data: bp }, { data: tracks }, { data: managedLink }] = await Promise.all([
     supabase.from('course_blueprints')
       .select('id, course_code, title, description, credits, program_track_id, is_active')
       .eq('id', blueprintId).single(),
     supabase.from('program_tracks').select('id, name, code').eq('is_active', true).order('name'),
+    supabase.from('external_entity_links')
+      .select('source_system')
+      .eq('local_table', 'course_blueprints')
+      .eq('local_id', blueprintId)
+      .eq('managed_by_external_system', true)
+      .limit(1)
+      .maybeSingle(),
   ])
 
   if (!bp) notFound()
@@ -38,6 +45,7 @@ export default async function EditBlueprintPage({ params }: { params: Promise<{ 
           <BlueprintForm
             mode="edit"
             blueprintId={blueprintId}
+            managedSource={managedLink?.source_system ?? null}
             tracks={tracks ?? []}
             initial={{
               title:            bp.title,

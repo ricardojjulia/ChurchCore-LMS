@@ -1,0 +1,57 @@
+{
+  "task": "oneroster-student-data-exchange",
+  "created_at": "2026-09-05",
+  "status": "in_progress",
+  "repo": "/Users/rjulia/ChurchCore LMS",
+  "branch": "codex/oneroster-scheduled-exchange",
+  "council_doc": "docs/council/COUNCIL-2026-019.md",
+  "standalone_contract": "LMS must run with no Academy or OneRoster configuration. Organization mode defaults to standalone.",
+  "implementation_started": true,
+  "current_phase": "m3_lms_released_awaiting_academy",
+  "last_verified_at": "2026-09-17",
+  "verification": {
+    "unit_tests": "passed: 29 files, 221 tests",
+    "focused_oneroster_tests": "passed: 12 files, 59 tests",
+    "linked_database_tests": "passed: 31 apply checks; 5 preview/cleanup checks; 9 provenance guard checks; 3 identity-link checks",
+    "typecheck_lint_version_build": "passed on 2026-09-14 for version 0.26.0",
+    "linked_database_lint": "passed with no schema errors or warnings after 20260914121000_fix_oneroster_preview_lint_warning.sql",
+    "concurrency": "passed: contended apply rejected; post-release apply created one course",
+    "local_unauthenticated_smoke": "passed: admin page redirects to /login; validate and jobs APIs return 401",
+    "authenticated_browser": "passed on 2026-09-14: M3 Imports and Connection views rendered on desktop and mobile 390x844 with no overflow or application-origin console error",
+    "migration_applied": "cloud remains unchanged; fresh local reset passed through 20260914160000_oneroster_signed_delivery.sql",
+    "e2e": "September 16 PR #5 b1c4a37: hosted clean stack passed 8 files/77 tests",
+    "ci_e2e_environment": "disposable local Supabase stack; no shared cloud secrets required",
+    "local_oneroster_database_tests": "passed: 58 assertions across apply, preview/cleanup, provenance guard, identity linking, and signed delivery",
+    "local_database_lint": "passed with no schema errors after signed delivery migration",
+    "full_legacy_database_suite": "September 16 PR #5 b1c4a37: all 14 files/302 assertions passed on hosted clean stack, run 35114858821",
+    "m3_cloud_state": "September 15 release 35030408024 succeeded in staging and production; no repeat deployment",
+    "academy_sender": "not started; separate Academy repository authorization required",
+    "lms_pull_request": "PR3/PR4/PR6 merged; main f3c384c. PR5 security repair awaits architect review",
+    "dependency_audit": "September 17 repair branch: 0 vulnerabilities; version 0.26.4 pending review",
+    "daily_factory": "September 17 PR5 repair: 239 unit, 327 SQL, 77 production-build E2E, full local stack and browser checks passed"
+  },
+  "started_at": "2026-09-07",
+  "known_blockers_before_implementation": [
+    "src/lib/dashboard/context.ts still references courses.is_published while live schema uses courses.status",
+    "tests/e2e/enrollment-bridge.test.ts references stale student_uid and enrollment_status names",
+    "supabase db lint --linked reports existing function errors in get_block_discussion_replies, get_guardian_students, get_guardian_student_overview, record_engagement_event, and resolve_term_config",
+    "npm install csv-parse jszip reported existing audit debt: 43 vulnerabilities",
+    "Identity linking and Academy synchronization remain later phases"
+  ],
+  "subagents_used": [
+    {
+      "id": "01a074a9-6130-7d20-9b9b-5272c3308327",
+      "focus": "OneRoster standards, security architecture, FERPA posture"
+    },
+    {
+      "id": "01a074a9-7323-7193-a451-dda9c11e5794",
+      "focus": "ChurchCore LMS code and schema impact"
+    },
+    {
+      "id": "01a074a9-8800-7072-95c8-587186886d4d",
+      "focus": "ChurchCore Academy export assumptions and mappings"
+    }
+  ],
+  "state": "IMPLEMENTED",
+  "updatedAt": "2026-09-17T10:22:00.197036+00:00"
+}

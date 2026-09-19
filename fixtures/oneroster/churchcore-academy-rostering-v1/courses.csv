@@ -1,0 +1,2 @@
+sourcedId,status,dateLastModified,schoolYearSourcedId,title,courseCode,grades,orgSourcedId,subjects,subjectCodes
+academy:course:course-bibl-101,active,2026-09-12T00:00:00.000Z,academy:academicYear:year-2026,Biblical Foundations,BIBL-101,,academy:org:tenant-shared-oneroster,,

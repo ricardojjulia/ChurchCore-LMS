@@ -5,6 +5,7 @@
 BEGIN;
 
 SELECT plan(12);
+\ir helpers/fixtures.inc
 
 -- ─── Fixtures ────────────────────────────────────────────────────────────────
 -- These tests assume the test runner can set session-level auth state.
@@ -77,8 +78,8 @@ SELECT is(
 
 SELECT throws_ok(
   $$
-    INSERT INTO public.content_pages (course_id, title, body, format_version, status, created_by)
-    SELECT id, 'Test', '{"type":"doc","content":[]}'::JSONB, 'tiptap-v2', 'invalid_status', uid
+    INSERT INTO public.content_pages(org_id, course_id, title, body, format_version, status, created_by)
+SELECT  public.current_user_org_id(), id, 'Test', '{"type":"doc","content":[]}'::JSONB, 'tiptap-v2', 'invalid_status', uid
     FROM public.courses CROSS JOIN public.profiles
     LIMIT 1
   $$,
@@ -89,16 +90,12 @@ SELECT throws_ok(
 
 -- ─── 5. RLS enabled ──────────────────────────────────────────────────────────
 
-SELECT policies_are(
-  'public',
-  'content_pages',
-  ARRAY[
-    'content_pages: admin/manager full access',
-    'content_pages: teacher manages own',
-    'content_pages: learner reads published'
-  ],
-  'content_pages must have exactly 3 RLS policies'
-);
+SELECT policies_are('public', 'content_pages', ARRAY[
+  'content_pages: learner reads published',
+  'content_pages: staff manage own org',
+  'content_pages: staff read own org',
+  'content_pages: tenant boundary'
+], 'content_pages has the expected tenant policies');
 
 SELECT finish();
 ROLLBACK;

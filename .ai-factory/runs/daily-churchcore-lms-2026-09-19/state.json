@@ -1,0 +1,18 @@
+{
+  "task": "daily-churchcore-lms-2026-09-19",
+  "state": "READY_FOR_PR",
+  "status": "verified_locally",
+  "repo": "/Users/rjulia/ChurchCore LMS",
+  "branch": "codex/daily-lms-2026-09-19-release-verification",
+  "base_main": "18df157491a9862b52539baf0f4ab372f945d0c0",
+  "version": "0.26.6",
+  "council_doc": "docs/council/COUNCIL-2026-023.md",
+  "verification": {
+    "unit": "240 passed",
+    "lint_type_version": "passed",
+    "workflow_shell": "success and explicit failure paths passed",
+    "database_lint": "passed against available local schema",
+    "hosted_main": "CI, CodeQL and Vercel status passed"
+  },
+  "known_environment_limit": "Shared local Supabase schema predates 20260916103000 through 20260918101500; it was not reset."
+}

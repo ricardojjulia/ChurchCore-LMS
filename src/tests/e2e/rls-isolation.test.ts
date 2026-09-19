@@ -43,6 +43,7 @@ const COURSE_B = '00000000-0000-0000-0011-000000000002'
 let svc:   SupabaseClient
 let userA: SupabaseClient
 let userB: SupabaseClient
+let userAAuthId = ''
 
 // Tables that carry org_id and must be tenant-isolated
 const TABLES_WITH_ORG: string[] = [
@@ -79,6 +80,9 @@ beforeAll(async () => {
   }
 
   ;[userA, userB] = await Promise.all([signIn(A_EMAIL), signIn(B_EMAIL)])
+  const { data: sessionData } = await userA.auth.getSession()
+  userAAuthId = sessionData.session?.user.id ?? ''
+  expect(userAAuthId).toBeTruthy()
 })
 
 afterAll(async () => {
@@ -210,11 +214,10 @@ describe('Profiles cross-tenant isolation', () => {
   })
 
   it('user A can read their own profile', async () => {
-    const { data: { user } } = await userA.auth.getUser()
     const { data, error } = await userA
       .from('profiles')
       .select('uid, org_id')
-      .eq('auth_id', user!.id)
+      .eq('auth_id', userAAuthId)
       .maybeSingle()
 
     expect(error).toBeNull()

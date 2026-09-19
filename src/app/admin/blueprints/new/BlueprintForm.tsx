@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { Database } from 'lucide-react'
 import { createBlueprint, updateBlueprint } from '@/app/actions/academic'
 
 interface Track { id: string; name: string; code: string }
@@ -17,9 +18,10 @@ interface Props {
     is_active:       boolean
   }
   tracks: Track[]
+  managedSource?: string | null
 }
 
-export default function BlueprintForm({ mode, blueprintId, initial, tracks }: Props) {
+export default function BlueprintForm({ mode, blueprintId, initial, tracks, managedSource }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [ok,    setOk]    = useState(false)
   const [pending, start]  = useTransition()
@@ -39,6 +41,12 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks }: Pr
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {managedSource && (
+        <div className="flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800">
+          <Database className="h-4 w-4" aria-hidden="true" />
+          OneRoster managed
+        </div>
+      )}
       {error && <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-sm">{error}</div>}
       {ok    && <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-sm">Saved.</div>}
 
@@ -58,7 +66,7 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks }: Pr
           Title <span className="text-rose-500">*</span>
         </label>
         <input id="title" name="title" required defaultValue={initial?.title}
-          placeholder="e.g. Introduction to Theology" className="input w-full" />
+          placeholder="e.g. Introduction to Theology" className="input w-full" readOnly={Boolean(managedSource)} />
       </div>
 
       <div>
@@ -88,7 +96,7 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks }: Pr
       {mode === 'edit' && (
         <div className="flex items-center gap-2">
           <input type="checkbox" id="is_active" name="is_active" value="true"
-            defaultChecked={initial?.is_active} className="rounded" />
+            defaultChecked={initial?.is_active} className="rounded" disabled={Boolean(managedSource)} />
           <label htmlFor="is_active" className="text-sm font-semibold text-foreground">Active</label>
         </div>
       )}
@@ -96,7 +104,7 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks }: Pr
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={pending}
           className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-          {pending ? 'Saving…' : mode === 'create' ? 'Create Blueprint' : 'Save Changes'}
+          {pending ? 'Saving…' : mode === 'create' ? 'Create Blueprint' : managedSource ? 'Save LMS Settings' : 'Save Changes'}
         </button>
         <Link href="/admin/blueprints"
           className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-border hover:bg-slate-50 transition-colors text-muted-foreground">

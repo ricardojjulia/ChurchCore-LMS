@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export default async function AdminHealthPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('profiles')

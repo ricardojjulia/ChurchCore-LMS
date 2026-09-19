@@ -7,7 +7,7 @@ import {
   MessageCircle, Megaphone, Calendar, Users, Shield, Zap,
   UserCog, Layers, Clock, FileText, Sparkles, Activity,
   ChevronLeft, ChevronRight, GitBranch, CreditCard, Settings,
-  type LucideIcon,
+  Plug, type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSidebar } from './SidebarContext'
@@ -51,6 +51,7 @@ const LINKS: NavLink[] = [
   { href: '/admin/ai-analytics', label: 'AI Analytics',    Icon: Sparkles,       adminOnly: true,       featureGate: 'ai_tutor' },
   { href: '/admin/billing',      label: 'Billing',         Icon: CreditCard,     adminOnly: true },
   { href: '/admin/health',       label: 'System Health',   Icon: Activity,       adminOnly: true,       healthBadge: true },
+  { href: '/admin/integrations/oneroster', label: 'OneRoster', Icon: Plug,        adminOnly: true },
   { href: '/admin/settings',    label: 'Org Settings',    Icon: Settings,       adminOnly: true },
   { href: '/platform',           label: 'Platform Admin',  Icon: Shield,         platformAdminOnly: true },
 ]

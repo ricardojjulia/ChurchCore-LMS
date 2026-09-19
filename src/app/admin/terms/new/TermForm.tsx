@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
+import { Database } from 'lucide-react'
 import { createTerm, updateTerm } from '@/app/actions/academic'
 
 const TERM_TYPES = [
@@ -31,9 +32,10 @@ interface Props {
     is_active:      boolean
   }
   parentTerms: ParentTerm[]
+  managedSource?: string | null
 }
 
-export default function TermForm({ mode, termId, initial, parentTerms }: Props) {
+export default function TermForm({ mode, termId, initial, parentTerms, managedSource }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [ok,    setOk]    = useState(false)
   const [pending, start]  = useTransition()
@@ -56,6 +58,12 @@ export default function TermForm({ mode, termId, initial, parentTerms }: Props) 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {managedSource && (
+        <div className="flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800">
+          <Database className="h-4 w-4" aria-hidden="true" />
+          OneRoster managed
+        </div>
+      )}
       {error && <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-sm">{error}</div>}
       {ok    && <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-sm">Saved.</div>}
 
@@ -65,7 +73,7 @@ export default function TermForm({ mode, termId, initial, parentTerms }: Props) 
             Name <span className="text-rose-500">*</span>
           </label>
           <input id="term_name" name="term_name" required defaultValue={initial?.term_name}
-            placeholder="e.g. Fall Semester 2025" className="input w-full" />
+            placeholder="e.g. Fall Semester 2025" className="input w-full" readOnly={Boolean(managedSource)} />
         </div>
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="term_code">
@@ -96,14 +104,14 @@ export default function TermForm({ mode, termId, initial, parentTerms }: Props) 
             Start Date <span className="text-rose-500">*</span>
           </label>
           <input id="start_date" name="start_date" type="date" required
-            defaultValue={initial?.start_date} className="input w-full" />
+            defaultValue={initial?.start_date} className="input w-full" readOnly={Boolean(managedSource)} />
         </div>
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="end_date">
             End Date <span className="text-rose-500">*</span>
           </label>
           <input id="end_date" name="end_date" type="date" required
-            defaultValue={initial?.end_date} className="input w-full" />
+            defaultValue={initial?.end_date} className="input w-full" readOnly={Boolean(managedSource)} />
         </div>
       </div>
 
@@ -134,7 +142,7 @@ export default function TermForm({ mode, termId, initial, parentTerms }: Props) 
       {mode === 'edit' && (
         <div className="flex items-center gap-2">
           <input type="checkbox" id="is_active" name="is_active" value="true"
-            defaultChecked={initial?.is_active} className="rounded" />
+            defaultChecked={initial?.is_active} className="rounded" disabled={Boolean(managedSource)} />
           <label htmlFor="is_active" className="text-sm font-semibold text-foreground">Active</label>
         </div>
       )}
@@ -142,7 +150,7 @@ export default function TermForm({ mode, termId, initial, parentTerms }: Props) 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={pending}
           className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-          {pending ? 'Saving…' : mode === 'create' ? 'Create Term' : 'Save Changes'}
+          {pending ? 'Saving…' : mode === 'create' ? 'Create Term' : managedSource ? 'Save LMS Settings' : 'Save Changes'}
         </button>
         <Link href="/admin/terms"
           className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-border hover:bg-slate-50 transition-colors text-muted-foreground">

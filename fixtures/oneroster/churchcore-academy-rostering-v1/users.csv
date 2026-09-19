@@ -1,0 +1,4 @@
+sourcedId,status,dateLastModified,enabledUser,username,userIds,givenName,familyName,middleName,identifier,email,sms,phone,agents,orgSourcedIds,grades
+academy:person:person-student-1,active,2026-09-12T00:00:00.000Z,true,student@example.test,S-1001,Sam,Student,,S-1001,student@example.test,,,,academy:org:tenant-shared-oneroster,
+academy:person:person-teacher-1,active,2026-09-12T00:00:00.000Z,true,teacher@example.test,,Theo,Teacher,,,teacher@example.test,,555-0101,,academy:org:tenant-shared-oneroster,
+academy:person:person-student-2,active,2026-09-12T00:00:00.000Z,true,withdrawn@example.test,S-1002,Wynn,Withdrawn,,S-1002,withdrawn@example.test,,,,academy:org:tenant-shared-oneroster,

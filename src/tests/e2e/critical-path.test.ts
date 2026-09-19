@@ -29,7 +29,7 @@ if (!SUPABASE_URL || !ANON_KEY || !SERVICE_KEY || !PASSWORD) {
 
 // ── Seed constants (deterministic UUIDs from supabase/seed.test.sql) ─────────
 const STUDENT_UID = '00000000-0000-0000-0002-000000000003'
-const COURSE_ID   = '00000000-0000-0000-0003-000000000001'
+const COURSE_ID   = '00000000-0000-0000-0011-000000000001'
 
 // ── Module-level state threaded through ordered steps ─────────────────────────
 let svc:     SupabaseClient  // service role — setup, reads, cleanup
@@ -118,12 +118,12 @@ describe('Critical path: sign-in → XP → certificate', () => {
       'profiles.xp_points or profiles.current_level missing — migration 028 not applied',
     ).toBeNull()
 
-    // embeddings.embedding_status — migration 038
+    // content_pages.embedding_status — migration 038
     const { error: embErr } = await svc
-      .from('embeddings').select('embedding_status').limit(0)
+      .from('content_pages').select('embedding_status').limit(0)
     expect(
       embErr,
-      'embeddings.embedding_status missing — migration 038 not applied',
+      'content_pages.embedding_status missing — migration 038 not applied',
     ).toBeNull()
 
     // admin_audit_log.actor_id — migration 049

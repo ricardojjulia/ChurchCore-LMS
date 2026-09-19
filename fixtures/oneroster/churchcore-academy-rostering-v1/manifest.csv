@@ -1,0 +1,10 @@
+propertyName,value
+manifest.version,1.0
+oneroster.version,1.2
+file.orgs,delta
+file.users,delta
+file.roles,delta
+file.academicSessions,delta
+file.courses,delta
+file.classes,delta
+file.enrollments,delta

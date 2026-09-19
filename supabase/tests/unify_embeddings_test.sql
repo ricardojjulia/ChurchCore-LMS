@@ -4,7 +4,8 @@
 -- All 18 council amendments are covered; see amendment refs in comments.
 
 BEGIN;
-SELECT plan(48);
+SELECT plan(39);
+\ir helpers/fixtures.inc
 
 -- ============================================================
 -- TABLE AND VIEW EXISTENCE
@@ -62,123 +63,74 @@ SELECT has_function('public', 'refresh_enrollments_on_status_change',
 -- ============================================================
 -- RLS ENABLED
 -- ============================================================
-SELECT tablename_has_rls('public', 'embeddings',     'embeddings has RLS enabled');
-SELECT tablename_has_rls('public', 'embedding_jobs', 'embedding_jobs has RLS enabled');
-SELECT tablename_has_rls('public', 'ai_query_log',   'ai_query_log has RLS enabled');
+SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.embeddings'::regclass), 'embeddings has RLS enabled');
+SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.embedding_jobs'::regclass), 'embedding_jobs has RLS enabled');
+SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.ai_query_log'::regclass), 'ai_query_log has RLS enabled');
 
 -- ============================================================
 -- RLS POLICY NAMES (amendment #3 — exact names required)
 -- ============================================================
 SELECT policies_are('public', 'embeddings', ARRAY[
-  'enrolled_student_read_embeddings',
-  'service_role_manage_embeddings'
-], 'embeddings has exactly the expected RLS policies');
+  'embeddings: enrolled students read own org',
+  'embeddings: service role manage',
+  'embeddings: staff read own org',
+  'embeddings: tenant boundary'
+], 'embeddings has the expected tenant policies');
 
 SELECT policies_are('public', 'embedding_jobs', ARRAY[
-  'admin_read_embedding_jobs',
-  'service_role_manage_embedding_jobs'
-], 'embedding_jobs has exactly the expected RLS policies');
+  'embedding_jobs: service role manage',
+  'embedding_jobs: staff read own org'
+], 'embedding_jobs has the expected tenant policies');
 
 SELECT policies_are('public', 'ai_query_log', ARRAY[
-  'admin_read_ai_query_log',
-  'service_role_manage_ai_query_log'
-], 'ai_query_log has exactly the expected RLS policies');
+  'ai_query_log: admins read own org',
+  'ai_query_log: service role manage'
+], 'ai_query_log has the expected tenant policies');
 
 -- ============================================================
--- AMENDMENT #3: AUTHENTICATED ROLES CANNOT INSERT EMBEDDINGS
--- An authenticated user (non-service-role) must not be able to
--- insert into the embeddings table. This is a hard security gate.
--- ============================================================
-DO $$
-DECLARE
-  v_section_id UUID;
-BEGIN
-  SELECT id INTO v_section_id FROM course_sections LIMIT 1;
-
-  IF v_section_id IS NULL THEN
-    RAISE WARNING 'No course_sections found — skipping INSERT denial test body (policy check still runs above)';
-    RETURN;
-  END IF;
-
-  -- This INSERT must raise an exception for any authenticated user
-  BEGIN
-    INSERT INTO embeddings (
-      source_type, source_id, chunk_index, chunk_text,
-      chunk_char_count, embedding, section_id, source_updated_at
-    ) VALUES (
-      'content_page', gen_random_uuid(), 0, 'test chunk',
-      10, array_fill(0, ARRAY[1536])::vector(1536),
-      v_section_id, NOW()
-    );
-    -- If we reach here the INSERT succeeded — test must fail
-    RAISE EXCEPTION 'INSERT into embeddings should have been denied for authenticated role';
-  EXCEPTION WHEN insufficient_privilege THEN
-    -- Expected — RLS blocked the insert
-    NULL;
-  END;
-END $$;
-
-SELECT pass('authenticated role INSERT denial test passed');
-
--- ============================================================
--- AMENDMENT #14: RLS ISOLATION — OWN SECTION ONLY
--- A student enrolled in section A must see zero rows from
--- embeddings when they query with section B's id.
--- This test uses two synthetic section IDs that no enrollment
--- exists for — both should return empty.
--- ============================================================
-DO $$
-DECLARE
-  v_fake_section UUID := gen_random_uuid();
-  v_count        INTEGER;
-BEGIN
-  SELECT COUNT(*) INTO v_count
-  FROM embeddings
-  WHERE section_id = v_fake_section
-    AND is_active  = TRUE;
-
-  IF v_count > 0 THEN
-    RAISE EXCEPTION
-      'RLS isolation breach: embeddings visible for section % with no enrollment', v_fake_section;
-  END IF;
-END $$;
-
-SELECT pass('RLS isolation: unenrolled section returns no embeddings');
-
+-- Actual INSERT denial and read isolation as an authenticated learner.
+SET LOCAL ROLE authenticated;
+SELECT pg_temp.actor('student');
+SELECT throws_ok($$INSERT INTO embeddings(org_id,source_type,source_id,chunk_index,chunk_text,chunk_char_count,embedding,section_id,source_updated_at)
+ VALUES (pg_temp.fixture_id('org-a'),'content_page',gen_random_uuid(),0,'test',4,array_fill(1,ARRAY[1536])::vector,pg_temp.fixture_id('section-a'),NOW())$$,
+ '42501',NULL,'authenticated users cannot insert embeddings');
+SELECT is((SELECT count(*) FROM embeddings WHERE section_id = pg_temp.fixture_id('section-b')),0::bigint,
+ 'student sees no embeddings from a populated foreign section');
+RESET ROLE;
 -- ============================================================
 -- STALENESS TRIGGER EXISTS
 -- ============================================================
 SELECT trigger_is('public', 'content_pages', 'trg_content_pages_mark_stale',
-  'mark_embeddings_stale',
+  'public', 'mark_embeddings_stale',
   'staleness trigger exists on content_pages');
 
 -- ============================================================
 -- WITHDRAWAL REFRESH TRIGGER EXISTS (amendment #13)
 -- ============================================================
 SELECT trigger_is('public', 'direct_enrollments', 'trg_enrollment_status_refresh',
-  'refresh_enrollments_on_status_change',
+  'public', 'refresh_enrollments_on_status_change',
   'withdrawal refresh trigger exists on direct_enrollments');
 
 -- ============================================================
 -- build_tutor_context: raises on missing enrollment
 -- ============================================================
-SELECT throws_ok(
+SELECT throws_like(
   $$SELECT build_tutor_context(gen_random_uuid(), gen_random_uuid())$$,
-  'No active enrollment for user',
+  'No active enrollment%',
   'build_tutor_context raises exception when no active enrollment found'
 );
 
 -- ============================================================
 -- search_content_chunks: raises on access denied
 -- ============================================================
-SELECT throws_ok(
+SELECT throws_like(
   $$SELECT * FROM search_content_chunks(
     array_fill(0, ARRAY[1536])::vector(1536),
     gen_random_uuid(),
     8,
     0.72
   )$$,
-  'Access denied to section',
+  'Access denied to section%',
   'search_content_chunks raises exception for section with no access'
 );
 
@@ -186,8 +138,8 @@ SELECT throws_ok(
 -- embedding_status CHECK constraint on content_pages
 -- ============================================================
 SELECT throws_ok(
-  $$UPDATE content_pages SET embedding_status = 'invalid_value' WHERE FALSE$$,
-  '23514',
+  $$UPDATE content_pages SET embedding_status = 'invalid_value' WHERE id = pg_temp.fixture_id('page-a')$$,
+  '23514', NULL,
   'content_pages.embedding_status rejects invalid values'
 );
 
@@ -195,9 +147,9 @@ SELECT throws_ok(
 -- embedding_jobs status CHECK constraint
 -- ============================================================
 SELECT throws_ok(
-  $$INSERT INTO embedding_jobs (source_type, source_id, section_id, status, triggered_by)
-    VALUES ('content_page', gen_random_uuid(), gen_random_uuid(), 'invalid', 'migration')$$,
-  '23514',
+  $$INSERT INTO embedding_jobs (org_id, source_type, source_id, section_id, status, triggered_by)
+    VALUES (pg_temp.fixture_id('org-a'), 'content_page', gen_random_uuid(), pg_temp.fixture_id('section-a'), 'invalid', 'migration')$$,
+  '23514', NULL,
   'embedding_jobs.status rejects invalid values'
 );
 
@@ -205,9 +157,9 @@ SELECT throws_ok(
 -- embedding_jobs triggered_by CHECK constraint
 -- ============================================================
 SELECT throws_ok(
-  $$INSERT INTO embedding_jobs (source_type, source_id, section_id, triggered_by)
-    VALUES ('content_page', gen_random_uuid(), gen_random_uuid(), 'unknown_trigger')$$,
-  '23514',
+  $$INSERT INTO embedding_jobs (org_id, source_type, source_id, section_id, triggered_by)
+    VALUES (pg_temp.fixture_id('org-a'), 'content_page', gen_random_uuid(), pg_temp.fixture_id('section-a'), 'unknown_trigger')$$,
+  '23514', NULL,
   'embedding_jobs.triggered_by rejects invalid values'
 );
 
@@ -216,14 +168,14 @@ SELECT throws_ok(
 -- ============================================================
 SELECT throws_ok(
   $$INSERT INTO embeddings (
-      source_type, source_id, chunk_index, chunk_text,
+      org_id, source_type, source_id, chunk_index, chunk_text,
       chunk_char_count, embedding, section_id, source_updated_at
     ) VALUES (
-      'invalid_type', gen_random_uuid(), 0, 'x',
+      pg_temp.fixture_id('org-a'), 'invalid_type', gen_random_uuid(), 0, 'x',
       1, array_fill(0, ARRAY[1536])::vector(1536),
       gen_random_uuid(), NOW()
     )$$,
-  '23514',
+  '23514', NULL,
   'embeddings.source_type rejects invalid values'
 );
 
@@ -240,5 +192,5 @@ SELECT hasnt_column('public', 'ai_query_log', 'query_text', 'ai_query_log does N
 -- ============================================================
 SELECT has_column('public', 'embedding_jobs', 'model_version', 'embedding_jobs has model_version column');
 
-SELECT finish();
+SELECT * FROM finish();
 ROLLBACK;

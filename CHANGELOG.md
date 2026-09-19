@@ -11,6 +11,114 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.26.6] — 2026-09-19
+
+### Fixed
+
+- Verify an accepted Vercel deploy-hook release through its commit-scoped Vercel status, rather than a GitHub Deployment record that deploy hooks do not create. The verifier still requires a post-trigger Vercel URL and fails on an explicit Vercel failure.
+
+---
+
+## [0.26.5] — 2026-09-18
+
+### Fixed
+
+- Enforce configured group capacity in Postgres for direct inserts, member moves and reduced limits, including competing requests for the last place (COUNCIL-2026-022).
+- Return a fixed capacity message to staff without exposing database details; retain duplicate-member errors and unlimited groups.
+- Bind the membership-role SQL test to its own fixture instead of an arbitrary group from another tenant.
+- Remove an invalid empty E2E workflow dependency list; CI and E2E remain independent checks.
+
+### Verification
+
+- Add transactional capacity regressions and CI concurrency checks under READ COMMITTED and REPEATABLE READ. Existing over-capacity groups retain their members; removal and role edits remain available.
+
+---
+
+## [0.26.4] — 2026-09-17
+
+### Security
+
+- Remove legacy content and embedding policies that bypassed tenant restrictions. Scope group, tutor and related-concept reads to active tenants and the authenticated actor.
+- Bind discussion authors and thread relationships at the database boundary; validate group actions and redact database errors.
+- Update Next.js to 16.3.5, TipTap to 3.31.3 and Vitest to 4.1.11, plus compatible transitive security fixes. The current lockfile audit reports zero vulnerabilities.
+
+### Fixed
+
+- Preserve platform-admin group reads while retaining existing mutation checks and ordinary tenant boundaries (COUNCIL-2026-021).
+- Validate the section before removing a group member, redact lookup errors, and name the new-thread title and reply fields for assistive technology.
+- Preserve date-only term boundaries in the Terms and Section screens regardless of server timezone.
+- Send unauthenticated System Health requests to the canonical `/login` page and verify it against the production build.
+- Resolve Auth IDs correctly for group membership, replies, active sections and tutor context while retaining distinct domain profile IDs.
+- Render My Groups safely, display new threads and replies immediately, and fit discussion pages on mobile screens.
+- Initialize the discussion editor after hydration and treat initial text as text rather than HTML.
+- Extract TipTap text once per text node and include newly enrolled learners in published-page access.
+
+### Verification
+
+- Repair eight inherited SQL suites with transactional fixtures and actual role/constraint checks; add tenant-boundary regressions and group-action unit tests.
+- Run the full database suite in the disposable E2E CI environment before API tests. Preserve existing coverage gates and add an 80% group-action line threshold.
+- Refresh README, testing guidance, MVP status and OneRoster progress without claiming Academy integration complete.
+
+---
+
+## [0.26.3] - 2026-09-16
+
+### Fixed
+
+- Production app deployment now runs through a reviewed Vercel deploy hook only after approved Supabase migrations and Edge Functions succeed.
+- The release verifies Vercel's GitHub deployment status before reporting success.
+
+---
+
+## [0.26.2] — 2026-09-15
+
+### Fixed
+
+- Release access tokens are available only to validation and Supabase deployment steps.
+- Canonical factory release guidance now matches the actual environment secrets, approval placement, migration order, CLI pin, and required check names.
+- Releases are serialized, stale production promotions are rejected, and both Supabase targets must match their reviewed project references before mutation.
+
+### Documentation
+
+- Clarified temporary database login credentials and multiple-function support in the pinned Supabase CLI.
+
+---
+
+## [0.26.1] — 2026-09-15
+
+### Fixed
+
+- Release jobs report missing Supabase project references and access tokens before invoking the CLI, without exposing their values.
+- Production deployment uses the production environment's credentials and approval rules on the actual deployment job.
+- Production migrations run after environment approval and before production Edge Functions.
+- Supabase release commands quote project references and pin the verified CLI version; staging migration push runs non-interactively.
+
+### Documentation
+
+- Documented environment-scoped deployment tokens, staging assignment, and failed-release recovery.
+- Added the OpenAPI-first REST contract and optional Swagger UI to the M5 OneRoster plan.
+
+---
+
+## [0.26.0] — 2026-09-14
+
+### Added
+
+- **Signed OneRoster Delivery** (COUNCIL-2026-019) — tenant-scoped ChurchCore Academy connections accept Ed25519-signed ZIP deliveries, enforce timestamp and replay protection, and stage packages for explicit admin review
+- OneRoster connection and delivery-status admin view with public-key configuration, expected cadence, copyable endpoint, immutable attempt history, and received-job review actions
+- `oneroster_transport_attempts` audit ledger, scheduled package idempotency, active-tenant RLS, service-role insert-only grants, and pgTAP coverage
+
+### Changed
+
+- Manual uploads and signed deliveries now share one redacted validate-and-stage path
+- CI can run as both a normal workflow and the reusable prerequisite for the gated release workflow
+
+### Security
+
+- Signed receipt never applies roster changes or provisions Auth users; LMS stores public verification material only, and invalid signatures are rejected before attacker-controlled metadata is persisted
+
+---
+
 ## [0.25.1] — 2026-06-22
 
 ### Added
