@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { BLOCK_TYPE_META } from '@/types/blocks'
 import BlockPlayer from './BlockPlayer'
@@ -52,6 +53,7 @@ const CONTENT_TYPES = new Set(['page', 'video_stream', 'resource_file', 'externa
 export default function LearningShell({
   courseId, courseTitle, orgId, modules, blocks, contentPages = [], submissions, initialBlockId, progressPercent, isStaff, viewerRole,
 }: Props) {
+  const t = useTranslations()
   const publishedBlocks = blocks.filter((b) => b.is_published || isStaff)
 
   const findFirst = () =>
@@ -187,7 +189,7 @@ export default function LearningShell({
           </Link>
           <div className="mt-2">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-              <span>Progress</span>
+              <span>{t('learning.shell.progressLabel')}</span>
               <span>{progressPercent}%</span>
             </div>
             <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
@@ -240,7 +242,7 @@ export default function LearningShell({
           {contentPages.length > 0 && (
             <div className="mt-2 border-t border-slate-800 pt-2">
               <div className="px-4 py-2">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Additional Materials</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('common.additionalMaterialsHeading')}</p>
               </div>
               {contentPages.map((page) => (
                 <button
@@ -273,7 +275,7 @@ export default function LearningShell({
             'absolute top-4 z-10 bg-slate-800 text-slate-400 hover:text-white border border-slate-700 rounded-r-lg px-1.5 py-3 text-[10px] transition-all',
             sidebarOpen ? 'left-72' : 'left-0'
           )}
-          aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          aria-label={sidebarOpen ? t('common.collapseSidebarTooltip') : t('common.expandSidebarTooltip')}
         >
           {sidebarOpen ? '‹' : '›'}
         </button>
@@ -294,14 +296,14 @@ export default function LearningShell({
               <div className="mb-6">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
                   <span aria-hidden="true">📄</span>
-                  <span className="font-medium uppercase tracking-wide">Page</span>
+                  <span className="font-medium uppercase tracking-wide">{t('learning.shell.pageEyebrowLabel')}</span>
                 </div>
                 <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{page.title}</h1>
               </div>
               <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
                 {html
                   ? <div dangerouslySetInnerHTML={{ __html: html }} />
-                  : <p className="italic text-muted-foreground">No content yet.</p>
+                  : <p className="italic text-muted-foreground">{t('learning.block.emptyPageBody')}</p>
                 }
               </div>
             </div>
@@ -311,11 +313,11 @@ export default function LearningShell({
         {!currentContentPage && !current ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <p className="text-xl font-bold text-foreground mb-2">Welcome to {courseTitle}</p>
+              <p className="text-xl font-bold text-foreground mb-2">{t('learning.shell.welcomeTemplate', { courseTitle })}</p>
               <p className="text-muted-foreground text-sm">
                 {navBlocks.length === 0
-                  ? 'No published content yet.'
-                  : 'Select a lesson from the sidebar to begin.'}
+                  ? t('learning.shell.noContentPlaceholder')
+                  : t('learning.shell.selectLessonPlaceholder')}
               </p>
             </div>
           </div>
@@ -354,7 +356,7 @@ export default function LearningShell({
                 <button
                   onClick={() => navigate(prevBlock.id)}
                   className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label={`Previous: ${prevBlock.title}`}
+                  aria-label={t('learning.shell.previousAriaLabel', { title: prevBlock.title })}
                 >
                   ← {prevBlock.title.length > 30 ? prevBlock.title.slice(0, 30) + '…' : prevBlock.title}
                 </button>
@@ -364,7 +366,7 @@ export default function LearningShell({
                 <button
                   onClick={() => navigate(nextBlock.id)}
                   className="flex items-center gap-2 bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-                  aria-label={`Next: ${nextBlock.title}`}
+                  aria-label={t('learning.shell.nextAriaLabel', { title: nextBlock.title })}
                 >
                   {nextBlock.title.length > 30 ? nextBlock.title.slice(0, 30) + '…' : nextBlock.title} →
                 </button>
@@ -373,14 +375,14 @@ export default function LearningShell({
                   onClick={finishCourse}
                   className="flex items-center gap-2 bg-emerald-600 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
                 >
-                  Complete course 🎓
+                  {t('learning.shell.completeCourseButton')}
                 </button>
               ) : (
                 <Link
                   href={`/courses/${courseId}`}
                   className="flex items-center gap-2 bg-slate-700 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
                 >
-                  Back to course
+                  {t('learning.shell.backToCourseLink')}
                 </Link>
               )}
             </div>

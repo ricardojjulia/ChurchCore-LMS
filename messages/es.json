@@ -1,0 +1,684 @@
+{
+  "home": {
+    "brandName": "ChurchCore LMS",
+    "subtitle": "Una plataforma de aprendizaje rápida, segura y lista para el ministerio.",
+    "projectHqLink": "Project HQ"
+  },
+  "auth": {
+    "login": {
+      "heading": "Iniciar sesión",
+      "brandSubtitle": "ChurchCore LMS",
+      "emailLabel": "Correo electrónico",
+      "submitLoading": "Iniciando sesión…",
+      "submitButton": "Iniciar sesión"
+    }
+  },
+  "common": {
+    "signIn": "Iniciar sesión",
+    "signOut": "Cerrar sesión",
+    "password": "Contraseña",
+    "emailPlaceholder": "nombre@ejemplo.com",
+    "loading": "Cargando…",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "yes": "Sí",
+    "no": "No",
+    "published": "Publicado",
+    "draft": "Borrador",
+    "updated": "Actualizado",
+    "notAvailable": "No disponible",
+    "notGraded": "Sin calificar",
+    "studentFallback": "Estudiante",
+    "optionalHint": "(opcional)",
+    "submittingButton": "Enviando…",
+    "savingButton": "Guardando…",
+    "timeAgoJustNow": "justo ahora",
+    "unreadCountTemplate": "{n} sin leer",
+    "browseCoursesArrowLink": "Explorar cursos →",
+    "additionalMaterialsHeading": "Materiales adicionales",
+    "instructorCardUnavailable": "Tarjeta del instructor no disponible.",
+    "levelLabel": "Nivel",
+    "expandSidebarTooltip": "Expandir barra lateral",
+    "collapseSidebarTooltip": "Contraer barra lateral",
+    "viewAsChart": "Ver como gráfico",
+    "viewAsTable": "Ver como tabla",
+    "tryAgainButton": "Intentar de nuevo",
+    "searchButton": "Buscar"
+  },
+  "status": {
+    "completed": "Completado",
+    "inProgress": "En curso",
+    "enrolled": "Inscrito",
+    "dropped": "Retirado"
+  },
+  "nav": {
+    "logoAlt": "ChurchCore LMS",
+    "profileFallback": "Perfil",
+    "dashboard": "Panel",
+    "courses": "Cursos",
+    "grades": "Calificaciones",
+    "reports": "Informes",
+    "certificates": "Certificados",
+    "leaderboard": "Tabla de clasificación",
+    "messages": "Mensajes",
+    "announcements": "Anuncios",
+    "calendar": "Calendario",
+    "myGroups": "Mis grupos",
+    "guardianPortal": "Portal del acudiente",
+    "hq": "HQ",
+    "mobile": {
+      "home": "Inicio"
+    },
+    "sectionDivider": {
+      "guardian": "Acudiente",
+      "staff": "Personal",
+      "admin": "Administración",
+      "platform": "Plataforma"
+    },
+    "adminDrawer": {
+      "triggerButton": "Administración",
+      "openAriaLabel": "Abrir navegación de administración",
+      "closeAriaLabel": "Cerrar navegación de administración",
+      "panelHeading": "Administración"
+    },
+    "admin": {
+      "users": "Usuarios",
+      "cohorts": "Cohortes",
+      "sections": "Secciones",
+      "terms": "Períodos",
+      "programTracks": "Rutas de programa",
+      "blueprints": "Plantillas",
+      "aiAnalytics": "Analítica de IA",
+      "billing": "Facturación",
+      "systemHealth": "Estado del sistema",
+      "oneRoster": "OneRoster",
+      "orgSettings": "Configuración de la organización"
+    },
+    "platformAdmin": "Administración de la plataforma"
+  },
+  "notificationBell": {
+    "bellAriaLabelTemplate": "Notificaciones ({n} sin leer)",
+    "sidebarLabel": "Notificaciones",
+    "panelHeading": "Notificaciones",
+    "markAllReadButton": "Marcar todo como leído",
+    "emptyState": "Aún no hay notificaciones.",
+    "seeAllLink": "Ver todas las notificaciones →",
+    "connectingStatus": "Conectando…",
+    "reconnectingStatus": "Reconectando…"
+  },
+  "globalSearch": {
+    "openSearchAriaLabel": "Abrir búsqueda",
+    "inputPlaceholder": "Buscar cursos, anuncios, personas…",
+    "minCharsHint": "Escriba al menos 2 caracteres para buscar",
+    "noResultsTemplate": "No se encontraron resultados para «{query}»",
+    "coursesSectionLabel": "Cursos",
+    "announcementsSectionLabel": "Anuncios",
+    "peopleSectionLabel": "Personas",
+    "hintNavigate": "navegar",
+    "hintOpen": "abrir",
+    "hintClose": "cerrar"
+  },
+  "offlineBanner": {
+    "statusMessage": "Está sin conexión: las funciones interactivas (entregas, cuestionarios) están deshabilitadas."
+  },
+  "dashboard": {
+    "student": {
+      "emptyEnrollments": "Aún no se ha inscrito en ningún curso.",
+      "browseCoursesButton": "Explorar cursos",
+      "inProgressSection": "En curso",
+      "comingUpSection": "Próximamente",
+      "noCoursesStartedEmpty": "Aún no ha comenzado ningún curso.",
+      "pausedSection": "Pausados"
+    }
+  },
+  "courses": {
+    "list": {
+      "headingTeacher": "Mis cursos",
+      "headingStaff": "Todos los cursos",
+      "headingStudent": "Catálogo de cursos",
+      "subtitleTeacher": "Los cursos que usted administra. Publíquelos cuando estén listos para los estudiantes.",
+      "subtitleStaff": "Todos los cursos de la plataforma.",
+      "subtitleFilteredTemplate": "Mostrando {n, plural, one {# curso} other {# cursos}} en esta ruta",
+      "subtitleAvailableTemplate": "{n, plural, one {# curso disponible} other {# cursos disponibles}}",
+      "newCourseButton": "+ Nuevo curso",
+      "allTracksFilter": "Todas las rutas",
+      "backToTracksLink": "← Todas las rutas",
+      "editAction": "Editar",
+      "buildAction": "Diseñar",
+      "analyticsAction": "Analítica",
+      "gradesAction": "Calificaciones",
+      "emptyTrack": "No hay cursos en esta ruta.",
+      "emptyGeneric": "Aún no hay cursos.",
+      "emptyStudent": "Aún no hay cursos disponibles.",
+      "emptyCreateCta": "Cree su primer curso"
+    },
+    "detail": {
+      "notFoundHeading": "Curso no encontrado",
+      "notFoundMessage": "Verifique la URL o comuníquese con su administrador.",
+      "notFoundBackLink": "← Volver a los cursos",
+      "coursescrumb": "Cursos",
+      "statusPublished": "Publicado",
+      "statusDraft": "Borrador",
+      "lessonCountTemplate": "{publishedCount, plural, one {# lección} other {# lecciones}}",
+      "xpAvailableTemplate": "{totalXp} XP disponibles",
+      "moduleCountTemplate": "{count, plural, one {# módulo} other {# módulos}}",
+      "materialsCountTemplate": "{materialsCount, plural, one {# material adicional} other {# materiales adicionales}}",
+      "levelRequiredBadge": "Se requiere nivel {level}+",
+      "requiresLabel": "Requiere:",
+      "ageRangeTemplate": "Edades {min}–{max}",
+      "ageRangeMinTemplate": "Edades {min}+",
+      "ageRangeMaxTemplate": "Hasta {max} años",
+      "ctaReview": "Repasar curso",
+      "ctaContinue": "Continuar aprendiendo",
+      "ctaStart": "Comenzar a aprender",
+      "progressBarLabel": "Progreso",
+      "materialsLink": "Materiales adicionales ({materialsCount})",
+      "inviteOnlyNotice": "Inscripción solo por invitación",
+      "cohortRequiredNotice": "Se requiere inscripción por cohorte",
+      "loginToEnrollButton": "Inicie sesión para inscribirse",
+      "curriculumHeading": "Plan de estudios",
+      "emptyCurriculum": "Aún no hay contenido publicado.",
+      "moduleItemCountTemplate": "{count, plural, one {# elemento} other {# elementos}}",
+      "emptyModule": "Aún no hay lecciones.",
+      "lockedTooltip": "Bloqueado"
+    },
+    "materials": {
+      "breadcrumbCurrent": "Materiales adicionales",
+      "backLink": "← Volver a materiales adicionales",
+      "heading": "Materiales adicionales",
+      "subheading": "Lecturas complementarias y páginas de referencia de su instructor.",
+      "emptyHeading": "No hay materiales disponibles",
+      "emptyDescription": "Su instructor aún no ha publicado materiales adicionales para este curso.",
+      "publishedPrefix": "Publicado",
+      "updatedPrefix": "Actualizado",
+      "contentTypeTag": "Material adicional",
+      "emptyBody": "Sin contenido."
+    },
+    "complete": {
+      "heading": "¡Curso completado!",
+      "finishedPrefix": "Usted completó",
+      "certificateHeader": "Certificado de finalización",
+      "certifiesText": "Esto certifica que",
+      "hasCompletedText": "ha completado exitosamente",
+      "finalGradeLabel": "Calificación final",
+      "xpEarnedLabel": "XP obtenidos",
+      "completionStatLabel": "Finalización",
+      "currentStandingLabel": "Su posición actual",
+      "levelBadgeTemplate": "Nivel {level} · {xp} XP en total",
+      "leaderboardLink": "Tabla de clasificación →",
+      "viewCertificatesButton": "Ver todos los certificados",
+      "browseMoreCoursesButton": "Explorar más cursos →",
+      "viewPerformanceLink": "Ver rendimiento académico completo →"
+    }
+  },
+  "messages": {
+    "newMessage": {
+      "triggerButton": "+ Nuevo mensaje",
+      "dialogHeading": "Nuevo mensaje",
+      "toLabel": "Para",
+      "searchPlaceholder": "Buscar por nombre o correo electrónico…",
+      "messageLabel": "Mensaje",
+      "messagePlaceholder": "Escriba su mensaje…",
+      "sendingButton": "Enviando…",
+      "sendButton": "Enviar"
+    },
+    "list": {
+      "heading": "Mensajes",
+      "unreadSubtitleTemplate": "{n, plural, one {# conversación sin leer} other {# conversaciones sin leer}}",
+      "emptyState": "Aún no hay conversaciones.",
+      "threadPreviewEmpty": "Aún no hay mensajes"
+    },
+    "thread": {
+      "titleFallback": "Conversación",
+      "emptyState": "Aún no hay mensajes. ¡Diga hola!",
+      "deletedPlaceholder": "Mensaje eliminado",
+      "composerPlaceholder": "Escriba un mensaje… (Ctrl+Enter para enviar)",
+      "composerHint": "Ctrl+Enter para enviar",
+      "deleteAriaLabel": "Eliminar mensaje"
+    }
+  },
+  "calendar": {
+    "view": {
+      "selectDayPlaceholder": "Seleccione un día",
+      "addButton": "Agregar",
+      "noEventsOnDay": "No hay eventos este día.",
+      "allDay": "Todo el día",
+      "upcomingThisMonth": "Próximos este mes",
+      "moreEventsTemplate": "+{n} más"
+    },
+    "list": {
+      "heading": "Calendario",
+      "subtitle": "Su horario de un vistazo.",
+      "addEventButton": "+ Agregar evento"
+    },
+    "new": {
+      "heading": "Nuevo evento de calendario",
+      "breadcrumbParent": "Calendario",
+      "breadcrumbCurrent": "Nuevo evento",
+      "titleLabel": "Título",
+      "titlePlaceholder": "p. ej., reunión de seguimiento de la cohorte de formación",
+      "startsLabel": "Inicio",
+      "endsLabel": "Fin",
+      "scopeLabel": "Alcance",
+      "scopePersonal": "Personal",
+      "scopeCourse": "Curso",
+      "typeLabel": "Tipo",
+      "typeCustom": "Personalizado",
+      "typeAssignmentDue": "Entrega de tarea",
+      "typeCourseStart": "Inicio del curso",
+      "typeCourseEnd": "Fin del curso",
+      "typeExam": "Examen",
+      "typeOfficeHours": "Horario de atención",
+      "typeHoliday": "Día festivo",
+      "typeInstitutional": "Institucional",
+      "courseFieldLabel": "Curso",
+      "selectCoursePlaceholder": "Seleccionar curso",
+      "locationLabel": "Ubicación",
+      "locationPlaceholder": "Sala, campus o enlace remoto",
+      "colorLabel": "Color",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Notas opcionales para estudiantes o personal.",
+      "createEventButton": "Crear evento"
+    }
+  },
+  "announcements": {
+    "heading": "Anuncios",
+    "newButton": "+ Publicar anuncio",
+    "draftsHeading": "Sus borradores",
+    "draftMetaTemplate": "Borrador · {scope}",
+    "publishAction": "Publicar",
+    "scheduledHeading": "Programados",
+    "publishesDateTemplate": "Se publica el {date}",
+    "emptyState": "Aún no hay anuncios.",
+    "postedByTemplate": "Publicado por {authorName}",
+    "priority": {
+      "urgent": "Urgente",
+      "high": "Alta",
+      "normal": "Normal",
+      "low": "Baja"
+    }
+  },
+  "certificates": {
+    "heading": "Mis certificados",
+    "subtitleCertTemplate": "{n, plural, one {# certificado obtenido} other {# certificados obtenidos}}",
+    "subtitleDiplomaTemplate": "{n, plural, one {# diploma obtenido} other {# diplomas obtenidos}}",
+    "performanceLink": "Rendimiento académico →",
+    "emptyState": "Aún no tiene certificados.",
+    "browseCoursesLink": "Explorar cursos →",
+    "cardKicker": "Certificado",
+    "xpEarnedLabel": "XP obtenidos",
+    "viewLink": "Ver →",
+    "downloadPdfButton": "Descargar PDF",
+    "programDiplomasHeading": "Diplomas de programa",
+    "programDiplomaKicker": "Diploma de programa",
+    "diplomaIconAlt": "birrete de graduación"
+  },
+  "leaderboard": {
+    "heading": "Tabla de clasificación",
+    "subtitle": "Los mejores estudiantes por XP obtenidos",
+    "yourStandingLabel": "Su posición",
+    "levelXpTemplate": "Nivel {level} · {xp} XP",
+    "myGradesLink": "Mis calificaciones →",
+    "anonymousFallback": "Anónimo",
+    "emptyState": "Aún ningún estudiante ha obtenido XP.",
+    "youSuffix": " (usted)"
+  },
+  "notifications": {
+    "heading": "Notificaciones",
+    "backToDashboardLink": "← Panel",
+    "filterAll": "Todos",
+    "filterUnread": "Sin leer",
+    "markAllRead": "Marcar todo como leído",
+    "caughtUpEmpty": "Está al día. No tiene notificaciones.",
+    "noUnreadEmpty": "No tiene notificaciones sin leer.",
+    "dismissAriaLabel": "Descartar notificación",
+    "timeAgoMinutes": "hace {n} min",
+    "timeAgoHours": "hace {n} h",
+    "timeAgoDays": "hace {n} días"
+  },
+  "guardian": {
+    "list": {
+      "heading": "Portal del acudiente",
+      "subtitle": "Vista de solo lectura de los estudiantes a su cargo.",
+      "loadError": "No se pudieron cargar los estudiantes. Actualice la página.",
+      "emptyHeading": "Aún no hay estudiantes vinculados",
+      "emptyDescription": "Pida a un miembro del personal o a un administrador que vincule su cuenta a la de su hijo o hija.",
+      "coursesStat": "Cursos",
+      "doneStat": "Completados",
+      "viewProgressLink": "Ver progreso →"
+    },
+    "detail": {
+      "coursesSectionHeadingTemplate": "Cursos ({n})",
+      "xpStatLabel": "XP",
+      "emptyEnrollments": "Aún no está inscrito en ningún curso.",
+      "progressBarLabel": "Progreso",
+      "recentGradesHeading": "Calificaciones recientes",
+      "emptyGrades": "Aún no hay trabajos calificados.",
+      "certificatesSectionHeadingTemplate": "Certificados ({n})"
+    }
+  },
+  "reports": {
+    "fallback": {
+      "heading": "Informes no disponibles",
+      "description": "El rol de su cuenta no tiene asignada una vista de informes. Comuníquese con su administrador."
+    },
+    "student": {
+      "emptyHeading": "Aún no hay datos de informes",
+      "emptyDescription": "Inscríbase en un curso o complete su primera actividad para generar informes de progreso.",
+      "heading": "Mis informes de progreso",
+      "lastUpdatedTemplate": "Última actualización: {date}",
+      "exportPdfButton": "Exportar PDF",
+      "exportXlsxButton": "Exportar XLSX",
+      "noscriptFallback": "JavaScript está deshabilitado. Use la vista de tabla a continuación para su informe de progreso accesible.",
+      "moduleCompletionHeading": "Finalización de módulos",
+      "gradeHistoryHeading": "Historial de calificaciones",
+      "courseEnrollmentsHeading": "Inscripciones en cursos"
+    },
+    "export": {
+      "preparingStatus": "Preparando...",
+      "processingStatus": "Procesando... revise Mis informes",
+      "readyStatus": "Listo",
+      "generationFailedError": "Error al generar el informe",
+      "exportFailedError": "Error al exportar el informe",
+      "readyToastTitle": "Informe listo",
+      "readyToastDescription": "Abra Mis informes para descargarlo.",
+      "failedToastTitle": "Error en el informe",
+      "processingToastTitle": "El informe se está procesando",
+      "processingToastDescription": "Aparecerá en Mis informes.",
+      "downloadedToastTitle": "Informe descargado",
+      "catchToastTitle": "Error al exportar"
+    },
+    "tables": {
+      "enrollment": {
+        "emptyState": "No se encontraron inscripciones",
+        "caption": "Informe de inscripción de cursos del estudiante",
+        "enrolledDateLabel": "Fecha de inscripción",
+        "statusLabel": "Estado",
+        "avgGradeLabel": "Calificación promedio",
+        "certificateLabel": "Certificado",
+        "courseNameHeader": "Nombre del curso",
+        "completionStatusHeader": "Estado de finalización"
+      }
+    },
+    "charts": {
+      "gradeHistory": {
+        "emptyFallback": "No hay tareas calificadas disponibles",
+        "ariaSummaryTemplate": "{n, plural, one {# elemento calificado} other {# elementos calificados}} con un promedio de {avg} por ciento",
+        "containerAriaLabelTemplate": "Historial de calificaciones: {summary}",
+        "assignmentHeader": "Tarea",
+        "gradeHeader": "Calificación",
+        "submittedHeader": "Entregado"
+      },
+      "moduleCompletion": {
+        "emptyFallback": "No hay datos de finalización de módulos disponibles",
+        "ariaSummaryTemplate": "{completed} de {total} módulos completados en el último punto del informe",
+        "containerAriaLabelTemplate": "Finalización de módulos a lo largo del tiempo: {summary}",
+        "dateHeader": "Fecha",
+        "completedHeader": "Completados",
+        "totalHeader": "Total",
+        "completedSeriesName": "Completados",
+        "totalSeriesName": "Total"
+      }
+    }
+  },
+  "myGroups": {
+    "list": {
+      "heading": "Mis grupos",
+      "subtitle": "Sus grupos de sección y foros de discusión.",
+      "emptyState": "Aún no se le ha asignado a ningún grupo.",
+      "emptyDescription": "Su instructor lo agregará cuando comience el trabajo en grupo.",
+      "leaderBadge": "Líder",
+      "memberCountTemplate": "{n, plural, one {# miembro} other {# miembros}}"
+    },
+    "detail": {
+      "roleNoticeTemplate": "Usted es {role} de este grupo"
+    },
+    "discussion": {
+      "heading": "Discusiones",
+      "emptyThreads": "Aún no hay temas.",
+      "selectThreadPlaceholder": "Seleccione un tema para leer",
+      "lockedThreadNotice": "Este tema está bloqueado: no se permiten nuevas respuestas.",
+      "emptyPosts": "Aún no hay publicaciones. ¡Sea el primero!",
+      "ownPostAuthorLabel": "Usted",
+      "cancelToggleButton": "✕ Cancelar",
+      "newThreadButton": "+ Nuevo tema",
+      "startButton": "Iniciar",
+      "threadTitlePlaceholder": "Título del tema…",
+      "replyPlaceholder": "Escriba una respuesta… (⌘↵ para enviar)"
+    }
+  },
+  "onboarding": {
+    "heading": "Organización no configurada",
+    "description": "Su cuenta aún no está vinculada a una organización. Esto es necesario antes de que pueda acceder a los informes y otras funciones específicas de la organización.",
+    "adminFixLabel": "Administrador: corregir mediante el editor SQL",
+    "orRerunFragment": "O vuelva a ejecutar",
+    "regenerateDataFragment": "para regenerar todos los datos de demostración con los enlaces de organización establecidos."
+  },
+  "performance": {
+    "heading": "Rendimiento académico",
+    "subtitle": "Sus calificaciones, progreso y posición en todos los cursos en los que está inscrito.",
+    "gpaLabel": "Promedio general (GPA)",
+    "enrolledCoursesLabel": "Cursos inscritos",
+    "atRiskLabel": "En riesgo",
+    "totalXpLabel": "Total de XP obtenidos",
+    "xpSublabel": "En todos los cursos",
+    "atRiskAlertTemplate": "⚠ {n, plural, one {# curso está marcado} other {# cursos están marcados}} en riesgo. Comuníquese con su instructor o póngase al día con el trabajo pendiente.",
+    "emptyState": "Aún no hay datos de inscripción.",
+    "table": {
+      "courseHeader": "Curso",
+      "statusHeader": "Estado",
+      "progressHeader": "Progreso",
+      "avgGradeHeader": "Calificación promedio",
+      "gpaHeader": "GPA",
+      "submissionsHeader": "Entregas"
+    }
+  },
+  "profile": {
+    "page": {
+      "heading": "Su perfil",
+      "subtitle": "Cómo aparece usted en ChurchCore LMS.",
+      "setNameFallback": "Escriba su nombre a continuación"
+    },
+    "form": {
+      "roleAdministrator": "Administrador",
+      "roleManager": "Encargado",
+      "roleTeacher": "Docente",
+      "roleStudent": "Estudiante",
+      "displayNameLabel": "Nombre para mostrar",
+      "avatarUrlLabel": "URL del avatar",
+      "avatarUrlHint": "(opcional: pegue la URL de cualquier imagen)",
+      "previewCaption": "Vista previa",
+      "dobLabel": "Fecha de nacimiento",
+      "dobHint": "(opcional: se usa para cursos con restricción de edad)",
+      "roleFieldLabel": "Rol",
+      "roleManagedHint": "Gestionado por los administradores",
+      "fullNamePlaceholder": "Su nombre completo",
+      "avatarUrlPlaceholder": "https://ejemplo.com/avatar.jpg",
+      "avatarPreviewAlt": "Vista previa del avatar",
+      "saveButton": "Guardar perfil",
+      "displayNameRequiredError": "El nombre para mostrar es obligatorio.",
+      "saveSuccessNotice": "Perfil guardado correctamente."
+    }
+  },
+  "offline": {
+    "pageTitle": "Sin conexión — ChurchCore LMS",
+    "heading": "Está sin conexión",
+    "description": "Este contenido no está disponible sin conexión a internet. Visite esta página mientras esté en línea para poder leerla sin conexión la próxima vez.",
+    "reconnectDescription": "Cuando vuelva a conectarse, podrá regresar a sus cursos y todo su progreso estará intacto.",
+    "dashboardButton": "Ir al panel"
+  },
+  "join": {
+    "page": {
+      "headingTemplate": "Únase a {name}",
+      "subtitle": "Cree su cuenta para acceder a los cursos y materiales de aprendizaje."
+    },
+    "form": {
+      "fullNameLabel": "Nombre completo",
+      "namePlaceholder": "Su nombre",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "nombre@ejemplo.com",
+      "passwordLabel": "Contraseña",
+      "passwordPlaceholder": "Al menos 8 caracteres",
+      "turnstileMissingError": "Complete la verificación de seguridad.",
+      "turnstileFailedError": "Error en la verificación de seguridad. Actualice la página e inténtelo de nuevo.",
+      "accountCreatedNotice": "Cuenta creada. Inicie sesión.",
+      "submitLoading": "Creando cuenta…",
+      "submitButtonTemplate": "Únase a {orgName}",
+      "alreadyHaveAccountText": "¿Ya tiene una cuenta?",
+      "signInLink": "Iniciar sesión"
+    }
+  },
+  "learning": {
+    "teacherPlug": {
+      "yourInstructorLabel": "Su instructor",
+      "notFoundError": "Instructor no encontrado"
+    },
+    "block": {
+      "emptyPageBody": "Aún no hay contenido.",
+      "noVideoUrl": "No se configuró una URL de video.",
+      "fileUnavailable": "Archivo no disponible.",
+      "downloadFileFallback": "Descargar archivo",
+      "noUrlConfigured": "No se configuró una URL.",
+      "dueLabel": "Vence:",
+      "quizEmpty": "No hay preguntas configuradas para este cuestionario.",
+      "questionCountTemplate": "{count, plural, one {# pregunta} other {# preguntas}}",
+      "pointsTotalTemplate": "{n} puntos en total",
+      "noMeetingUrl": "No se configuró una URL de la reunión.",
+      "unsupportedType": "Tipo de bloque no compatible.",
+      "downloadButton": "Descargar →"
+    },
+    "assignment": {
+      "submittedBanner": "✓ Entregado: en espera de calificación del instructor",
+      "attachedFileFallback": "Archivo adjunto",
+      "gradeLabel": "Calificación:",
+      "responseFieldLabel": "Su respuesta",
+      "responsePlaceholder": "Escriba su respuesta aquí…",
+      "charCountHelperTemplate": "{n} caracteres · Puntos máximos: {maxPoints}",
+      "uploadFileTypeLabel": "Subir archivo",
+      "attachmentTypeLabel": "Adjunto",
+      "dropzoneLabel": "Subir un archivo",
+      "dropzoneHint": "PDF, Word, imagen — máx. 10 MB",
+      "removeFileButton": "Quitar",
+      "submitButton": "Entregar tarea",
+      "fileTooLargeError": "El archivo supera el límite de 10 MB",
+      "notAuthenticatedError": "No autenticado",
+      "uploadFailedPrefix": "Error al subir el archivo:",
+      "signedUrlError": "La carga se completó, pero no se pudo generar el enlace del archivo. Inténtelo de nuevo.",
+      "alreadyEnrolledError": "Ya está inscrito."
+    },
+    "attendance": {
+      "blockTitle": "Asistencia",
+      "statusPresent": "Presente",
+      "statusLate": "Tarde",
+      "statusAbsent": "Ausente",
+      "statusExcused": "Justificado",
+      "pointsPossibleTemplate": "{points, plural, one {# punto posible} other {# puntos posibles}}",
+      "recordingBadge": "Registrando…",
+      "unmarkedBadge": "Sin marcar",
+      "manualNotice": "Su docente registrará su asistencia para esta sesión.",
+      "autoConfirmation": "Su asistencia se registró automáticamente cuando abrió este bloque."
+    },
+    "discussion": {
+      "scoreLabel": "Puntaje",
+      "maxScoreLabel": "/ Máx.",
+      "promptEyebrow": "Tema de discusión",
+      "replyCountTemplate": "{n, plural, one {# respuesta} other {# respuestas}}",
+      "ownReplyBadge": "✓ Usted respondió",
+      "emptyReplies": "Sea el primero en responder.",
+      "youMarker": "(usted)",
+      "editedMarker": "editado",
+      "ownGradeDisplay": "Calificación: {score} / {max}",
+      "alreadyPostedNotice": "Ya respondió; use Editar arriba para actualizar su publicación.",
+      "editPlaceholder": "Edite su respuesta…",
+      "replyPlaceholder": "Comparta su opinión…",
+      "deleteConfirm": "¿Eliminar su respuesta? Esta acción no se puede deshacer.",
+      "saveGradeButton": "Guardar calificación",
+      "gradedEditLink": "Calificado: {score}/{max} — Editar",
+      "gradeActionButton": "Calificar",
+      "postingButton": "Publicando…",
+      "postReplyButton": "Publicar respuesta"
+    },
+    "shell": {
+      "progressLabel": "Progreso",
+      "pageEyebrowLabel": "Página",
+      "welcomeTemplate": "Bienvenido a {courseTitle}",
+      "noContentPlaceholder": "Aún no hay contenido publicado.",
+      "selectLessonPlaceholder": "Seleccione una lección en la barra lateral para comenzar.",
+      "backToCourseLink": "Volver al curso",
+      "completeCourseButton": "Completar curso 🎓",
+      "previousAriaLabel": "Anterior: {title}",
+      "nextAriaLabel": "Siguiente: {title}"
+    },
+    "liveSession": {
+      "providerZoom": "Zoom",
+      "providerGoogleMeet": "Google Meet",
+      "providerTeams": "Microsoft Teams",
+      "providerYouTube": "YouTube Live",
+      "providerDefault": "Sesión en vivo",
+      "liveBadge": "EN VIVO",
+      "startingInLabel": "Comienza en",
+      "endedNotice": "Esta sesión ha finalizado.",
+      "joinNowButton": "🔴 Unirse ahora",
+      "joinTemplate": "Unirse a {label}",
+      "opensBeforeButton": "Se abre 15 min antes del inicio",
+      "viewRecordingButton": "🎬 Ver grabación"
+    },
+    "quiz": {
+      "preparingLoading": "Preparando cuestionario…",
+      "pointsTemplate": "{n, plural, one {# pto.} other {# ptos.}}",
+      "questionGroupAriaLabel": "Pregunta {n}",
+      "matchForTitle": "Corresponde a: {left}",
+      "blankInputAriaLabel": "Espacio {blankN} de la pregunta {questionN}",
+      "noAttemptsHeading": "No quedan intentos",
+      "attemptsExhaustedDescription": "Este cuestionario permite {n, plural, one {# intento} other {# intentos}}. Usted ya los utilizó todos.",
+      "feedbackExcellent": "¡Excelente trabajo!",
+      "feedbackGood": "¡Buen trabajo, siga así!",
+      "feedbackNeedsWork": "Siga estudiando e inténtelo de nuevo.",
+      "noAnswerFallback": "Sin respuesta",
+      "correctAnswerTemplate": "Correcta: {right}",
+      "blankResultLabelTemplate": "Espacio {n}:",
+      "acceptedAnswersTemplate": "Aceptadas: {answers}",
+      "attemptCounterTemplate": "Intento {n} de {m}",
+      "passingScoreTemplate": "Puntaje aprobatorio: {pct}%",
+      "timeRemainingTemplate": "Tiempo restante: {time}",
+      "selectPlaceholder": "— Seleccionar —",
+      "blankInputPlaceholderTemplate": "Espacio {n}",
+      "submitButtonTemplate": "Enviar cuestionario ({n}/{m} respondidas)"
+    },
+    "video": {
+      "watchRequiredNotice": "Debe ver el video para marcarlo como completado",
+      "watchedBadge": "Visto",
+      "markWatchedButton": "✓ Marcar como visto"
+    },
+    "moduleItem": {
+      "viewRequiredBadge": "Visualización requerida",
+      "minGradeBadgeTemplate": "Calificación mínima: {pct}%"
+    },
+    "enroll": {
+      "lockedButton": "🔒 Inscripción bloqueada",
+      "loadingButton": "Inscribiendo…",
+      "ctaButton": "Inscríbase ahora — Es gratis",
+      "alreadyEnrolledError": "Ya está inscrito.",
+      "ariaLabel": "Inscribirse en este curso"
+    }
+  },
+  "feedback": {
+    "dialogHeading": "Enviar comentarios",
+    "categoryBug": "Defecto",
+    "categoryErrorCrash": "Error o fallo",
+    "categoryUnexpectedResult": "Resultado inesperado",
+    "categoryImprovementIdea": "Idea de mejora",
+    "categoryFieldLabel": "Categoría",
+    "categoryPlaceholder": "Seleccione una categoría…",
+    "notesFieldLabel": "Notas",
+    "notesPlaceholder": "Describa lo que vio o lo que esperaba que sucediera…",
+    "sendingButton": "Enviando…",
+    "sendButton": "Enviar",
+    "successMessage": "¡Gracias! Recibimos sus comentarios.",
+    "submitError": "Algo salió mal. Inténtelo de nuevo.",
+    "triggerAriaLabel": "Enviar comentarios",
+    "closeAriaLabel": "Cerrar diálogo de comentarios"
+  }
+}

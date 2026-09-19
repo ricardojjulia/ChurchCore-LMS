@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
+import { getTranslations } from 'next-intl/server'
 
 export default async function OnboardingPage() {
+  const t = await getTranslations()
   const supabase = await createServerClient()
   const {
     data: { user },
@@ -28,14 +30,13 @@ export default async function OnboardingPage() {
         </svg>
       </div>
 
-      <h1 className="text-2xl font-bold text-slate-950">Organization not configured</h1>
+      <h1 className="text-2xl font-bold text-slate-950">{t('onboarding.heading')}</h1>
       <p className="mt-3 text-sm text-slate-600 leading-relaxed">
-        Your account isn&apos;t linked to an organization yet. This is required before you can
-        access reports and other org-scoped features.
+        {t('onboarding.description')}
       </p>
 
       <div className="mt-8 border border-slate-200 bg-slate-50 rounded p-4 text-left text-xs text-slate-600 font-mono leading-relaxed">
-        <p className="font-sans font-semibold text-slate-900 text-sm mb-2">Admin: fix via SQL editor</p>
+        <p className="font-sans font-semibold text-slate-900 text-sm mb-2">{t('onboarding.adminFixLabel')}</p>
         <pre className="whitespace-pre-wrap break-all">{`UPDATE profiles p
 SET org_id = om.org_id
 FROM org_members om

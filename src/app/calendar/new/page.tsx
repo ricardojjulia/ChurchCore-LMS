@@ -12,7 +12,7 @@ export default async function NewCalendarEventPage({
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -20,7 +20,7 @@ export default async function NewCalendarEventPage({
     .eq('auth_id', user.id)
     .single()
 
-  if (!profile) redirect('/auth/login')
+  if (!profile) redirect('/login')
 
   const isStaff = ['admin', 'manager', 'teacher'].includes(profile.role)
   const { data: courses } = await supabase

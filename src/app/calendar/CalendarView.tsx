@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useTransition, useCallback } from 'react'
+import { useState, useEffect, useTransition, useCallback, useMemo } from 'react'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslations, useLocale } from 'next-intl'
 
 interface CalEvent {
   source_id:   string
@@ -18,17 +19,13 @@ interface CalEvent {
   scope:       string
 }
 
-const WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
-const MONTHS   = ['January','February','March','April','May','June',
-                  'July','August','September','October','November','December']
-
 function startOfMonth(y: number, m: number) { return new Date(y, m, 1) }
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate() }
 function isoDate(d: Date) { return d.toISOString().slice(0, 10) }
 function today() { return isoDate(new Date()) }
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+function formatTime(iso: string, locale: string): string {
+  return new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
 }
 
 function groupByDate(events: CalEvent[]): Record<string, CalEvent[]> {
@@ -47,6 +44,22 @@ export default function CalendarView({
   initialEvents: CalEvent[]
   isStaff:       boolean
 }) {
+  const t      = useTranslations()
+  const locale = useLocale()
+
+  const WEEKDAYS = useMemo(
+    () => Array.from({ length: 7 }, (_, i) =>
+      new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(new Date(2024, 0, i))
+    ),
+    [locale]
+  )
+  const MONTHS = useMemo(
+    () => Array.from({ length: 12 }, (_, i) =>
+      new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(2024, i, 1))
+    ),
+    [locale]
+  )
+
   const now  = new Date()
   const [year,  setYear]  = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
@@ -171,24 +184,24 @@ export default function CalendarView({
           <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <h3 className="font-bold text-foreground text-sm">
               {selected
-                ? new Date(selected + 'T12:00:00').toLocaleDateString('en-US', {
+                ? new Date(selected + 'T12:00:00').toLocaleDateString(locale, {
                     weekday: 'long', month: 'long', day: 'numeric',
                   })
-                : 'Select a day'}
+                : t('calendar.view.selectDayPlaceholder')}
             </h3>
             {isStaff && selected && (
               <a
                 href={`/calendar/new?date=${selected}`}
                 className="flex items-center gap-1 text-xs text-primary font-medium hover:underline"
               >
-                <Plus className="w-3 h-3" /> Add
+                <Plus className="w-3 h-3" /> {t('calendar.view.addButton')}
               </a>
             )}
           </div>
 
           {selectedEvents.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8 italic">
-              No events on this day.
+              {t('calendar.view.noEventsOnDay')}
             </p>
           ) : (
             <div className="divide-y divide-border">
@@ -207,7 +220,7 @@ export default function CalendarView({
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{ev.description}</p>
                     )}
                     <p className="text-xs text-muted-foreground mt-1">
-                      {ev.is_all_day ? 'All day' : formatTime(ev.starts_at)}
+                      {ev.is_all_day ? t('calendar.view.allDay') : formatTime(ev.starts_at, locale)}
                       {ev.location && ` · ${ev.location}`}
                     </p>
                   </div>
@@ -221,7 +234,7 @@ export default function CalendarView({
         {Object.keys(byDate).filter((d) => d >= todayStr).length > 0 && (
           <div className="bg-white border border-border rounded-2xl overflow-hidden">
             <div className="px-4 py-3 border-b border-border">
-              <h3 className="font-bold text-foreground text-sm">Upcoming This Month</h3>
+              <h3 className="font-bold text-foreground text-sm">{t('calendar.view.upcomingThisMonth')}</h3>
             </div>
             <div className="divide-y divide-border max-h-64 overflow-y-auto">
               {Object.entries(byDate)
@@ -235,7 +248,7 @@ export default function CalendarView({
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 transition-colors"
                   >
                     <div className="w-8 text-center shrink-0">
-                      <p className="text-xs text-muted-foreground">{new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short' })}</p>
+                      <p className="text-xs text-muted-foreground">{new Date(date + 'T12:00:00').toLocaleDateString(locale, { month: 'short' })}</p>
                       <p className="text-sm font-bold text-foreground leading-tight">
                         {new Date(date + 'T12:00:00').getDate()}
                       </p>
@@ -243,7 +256,7 @@ export default function CalendarView({
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-foreground truncate">{evs[0].title}</p>
                       {evs.length > 1 && (
-                        <p className="text-xs text-muted-foreground">+{evs.length - 1} more</p>
+                        <p className="text-xs text-muted-foreground">{t('calendar.view.moreEventsTemplate', { n: evs.length - 1 })}</p>
                       )}
                     </div>
                   </button>

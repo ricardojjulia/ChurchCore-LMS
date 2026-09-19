@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/utils/supabase/client'
 import { submitAssignment } from '@/app/actions/learning'
 
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function AssignmentPlayer({ blockId, instructions, maxPoints, submissionType = 'both', existingSub, onComplete }: Props) {
+  const t = useTranslations()
   const [body,    setBody]    = useState(existingSub?.content?.text ?? '')
   const [file,    setFile]    = useState<File | null>(null)
   const [fileErr, setFileErr] = useState<string | null>(null)
@@ -40,7 +42,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
     setFileErr(null)
     if (!f) { setFile(null); return }
     if (f.size > MAX_BYTES) {
-      setFileErr('File exceeds 10 MB limit')
+      setFileErr(t('learning.assignment.fileTooLargeError'))
       e.target.value = ''
       return
     }
@@ -58,7 +60,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
 
       if (file) {
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { setResult({ error: 'Not authenticated' }); return }
+        if (!user) { setResult({ error: t('learning.assignment.notAuthenticatedError') }); return }
 
         const ext  = file.name.split('.').pop() ?? 'bin'
         const path = `${user.id}/${blockId}/${Date.now()}.${ext}`
@@ -67,7 +69,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
           .from('assignment-files')
           .upload(path, file, { upsert: true })
 
-        if (uploadErr) { setResult({ error: `Upload failed: ${uploadErr.message}` }); return }
+        if (uploadErr) { setResult({ error: `${t('learning.assignment.uploadFailedPrefix')} ${uploadErr.message}` }); return }
 
         // assignment-files is a private bucket — signed URLs only
         const { data: signed, error: signErr } = await supabase.storage
@@ -75,7 +77,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
           .createSignedUrl(uploaded.path, 60 * 60 * 24 * 30) // 30-day link
 
         if (signErr || !signed?.signedUrl) {
-          setResult({ error: 'Upload succeeded but file link could not be generated. Please try again.' })
+          setResult({ error: t('learning.assignment.signedUrlError') })
           return
         }
 
@@ -97,7 +99,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
     return (
       <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 space-y-3">
         <p className="text-sm font-semibold text-emerald-700">
-          ✓ Submitted — awaiting instructor grade
+          {t('learning.assignment.submittedBanner')}
         </p>
         {existingSub?.content?.text && (
           <div className="text-sm text-slate-700 whitespace-pre-wrap bg-white border border-border rounded-lg p-4">
@@ -111,7 +113,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
           >
-            📎 {existingSub.content.file_name ?? 'Attached file'}
+            📎 {existingSub.content.file_name ?? t('learning.assignment.attachedFileFallback')}
           </a>
         )}
       </div>
@@ -125,7 +127,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
       <div className={`mt-6 rounded-xl border border-${color}-200 bg-${color}-50 px-5 py-4 space-y-3`}>
         <div className="flex items-center justify-between">
           <p className={`text-sm font-bold text-${color}-700`}>
-            Grade: {existingSub.score ?? '?'} / {existingSub.max_score ?? maxPoints}
+            {t('learning.assignment.gradeLabel')} {existingSub.score ?? '?'} / {existingSub.max_score ?? maxPoints}
             {pct !== null && ` (${pct}%)`}
           </p>
         </div>
@@ -144,7 +146,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
           >
-            📎 {existingSub.content.file_name ?? 'Attached file'}
+            📎 {existingSub.content.file_name ?? t('learning.assignment.attachedFileFallback')}
           </a>
         )}
       </div>
@@ -157,18 +159,18 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
         {submissionType !== 'file' && (
           <div>
             <label className="block text-sm font-semibold text-foreground mb-2">
-              Your Response
+              {t('learning.assignment.responseFieldLabel')}
             </label>
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={8}
-              placeholder="Write your response here…"
+              placeholder={t('learning.assignment.responsePlaceholder')}
               className="w-full text-sm text-foreground bg-slate-50 border border-border rounded-lg p-3 resize-y focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition"
               aria-label="Assignment response"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {body.length.toLocaleString()} characters · Max points: {maxPoints}
+              {t('learning.assignment.charCountHelperTemplate', { n: body.length.toLocaleString(), maxPoints })}
             </p>
           </div>
         )}
@@ -177,7 +179,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
         {submissionType !== 'text' && (
         <div>
           <p className="text-sm font-semibold text-foreground mb-2">
-            {submissionType === 'file' ? 'Upload File' : 'Attachment'}{' '}
+            {submissionType === 'file' ? t('learning.assignment.uploadFileTypeLabel') : t('learning.assignment.attachmentTypeLabel')}{' '}
             {submissionType === 'both' && <span className="font-normal text-muted-foreground">(optional)</span>}
           </p>
           {file ? (
@@ -193,15 +195,15 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
                 className="text-xs text-rose-500 hover:text-rose-700 font-medium"
                 aria-label="Remove file"
               >
-                Remove
+                {t('learning.assignment.removeFileButton')}
               </button>
             </div>
           ) : (
             <label className="flex items-center gap-3 bg-slate-50 border border-dashed border-border rounded-lg px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors">
               <span className="text-slate-400 text-xl" aria-hidden="true">📤</span>
               <div>
-                <p className="text-sm font-medium text-foreground">Upload a file</p>
-                <p className="text-xs text-muted-foreground">PDF, Word, image — max 10 MB</p>
+                <p className="text-sm font-medium text-foreground">{t('learning.assignment.dropzoneLabel')}</p>
+                <p className="text-xs text-muted-foreground">{t('learning.assignment.dropzoneHint')}</p>
               </div>
               <input
                 ref={fileRef}
@@ -232,7 +234,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
         }
         className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
       >
-        {pending ? 'Submitting…' : 'Submit Assignment'}
+        {pending ? t('common.submittingButton') : t('learning.assignment.submitButton')}
       </button>
     </form>
   )

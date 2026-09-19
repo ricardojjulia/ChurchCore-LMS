@@ -1,16 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 type Provider = 'zoom' | 'meet' | 'teams' | 'youtube' | 'other'
-
-const PROVIDER_LABEL: Record<Provider, string> = {
-  zoom:    'Zoom',
-  meet:    'Google Meet',
-  teams:   'Microsoft Teams',
-  youtube: 'YouTube Live',
-  other:   'Live Session',
-}
 
 const PROVIDER_COLOR: Record<Provider, string> = {
   zoom:    'bg-blue-600 hover:bg-blue-700',
@@ -51,6 +44,7 @@ export default function LiveSessionPlayer({
   recordingUrl,
   description,
 }: Props) {
+  const t = useTranslations()
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
@@ -59,6 +53,13 @@ export default function LiveSessionPlayer({
   }, [])
 
   const prov   = (provider ?? 'other') as Provider
+  const PROVIDER_LABEL: Record<Provider, string> = {
+    zoom:    t('learning.liveSession.providerZoom'),
+    meet:    t('learning.liveSession.providerGoogleMeet'),
+    teams:   t('learning.liveSession.providerTeams'),
+    youtube: t('learning.liveSession.providerYouTube'),
+    other:   t('learning.liveSession.providerDefault'),
+  }
   const label  = PROVIDER_LABEL[prov] ?? PROVIDER_LABEL.other
   const color  = PROVIDER_COLOR[prov] ?? PROVIDER_COLOR.other
 
@@ -83,7 +84,7 @@ export default function LiveSessionPlayer({
           {isLive && (
             <span className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-              LIVE
+              {t('learning.liveSession.liveBadge')}
             </span>
           )}
         </div>
@@ -117,7 +118,7 @@ export default function LiveSessionPlayer({
           {msUntilStart !== null && msUntilStart > 0 && !isEnded && (
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 text-center">
               <p className="text-xs text-indigo-500 font-semibold uppercase tracking-widest mb-1">
-                Starting in
+                {t('learning.liveSession.startingInLabel')}
               </p>
               <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">
                 {formatCountdown(msUntilStart)}
@@ -128,7 +129,7 @@ export default function LiveSessionPlayer({
           {/* Status banners */}
           {isEnded && !recordingUrl && (
             <div className="bg-slate-50 border border-border rounded-lg px-4 py-3 text-center text-sm text-muted-foreground">
-              This session has ended.
+              {t('learning.liveSession.endedNotice')}
             </div>
           )}
 
@@ -148,7 +149,7 @@ export default function LiveSessionPlayer({
                 }
               `}
             >
-              {isLive ? '🔴 Join Now' : canJoin ? `Join ${label}` : `Opens 15 min before start`}
+              {isLive ? t('learning.liveSession.joinNowButton') : canJoin ? t('learning.liveSession.joinTemplate', { label }) : t('learning.liveSession.opensBeforeButton')}
             </a>
           )}
 
@@ -160,7 +161,7 @@ export default function LiveSessionPlayer({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 underline transition-colors"
             >
-              🎬 View Recording
+              {t('learning.liveSession.viewRecordingButton')}
             </a>
           )}
         </div>

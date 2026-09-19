@@ -66,15 +66,20 @@ async function handleStripeEvent(event: Stripe.Event, svc: Svc) {
 
       const { data: org } = await svc
         .from('organizations')
-        .select('settings')
+        .select('settings, stripe_customer_id')
         .eq('id', orgId)
         .single()
 
       const currentSettings = (org?.settings ?? {}) as Record<string, unknown>
+      const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
       await svc.from('organizations').update({
         status:   'active',
         plan,
         settings: { ...currentSettings, features: PLAN_FEATURES[plan] ?? PLAN_FEATURES.starter },
+        // Safety net — create-checkout already persists this synchronously,
+        // but a checkout session created outside that path (or a
+        // pre-migration org) would otherwise permanently lack a customer id.
+        ...(!org?.stripe_customer_id && customerId ? { stripe_customer_id: customerId } : {}),
       }).eq('id', orgId)
       break
     }

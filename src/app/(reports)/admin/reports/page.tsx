@@ -75,7 +75,7 @@ export default async function AdminReportsPage({
           </div>
 
           {completionRates.length > 0 && (
-            <form className="flex items-center gap-2" action="/admin/reports">
+            <form className="no-print flex items-center gap-2" action="/admin/reports">
               <label htmlFor="course" className="text-sm font-medium text-slate-700">
                 Course
               </label>

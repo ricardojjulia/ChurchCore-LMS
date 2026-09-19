@@ -1,3 +1,6 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
 import { tiptapToHtml } from '@/utils/tiptap'
 import VideoPlayer from './VideoPlayer'
 import AssignmentPlayer from './AssignmentPlayer'
@@ -26,6 +29,7 @@ interface Props {
 }
 
 export default function BlockPlayer({ block, orgId, submission, onComplete, viewerRole }: Props) {
+  const t = useTranslations()
   const content = block.content as Record<string, unknown>
 
   // ── Page ───────────────────────────────────────────────────────────
@@ -37,7 +41,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
         {html ? (
           <div dangerouslySetInnerHTML={{ __html: html }} />
         ) : (
-          <p className="italic text-muted-foreground">No content yet.</p>
+          <p className="italic text-muted-foreground">{t('learning.block.emptyPageBody')}</p>
         )}
       </div>
     )
@@ -46,7 +50,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   // ── Video ──────────────────────────────────────────────────────────
   if (block.block_type_id === 'video_stream') {
     const url = content.url as string | undefined
-    if (!url) return <p className="text-muted-foreground italic">No video URL configured.</p>
+    if (!url) return <p className="text-muted-foreground italic">{t('learning.block.noVideoUrl')}</p>
     return (
       <VideoPlayer
         url={url}
@@ -64,12 +68,12 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   if (block.block_type_id === 'resource_file') {
     const url  = content.url as string | undefined
     const name = content.filename as string | undefined
-    if (!url) return <p className="text-muted-foreground italic">File not available.</p>
+    if (!url) return <p className="text-muted-foreground italic">{t('learning.block.fileUnavailable')}</p>
     return (
       <div className="flex items-center gap-4 bg-white border border-border rounded-xl p-5">
         <span className="text-3xl" aria-hidden="true">📎</span>
         <div>
-          <p className="font-semibold text-foreground">{name ?? 'Download file'}</p>
+          <p className="font-semibold text-foreground">{name ?? t('learning.block.downloadFileFallback')}</p>
           <a
             href={url}
             target="_blank"
@@ -77,7 +81,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
             download
             className="text-sm text-primary hover:text-primary/80 underline transition-colors"
           >
-            Download →
+            {t('learning.block.downloadButton')}
           </a>
         </div>
       </div>
@@ -88,7 +92,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   if (block.block_type_id === 'external_url') {
     const url         = content.url as string | undefined
     const description = content.description as string | undefined
-    if (!url) return <p className="text-muted-foreground italic">No URL configured.</p>
+    if (!url) return <p className="text-muted-foreground italic">{t('learning.block.noUrlConfigured')}</p>
     return (
       <div className="flex items-start gap-4 bg-white border border-border rounded-xl p-5">
         <span className="text-2xl mt-0.5" aria-hidden="true">🔗</span>
@@ -123,7 +127,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
         )}
         {dueDate && (
           <p className="text-xs text-muted-foreground mb-4">
-            Due: {new Date(dueDate).toLocaleDateString('en-US', { dateStyle: 'long', timeStyle: 'short' })}
+            {t('learning.block.dueLabel')} {new Date(dueDate).toLocaleDateString('en-US', { dateStyle: 'long', timeStyle: 'short' })}
           </p>
         )}
         <AssignmentPlayer
@@ -142,16 +146,17 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   if (block.block_type_id === 'quiz') {
     const questions = (content.questions as QuizQuestion[] | undefined) ?? []
     if (questions.length === 0) {
-      return <p className="text-muted-foreground italic">No questions configured for this quiz.</p>
+      return <p className="text-muted-foreground italic">{t('learning.block.quizEmpty')}</p>
     }
     const desc = content.description as string | undefined
+    const quizTotalPoints = questions.reduce((s, q) => s + q.points, 0)
     return (
       <div>
         {desc && <p className="text-sm text-muted-foreground mb-4">{desc}</p>}
         <div className="flex items-center gap-3 mb-4 text-xs text-muted-foreground">
-          <span>{questions.length} question{questions.length !== 1 ? 's' : ''}</span>
+          <span>{t('learning.block.questionCountTemplate', { count: questions.length })}</span>
           <span>·</span>
-          <span>{questions.reduce((s, q) => s + q.points, 0)} points total</span>
+          <span>{t('learning.block.pointsTotalTemplate', { n: quizTotalPoints })}</span>
         </div>
         <QuizPlayer
           blockId={block.id}
@@ -172,7 +177,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   // ── Live Session ───────────────────────────────────────────────────
   if (block.block_type_id === 'live_session') {
     const meetingUrl   = content.meeting_url as string | undefined
-    if (!meetingUrl) return <p className="text-muted-foreground italic">Meeting URL not configured.</p>
+    if (!meetingUrl) return <p className="text-muted-foreground italic">{t('learning.block.noMeetingUrl')}</p>
     return (
       <LiveSessionPlayer
         title={block.title}
@@ -204,7 +209,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
 
   // ── Teacher Plug ───────────────────────────────────────────────────
   if (block.block_type_id === 'teacher_plug') {
-    if (!orgId) return <p className="text-muted-foreground italic">Instructor card not available.</p>
+    if (!orgId) return <p className="text-muted-foreground italic">{t('common.instructorCardUnavailable')}</p>
     return <TeacherPlugPlayer blockContent={block.content} orgId={orgId} />
   }
 
@@ -223,7 +228,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
 
   return (
     <div className="bg-slate-50 border border-border rounded-xl p-5 text-center">
-      <p className="text-muted-foreground text-sm italic">Block type not supported.</p>
+      <p className="text-muted-foreground text-sm italic">{t('learning.block.unsupportedType')}</p>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
-
+import { getTranslations } from 'next-intl/server'
 import { createServerClient } from '@/lib/supabase/server'
 import {
   buildStudentReportData,
@@ -18,18 +18,20 @@ type Profile = {
   org_id: string | null
 }
 
-function EmptyState() {
+async function EmptyState() {
+  const t = await getTranslations()
   return (
     <div className="mt-8 border border-slate-200 bg-white p-10 text-center shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-950">No report data yet</h2>
+      <h2 className="text-lg font-semibold text-slate-950">{t('reports.student.emptyHeading')}</h2>
       <p className="mt-2 text-sm text-slate-600">
-        Enroll in a course or complete your first activity to populate progress reports.
+        {t('reports.student.emptyDescription')}
       </p>
     </div>
   )
 }
 
 export default async function StudentReportsPage() {
+  const t = await getTranslations()
   const supabase = await createServerClient()
   const {
     data: { user },
@@ -71,24 +73,25 @@ export default async function StudentReportsPage() {
     <main className="mx-auto max-w-6xl">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-950">My Progress Reports</h1>
+          <h1 className="text-2xl font-bold text-slate-950">{t('reports.student.heading')}</h1>
           <p className="mt-1 text-sm text-slate-600">
-            Last updated{' '}
-            {new Date(latestRefresh ?? reportData.generatedAt).toLocaleString(undefined, {
-              dateStyle: 'medium',
-              timeStyle: 'short',
+            {t('reports.student.lastUpdatedTemplate', {
+              date: new Date(latestRefresh ?? reportData.generatedAt).toLocaleString(undefined, {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              }),
             })}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <ExportButton label="Export PDF" format="pdf" action={generateStudentProgressReport} />
-          <ExportButton label="Export XLSX" format="xlsx" action={generateStudentXLSXExport} />
+        <div className="no-print flex flex-wrap gap-2">
+          <ExportButton label={t('reports.student.exportPdfButton')} format="pdf" action={generateStudentProgressReport} />
+          <ExportButton label={t('reports.student.exportXlsxButton')} format="xlsx" action={generateStudentXLSXExport} />
         </div>
       </div>
 
       <noscript>
         <p className="mt-4 border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          JavaScript is disabled. Use the table view below for your accessible progress report.
+          {t('reports.student.noscriptFallback')}
         </p>
       </noscript>
 
@@ -99,7 +102,7 @@ export default async function StudentReportsPage() {
           <Suspense fallback={<StudentProgressSkeleton variant="chart" />}>
             <section aria-labelledby="module-completion-heading">
               <h2 id="module-completion-heading" className="text-lg font-semibold text-slate-950">
-                Module Completion
+                {t('reports.student.moduleCompletionHeading')}
               </h2>
               <div className="mt-3 border border-slate-200 bg-white p-4 shadow-sm">
                 <ModuleCompletionChart data={moduleCompletionData} />
@@ -110,7 +113,7 @@ export default async function StudentReportsPage() {
           <Suspense fallback={<StudentProgressSkeleton variant="chart" />}>
             <section aria-labelledby="grade-history-heading">
               <h2 id="grade-history-heading" className="text-lg font-semibold text-slate-950">
-                Grade History
+                {t('reports.student.gradeHistoryHeading')}
               </h2>
               <div className="mt-3 border border-slate-200 bg-white p-4 shadow-sm">
                 <GradeHistoryChart data={gradeHistoryData} />
@@ -121,7 +124,7 @@ export default async function StudentReportsPage() {
           <Suspense fallback={<StudentProgressSkeleton variant="table" />}>
             <section aria-labelledby="enrollment-table-heading">
               <h2 id="enrollment-table-heading" className="text-lg font-semibold text-slate-950">
-                Course Enrollments
+                {t('reports.student.courseEnrollmentsHeading')}
               </h2>
               <div className="mt-3">
                 <EnrollmentTable courses={reportData.courses} />

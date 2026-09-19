@@ -1,6 +1,7 @@
 import { createServiceClient } from '@/utils/supabase/service'
 import { redirect } from 'next/navigation'
 import JoinForm from './JoinForm'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default async function JoinPage({ params }: Props) {
+  const t = await getTranslations()
   const service = createServiceClient()
 
   const { data: org } = await service
@@ -34,9 +36,9 @@ export default async function JoinPage({ params }: Props) {
             className="h-12 mb-6 mx-auto object-contain"
           />
         )}
-        <h1 className="text-2xl font-bold text-center mb-2">Join {org.name}</h1>
+        <h1 className="text-2xl font-bold text-center mb-2">{t('join.page.headingTemplate', { name: org.name })}</h1>
         <p className="text-muted-foreground text-center mb-6 text-sm">
-          Create your account to access courses and learning materials.
+          {t('join.page.subtitle')}
         </p>
         <JoinForm
           orgId={org.id}

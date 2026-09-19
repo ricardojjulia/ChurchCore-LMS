@@ -1,10 +1,12 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import ProfileForm from '@/components/profile/ProfileForm'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
 export default async function ProfilePage() {
+  const t = await getTranslations()
   const supabase = await createClient()
   const {
     data: { user },
@@ -22,8 +24,8 @@ export default async function ProfilePage() {
     <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Your Profile</h1>
-          <p className="text-slate-500 mt-1 text-sm">How you appear in ChurchCore LMS.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('profile.page.heading')}</h1>
+          <p className="text-slate-500 mt-1 text-sm">{t('profile.page.subtitle')}</p>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
@@ -34,7 +36,7 @@ export default async function ProfilePage() {
             </div>
             <div>
               <p className="text-white font-extrabold text-xl leading-tight">
-                {profile?.display_name ?? 'Set your name below'}
+                {profile?.display_name ?? t('profile.page.setNameFallback')}
               </p>
               <div className="flex items-center gap-3 mt-1">
                 <span className="text-xs font-bold text-indigo-300 uppercase tracking-widest">

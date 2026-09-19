@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/utils/supabase/client'
 
 interface BlockContent {
@@ -26,6 +27,7 @@ export default function TeacherPlugPlayer({
   blockContent: Record<string, unknown>
   orgId:        string
 }) {
+  const t            = useTranslations()
   const content      = blockContent as unknown as BlockContent
   const [profile,    setProfile]    = useState<TeacherProfile | null>(null)
   const [photoUrl,   setPhotoUrl]   = useState<string | null>(null)
@@ -42,10 +44,10 @@ export default function TeacherPlugPlayer({
       .eq('uid', content.teacher_uid)
       .single()
       .then(async ({ data, error: err }) => {
-        if (err || !data) { setError('Instructor not found'); setLoading(false); return }
+        if (err || !data) { setError(t('learning.teacherPlug.notFoundError')); setLoading(false); return }
 
         // Verify the teacher belongs to the same org
-        if (data.org_id !== orgId) { setError('Instructor not found'); setLoading(false); return }
+        if (data.org_id !== orgId) { setError(t('learning.teacherPlug.notFoundError')); setLoading(false); return }
 
         setProfile(data as TeacherProfile)
 
@@ -79,7 +81,7 @@ export default function TeacherPlugPlayer({
     )
   }
 
-  const name      = profile.display_name ?? 'Your Instructor'
+  const name      = profile.display_name ?? t('learning.teacherPlug.yourInstructorLabel')
   const initials  = name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
   const bio       = content.bio_override ?? profile.bio
   const specialty = content.specialty
@@ -104,7 +106,7 @@ export default function TeacherPlugPlayer({
 
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
-            Your Instructor
+            {t('learning.teacherPlug.yourInstructorLabel')}
           </p>
           <h3 className="text-lg font-extrabold text-foreground">{name}</h3>
 

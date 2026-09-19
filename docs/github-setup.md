@@ -40,6 +40,8 @@ Configure in **GitHub → Repository → Settings → Secrets and variables → 
 
 The E2E workflow starts an isolated local Supabase stack in its GitHub-hosted runner and generates a disposable password at runtime. It does not require repository secrets or access to a shared cloud database.
 
+The E2E workflow starts an isolated local Supabase stack in its GitHub-hosted runner and generates a disposable password at runtime. It does not require repository secrets or access to a shared cloud database.
+
 ## Staging Environment
 
 Create a dedicated second Supabase project for staging — never share schemas, always full project isolation.

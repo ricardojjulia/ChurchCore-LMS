@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useTransition, useMemo } from 'react'
+import { useTranslations } from 'next-intl'
 import { submitQuiz, loadQuizQuestions } from '@/app/actions/learning'
 import type { QuizQuestion } from '@/types/blocks'
 import { cn } from '@/lib/utils'
@@ -76,6 +77,7 @@ export default function QuizPlayer({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blockId])
 
+  const t = useTranslations()
   const questions = resolvedQuestions ?? staticQuestions
 
   const maxScore = questions.reduce((s, q) => s + q.points, 0)
@@ -156,7 +158,7 @@ export default function QuizPlayer({
     return (
       <div className="mt-6 flex items-center gap-3 text-muted-foreground text-sm">
         <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-        <span>Preparing quiz…</span>
+        <span>{t('learning.quiz.preparingLoading')}</span>
       </div>
     )
   }
@@ -166,9 +168,9 @@ export default function QuizPlayer({
     return (
       <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-5 py-6 text-center space-y-2">
         <p className="text-2xl">🔒</p>
-        <p className="font-semibold text-foreground">No attempts remaining</p>
+        <p className="font-semibold text-foreground">{t('learning.quiz.noAttemptsHeading')}</p>
         <p className="text-sm text-muted-foreground">
-          This quiz allows {attemptsAllowed} attempt{attemptsAllowed !== 1 ? 's' : ''}. You have used all of them.
+          {t('learning.quiz.attemptsExhaustedDescription', { n: attemptsAllowed })}
         </p>
       </div>
     )
@@ -280,7 +282,7 @@ export default function QuizPlayer({
             {displayScore}/{maxScore} — {displayGradePct}%
           </p>
           <p className={`text-sm text-${color}-600 mt-0.5`}>
-            {displayGradePct >= 90 ? 'Excellent work!' : displayGradePct >= 70 ? 'Good job — keep it up!' : 'Keep studying and try again.'}
+            {displayGradePct >= 90 ? t('learning.quiz.feedbackExcellent') : displayGradePct >= 70 ? t('learning.quiz.feedbackGood') : t('learning.quiz.feedbackNeedsWork')}
           </p>
         </div>
 
@@ -291,7 +293,7 @@ export default function QuizPlayer({
               <div key={q.id} className="bg-white border border-border rounded-xl p-5">
                 <p className="text-sm font-semibold text-foreground mb-3">
                   {qi + 1}. {q.text}
-                  <span className="ml-2 text-xs text-muted-foreground">({q.points}pt{q.points !== 1 ? 's' : ''})</span>
+                  <span className="ml-2 text-xs text-muted-foreground">({t('learning.quiz.pointsTemplate', { n: q.points })})</span>
                 </p>
 
                 {/* MC / TF result */}
@@ -336,10 +338,10 @@ export default function QuizPlayer({
                           <span className="text-xs font-bold">{correct ? '✓' : '✗'}</span>
                           <span className="font-medium">{pair.left}</span>
                           <span className="text-muted-foreground mx-1">→</span>
-                          <span>{chosen ?? <em className="opacity-60">No answer</em>}</span>
+                          <span>{chosen ?? <em className="opacity-60">{t('learning.quiz.noAnswerFallback')}</em>}</span>
                           {!correct && (
                             <span className="ml-auto text-xs text-emerald-700 font-medium">
-                              Correct: {pair.right}
+                              {t('learning.quiz.correctAnswerTemplate', { right: pair.right })}
                             </span>
                           )}
                         </div>
@@ -364,10 +366,10 @@ export default function QuizPlayer({
                                   : 'border-rose-300 bg-rose-50 text-rose-800'
                         )}>
                           <span className="text-xs font-bold">{correct ? '✓' : '✗'}</span>
-                          <span>Blank {bi + 1}: <strong>{given || <em className="opacity-60">No answer</em>}</strong></span>
+                          <span>{t('learning.quiz.blankResultLabelTemplate', { n: bi + 1 })} <strong>{given || <em className="opacity-60">{t('learning.quiz.noAnswerFallback')}</em>}</strong></span>
                           {!correct && (
                             <span className="ml-auto text-xs text-emerald-700 font-medium">
-                              Accepted: {blank.acceptable_answers.join(' / ')}
+                              {t('learning.quiz.acceptedAnswersTemplate', { answers: blank.acceptable_answers.join(' / ') })}
                             </span>
                           )}
                         </div>
@@ -409,12 +411,12 @@ export default function QuizPlayer({
         <div className="flex flex-wrap gap-2">
           {attemptsAllowed > 0 && (
             <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600">
-              Attempt {attemptsUsed + 1} of {attemptsAllowed}
+              {t('learning.quiz.attemptCounterTemplate', { n: attemptsUsed + 1, m: attemptsAllowed })}
             </span>
           )}
           {minimumGradePct > 0 && (
             <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700">
-              Passing score: {minimumGradePct}%
+              {t('learning.quiz.passingScoreTemplate', { pct: minimumGradePct })}
             </span>
           )}
         </div>
@@ -429,7 +431,7 @@ export default function QuizPlayer({
             : 'bg-slate-50 border border-border text-muted-foreground'
         )}>
           <span aria-hidden="true">{timerUrgent ? '⏰' : '⏱'}</span>
-          <span>{formatTime(timeLeft)} remaining</span>
+          <span>{t('learning.quiz.timeRemainingTemplate', { time: formatTime(timeLeft) })}</span>
         </div>
       )}
 
@@ -437,12 +439,12 @@ export default function QuizPlayer({
         <div key={q.id} className="bg-white border border-border rounded-xl p-5">
           <p className="text-sm font-semibold text-foreground mb-3">
             {qi + 1}. {q.text}
-            <span className="ml-2 text-xs text-muted-foreground">({q.points}pt{q.points !== 1 ? 's' : ''})</span>
+            <span className="ml-2 text-xs text-muted-foreground">({t('learning.quiz.pointsTemplate', { n: q.points })})</span>
           </p>
 
           {/* Multiple Choice / True-False */}
           {(q.type === 'multiple_choice' || q.type === 'true_false' || q.type === undefined) && (
-            <div className="space-y-2" role="radiogroup" aria-label={`Question ${qi + 1}`}>
+            <div className="space-y-2" role="radiogroup" aria-label={t('learning.quiz.questionGroupAriaLabel', { n: qi + 1 })}>
               {q.options.map((opt, oi) => {
                 const selected = answers.get(q.id) === oi
                 return (
@@ -488,13 +490,13 @@ export default function QuizPlayer({
                     <select
                       value={selected}
                       onChange={(e) => setMatchedPair(q.id, pair.id, e.target.value)}
-                      title={`Match for: ${pair.left}`}
+                      title={t('learning.quiz.matchForTitle', { left: pair.left })}
                       className={cn(
                         'flex-1 border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30',
                         selected ? 'border-primary text-foreground' : 'border-border text-muted-foreground'
                       )}
                     >
-                      <option value="">— Select —</option>
+                      <option value="">{t('learning.quiz.selectPlaceholder')}</option>
                       {rights.map((r) => (
                         <option key={r} value={r}>{r}</option>
                       ))}
@@ -517,9 +519,9 @@ export default function QuizPlayer({
                     type="text"
                     value={filled[String(seg.index)] ?? ''}
                     onChange={(e) => setBlankAnswer(q.id, seg.index, e.target.value)}
-                    aria-label={`Blank ${seg.index + 1} for question ${qi + 1}`}
-                    title={`Blank ${seg.index + 1}`}
-                    placeholder={`Blank ${seg.index + 1}`}
+                    aria-label={t('learning.quiz.blankInputAriaLabel', { blankN: seg.index + 1, questionN: qi + 1 })}
+                    title={t('learning.quiz.blankInputPlaceholderTemplate', { n: seg.index + 1 })}
+                    placeholder={t('learning.quiz.blankInputPlaceholderTemplate', { n: seg.index + 1 })}
                     className="inline-block border-b-2 border-primary bg-transparent mx-1 px-1 w-28 text-center focus:outline-none focus:border-primary/70"
                   />
                 )
@@ -539,7 +541,7 @@ export default function QuizPlayer({
           disabled={pending || (!allAnswered && !autoSubmittedRef.current)}
           className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
         >
-          {pending ? 'Submitting…' : `Submit Quiz (${answeredCount}/${questions.length} answered)`}
+          {pending ? t('common.submittingButton') : t('learning.quiz.submitButtonTemplate', { n: answeredCount, m: questions.length })}
         </button>
       </div>
     </form>
