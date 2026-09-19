@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import NewMessageButton from './NewMessageButton'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,7 @@ function timeAgo(iso: string): string {
 }
 
 export default async function MessagesPage() {
+  const t = await getTranslations()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -102,17 +104,17 @@ export default async function MessagesPage() {
       initial: string
     }[]
 
-  const unreadCount = threads.filter((t) => t.isUnread).length
+  const unreadCount = threads.filter((thread) => thread.isUnread).length
 
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Messages</h1>
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t('messages.list.heading')}</h1>
             {unreadCount > 0 && (
               <p className="text-sm text-muted-foreground mt-0.5">
-                {unreadCount} unread conversation{unreadCount !== 1 ? 's' : ''}
+                {t('messages.list.unreadSubtitleTemplate', { n: unreadCount })}
               </p>
             )}
           </div>
@@ -121,38 +123,38 @@ export default async function MessagesPage() {
 
         {threads.length === 0 ? (
           <div className="bg-white border border-border rounded-2xl p-12 text-center">
-            <p className="text-muted-foreground italic mb-4">No conversations yet.</p>
+            <p className="text-muted-foreground italic mb-4">{t('messages.list.emptyState')}</p>
             <NewMessageButton />
           </div>
         ) : (
           <div className="bg-white border border-border rounded-2xl overflow-hidden divide-y divide-border">
-            {threads.map((t) => (
+            {threads.map((thread) => (
               <Link
-                key={t.threadId}
-                href={`/messages/${t.threadId}`}
+                key={thread.threadId}
+                href={`/messages/${thread.threadId}`}
                 className="flex items-start gap-4 px-5 py-4 hover:bg-slate-50 transition-colors group"
               >
                 {/* Avatar */}
                 <div className="shrink-0 w-10 h-10 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">
-                  {t.initial}
+                  {thread.initial}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className={`text-sm truncate ${t.isUnread ? 'font-bold text-foreground' : 'font-medium text-foreground'}`}>
-                      {t.displayName}
+                    <p className={`text-sm truncate ${thread.isUnread ? 'font-bold text-foreground' : 'font-medium text-foreground'}`}>
+                      {thread.displayName}
                     </p>
                     <span className="text-xs text-muted-foreground shrink-0">
-                      {timeAgo(t.lastMessageAt)}
+                      {timeAgo(thread.lastMessageAt)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    {t.isUnread && (
+                    {thread.isUnread && (
                       <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
                     )}
-                    <p className={`text-xs truncate ${t.isUnread ? 'text-foreground' : 'text-muted-foreground'}`}>
-                      {t.preview ?? 'No messages yet'}
+                    <p className={`text-xs truncate ${thread.isUnread ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      {thread.preview ?? t('messages.list.threadPreviewEmpty')}
                     </p>
                   </div>
                 </div>

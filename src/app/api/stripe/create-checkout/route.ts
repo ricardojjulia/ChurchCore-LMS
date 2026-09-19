@@ -40,19 +40,31 @@ export async function POST(req: NextRequest) {
   const svc = createServiceClient()
   const { data: org } = await svc
     .from('organizations')
-    .select('id, name')
+    .select('id, name, stripe_customer_id')
     .eq('id', orgId)
     .single()
 
   if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
 
-  const customer = await getStripe().customers.create({
-    name:     org.name,
-    metadata: { org_id: orgId },
-  })
+  // Reuse the existing Stripe customer if one was already created for this org
+  // (e.g. a prior checkout attempt was abandoned) — otherwise every retry
+  // would mint a new, orphaned Stripe customer. Persist the id synchronously
+  // here rather than relying solely on the checkout.session.completed webhook,
+  // which can be delayed or never fire if the shopper never completes payment —
+  // stripe_customer_id was previously never written at all, permanently
+  // blocking billing-portal access for every org.
+  let customerId = org.stripe_customer_id as string | null
+  if (!customerId) {
+    const customer = await getStripe().customers.create({
+      name:     org.name,
+      metadata: { org_id: orgId },
+    })
+    customerId = customer.id
+    await svc.from('organizations').update({ stripe_customer_id: customerId }).eq('id', orgId)
+  }
 
   const session = await getStripe().checkout.sessions.create({
-    customer:              customer.id,
+    customer:              customerId,
     payment_method_types:  ['card'],
     line_items:            [{ price: priceId, quantity: 1 }],
     mode:                  'subscription',

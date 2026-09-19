@@ -9,7 +9,7 @@ export default async function EditTermPage({ params }: { params: Promise<{ id: s
   const { id: termId } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/login')
   const { data: me } = await supabase.from('profiles').select('role').eq('auth_id', user.id).single()
   if (!me || !['admin', 'manager'].includes(me.role)) redirect('/dashboard')
 

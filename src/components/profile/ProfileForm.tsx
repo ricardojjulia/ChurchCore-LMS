@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,14 +15,8 @@ interface Props {
   initialDateOfBirth?: string | null
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  admin:   'Administrator',
-  manager: 'Manager',
-  teacher: 'Teacher',
-  student: 'Student',
-}
-
 export default function ProfileForm({ userId, initialFullName, initialAvatarUrl, role, initialDateOfBirth = null }: Props) {
+  const t = useTranslations()
   const [fullName, setFullName]         = useState(initialFullName)
   const [avatarUrl, setAvatarUrl]       = useState(initialAvatarUrl)
   const [dateOfBirth, setDateOfBirth]   = useState(initialDateOfBirth ?? '')
@@ -32,7 +27,7 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!fullName.trim()) { setError('Display name is required.'); return }
+    if (!fullName.trim()) { setError(t('profile.form.displayNameRequiredError')); return }
     setSaving(true)
     setError(null)
     setSuccess(false)
@@ -64,13 +59,13 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
     <form onSubmit={handleSave} className="space-y-6">
       <div>
         <label className="block text-sm font-semibold text-slate-700 mb-1">
-          Display Name <span className="text-destructive">*</span>
+          {t('profile.form.displayNameLabel')} <span className="text-destructive">*</span>
         </label>
         <input
           type="text"
           value={fullName}
           onChange={(e) => { setFullName(e.target.value); setSuccess(false) }}
-          placeholder="Your full name"
+          placeholder={t('profile.form.fullNamePlaceholder')}
           required
           className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
         />
@@ -78,33 +73,33 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
 
       <div>
         <label className="block text-sm font-semibold text-slate-700 mb-1">
-          Avatar URL
-          <span className="ml-2 text-xs font-normal text-muted-foreground">(optional — paste any image URL)</span>
+          {t('profile.form.avatarUrlLabel')}
+          <span className="ml-2 text-xs font-normal text-muted-foreground">{t('profile.form.avatarUrlHint')}</span>
         </label>
         <input
           type="url"
           value={avatarUrl}
           onChange={(e) => { setAvatarUrl(e.target.value); setSuccess(false) }}
-          placeholder="https://example.com/avatar.jpg"
+          placeholder={t('profile.form.avatarUrlPlaceholder')}
           className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
         />
         {avatarUrl && (
           <div className="mt-3 flex items-center gap-3">
             <img
               src={avatarUrl}
-              alt="Avatar preview"
+              alt={t('profile.form.avatarPreviewAlt')}
               className="w-12 h-12 rounded-full object-cover border border-border"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
             />
-            <span className="text-xs text-muted-foreground">Preview</span>
+            <span className="text-xs text-muted-foreground">{t('profile.form.previewCaption')}</span>
           </div>
         )}
       </div>
 
       <div>
         <label htmlFor="date_of_birth" className="block text-sm font-semibold text-slate-700 mb-1">
-          Date of Birth
-          <span className="ml-2 text-xs font-normal text-muted-foreground">(optional — used for age-restricted courses)</span>
+          {t('profile.form.dobLabel')}
+          <span className="ml-2 text-xs font-normal text-muted-foreground">{t('profile.form.dobHint')}</span>
         </label>
         <input
           id="date_of_birth"
@@ -117,10 +112,16 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">Role</label>
+        <label className="block text-sm font-semibold text-slate-700 mb-2">{t('profile.form.roleFieldLabel')}</label>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary">{ROLE_LABELS[role] ?? role}</Badge>
-          <span className="text-xs text-muted-foreground">Managed by administrators</span>
+          <Badge variant="secondary">
+            {role === 'admin' ? t('profile.form.roleAdministrator')
+              : role === 'manager' ? t('profile.form.roleManager')
+              : role === 'teacher' ? t('profile.form.roleTeacher')
+              : role === 'student' ? t('profile.form.roleStudent')
+              : role}
+          </Badge>
+          <span className="text-xs text-muted-foreground">{t('profile.form.roleManagedHint')}</span>
         </div>
       </div>
 
@@ -132,17 +133,17 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
 
       {success && (
         <p className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-4 py-3">
-          Profile saved successfully.
+          {t('profile.form.saveSuccessNotice')}
         </p>
       )}
 
       <div className="flex items-center justify-between pt-2">
         <Button type="button" variant="ghost" size="sm" onClick={handleSignOut}
           className="text-muted-foreground hover:text-destructive">
-          Sign out
+          {t('common.signOut')}
         </Button>
         <Button type="submit" disabled={saving}>
-          {saving ? 'Saving…' : 'Save Profile'}
+          {saving ? t('common.savingButton') : t('profile.form.saveButton')}
         </Button>
       </div>
     </form>

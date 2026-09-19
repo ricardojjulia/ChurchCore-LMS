@@ -27,7 +27,7 @@ export default async function BankDetailPage({ params }: Props) {
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/login')
 
   const { data: pr } = await supabase
     .from('profile_roles')

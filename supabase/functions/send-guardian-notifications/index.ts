@@ -28,7 +28,12 @@ interface QueueRow {
   payload:        Record<string, string>
   debounce_until: string
   created_at:     string
+  attempt_count:  number
 }
+
+// ADR-2026-010: a row that fails MAX_ATTEMPTS times is dead-lettered
+// (failed_at set) instead of retried forever or silently marked sent.
+const MAX_ATTEMPTS = 3
 
 interface GuardianLink {
   guardian_uid: string
@@ -162,12 +167,13 @@ Deno.serve(async (req: Request) => {
 
   const resend = new Resend(RESEND_KEY)
 
-  // ── Fetch ready rows (debounce window elapsed, not yet sent) ──────────────
+  // ── Fetch ready rows (debounce window elapsed, not yet sent, not dead-lettered) ──
   const { data: rows, error: fetchErr } = await svc
     .from('guardian_notification_queue')
-    .select('id, student_uid, event_type, payload, debounce_until, created_at')
+    .select('id, student_uid, event_type, payload, debounce_until, created_at, attempt_count')
     .lt('debounce_until', new Date().toISOString())
     .is('sent_at', null)
+    .is('failed_at', null)
     .limit(50)
 
   if (fetchErr) {
@@ -226,6 +232,12 @@ Deno.serve(async (req: Request) => {
 
     // ── Send to each guardian ──────────────────────────────────────────────
     const portalUrl      = `${APP_URL}/guardian`
+    // ADR-2026-010: track whether any guardian's send genuinely failed (as
+    // opposed to a legitimate skip — no email, opted out, missing profile).
+    // A genuine failure means this row must NOT be marked sent — it retries
+    // or dead-letters instead of silently disappearing.
+    let rowHadFailure = false
+    let lastErrorMessage = ''
 
     for (const link of links as GuardianLink[]) {
       const guardianUid = link.guardian_uid
@@ -295,6 +307,8 @@ Deno.serve(async (req: Request) => {
             result.error.message,
             'event:', row.event_type,
           )
+          rowHadFailure = true
+          lastErrorMessage = result.error.message
         } else {
           sent++
         }
@@ -305,16 +319,48 @@ Deno.serve(async (req: Request) => {
           message,
           'event:', row.event_type,
         )
+        rowHadFailure = true
+        lastErrorMessage = message
         // Continue to next guardian — partial sends are better than none.
       }
     }
 
-    // Mark the queue row as processed regardless of individual guardian send
-    // outcomes. Individual failures were logged above.
-    await svc
-      .from('guardian_notification_queue')
-      .update({ sent_at: new Date().toISOString() })
-      .eq('id', row.id)
+    // ADR-2026-010: only mark sent_at when every guardian was actually
+    // reached (sent or legitimately skipped) — a real send failure must be
+    // visible and retried, not silently marked successful.
+    if (!rowHadFailure) {
+      await svc
+        .from('guardian_notification_queue')
+        .update({ sent_at: new Date().toISOString() })
+        .eq('id', row.id)
+      continue
+    }
+
+    const nextAttempt = row.attempt_count + 1
+    if (nextAttempt >= MAX_ATTEMPTS) {
+      // Exhausted retries — dead-letter. Visible to platform admins via the
+      // "platform admin read" policy added in the same migration as these columns.
+      await svc
+        .from('guardian_notification_queue')
+        .update({
+          attempt_count: nextAttempt,
+          failed_at:     new Date().toISOString(),
+          last_error:    lastErrorMessage.slice(0, 500),
+        })
+        .eq('id', row.id)
+    } else {
+      // Leave sent_at/failed_at null so the row is picked up again on a
+      // later cron tick; push debounce_until forward so a persistently-down
+      // provider doesn't get hammered every invocation.
+      await svc
+        .from('guardian_notification_queue')
+        .update({
+          attempt_count:  nextAttempt,
+          last_error:     lastErrorMessage.slice(0, 500),
+          debounce_until: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        })
+        .eq('id', row.id)
+    }
   }
 
   return new Response(

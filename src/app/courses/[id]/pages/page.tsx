@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createPageAndRedirect } from '@/app/actions/content'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,6 +12,7 @@ export default async function CourseMaterialsPage({
   params: Promise<{ id: string }>
 }) {
   const { id: courseId } = await params
+  const t = await getTranslations()
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -22,7 +24,7 @@ export default async function CourseMaterialsPage({
     .eq('auth_id', user.id)
     .single()
 
-  if (!profile) redirect('/auth/login')
+  if (!profile) redirect('/login')
 
   const isStaff = ['admin', 'manager', 'teacher'].includes(profile.role)
 
@@ -75,22 +77,20 @@ export default async function CourseMaterialsPage({
       <div className="max-w-3xl mx-auto">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <Link href="/courses" className="hover:text-primary transition-colors">Courses</Link>
+          <Link href="/courses" className="hover:text-primary transition-colors">{t('courses.detail.coursescrumb')}</Link>
           <span>/</span>
           <Link href={`/courses/${courseId}`} className="hover:text-primary transition-colors truncate">
             {course.title}
           </Link>
           <span>/</span>
-          <span className="text-foreground font-semibold">Additional Materials</span>
+          <span className="text-foreground font-semibold">{t('courses.materials.breadcrumbCurrent')}</span>
         </nav>
 
         <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">Additional Materials</h1>
+            <h1 className="text-2xl font-extrabold text-foreground">{t('courses.materials.heading')}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {isStaff
-                ? 'Supplementary reading and reference pages for this course.'
-                : 'Supplementary reading and reference pages from your instructor.'}
+              {t('courses.materials.subheading')}
             </p>
           </div>
 
@@ -115,12 +115,10 @@ export default async function CourseMaterialsPage({
           <div className="bg-white border border-border rounded-2xl p-12 text-center">
             <p className="text-4xl mb-3">📚</p>
             <h2 className="text-base font-bold text-foreground mb-1">
-              {isStaff ? 'No materials yet' : 'No materials available'}
+              {t('courses.materials.emptyHeading')}
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
-              {isStaff
-                ? 'Create supplementary reading pages and publish them to make them visible to students.'
-                : 'Your instructor hasn\'t published any additional materials for this course yet.'}
+              {t('courses.materials.emptyDescription')}
             </p>
           </div>
         ) : (

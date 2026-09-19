@@ -21,7 +21,7 @@ const FORMAT_COLORS: Record<string, string> = {
 export default async function AdminSectionsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/login')
 
   const { data: me } = await supabase
     .from('profiles')

@@ -163,3 +163,37 @@
            hover:bg-accent hover:text-accent-foreground;
   }
 }
+
+/* ── Print ──────────────────────────────────────────────────────────────────
+   Certificates and reports have export/download affordances but no print
+   path — browser print (Cmd+P) otherwise renders nav chrome, dark
+   backgrounds, and interactive controls as-is. Apply `.no-print` to any
+   nav/sidebar/button chrome that shouldn't appear on paper. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+
+  .print-break-before {
+    break-before: page;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid;
+  }
+}

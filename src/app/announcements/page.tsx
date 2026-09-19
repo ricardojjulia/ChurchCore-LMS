@@ -3,14 +3,15 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { cn } from '@/lib/utils'
 import MarkReadButton from '@/components/dashboard/MarkReadButton'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
 const PRIORITY_STYLE = {
-  urgent: { bar: 'bg-rose-500',  badge: 'bg-rose-100 text-rose-700 border-rose-200',   label: 'Urgent' },
-  high:   { bar: 'bg-amber-500', badge: 'bg-amber-100 text-amber-700 border-amber-200', label: 'High'   },
-  normal: { bar: 'bg-sky-500',   badge: 'bg-sky-100 text-sky-700 border-sky-200',       label: 'Normal' },
-  low:    { bar: 'bg-slate-300', badge: 'bg-slate-100 text-slate-600 border-slate-200', label: 'Low'    },
+  urgent: { bar: 'bg-rose-500',  badge: 'bg-rose-100 text-rose-700 border-rose-200'   },
+  high:   { bar: 'bg-amber-500', badge: 'bg-amber-100 text-amber-700 border-amber-200' },
+  normal: { bar: 'bg-sky-500',   badge: 'bg-sky-100 text-sky-700 border-sky-200'       },
+  low:    { bar: 'bg-slate-300', badge: 'bg-slate-100 text-slate-600 border-slate-200' },
 }
 
 function timeLabel(iso: string): string {
@@ -21,6 +22,7 @@ function timeLabel(iso: string): string {
 }
 
 export default async function AnnouncementsPage() {
+  const t = await getTranslations()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -79,10 +81,10 @@ export default async function AnnouncementsPage() {
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Announcements</h1>
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t('announcements.heading')}</h1>
             {items.filter((a) => !a.isRead).length > 0 && (
               <p className="text-sm text-muted-foreground mt-0.5">
-                {items.filter((a) => !a.isRead).length} unread
+                {t('common.unreadCountTemplate', { n: items.filter((a) => !a.isRead).length })}
               </p>
             )}
           </div>
@@ -91,7 +93,7 @@ export default async function AnnouncementsPage() {
               href="/announcements/new"
               className="inline-flex items-center px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
             >
-              + Post Announcement
+              {t('announcements.newButton')}
             </Link>
           )}
         </div>
@@ -100,20 +102,20 @@ export default async function AnnouncementsPage() {
         {isStaff && (drafts ?? []).length > 0 && (
           <section className="mb-6">
             <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
-              Your Drafts
+              {t('announcements.draftsHeading')}
             </h2>
             <div className="space-y-2">
               {(drafts ?? []).map((d: any) => (
                 <div key={d.id} className="bg-white border border-dashed border-border rounded-xl px-4 py-3 flex items-center justify-between gap-4">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{d.title}</p>
-                    <p className="text-xs text-muted-foreground">Draft · {d.scope}</p>
+                    <p className="text-xs text-muted-foreground">{t('announcements.draftMetaTemplate', { scope: d.scope })}</p>
                   </div>
                   <Link
                     href={`/announcements/new?edit=${d.id}`}
                     className="text-xs text-primary font-medium shrink-0 hover:underline"
                   >
-                    Publish
+                    {t('announcements.publishAction')}
                   </Link>
                 </div>
               ))}
@@ -125,7 +127,7 @@ export default async function AnnouncementsPage() {
         {isStaff && (scheduled ?? []).length > 0 && (
           <section className="mb-6">
             <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
-              Scheduled
+              {t('announcements.scheduledHeading')}
             </h2>
             <div className="space-y-2">
               {(scheduled ?? []).map((s: any) => (
@@ -134,9 +136,9 @@ export default async function AnnouncementsPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{s.title}</p>
                     <p className="text-xs text-amber-700">
-                      Publishes {new Date(s.publish_at).toLocaleDateString('en-US', {
+                      {t('announcements.publishesDateTemplate', { date: new Date(s.publish_at).toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-                      })}
+                      }) })}
                     </p>
                   </div>
                 </div>
@@ -148,7 +150,7 @@ export default async function AnnouncementsPage() {
         {/* Published announcements */}
         {items.length === 0 ? (
           <div className="bg-white border border-border rounded-2xl p-12 text-center">
-            <p className="text-muted-foreground italic">No announcements yet.</p>
+            <p className="text-muted-foreground italic">{t('announcements.emptyState')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -169,7 +171,7 @@ export default async function AnnouncementsPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-bold text-foreground text-base leading-snug">{a.title}</h3>
                         <span className={cn('px-2 py-0.5 text-[10px] font-bold rounded-full border', pStyle.badge)}>
-                          {pStyle.label}
+                          {t(`announcements.priority.${a.priority as 'urgent' | 'high' | 'normal' | 'low'}` as any)}
                         </span>
                         {!a.isRead && (
                           <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
@@ -179,7 +181,7 @@ export default async function AnnouncementsPage() {
                     </div>
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{a.body}</p>
                     <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/50">
-                      <span className="text-xs text-muted-foreground">Posted by {a.authorName}</span>
+                      <span className="text-xs text-muted-foreground">{t('announcements.postedByTemplate', { authorName: a.authorName })}</span>
                       {!a.isRead && <MarkReadButton announcementId={a.id} />}
                     </div>
                   </div>

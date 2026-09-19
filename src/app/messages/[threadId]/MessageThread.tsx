@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useTransition, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { sendMessage, markThreadRead, deleteMessage } from '@/app/actions/messages'
 import { useRealtimeChannel } from '@/hooks/useRealtimeChannel'
 import { cn } from '@/lib/utils'
@@ -36,6 +37,7 @@ export default function MessageThread({
   myUid:           string
   initialMessages: Message[]
 }) {
+  const t                       = useTranslations()
   const [messages, setMessages] = useState(initialMessages)
   const [body, setBody]         = useState('')
   const [error, setError]       = useState<string | null>(null)
@@ -117,7 +119,7 @@ export default function MessageThread({
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
         {messages.length === 0 && (
           <p className="text-center text-sm text-muted-foreground py-8">
-            No messages yet. Say hello!
+            {t('messages.thread.emptyState')}
           </p>
         )}
 
@@ -131,7 +133,7 @@ export default function MessageThread({
             return (
               <div key={msg.id} className={cn('flex', isMe ? 'justify-end' : 'justify-start')}>
                 <span className="text-xs italic text-muted-foreground/60 px-3 py-1">
-                  Message deleted
+                  {t('messages.thread.deletedPlaceholder')}
                 </span>
               </div>
             )
@@ -172,7 +174,7 @@ export default function MessageThread({
                     <button
                       onClick={() => handleDelete(msg.id)}
                       className="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive text-xs"
-                      title="Delete message"
+                      title={t('messages.thread.deleteAriaLabel')}
                     >
                       ✕
                     </button>
@@ -204,7 +206,7 @@ export default function MessageThread({
             value={body}
             onChange={(e) => setBody(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Write a message… (Ctrl+Enter to send)"
+            placeholder={t('messages.thread.composerPlaceholder')}
             rows={1}
             maxLength={10000}
             className="flex-1 border border-input rounded-xl px-4 py-2.5 text-sm bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none max-h-40 overflow-y-auto"
@@ -226,7 +228,7 @@ export default function MessageThread({
             </svg>
           </button>
         </form>
-        <p className="text-[10px] text-muted-foreground/50 mt-1.5 ml-1">Ctrl+Enter to send</p>
+        <p className="text-[10px] text-muted-foreground/50 mt-1.5 ml-1">{t('messages.thread.composerHint')}</p>
       </div>
     </div>
   )

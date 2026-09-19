@@ -11,6 +11,73 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.29.0] — 2026-09-19
+
+Fixes from Council Review 3's implementation prompts (bug/reliability fixes only — competitive/feature gaps from that review were explicitly held back for a product decision).
+
+### Fixed
+
+- **Broken `/auth/login` redirects** — 35 files called `redirect('/auth/login')` (a route that doesn't exist; the real login page is `/login`), 404ing instead of redirecting unauthenticated users. Fixed globally; `middleware.ts` was already correct.
+- **Guardian notification delivery silently marked "sent" on failure** (ADR-2026-010) — `send-guardian-notifications` previously set `sent_at` on every queue row regardless of whether the Resend call actually succeeded, with failures only logged to console. Now tracks real failures per row: up to 3 retries with backoff, then dead-lettered (`failed_at`) rather than silently disappearing. `guardian_notification_queue` gains `attempt_count`/`last_error`/`failed_at` and platform-admin read access (previously zero authenticated-role access existed on this table).
+- **`stripe_customer_id` never written** — every org's Stripe billing portal request failed with "No active subscription" regardless of actual subscription status, because no code path ever persisted `organizations.stripe_customer_id`. Now written synchronously at checkout-session creation (reusing an existing customer on retry instead of minting duplicates), with the webhook as an idempotent safety net.
+- **Missing `loading.tsx`/`error.tsx`** for `/platform`, `/guardian`, `/hq` — blank screens on slow connections and raw framework error pages instead of the app's error boundary pattern.
+- **No print stylesheet** — certificates and reports rendered nav chrome, dark backgrounds, and interactive buttons as-is under browser print. Added a `@media print` block plus `.no-print` on shell nav, report filters, and certificate/report action rows.
+- **`/admin/question-banks/new` dead link** — button existed with no page behind it; the server action (`upsertQuestionBank`) already existed, only the page and form were missing.
+
+### Investigated, not changed
+
+- Two prior council-audit claims (`profile_roles.tenant_active` staleness, platform-admin bootstrap) and one from this round (OneRoster partial-failure rollback in `apply_oneroster_job`) were checked against the actual code and found to already be correct — the sync function is properly called from `platform/actions.ts`, the bootstrap is CLAUDE.md's deliberate design, and the OneRoster apply function already isolates each row in its own subtransaction. No fix applied where none was needed.
+
+---
+
+## [0.28.1] — 2026-09-19
+
+### Fixed
+
+- **Feedback submission race condition** (COUNCIL-2026-023) — `POST /api/feedback`'s dedupe path was a SELECT-then-branch, so two concurrent submissions with the same fingerprint could both observe no existing row and race into the `fingerprint` UNIQUE constraint, silently losing the loser's report (previously masked by 201 responses that didn't check write errors). Replaced with `upsert_platform_feedback()`, a single atomic `INSERT ... ON CONFLICT DO UPDATE` Postgres function, verified race-free directly against a local database.
+- **Feedback triage table keyboard accessibility** — the detail-drawer row in `/platform/feedback` was only openable by mouse click; added `tabIndex`, `role="button"`, an `aria-label`, and Enter/Space keyboard activation.
+
+---
+
+## [0.28.0] — 2026-09-19
+
+### Added
+
+- **Cookie-based i18n — English / Spanish** (COUNCIL-2026-024) — full EN/ES translation for all student- and parent/guardian-facing UI; locale stored in `NEXT_LOCALE` cookie (no URL segments), default `en`
+- `messages/en.json` and `messages/es.json` — 508 ICU-format message keys covering courses, learning player, assignments, quiz, discussion, live session, attendance, certificates, calendar, announcements, reports, groups, messages, profile, notifications, leaderboard, onboarding, guardian, performance, join, offline, and all shared layout strings
+- `src/i18n/request.ts` — `getRequestConfig` reads `NEXT_LOCALE` cookie server-side, loads the matching message bundle
+- `src/components/layout/LocaleSwitcher.tsx` — EN/ES toggle button, with an icon-only variant when the sidebar is collapsed; sets `NEXT_LOCALE` cookie and calls `router.refresh()` to reload locale without a full navigation; mounted inside `SidebarClient`
+- `NextIntlClientProvider` added to root layout wrapping body; `getMessages()` + `getLocale()` passed from server; `<html lang={locale}>` kept in sync
+- `next.config.mjs` updated to wrap config with `createNextIntlPlugin`
+
+### Changed
+
+- All student/guardian-facing pages and client components now use `getTranslations()` (Server Components) or `useTranslations()` (Client Components) — hardcoded strings fully removed from the in-scope surface
+- `EnrollmentTable` converted to `async` Server Component to support `getTranslations()`
+- `BlockPlayer` gained an explicit `'use client'` directive (was already in a client tree; directive required for `useTranslations()` hook)
+- Static label objects (`ROLE_LABELS`, `CATEGORIES`, `PROVIDER_LABEL`, `STATUS_META`, `PRIORITY_STYLE`) that contained hardcoded strings were refactored: values-only arrays or inline ternary `t()` calls replace them
+- `CalendarView` month/weekday names now derive from `Intl.DateTimeFormat` for the active locale instead of static English arrays
+
+### Scope
+
+- Phase 1 covers student/learner/guardian-facing only. Admin (`src/app/admin/`), platform (`src/app/platform/`), HQ (`src/app/hq/`), instructor reports, and `MobileAdminDrawer.tsx` are NOT translated (Phase 2 follow-up). Middleware (`src/middleware.ts`) is unchanged.
+
+---
+
+## [0.27.0] — 2026-09-18
+
+### Added
+
+- **Pilot Feedback & Error-Triage System** (COUNCIL-2026-025) — in-product feedback capture and automatic error reporting for pilot/demo sessions, feature-gated behind `NEXT_PUBLIC_DEMO_MODE` (server-enforced, not just client-hidden)
+- `platform_feedback` table — platform-plane only, RLS restricted to `is_platform_admin()` reads/updates and `service_role` writes; server-derived identity and SHA-256 dedupe fingerprint; upsert-on-conflict increments `hit_count` and reopens previously-triaged rows
+- `POST /api/feedback` — the one submission endpoint; validates and bounds every field, rate-limited via a new `feedbackLimiter` (Upstash-backed, 20/60s per session)
+- `FeedbackSessionProvider` / `FeedbackButton` — SSR-safe session context (sessionStorage UUID, last-5-route breadcrumbs, elapsed duration) and a fixed-position feedback button (BUG / ERROR / UNEXPECTED_RESULT / IMPROVEMENT), both fully inert when the gate is off
+- `src/app/error.tsx` now reports unhandled render errors automatically when the gate is on (capped `error.message` only — never `error.stack` or `error.digest`), swallowing its own reporting failures
+- `/platform/feedback` — staff triage workspace: open/done/all views, category/identity/date filters, unprocessed-first sort, detail drawer, optimistic triage-action and processed updates
+- `.claude/agents/pr-reviewer.md` + `.claude/skills/pr-review/SKILL.md` — a PR review gate (Critical/Important/Minor) that runs on every PR, including changes small enough to skip the full council/factory pipeline
+
+---
+
 ## [0.26.6] — 2026-09-19
 
 ### Fixed

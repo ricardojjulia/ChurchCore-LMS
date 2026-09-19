@@ -1,6 +1,9 @@
 // @ts-check
 import withPWA from '@ducanh2912/next-pwa'
 import { withSentryConfig } from '@sentry/nextjs'
+import createNextIntlPlugin from 'next-intl/plugin'
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
 const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const SUPABASE_HOST = SUPABASE_URL ? new URL(SUPABASE_URL).hostname : '*.supabase.co'
@@ -57,7 +60,7 @@ const withPWAConfig = withPWA({
   },
 })
 
-export default withSentryConfig(withPWAConfig(nextConfig), {
+export default withSentryConfig(withPWAConfig(withNextIntl(nextConfig)), {
   silent: true,
   widenClientFileUpload: true,
   hideSourceMaps: true,

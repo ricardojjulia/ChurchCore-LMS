@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useEffect, useMemo, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { createThread, postToThread, softDeletePost } from '@/app/actions/groups'
 import { createClient } from '@/utils/supabase/client'
 import DiscussionEditor from '@/components/editor/DiscussionEditor'
@@ -32,6 +33,7 @@ interface Props {
 export default function GroupDiscussionBoard({
   groupId, initialThreads,
 }: Props) {
+  const t = useTranslations()
   const threads = initialThreads
   const [selectedThread, setActiveThread] = useState<string | null>(null)
   const activeThread = selectedThread ?? threads[0]?.id ?? null
@@ -98,13 +100,13 @@ export default function GroupDiscussionBoard({
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground">Discussions</h2>
+        <h2 className="text-lg font-bold text-foreground">{t('myGroups.discussion.heading')}</h2>
         <button
           type="button"
           onClick={() => setShowNewThread((v) => !v)}
           className="text-sm font-semibold text-primary hover:underline"
         >
-          {showNewThread ? '✕ Cancel' : '+ New Thread'}
+          {showNewThread ? t('myGroups.discussion.cancelToggleButton') : t('myGroups.discussion.newThreadButton')}
         </button>
       </div>
 
@@ -115,7 +117,7 @@ export default function GroupDiscussionBoard({
             aria-label="Thread title"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Thread title…"
+            placeholder={t('myGroups.discussion.threadTitlePlaceholder')}
             className="input flex-1 min-w-0"
             required
           />
@@ -124,7 +126,7 @@ export default function GroupDiscussionBoard({
             disabled={pending || !newTitle.trim()}
             className="bg-primary text-primary-foreground font-bold px-3 py-2 rounded-xl text-sm hover:bg-primary/90 disabled:opacity-50"
           >
-            {pending ? '…' : 'Start'}
+            {pending ? '…' : t('myGroups.discussion.startButton')}
           </button>
         </form>
       )}
@@ -134,7 +136,7 @@ export default function GroupDiscussionBoard({
         {/* Thread list sidebar */}
         <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm self-start">
           {threads.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic p-4">No threads yet.</p>
+            <p className="text-sm text-muted-foreground italic p-4">{t('myGroups.discussion.emptyThreads')}</p>
           ) : (
             <ul className="divide-y divide-border">
               {threads.map((t) => (
@@ -165,20 +167,20 @@ export default function GroupDiscussionBoard({
         <div className="bg-white border border-border rounded-2xl shadow-sm min-w-0 flex flex-col">
           {!activeThread ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm p-8">
-              Select a thread to read
+              {t('myGroups.discussion.selectThreadPlaceholder')}
             </div>
           ) : (
             <>
               <div className="border-b border-border px-5 py-3">
                 <p className="font-bold text-foreground">{activeThreadData?.title}</p>
                 {activeThreadData?.is_locked && (
-                  <p className="text-xs text-amber-600 mt-0.5">This thread is locked — no new replies.</p>
+                  <p className="text-xs text-amber-600 mt-0.5">{t('myGroups.discussion.lockedThreadNotice')}</p>
                 )}
               </div>
 
               <div className="flex-1 overflow-y-auto p-5 space-y-4 max-h-80">
                 {posts.length === 0 ? (
-                  <p className="text-sm text-muted-foreground italic text-center py-8">No posts yet. Be the first!</p>
+                  <p className="text-sm text-muted-foreground italic text-center py-8">{t('myGroups.discussion.emptyPosts')}</p>
                 ) : (
                   posts.map((p) => (
                     <div
@@ -190,7 +192,7 @@ export default function GroupDiscussionBoard({
                       </div>
                       <div className={`max-w-[75%] ${p.is_own ? 'items-end' : 'items-start'} flex flex-col gap-0.5`}>
                         <p className={`text-xs text-muted-foreground ${p.is_own ? 'text-right' : ''}`}>
-                          {p.is_own ? 'You' : p.display_name} · {new Date(p.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {p.is_own ? t('myGroups.discussion.ownPostAuthorLabel') : p.display_name} · {new Date(p.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                         <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed break-words ${
                           p.is_own
@@ -206,7 +208,7 @@ export default function GroupDiscussionBoard({
                             disabled={pending}
                             className="text-xs text-rose-400 hover:text-rose-600 mt-0.5 disabled:opacity-40"
                           >
-                            Delete
+                            {t('common.delete')}
                           </button>
                         )}
                       </div>
@@ -219,7 +221,7 @@ export default function GroupDiscussionBoard({
                 <div className="border-t border-border p-4 space-y-1">
                   <DiscussionEditor
                     key={activeThread}
-                    placeholder="Write a reply… (⌘↵ to send)"
+                    placeholder={t('myGroups.discussion.replyPlaceholder')}
                     onSubmit={(text) => {
                       if (!text || !activeThread) return
                       setPostErr(null)

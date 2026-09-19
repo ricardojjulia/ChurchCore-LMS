@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   Bar,
   BarChart,
@@ -19,24 +20,25 @@ type GradePoint = {
 }
 
 export default function GradeHistoryChart({ data }: { data: GradePoint[] }) {
+  const t = useTranslations()
   const [showTable, setShowTable] = useState(false)
   const chartData = data.map((point) => ({ ...point, chartGrade: point.grade ?? 0 }))
   const summary = useMemo(() => {
     const graded = data.filter((point) => point.grade !== null)
-    if (graded.length === 0) return 'No graded assignments available'
+    if (graded.length === 0) return t('reports.charts.gradeHistory.emptyFallback')
     const average = graded.reduce((sum, point) => sum + (point.grade ?? 0), 0) / graded.length
-    return `${graded.length} graded items with an average grade of ${average.toFixed(1)} percent`
-  }, [data])
+    return t('reports.charts.gradeHistory.ariaSummaryTemplate', { n: graded.length, avg: average.toFixed(1) })
+  }, [data, t])
 
   return (
-    <div role="img" aria-label={`Grade history: ${summary}`}>
+    <div role="img" aria-label={t('reports.charts.gradeHistory.containerAriaLabelTemplate', { summary })}>
       <div className="mb-3 flex justify-end">
         <button
           type="button"
           onClick={() => setShowTable((current) => !current)}
           className="text-sm font-semibold text-slate-700 underline-offset-4 hover:text-slate-950 hover:underline"
         >
-          {showTable ? 'View as chart' : 'View as table'}
+          {showTable ? t('common.viewAsChart') : t('common.viewAsTable')}
         </button>
       </div>
 
@@ -45,13 +47,13 @@ export default function GradeHistoryChart({ data }: { data: GradePoint[] }) {
           <thead>
             <tr className="border-b border-slate-200 text-left">
               <th scope="col" className="py-2 pr-3 font-semibold text-slate-700">
-                Assignment
+                {t('reports.charts.gradeHistory.assignmentHeader')}
               </th>
               <th scope="col" className="py-2 pr-3 font-semibold text-slate-700">
-                Grade
+                {t('reports.charts.gradeHistory.gradeHeader')}
               </th>
               <th scope="col" className="py-2 pr-3 font-semibold text-slate-700">
-                Submitted
+                {t('reports.charts.gradeHistory.submittedHeader')}
               </th>
             </tr>
           </thead>
@@ -62,7 +64,7 @@ export default function GradeHistoryChart({ data }: { data: GradePoint[] }) {
                   {point.assignment}
                 </th>
                 <td className="py-2 pr-3 text-slate-700">
-                  {point.grade === null ? 'Not graded' : `${point.grade}%`}
+                  {point.grade === null ? t('common.notGraded') : `${point.grade}%`}
                 </td>
                 <td className="py-2 pr-3 text-slate-700">
                   {new Date(point.submittedAt).toLocaleDateString()}
@@ -82,7 +84,7 @@ export default function GradeHistoryChart({ data }: { data: GradePoint[] }) {
                 formatter={(value, _name, item) => {
                   const payload = item.payload as GradePoint
                   return [
-                    payload.grade === null ? 'Not graded' : `${value}%`,
+                    payload.grade === null ? t('common.notGraded') : `${value}%`,
                     `${payload.assignment} (${new Date(payload.submittedAt).toLocaleDateString()})`,
                   ]
                 }}

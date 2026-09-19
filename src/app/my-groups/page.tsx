@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,7 @@ const PURPOSE_ICONS: Record<string, string> = {
 }
 
 export default async function MyGroupsPage() {
+  const t = await getTranslations()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -24,9 +26,9 @@ export default async function MyGroupsPage() {
     <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-extrabold text-foreground">My Groups</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">{t('myGroups.list.heading')}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Your section groups and discussion boards.
+            {t('myGroups.list.subtitle')}
           </p>
         </div>
 
@@ -39,9 +41,9 @@ export default async function MyGroupsPage() {
         {(!groups || groups.length === 0) ? (
           <div className="bg-white border border-border rounded-2xl p-12 text-center">
             <p className="text-4xl mb-3">👥</p>
-            <p className="font-semibold text-foreground">You haven't been assigned to any groups yet.</p>
+            <p className="font-semibold text-foreground">{t('myGroups.list.emptyState')}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Your instructor will add you when group work begins.
+              {t('myGroups.list.emptyDescription')}
             </p>
           </div>
         ) : (
@@ -61,7 +63,7 @@ export default async function MyGroupsPage() {
                       <p className="font-bold text-foreground">{g.group_name}</p>
                       {g.member_role === 'leader' && (
                         <span className="text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded">
-                          Leader
+                          {t('myGroups.list.leaderBadge')}
                         </span>
                       )}
                       {g.group_code && (
@@ -72,7 +74,7 @@ export default async function MyGroupsPage() {
                       {g.blueprint_title} · <span className="font-mono">{g.section_code}</span>
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {g.member_count} member{g.member_count !== 1 ? 's' : ''}
+                      {t('myGroups.list.memberCountTemplate', { n: g.member_count })}
                     </p>
                   </div>
                   <span className="text-muted-foreground shrink-0">→</span>
