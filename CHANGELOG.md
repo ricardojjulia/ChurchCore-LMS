@@ -11,6 +11,15 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.28.1] — 2026-09-19
+
+### Fixed
+
+- **Feedback submission race condition** (COUNCIL-2026-023) — `POST /api/feedback`'s dedupe path was a SELECT-then-branch, so two concurrent submissions with the same fingerprint could both observe no existing row and race into the `fingerprint` UNIQUE constraint, silently losing the loser's report (previously masked by 201 responses that didn't check write errors). Replaced with `upsert_platform_feedback()`, a single atomic `INSERT ... ON CONFLICT DO UPDATE` Postgres function, verified race-free directly against a local database.
+- **Feedback triage table keyboard accessibility** — the detail-drawer row in `/platform/feedback` was only openable by mouse click; added `tabIndex`, `role="button"`, an `aria-label`, and Enter/Space keyboard activation.
+
+---
+
 ## [0.28.0] — 2026-09-19
 
 ### Added

@@ -65,52 +65,26 @@ export async function POST(req: NextRequest) {
     // All writes use the service client — never exposed to the browser.
     const service = createServiceClient()
 
-    const { data: existing, error: selectError } = await service
-      .from('platform_feedback')
-      .select('id, hit_count')
-      .eq('fingerprint', fingerprint)
-      .maybeSingle()
+    // D3/upsert: a single atomic INSERT ... ON CONFLICT DO UPDATE (via RPC) —
+    // not a SELECT-then-branch. Two concurrent submissions with the same
+    // fingerprint can otherwise both observe "no existing row" and race each
+    // other into the UNIQUE constraint, silently losing the loser's report.
+    // See supabase/migrations/20260919120000_atomic_platform_feedback_upsert.sql.
+    const { error: upsertError } = await service.rpc('upsert_platform_feedback', {
+      p_fingerprint:               fingerprint,
+      p_session_id:                body.sessionId,
+      p_route:                     body.route,
+      p_category:                  body.category,
+      p_error_message:             body.category === 'ERROR' ? (errorDetail || null) : null,
+      p_note:                      body.category === 'ERROR' ? null : (body.note ?? null),
+      p_breadcrumbs:               body.breadcrumbs,
+      p_user_email:                userEmail,
+      p_user_role:                 userRole,
+      p_app_version:               body.appVersion,
+      p_session_duration_seconds:  body.sessionDurationSeconds,
+    })
 
-    if (selectError) throw selectError
-
-    if (existing) {
-      // Upsert: increment hit_count and reopen a previously-processed row.
-      const { error: updateError } = await service
-        .from('platform_feedback')
-        .update({
-          hit_count:               existing.hit_count + 1,
-          breadcrumbs:             body.breadcrumbs,
-          session_id:              body.sessionId,
-          user_email:              userEmail,
-          user_role:               userRole,
-          app_version:             body.appVersion,
-          session_duration_seconds: body.sessionDurationSeconds,
-          processed:               false,
-          triage_action:           null,
-          updated_at:              new Date().toISOString(),
-        })
-        .eq('id', existing.id)
-
-      if (updateError) throw updateError
-    } else {
-      const { error: insertError } = await service
-        .from('platform_feedback')
-        .insert({
-          fingerprint,
-          session_id:              body.sessionId,
-          route:                   body.route,
-          category:                body.category,
-          error_message:           body.category === 'ERROR' ? (errorDetail || null) : null,
-          note:                    body.category === 'ERROR' ? null : (body.note ?? null),
-          breadcrumbs:             body.breadcrumbs,
-          user_email:              userEmail,
-          user_role:               userRole,
-          app_version:             body.appVersion,
-          session_duration_seconds: body.sessionDurationSeconds,
-        })
-
-      if (insertError) throw insertError
-    }
+    if (upsertError) throw upsertError
 
     return Response.json({ ok: true }, { status: 201 })
   } catch {

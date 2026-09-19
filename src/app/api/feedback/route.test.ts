@@ -9,6 +9,14 @@
  *   7 — rate limit exceeded → 429, distinct from 400/500
  *   8 — thrown internal error → generic 500, no raw error text
  * Required env vars: none (unit test — all clients are mocked)
+ *
+ * The dedupe/reopen upsert itself is a single atomic RPC call
+ * (upsert_platform_feedback — see
+ * supabase/migrations/20260919120000_atomic_platform_feedback_upsert.sql),
+ * so these tests assert the route calls it with the right arguments and
+ * handles its error field correctly. The atomic upsert's own SQL semantics
+ * (hit_count increment, reopen on conflict, race-safety) are verified
+ * directly against Postgres, not re-implemented as a JS mock here.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
@@ -32,10 +40,10 @@ function resolvesWith(value: unknown) {
 // ── Hoisted mocks ──────────────────────────────────────────────────────────────
 // vi.hoisted ensures these are available before the vi.mock factories run.
 const mocks = vi.hoisted(() => ({
-  getUser:     vi.fn(),
-  serverFrom:  vi.fn(),
-  serviceFrom: vi.fn(),
-  checkLimit:  vi.fn(),
+  getUser:    vi.fn(),
+  serverFrom: vi.fn(),
+  serviceRpc: vi.fn(),
+  checkLimit: vi.fn(),
 }))
 
 vi.mock('@/utils/supabase/server', () => ({
@@ -47,7 +55,7 @@ vi.mock('@/utils/supabase/server', () => ({
 
 vi.mock('@/utils/supabase/service', () => ({
   createServiceClient: () => ({
-    from: mocks.serviceFrom,
+    rpc: mocks.serviceRpc,
   }),
 }))
 
@@ -76,29 +84,7 @@ function makeRequest(body: unknown = VALID_PAYLOAD): NextRequest {
   })
 }
 
-// Default service mock: no existing row → insert path
-function defaultServiceMock() {
-  let callIndex = 0
-  return (table: string) => {
-    if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
-    const n = ++callIndex
-    if (n === 1) {
-      // First call: select().eq().maybeSingle() — returns no existing row
-      return {
-        select:      vi.fn().mockReturnThis(),
-        eq:          vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-      }
-    }
-    // Second call: insert() — succeeds silently
-    return {
-      insert: vi.fn().mockResolvedValue({ error: null }),
-    }
-  }
-}
-
 // Import the route AFTER mocks are registered (dynamic import avoids hoisting issues)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let POST: (req: NextRequest) => Promise<Response>
 
 beforeEach(async () => {
@@ -110,8 +96,8 @@ beforeEach(async () => {
   mocks.getUser.mockResolvedValue({ data: { user: null }, error: null })
   // Default: profile_roles returns nothing
   mocks.serverFrom.mockImplementation(() => resolvesWith({ data: null, error: null }))
-  // Default: no existing fingerprint
-  mocks.serviceFrom.mockImplementation(defaultServiceMock())
+  // Default: the atomic upsert RPC succeeds
+  mocks.serviceRpc.mockResolvedValue({ data: [{ id: 'row-1', hit_count: 1 }], error: null })
 
   // Import the handler fresh; dynamic import caches on first call but that's fine
   // because the mocks above are reset before each test.
@@ -132,7 +118,7 @@ describe('feature gate (criterion 3)', () => {
     expect(res.status).toBe(404)
     expect(await res.json()).toEqual({ error: 'Not found' })
     // No DB interaction must occur
-    expect(mocks.serviceFrom).not.toHaveBeenCalled()
+    expect(mocks.serviceRpc).not.toHaveBeenCalled()
   })
 
   it('returns 404 when NEXT_PUBLIC_DEMO_MODE is "false"', async () => {
@@ -204,7 +190,7 @@ describe('body validation (criterion 4)', () => {
 describe('server-derived identity and fingerprint (criteria 5 & 6)', () => {
   beforeEach(() => { process.env.NEXT_PUBLIC_DEMO_MODE = 'true' })
 
-  it('client-supplied fingerprint/identity fields are ignored — only server-computed fingerprint is stored', async () => {
+  it('client-supplied fingerprint/identity fields are ignored — only the server-computed fingerprint is passed to the upsert', async () => {
     mocks.getUser.mockResolvedValue({
       data: { user: { id: 'auth-001', email: 'real@org.com' } },
       error: null,
@@ -213,24 +199,6 @@ describe('server-derived identity and fingerprint (criteria 5 & 6)', () => {
     mocks.serverFrom.mockImplementation(() =>
       resolvesWith({ data: { role: 'admin' }, error: null })
     )
-
-    // Use a spy on insert so we can assert what arguments were passed
-    const insertSpy = vi.fn().mockResolvedValue({ error: null })
-    let callIndex = 0
-    mocks.serviceFrom.mockImplementation((table: string) => {
-      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
-      const n = ++callIndex
-      if (n === 1) {
-        // First call: select().eq().maybeSingle() — no existing row
-        return {
-          select:      vi.fn().mockReturnThis(),
-          eq:          vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-        }
-      }
-      // Second call: insert()
-      return { insert: insertSpy }
-    })
 
     // The client sends a spoofed fingerprint and identity fields
     const spoofedPayload = {
@@ -249,25 +217,19 @@ describe('server-derived identity and fingerprint (criteria 5 & 6)', () => {
       VALID_PAYLOAD.category,
       VALID_PAYLOAD.note,
     )
-    expect(insertSpy).toHaveBeenCalledWith(
+    expect(mocks.serviceRpc).toHaveBeenCalledWith(
+      'upsert_platform_feedback',
       expect.objectContaining({
-        fingerprint: expectedFingerprint,
-        // Client-spoofed value must NOT appear
+        p_fingerprint: expectedFingerprint,
+        p_user_email:  'real@org.com',
+        p_user_role:   'admin',
       })
     )
-    const insertedArg = insertSpy.mock.calls[0][0] as Record<string, unknown>
-    expect(insertedArg.fingerprint).not.toBe('injected-fingerprint-from-client')
-
-    // Identity comes from the session, not the spoofed body fields
-    expect(insertSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        user_email: 'real@org.com',
-        user_role:  'admin',
-      })
-    )
+    const rpcArgs = mocks.serviceRpc.mock.calls[0][1] as Record<string, unknown>
+    expect(rpcArgs.p_fingerprint).not.toBe('injected-fingerprint-from-client')
   })
 
-  it('authenticated request — user_email and user_role populated from session and profile_roles', async () => {
+  it('authenticated request — p_user_email and p_user_role populated from session and profile_roles', async () => {
     mocks.getUser.mockResolvedValue({
       data: { user: { id: 'auth-002', email: 'teacher@org.com' } },
       error: null,
@@ -276,49 +238,21 @@ describe('server-derived identity and fingerprint (criteria 5 & 6)', () => {
       resolvesWith({ data: { role: 'teacher' }, error: null })
     )
 
-    const insertSpy = vi.fn().mockResolvedValue({ error: null })
-    let callIndex = 0
-    mocks.serviceFrom.mockImplementation((table: string) => {
-      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
-      const n = ++callIndex
-      if (n === 1) {
-        return {
-          select:      vi.fn().mockReturnThis(),
-          eq:          vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-        }
-      }
-      return { insert: insertSpy }
-    })
-
     await POST(makeRequest())
-    expect(insertSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ user_email: 'teacher@org.com', user_role: 'teacher' })
+    expect(mocks.serviceRpc).toHaveBeenCalledWith(
+      'upsert_platform_feedback',
+      expect.objectContaining({ p_user_email: 'teacher@org.com', p_user_role: 'teacher' })
     )
   })
 
-  it('anonymous request — user_email and user_role are null', async () => {
+  it('anonymous request — p_user_email and p_user_role are null', async () => {
     mocks.getUser.mockResolvedValue({ data: { user: null }, error: null })
-
-    const insertSpy = vi.fn().mockResolvedValue({ error: null })
-    let callIndex = 0
-    mocks.serviceFrom.mockImplementation((table: string) => {
-      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
-      const n = ++callIndex
-      if (n === 1) {
-        return {
-          select:      vi.fn().mockReturnThis(),
-          eq:          vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-        }
-      }
-      return { insert: insertSpy }
-    })
 
     const res = await POST(makeRequest())
     expect(res.status).toBe(201)
-    expect(insertSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ user_email: null, user_role: null })
+    expect(mocks.serviceRpc).toHaveBeenCalledWith(
+      'upsert_platform_feedback',
+      expect.objectContaining({ p_user_email: null, p_user_role: null })
     )
   })
 
@@ -332,7 +266,6 @@ describe('server-derived identity and fingerprint (criteria 5 & 6)', () => {
       expect(table).not.toBe('profiles')
       return resolvesWith({ data: null, error: null })
     })
-    mocks.serviceFrom.mockImplementation(defaultServiceMock())
 
     await POST(makeRequest())
     // The assertion is inside the mock — if 'profiles' was queried, the test fails
@@ -361,7 +294,7 @@ describe('rate limiting (criterion 7)', () => {
   it('rate limit check does not execute DB operations', async () => {
     mocks.checkLimit.mockResolvedValue({ limited: true, retryAfter: 5, limit: 20, remaining: 0 })
     await POST(makeRequest())
-    expect(mocks.serviceFrom).not.toHaveBeenCalled()
+    expect(mocks.serviceRpc).not.toHaveBeenCalled()
   })
 })
 
@@ -371,7 +304,7 @@ describe('internal error handling (criterion 8)', () => {
   beforeEach(() => { process.env.NEXT_PUBLIC_DEMO_MODE = 'true' })
 
   it('returns generic 500 when the service client throws', async () => {
-    mocks.serviceFrom.mockImplementation(() => {
+    mocks.serviceRpc.mockImplementation(() => {
       throw new Error('connection refused: real internal db error text')
     })
     const res = await POST(makeRequest())
@@ -381,7 +314,7 @@ describe('internal error handling (criterion 8)', () => {
   })
 
   it('500 response does not leak raw error text', async () => {
-    mocks.serviceFrom.mockImplementation(() => {
+    mocks.serviceRpc.mockImplementation(() => {
       throw new Error('FATAL: secret_connection_string exposed in error')
     })
     const res = await POST(makeRequest())
@@ -392,74 +325,16 @@ describe('internal error handling (criterion 8)', () => {
 
   it('returns generic 500 when createClient throws during identity derivation', async () => {
     mocks.getUser.mockRejectedValue(new Error('auth service unavailable'))
-    mocks.serviceFrom.mockImplementation(defaultServiceMock())
 
     const res = await POST(makeRequest())
     expect(res.status).toBe(500)
     expect(await res.json()).toEqual({ error: 'Something went wrong' })
   })
 
-  it('returns generic 500 and does not report success when the dedupe SELECT returns an error', async () => {
-    let callIndex = 0
-    mocks.serviceFrom.mockImplementation((table: string) => {
-      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
-      callIndex += 1
-      // select().eq().maybeSingle() returns a DB error, not a thrown exception —
-      // Supabase reports failures in the `error` field, so this must not be
-      // treated as "no existing row" and silently continue to insert.
-      return {
-        select:      vi.fn().mockReturnThis(),
-        eq:          vi.fn().mockReturnThis(),
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: { message: 'db unreachable' } }),
-      }
-    })
-
-    const res = await POST(makeRequest())
-    expect(res.status).toBe(500)
-    expect(await res.json()).toEqual({ error: 'Something went wrong' })
-    // Only the SELECT should have run — no insert attempted on top of a failed lookup
-    expect(callIndex).toBe(1)
-  })
-
-  it('returns generic 500 and does not report success when the INSERT returns an error', async () => {
-    let callIndex = 0
-    mocks.serviceFrom.mockImplementation((table: string) => {
-      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
-      callIndex += 1
-      if (callIndex === 1) {
-        return {
-          select:      vi.fn().mockReturnThis(),
-          eq:          vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-        }
-      }
-      // INSERT reports a constraint/connection failure via its `error` field
-      return { insert: vi.fn().mockResolvedValue({ error: { message: 'unique_violation' } }) }
-    })
-
-    const res = await POST(makeRequest())
-    expect(res.status).toBe(500)
-    expect(await res.json()).toEqual({ error: 'Something went wrong' })
-  })
-
-  it('returns generic 500 and does not report success when the UPDATE (reopen) returns an error', async () => {
-    let callIndex = 0
-    mocks.serviceFrom.mockImplementation((table: string) => {
-      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
-      callIndex += 1
-      if (callIndex === 1) {
-        // An existing row IS found this time, so the handler takes the update path
-        return {
-          select:      vi.fn().mockReturnThis(),
-          eq:          vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'row-1', hit_count: 3 }, error: null }),
-        }
-      }
-      return {
-        update: vi.fn().mockReturnThis(),
-        eq:     vi.fn().mockResolvedValue({ error: { message: 'row locked' } }),
-      }
-    })
+  it('returns generic 500 and does not report success when the atomic upsert RPC returns an error', async () => {
+    // Supabase reports failures in the `error` field, not by rejecting the
+    // promise — this must not be treated as success just because the call resolved.
+    mocks.serviceRpc.mockResolvedValue({ data: null, error: { message: 'unique_violation' } })
 
     const res = await POST(makeRequest())
     expect(res.status).toBe(500)
@@ -467,38 +342,65 @@ describe('internal error handling (criterion 8)', () => {
   })
 })
 
-// ── Existing-row (dedupe/reopen) branch ──────────────────────────────────────
+// ── Atomic upsert RPC call shape ──────────────────────────────────────────────
+// The upsert's dedupe/reopen/hit_count-increment/race-safety semantics live in
+// Postgres (supabase/migrations/20260919120000_atomic_platform_feedback_upsert.sql,
+// exercised directly against a real database — see the e2e suite and manual
+// psql verification) — these tests only verify the route calls that function,
+// by name, with every field correctly derived.
 
-describe('existing-row upsert branch', () => {
+describe('atomic upsert RPC call', () => {
   beforeEach(() => { process.env.NEXT_PUBLIC_DEMO_MODE = 'true' })
 
-  it('when a matching fingerprint exists, updates hit_count/processed/triage_action instead of inserting', async () => {
-    const updateSpy = vi.fn().mockReturnThis()
-    const eqSpy     = vi.fn().mockResolvedValue({ error: null })
-    let callIndex = 0
-    mocks.serviceFrom.mockImplementation((table: string) => {
-      if (table !== 'platform_feedback') return resolvesWith({ data: null, error: null })
-      callIndex += 1
-      if (callIndex === 1) {
-        return {
-          select:      vi.fn().mockReturnThis(),
-          eq:          vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'existing-row-id', hit_count: 4 }, error: null }),
-        }
-      }
-      return { update: updateSpy, eq: eqSpy }
-    })
-
+  it('calls upsert_platform_feedback with the server-computed fingerprint and every payload field', async () => {
     const res = await POST(makeRequest())
     expect(res.status).toBe(201)
-    expect(updateSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        hit_count:     5,
-        processed:     false,
-        triage_action: null,
-      })
+
+    const expectedFingerprint = computeFingerprint(
+      VALID_PAYLOAD.route,
+      VALID_PAYLOAD.category,
+      VALID_PAYLOAD.note,
     )
-    expect(eqSpy).toHaveBeenCalledWith('id', 'existing-row-id')
+    expect(mocks.serviceRpc).toHaveBeenCalledWith('upsert_platform_feedback', {
+      p_fingerprint:              expectedFingerprint,
+      p_session_id:               VALID_PAYLOAD.sessionId,
+      p_route:                    VALID_PAYLOAD.route,
+      p_category:                 VALID_PAYLOAD.category,
+      p_error_message:            null,
+      p_note:                     VALID_PAYLOAD.note,
+      p_breadcrumbs:              VALID_PAYLOAD.breadcrumbs,
+      p_user_email:               null,
+      p_user_role:                null,
+      p_app_version:              VALID_PAYLOAD.appVersion,
+      p_session_duration_seconds: VALID_PAYLOAD.sessionDurationSeconds,
+    })
+  })
+
+  it('ERROR-category submissions pass errorMessage (falling back to note) as p_error_message, and p_note null', async () => {
+    const res = await POST(makeRequest({
+      ...VALID_PAYLOAD,
+      category:     'ERROR',
+      errorMessage: 'boom',
+      note:         undefined,
+    }))
+    expect(res.status).toBe(201)
+    expect(mocks.serviceRpc).toHaveBeenCalledWith(
+      'upsert_platform_feedback',
+      expect.objectContaining({ p_error_message: 'boom', p_note: null })
+    )
+  })
+
+  it('manual ERROR-category submissions (no errorMessage) fall back to note for p_error_message', async () => {
+    const res = await POST(makeRequest({
+      ...VALID_PAYLOAD,
+      category: 'ERROR',
+      note:     'user-typed crash description',
+    }))
+    expect(res.status).toBe(201)
+    expect(mocks.serviceRpc).toHaveBeenCalledWith(
+      'upsert_platform_feedback',
+      expect.objectContaining({ p_error_message: 'user-typed crash description', p_note: null })
+    )
   })
 })
 
@@ -512,7 +414,6 @@ describe('rate-limit key derivation', () => {
       data: { user: { id: 'auth-server-derived-id', email: 'user@org.com' } },
       error: null,
     })
-    mocks.serviceFrom.mockImplementation(defaultServiceMock())
 
     await POST(makeRequest())
     expect(mocks.checkLimit).toHaveBeenCalledWith(null, 'auth-server-derived-id')
@@ -520,7 +421,6 @@ describe('rate-limit key derivation', () => {
 
   it('anonymous requests are rate-limited by client IP (x-forwarded-for) when present, not sessionId', async () => {
     mocks.getUser.mockResolvedValue({ data: { user: null }, error: null })
-    mocks.serviceFrom.mockImplementation(defaultServiceMock())
 
     const req = new NextRequest('http://localhost/api/feedback', {
       method:  'POST',
@@ -534,7 +434,6 @@ describe('rate-limit key derivation', () => {
 
   it('falls back to the client-supplied sessionId only when neither user id nor IP is available', async () => {
     mocks.getUser.mockResolvedValue({ data: { user: null }, error: null })
-    mocks.serviceFrom.mockImplementation(defaultServiceMock())
 
     await POST(makeRequest())
     expect(mocks.checkLimit).toHaveBeenCalledWith(null, VALID_PAYLOAD.sessionId)

@@ -208,8 +208,21 @@ export function FeedbackTable({ rows: initialRows }: Props) {
               {filtered.map(row => (
                 <tr
                   key={row.id}
-                  className={`cursor-pointer transition-colors hover:bg-slate-900 ${selectedId === row.id ? 'bg-slate-900' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={selectedId === row.id}
+                  aria-label={`View details for feedback from ${row.user_email ?? 'anonymous session'} on ${row.route}`}
+                  className={`cursor-pointer transition-colors hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 ${selectedId === row.id ? 'bg-slate-900' : ''}`}
                   onClick={() => setSelectedId(selectedId === row.id ? null : row.id)}
+                  onKeyDown={e => {
+                    // Only react when the row itself is focused, not a nested
+                    // control (select/checkbox) that already handles its own keys.
+                    if (e.target !== e.currentTarget) return
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSelectedId(selectedId === row.id ? null : row.id)
+                    }
+                  }}
                 >
                   <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-500">
                     {formatDate(row.created_at)}
