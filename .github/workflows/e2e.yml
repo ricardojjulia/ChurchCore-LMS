@@ -13,6 +13,7 @@ jobs:
       APP_BASE_URL: http://127.0.0.1:3000
       TEST_USER_A_EMAIL: admin@test.churchcore.dev
       TEST_USER_B_EMAIL: admin-b@test.churchcore.dev
+      TEST_PLATFORM_ADMIN_EMAIL: teacher@test.churchcore.dev
 
     steps:
       - uses: actions/checkout@v4
