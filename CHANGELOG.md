@@ -11,6 +11,14 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.29.1] — 2026-09-19
+
+### Security
+
+- Pin transitive dependency `fast-uri` (via `ajv`/webpack/workbox) to exactly `3.1.8` in `package.json` overrides, closing 5 Dependabot high-severity advisories (host confusion / SSRF via URI normalization, CVE-2026-75931/76172/75975/75899/18446). The version had regressed to the vulnerable `3.1.4` (fixed upstream in `fast-uri` 3.1.5-3.1.6) as a side effect of merging an older Dependabot bump (`3.1.2`→`3.1.4`, itself predating the later patches) alongside this session's own branch — this pin makes the intended version explicit and unambiguous, and prevents either source from silently regressing it again. `npm audit` reports 0 vulnerabilities.
+
+---
+
 ## [0.29.0] — 2026-09-19
 
 Fixes from Council Review 3's implementation prompts (bug/reliability fixes only — competitive/feature gaps from that review were explicitly held back for a product decision).
