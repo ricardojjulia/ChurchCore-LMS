@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +17,7 @@ interface StudentCard {
 }
 
 export default async function GuardianPage() {
+  const t = await getTranslations()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -38,24 +40,24 @@ export default async function GuardianPage() {
     <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Guardian Portal</h1>
+          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t('guardian.list.heading')}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Read-only view of the students in your care.
+            {t('guardian.list.subtitle')}
           </p>
         </div>
 
         {error && (
           <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 mb-4 text-sm text-rose-700">
-            Failed to load students. Please refresh.
+            {t('guardian.list.loadError')}
           </div>
         )}
 
         {studentList.length === 0 ? (
           <div className="bg-white border border-border rounded-2xl p-12 text-center">
             <p className="text-4xl mb-3">👨‍👧</p>
-            <h2 className="text-base font-bold text-foreground mb-1">No linked students yet</h2>
+            <h2 className="text-base font-bold text-foreground mb-1">{t('guardian.list.emptyHeading')}</h2>
             <p className="text-sm text-muted-foreground">
-              Ask a staff member or administrator to link you to your child&apos;s account.
+              {t('guardian.list.emptyDescription')}
             </p>
           </div>
         ) : (
@@ -75,7 +77,7 @@ export default async function GuardianPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                      {s.display_name ?? 'Student'}
+                      {s.display_name ?? t('common.studentFallback')}
                     </p>
                     {s.student_id && (
                       <p className="text-xs text-muted-foreground">{s.student_id}</p>
@@ -87,20 +89,20 @@ export default async function GuardianPage() {
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="bg-slate-50 rounded-lg py-2">
                     <p className="text-lg font-extrabold text-indigo-600">{s.current_level}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Level</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('common.levelLabel')}</p>
                   </div>
                   <div className="bg-slate-50 rounded-lg py-2">
                     <p className="text-lg font-extrabold text-foreground">{s.enrollment_count}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Courses</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('guardian.list.coursesStat')}</p>
                   </div>
                   <div className="bg-slate-50 rounded-lg py-2">
                     <p className="text-lg font-extrabold text-emerald-600">{s.completed_count}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Done</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('guardian.list.doneStat')}</p>
                   </div>
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-3">
-                  View progress →
+                  {t('guardian.list.viewProgressLink')}
                 </p>
               </Link>
             ))}

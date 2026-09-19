@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { BLOCK_TYPE_META } from '@/types/blocks'
 import EnrollButton from '@/components/learning/EnrollButton'
 import type { CourseBlock } from '@/types/blocks'
+import { getTranslations } from 'next-intl/server'
 
 // Supabase's select('*, alias:join(...)') doesn't narrow to a concrete TS type.
 // CourseRow captures the full shape returned by the courses query below.
@@ -36,6 +37,7 @@ export default async function CoursePage({
   params: Promise<{ id: string }>
 }) {
   const { id: courseId } = await params
+  const t = await getTranslations()
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -87,10 +89,10 @@ export default async function CoursePage({
     return (
       <main id="main-content" className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
         <div className="max-w-md text-center bg-white border border-rose-200 rounded-2xl p-10">
-          <h2 className="text-lg font-bold text-rose-800">Course Not Found</h2>
-          <p className="text-sm text-rose-600 mt-1">Check the URL or contact your administrator.</p>
+          <h2 className="text-lg font-bold text-rose-800">{t('courses.detail.notFoundHeading')}</h2>
+          <p className="text-sm text-rose-600 mt-1">{t('courses.detail.notFoundMessage')}</p>
           <Link href="/courses" className="mt-4 inline-block text-sm text-primary hover:underline">
-            ← Back to courses
+            {t('courses.detail.notFoundBackLink')}
           </Link>
         </div>
       </main>
@@ -186,16 +188,16 @@ export default async function CoursePage({
   const ctaHref = `/courses/${courseId}/learn${firstBlock ? `?block=${firstBlock.id}` : ''}`
   const ctaLabel =
     !isEnrolled ? null
-    : enrollment?.transit_status === 'completed' ? 'Review Course'
-    : enrollment?.transit_status === 'in_progress' ? 'Continue Learning'
-    : 'Start Learning'
+    : enrollment?.transit_status === 'completed' ? t('courses.detail.ctaReview')
+    : enrollment?.transit_status === 'in_progress' ? t('courses.detail.ctaContinue')
+    : t('courses.detail.ctaStart')
 
   return (
     <main id="main-content" className="min-h-screen bg-slate-50/50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6" aria-label="Breadcrumb">
-          <Link href="/courses" className="hover:text-primary transition-colors font-medium">Courses</Link>
+          <Link href="/courses" className="hover:text-primary transition-colors font-medium">{t('courses.detail.coursescrumb')}</Link>
           <span aria-hidden="true">/</span>
           <span className="text-foreground font-semibold truncate">{course.title}</span>
         </nav>
@@ -209,7 +211,7 @@ export default async function CoursePage({
                   <span className={`text-xs font-bold uppercase tracking-widest ${
                     course.status === 'published' ? 'text-emerald-600' : 'text-amber-600'
                   }`}>
-                    {course.status === 'published' ? 'Published' : (course.status ?? 'Draft')}
+                    {course.status === 'published' ? t('courses.detail.statusPublished') : (course.status ? t('common.draft') : t('courses.detail.statusDraft'))}
                   </span>
                 </div>
                 <h1 className="text-3xl font-extrabold text-foreground tracking-tight">{course.title}</h1>
@@ -220,34 +222,34 @@ export default async function CoursePage({
                 {/* Stats row */}
                 <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-muted-foreground">
                   {publishedCount > 0 && (
-                    <span>{publishedCount} lesson{publishedCount !== 1 ? 's' : ''}</span>
+                    <span>{t('courses.detail.lessonCountTemplate', { publishedCount })}</span>
                   )}
                   {totalXp > 0 && (
-                    <span className="text-indigo-600 font-semibold">{totalXp} XP available</span>
+                    <span className="text-indigo-600 font-semibold">{t('courses.detail.xpAvailableTemplate', { totalXp })}</span>
                   )}
                   {moduleHeaders.length > 0 && (
-                    <span>{moduleHeaders.length} module{moduleHeaders.length !== 1 ? 's' : ''}</span>
+                    <span>{t('courses.detail.moduleCountTemplate', { count: moduleHeaders.length })}</span>
                   )}
                   {materialsCount > 0 && (
-                    <span>📚 {materialsCount} additional material{materialsCount !== 1 ? 's' : ''}</span>
+                    <span>📚 {t('courses.detail.materialsCountTemplate', { materialsCount })}</span>
                   )}
                   {course.min_required_level > 1 && (
                     <span className="inline-flex items-center gap-1 text-amber-600 font-semibold bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5 text-xs">
-                      ⚡ Level {course.min_required_level}+ required
+                      ⚡ {t('courses.detail.levelRequiredBadge', { level: course.min_required_level })}
                     </span>
                   )}
                   {course.prereq && (
                     <span className="inline-flex items-center gap-1 text-slate-500 text-xs">
-                      Requires: <span className="font-medium text-slate-700">{course.prereq.title}</span>
+                      {t('courses.detail.requiresLabel')} <span className="font-medium text-slate-700">{course.prereq.title}</span>
                     </span>
                   )}
                   {(course.age_min != null || course.age_max != null) && (
                     <span className="inline-flex items-center bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2 py-0.5 rounded font-medium">
                       {course.age_min != null && course.age_max != null
-                        ? `Ages ${course.age_min}–${course.age_max}`
+                        ? t('courses.detail.ageRangeTemplate', { min: course.age_min, max: course.age_max })
                         : course.age_min != null
-                        ? `Ages ${course.age_min}+`
-                        : `Up to age ${course.age_max}`}
+                        ? t('courses.detail.ageRangeMinTemplate', { min: course.age_min })
+                        : t('courses.detail.ageRangeMaxTemplate', { max: course.age_max! })}
                     </span>
                   )}
                 </div>
@@ -266,7 +268,7 @@ export default async function CoursePage({
                     {enrollment && (
                       <div>
                         <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                          <span>Progress</span>
+                          <span>{t('courses.detail.progressBarLabel')}</span>
                           <span>{enrollment.progress_percent}%</span>
                         </div>
                         <div className="h-1.5 w-40 bg-slate-100 rounded-full overflow-hidden">
@@ -282,7 +284,7 @@ export default async function CoursePage({
                         href={`/courses/${courseId}/pages`}
                         className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-xl px-4 py-2 hover:bg-slate-50 transition-colors"
                       >
-                        📚 Additional Materials ({materialsCount})
+                        {t('courses.detail.materialsLink', { materialsCount })}
                       </Link>
                     )}
                   </>
@@ -291,12 +293,12 @@ export default async function CoursePage({
                     <EnrollButton courseId={courseId} locked={enrollLocked} lockReason={enrollLockReason} />
                     {hasInviteOnly && (
                       <p className="text-xs text-rose-600 font-medium mt-1">
-                        Enrollment by invitation only
+                        {t('courses.detail.inviteOnlyNotice')}
                       </p>
                     )}
                     {!hasInviteOnly && hasCohortGated && (
                       <p className="text-xs text-amber-600 font-medium mt-1">
-                        Cohort enrollment required
+                        {t('courses.detail.cohortRequiredNotice')}
                       </p>
                     )}
                   </>
@@ -305,7 +307,7 @@ export default async function CoursePage({
                     href="/auth/login"
                     className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm"
                   >
-                    Log in to Enroll
+                    {t('courses.detail.loginToEnrollButton')}
                   </Link>
                 ) : null}
 
@@ -476,11 +478,11 @@ export default async function CoursePage({
         )}
 
         {/* Curriculum */}
-        <h2 className="text-lg font-bold text-foreground mb-4">Curriculum</h2>
+        <h2 className="text-lg font-bold text-foreground mb-4">{t('courses.detail.curriculumHeading')}</h2>
         <div className="space-y-4">
           {moduleHeaders.length === 0 && allBlocks.length === 0 ? (
             <div className="bg-white border border-border rounded-xl p-10 text-center">
-              <p className="text-muted-foreground italic">No content published yet.</p>
+              <p className="text-muted-foreground italic">{t('courses.detail.emptyCurriculum')}</p>
               {isStaff && (
                 <Link href={`/courses/${courseId}/build`} className="mt-3 inline-block text-sm text-primary hover:underline">
                   Add content in Builder →
@@ -494,7 +496,7 @@ export default async function CoursePage({
                 {allBlocks
                   .filter((b) => b.block_type_id !== 'module_header' && (b.is_published || isStaff))
                   .map((block) => (
-                    <CurriculumItem key={block.id} block={block} courseId={courseId} isEnrolled={isEnrolled} />
+                    <CurriculumItem key={block.id} block={block} courseId={courseId} isEnrolled={isEnrolled} lockedLabel={t('courses.detail.lockedTooltip')} />
                   ))}
               </ul>
             </div>
@@ -510,17 +512,17 @@ export default async function CoursePage({
                   <div className="bg-slate-50 border-b border-border px-6 py-4 flex items-center justify-between">
                     <h3 className="font-bold text-foreground">{mod.title}</h3>
                     <span className="text-xs text-muted-foreground">
-                      {items.length} item{items.length !== 1 ? 's' : ''}
+                      {t('courses.detail.moduleItemCountTemplate', { count: items.length })}
                     </span>
                   </div>
                   {items.length > 0 ? (
                     <ul className="divide-y divide-border">
                       {items.map((block) => (
-                        <CurriculumItem key={block.id} block={block} courseId={courseId} isEnrolled={isEnrolled} />
+                        <CurriculumItem key={block.id} block={block} courseId={courseId} isEnrolled={isEnrolled} lockedLabel={t('courses.detail.lockedTooltip')} />
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground italic px-6 py-4">No lessons yet.</p>
+                    <p className="text-sm text-muted-foreground italic px-6 py-4">{t('courses.detail.emptyModule')}</p>
                   )}
                 </section>
               )
@@ -533,11 +535,12 @@ export default async function CoursePage({
 }
 
 function CurriculumItem({
-  block, courseId, isEnrolled,
+  block, courseId, isEnrolled, lockedLabel,
 }: {
-  block:      CourseBlock
-  courseId:   string
-  isEnrolled: boolean
+  block:       CourseBlock
+  courseId:    string
+  isEnrolled:  boolean
+  lockedLabel: string
 }) {
   const meta = BLOCK_TYPE_META[block.block_type_id]
   const href = isEnrolled ? `/courses/${courseId}/learn?block=${block.id}` : null
@@ -558,7 +561,7 @@ function CurriculumItem({
         </span>
       )}
       {!isEnrolled && (
-        <span className="text-slate-300 text-sm shrink-0" aria-label="Locked">🔒</span>
+        <span className="text-slate-300 text-sm shrink-0" aria-label={lockedLabel}>🔒</span>
       )}
       {isEnrolled && (
         <span className="text-slate-400 text-sm shrink-0" aria-hidden="true">→</span>

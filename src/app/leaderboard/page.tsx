@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +31,7 @@ function levelProgress(xp: number, level: number) {
 }
 
 export default async function LeaderboardPage() {
+  const t = await getTranslations()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -58,8 +60,8 @@ export default async function LeaderboardPage() {
 
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Leaderboard</h1>
-          <p className="text-muted-foreground text-sm mt-1">Top students by XP earned</p>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">{t('leaderboard.heading')}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t('leaderboard.subtitle')}</p>
         </div>
 
         {/* My rank card */}
@@ -71,7 +73,7 @@ export default async function LeaderboardPage() {
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-foreground">Your standing</p>
+              <p className="text-sm font-bold text-foreground">{t('leaderboard.yourStandingLabel')}</p>
               <div className="flex items-center gap-3 mt-1">
                 <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
                   <div
@@ -80,7 +82,7 @@ export default async function LeaderboardPage() {
                   />
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  Level {me.current_level} · {me.xp_points.toLocaleString()} XP
+                  {t('leaderboard.levelXpTemplate', { level: me.current_level, xp: me.xp_points.toLocaleString() })}
                 </span>
               </div>
             </div>
@@ -88,7 +90,7 @@ export default async function LeaderboardPage() {
               href="/performance"
               className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors shrink-0"
             >
-              My grades →
+              {t('leaderboard.myGradesLink')}
             </Link>
           </div>
         )}
@@ -115,7 +117,7 @@ export default async function LeaderboardPage() {
                     </span>
                   </div>
                   <p className="text-xs font-bold text-foreground truncate">
-                    {entry.display_name ?? 'Anonymous'}
+                    {entry.display_name ?? t('leaderboard.anonymousFallback')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {entry.xp_points.toLocaleString()} XP
@@ -130,7 +132,7 @@ export default async function LeaderboardPage() {
         {/* Full table */}
         {rows.length === 0 ? (
           <div className="bg-white border border-border rounded-xl p-10 text-center">
-            <p className="text-muted-foreground italic">No students have earned XP yet.</p>
+            <p className="text-muted-foreground italic">{t('leaderboard.emptyState')}</p>
           </div>
         ) : (
           <div className="bg-white border border-border rounded-xl overflow-hidden">
@@ -157,7 +159,7 @@ export default async function LeaderboardPage() {
 
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-semibold truncate ${isMe ? 'text-primary' : 'text-foreground'}`}>
-                        {entry.display_name ?? 'Anonymous'}{isMe ? ' (you)' : ''}
+                        {entry.display_name ?? t('leaderboard.anonymousFallback')}{isMe ? t('leaderboard.youSuffix') : ''}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <div className="h-1 w-20 bg-slate-100 rounded-full overflow-hidden">

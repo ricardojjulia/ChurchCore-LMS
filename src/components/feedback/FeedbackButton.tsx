@@ -1,19 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useFeedbackSession } from './FeedbackSessionProvider'
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? 'dev'
 
-const CATEGORIES = [
-  { value: 'BUG',               label: 'Bug' },
-  { value: 'ERROR',             label: 'Error / Crash' },
-  { value: 'UNEXPECTED_RESULT', label: 'Unexpected Result' },
-  { value: 'IMPROVEMENT',       label: 'Improvement Idea' },
-] as const
+const CATEGORY_VALUES = ['BUG', 'ERROR', 'UNEXPECTED_RESULT', 'IMPROVEMENT'] as const
 
-type Category = typeof CATEGORIES[number]['value']
+type Category = typeof CATEGORY_VALUES[number]
 
 type SubmitState = 'idle' | 'loading' | 'success' | 'error'
 
@@ -27,6 +23,7 @@ export function FeedbackButton() {
 }
 
 function ActiveFeedbackButton() {
+  const t = useTranslations()
   const { sessionId, breadcrumbs, elapsedSeconds } = useFeedbackSession()
   const [open, setOpen]       = useState(false)
   const [category, setCategory] = useState<Category | ''>('')
@@ -81,7 +78,7 @@ function ActiveFeedbackButton() {
       <button
         type="button"
         onClick={handleOpen}
-        aria-label="Send feedback"
+        aria-label={t('feedback.triggerAriaLabel')}
         className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg transition-colors hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
       >
         {/* Megaphone / flag icon */}
@@ -95,7 +92,7 @@ function ActiveFeedbackButton() {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Send feedback"
+          aria-label={t('feedback.triggerAriaLabel')}
           className="fixed inset-0 z-50 flex items-end justify-end p-4 sm:items-center sm:justify-center"
         >
           {/* Backdrop */}
@@ -109,12 +106,12 @@ function ActiveFeedbackButton() {
           <div className="relative w-full max-w-sm rounded-xl bg-white shadow-2xl dark:bg-slate-900">
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">
               <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Send Feedback
+                {t('feedback.dialogHeading')}
               </h2>
               <button
                 type="button"
                 onClick={handleClose}
-                aria-label="Close feedback dialog"
+                aria-label={t('feedback.closeAriaLabel')}
                 className="rounded p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
@@ -126,13 +123,13 @@ function ActiveFeedbackButton() {
             <form onSubmit={handleSubmit} className="p-4 space-y-4">
               {status === 'success' ? (
                 <p className="py-6 text-center text-sm text-green-600 font-medium">
-                  Thank you! Your feedback was received.
+                  {t('feedback.successMessage')}
                 </p>
               ) : (
                 <>
                   <div>
                     <label htmlFor="fb-category" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Category <span aria-hidden="true" className="text-red-500">*</span>
+                      {t('feedback.categoryFieldLabel')} <span aria-hidden="true" className="text-red-500">*</span>
                     </label>
                     <select
                       id="fb-category"
@@ -141,16 +138,21 @@ function ActiveFeedbackButton() {
                       onChange={e => setCategory(e.target.value as Category)}
                       className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                     >
-                      <option value="" disabled>Select a category…</option>
-                      {CATEGORIES.map(c => (
-                        <option key={c.value} value={c.value}>{c.label}</option>
+                      <option value="" disabled>{t('feedback.categoryPlaceholder')}</option>
+                      {CATEGORY_VALUES.map(v => (
+                        <option key={v} value={v}>
+                          {v === 'BUG' ? t('feedback.categoryBug')
+                            : v === 'ERROR' ? t('feedback.categoryErrorCrash')
+                            : v === 'UNEXPECTED_RESULT' ? t('feedback.categoryUnexpectedResult')
+                            : t('feedback.categoryImprovementIdea')}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
                     <label htmlFor="fb-note" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                      Notes <span className="text-slate-400 font-normal">(optional)</span>
+                      {t('feedback.notesFieldLabel')} <span className="text-slate-400 font-normal">{t('common.optionalHint')}</span>
                     </label>
                     <textarea
                       id="fb-note"
@@ -158,7 +160,7 @@ function ActiveFeedbackButton() {
                       maxLength={NOTE_MAX}
                       value={note}
                       onChange={e => setNote(e.target.value)}
-                      placeholder="Describe what you saw or what you expected to happen…"
+                      placeholder={t('feedback.notesPlaceholder')}
                       className="w-full resize-none rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                     />
                     <p className="mt-1 text-right text-xs text-slate-400">
@@ -168,7 +170,7 @@ function ActiveFeedbackButton() {
 
                   {status === 'error' && (
                     <p className="text-xs text-red-600">
-                      Something went wrong — please try again.
+                      {t('feedback.submitError')}
                     </p>
                   )}
 
@@ -178,14 +180,14 @@ function ActiveFeedbackButton() {
                       onClick={handleClose}
                       className="rounded px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </button>
                     <button
                       type="submit"
                       disabled={!category || status === 'loading'}
                       className="rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-50 transition-colors"
                     >
-                      {status === 'loading' ? 'Sending…' : 'Send'}
+                      {status === 'loading' ? t('feedback.sendingButton') : t('feedback.sendButton')}
                     </button>
                   </div>
                 </>

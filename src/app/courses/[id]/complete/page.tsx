@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,6 +11,7 @@ export default async function CourseCompletePage({
   params: Promise<{ id: string }>
 }) {
   const { id: courseId } = await params
+  const t = await getTranslations()
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -61,10 +63,10 @@ export default async function CourseCompletePage({
         <div className="text-center mb-10">
           <p className="text-5xl mb-4">🎓</p>
           <h1 className="text-4xl font-extrabold text-white tracking-tight">
-            Course Complete!
+            {t('courses.complete.heading')}
           </h1>
           <p className="text-indigo-300 text-lg mt-2">
-            You finished <span className="font-bold text-white">{course.title}</span>
+            {t('courses.complete.finishedPrefix')} <span className="font-bold text-white">{course.title}</span>
           </p>
         </div>
 
@@ -73,18 +75,18 @@ export default async function CourseCompletePage({
           {/* Certificate header */}
           <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 px-8 py-6 text-center">
             <p className="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1">
-              Certificate of Completion
+              {t('courses.complete.certificateHeader')}
             </p>
             <p className="text-white text-sm">ChurchCore LMS</p>
           </div>
 
           {/* Certificate body */}
           <div className="px-8 py-8 text-center">
-            <p className="text-sm text-muted-foreground mb-1">This certifies that</p>
+            <p className="text-sm text-muted-foreground mb-1">{t('courses.complete.certifiesText')}</p>
             <p className="text-2xl font-extrabold text-foreground mb-1">
-              {profile.display_name ?? 'Student'}
+              {profile.display_name ?? t('common.studentFallback')}
             </p>
-            <p className="text-sm text-muted-foreground mb-4">has successfully completed</p>
+            <p className="text-sm text-muted-foreground mb-4">{t('courses.complete.hasCompletedText')}</p>
             <p className="text-xl font-bold text-indigo-700 mb-6">{course.title}</p>
 
             {/* Stats row */}
@@ -92,19 +94,19 @@ export default async function CourseCompletePage({
               {cert?.final_grade !== null && cert?.final_grade !== undefined && (
                 <div className="text-center">
                   <p className="text-3xl font-extrabold text-foreground">{cert.letter_grade}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Final Grade</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t('courses.complete.finalGradeLabel')}</p>
                   <p className="text-xs font-semibold text-muted-foreground">{cert.final_grade}%</p>
                 </div>
               )}
               {cert?.total_xp_earned !== undefined && cert.total_xp_earned > 0 && (
                 <div className="text-center">
                   <p className="text-3xl font-extrabold text-indigo-600">{cert.total_xp_earned}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">XP Earned</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t('courses.complete.xpEarnedLabel')}</p>
                 </div>
               )}
               <div className="text-center">
                 <p className="text-3xl font-extrabold text-emerald-600">{enrollment.progress_percent}%</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Completion</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{t('courses.complete.completionStatLabel')}</p>
               </div>
             </div>
 
@@ -119,16 +121,16 @@ export default async function CourseCompletePage({
           {/* Level badge */}
           <div className="border-t border-border px-8 py-4 bg-muted/20 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground">Your current standing</p>
+              <p className="text-xs text-muted-foreground">{t('courses.complete.currentStandingLabel')}</p>
               <p className="text-sm font-bold text-foreground">
-                Level {profile.current_level} · {profile.xp_points.toLocaleString()} total XP
+                {t('courses.complete.levelBadgeTemplate', { level: profile.current_level, xp: profile.xp_points.toLocaleString() })}
               </p>
             </div>
             <Link
               href="/leaderboard"
               className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
             >
-              Leaderboard →
+              {t('courses.complete.leaderboardLink')}
             </Link>
           </div>
         </div>
@@ -139,19 +141,19 @@ export default async function CourseCompletePage({
             href="/certificates"
             className="inline-flex items-center gap-2 bg-white text-slate-900 font-bold px-5 py-2.5 rounded-xl hover:bg-slate-100 transition-colors text-sm"
           >
-            View all certificates
+            {t('courses.complete.viewCertificatesButton')}
           </Link>
           <Link
             href="/courses"
             className="inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-500 transition-colors text-sm"
           >
-            Browse more courses →
+            {t('courses.complete.browseMoreCoursesButton')}
           </Link>
         </div>
 
         <p className="text-center text-slate-500 text-xs mt-6">
           <Link href="/performance" className="hover:text-slate-300 transition-colors">
-            View full academic performance →
+            {t('courses.complete.viewPerformanceLink')}
           </Link>
         </p>
       </div>

@@ -2,8 +2,10 @@
 
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 
 export default function SignOutButton() {
+  const t = useTranslations()
   const supabase = createClient()
   const router = useRouter()
 
@@ -19,7 +21,7 @@ export default function SignOutButton() {
       onClick={signOut}
       className="text-xs font-semibold text-slate-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-slate-800"
     >
-      Sign out
+      {t('common.signOut')}
     </button>
   )
 }

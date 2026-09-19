@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,6 +56,7 @@ function StatusPill({ status }: { status: string }) {
 }
 
 export default async function PerformancePage() {
+  const t = await getTranslations()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -78,9 +80,9 @@ export default async function PerformancePage() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-extrabold text-foreground">Academic Performance</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">{t('performance.heading')}</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Your grades, progress, and standing across all enrolled courses.
+            {t('performance.subtitle')}
           </p>
         </div>
 
@@ -90,21 +92,21 @@ export default async function PerformancePage() {
             <span className="text-3xl font-extrabold text-foreground">
               {overallGpa !== null ? overallGpa.toFixed(2) : '—'}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">Overall GPA</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('performance.gpaLabel')}</p>
           </div>
           <div className="bg-white border border-border rounded-xl px-5 py-4">
             <span className="text-3xl font-extrabold text-foreground">{rows.length}</span>
-            <p className="text-xs text-muted-foreground mt-1">Enrolled Courses</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('performance.enrolledCoursesLabel')}</p>
           </div>
           <div className="bg-white border border-emerald-200 rounded-xl px-5 py-4">
             <span className="text-3xl font-extrabold text-emerald-700">{completedCount}</span>
-            <p className="text-xs text-muted-foreground mt-1">Completed</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('status.completed')}</p>
           </div>
           <div className={`bg-white rounded-xl px-5 py-4 border ${atRiskCount > 0 ? 'border-rose-200' : 'border-border'}`}>
             <span className={`text-3xl font-extrabold ${atRiskCount > 0 ? 'text-rose-600' : 'text-foreground'}`}>
               {atRiskCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">At-Risk</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('performance.atRiskLabel')}</p>
           </div>
         </div>
 
@@ -112,8 +114,8 @@ export default async function PerformancePage() {
         {totalXp > 0 && (
           <div className="bg-white border border-border rounded-xl px-5 py-4 mb-8 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-foreground">Total XP Earned</p>
-              <p className="text-xs text-muted-foreground">Across all courses</p>
+              <p className="text-sm font-semibold text-foreground">{t('performance.totalXpLabel')}</p>
+              <p className="text-xs text-muted-foreground">{t('performance.xpSublabel')}</p>
             </div>
             <span className="text-2xl font-extrabold text-primary">{totalXp.toLocaleString()} XP</span>
           </div>
@@ -123,8 +125,7 @@ export default async function PerformancePage() {
         {atRiskCount > 0 && (
           <div className="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3">
             <p className="text-rose-700 font-semibold text-sm">
-              ⚠ {atRiskCount} course{atRiskCount > 1 ? 's are' : ' is'} flagged at-risk.
-              Contact your instructor or catch up on missing work.
+              {t('performance.atRiskAlertTemplate', { n: atRiskCount })}
             </p>
           </div>
         )}
@@ -132,9 +133,9 @@ export default async function PerformancePage() {
         {/* Course table */}
         {rows.length === 0 ? (
           <div className="bg-white border border-border rounded-xl p-10 text-center">
-            <p className="text-muted-foreground italic mb-4">No enrollment data yet.</p>
+            <p className="text-muted-foreground italic mb-4">{t('performance.emptyState')}</p>
             <Link href="/courses" className="text-sm font-semibold text-primary hover:underline">
-              Browse courses →
+              {t('common.browseCoursesArrowLink')}
             </Link>
           </div>
         ) : (
@@ -142,12 +143,12 @@ export default async function PerformancePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/20">
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Course</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Progress</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Avg Grade</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden sm:table-cell">GPA</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden md:table-cell">Submissions</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('performance.table.courseHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('performance.table.statusHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('performance.table.progressHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('performance.table.avgGradeHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden sm:table-cell">{t('performance.table.gpaHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden md:table-cell">{t('performance.table.submissionsHeader')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

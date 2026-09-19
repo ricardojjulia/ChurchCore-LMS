@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 
 export function OfflineBanner() {
+  const t = useTranslations()
   const [offline, setOffline] = useState(false)
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export function OfflineBanner() {
       aria-live="polite"
       className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 text-center"
     >
-      You are offline — interactive features (submissions, quizzes) are disabled.
+      {t('offlineBanner.statusMessage')}
     </div>
   )
 }

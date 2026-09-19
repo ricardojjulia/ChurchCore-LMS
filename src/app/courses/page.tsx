@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import CourseCard from '@/components/lms/CourseCard'
+import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +46,7 @@ export default async function CoursesPage({
   searchParams: Promise<{ track?: string }>
 }) {
   const { track: activeTrack } = await searchParams
+  const t = await getTranslations()
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -124,21 +126,21 @@ export default async function CoursesPage({
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
-              {isStaff ? (role === 'teacher' ? 'My Courses' : 'All Courses') : 'Course Catalog'}
+              {isStaff ? (role === 'teacher' ? t('courses.list.headingTeacher') : t('courses.list.headingStaff')) : t('courses.list.headingStudent')}
             </h1>
             <p className="text-muted-foreground mt-1 text-sm">
               {isStaff
                 ? role === 'teacher'
-                  ? 'Courses you own. Publish when ready for students.'
-                  : 'All courses on the platform.'
+                  ? t('courses.list.subtitleTeacher')
+                  : t('courses.list.subtitleStaff')
                 : activeTrack
-                ? `Showing ${filtered.length} course${filtered.length !== 1 ? 's' : ''} in this track`
-                : `${courseList.length} course${courseList.length !== 1 ? 's' : ''} available`}
+                ? t('courses.list.subtitleFilteredTemplate', { n: filtered.length })
+                : t('courses.list.subtitleAvailableTemplate', { n: courseList.length })}
             </p>
           </div>
           {['teacher', 'admin', 'manager'].includes(role) && (
             <Button asChild>
-              <Link href="/courses/new">+ New Course</Link>
+              <Link href="/courses/new">{t('courses.list.newCourseButton')}</Link>
             </Button>
           )}
         </div>
@@ -154,7 +156,7 @@ export default async function CoursesPage({
                   : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
               )}
             >
-              All Tracks
+              {t('courses.list.allTracksFilter')}
             </Link>
             {tracksWithCourses.map((track) => (
               <Link
@@ -181,7 +183,7 @@ export default async function CoursesPage({
                   href="/courses"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  ← All tracks
+                  {t('courses.list.backToTracksLink')}
                 </Link>
                 <span className="text-muted-foreground">·</span>
                 <span className="text-sm font-semibold">{activeTrackName}</span>
@@ -208,9 +210,9 @@ export default async function CoursesPage({
                             : enrollment.transit_status === 'in_progress' ? 'text-sky-600 font-semibold'
                             : 'text-slate-500'
                           }>
-                            {enrollment.transit_status === 'completed' ? 'Completed'
-                             : enrollment.transit_status === 'in_progress' ? 'In progress'
-                             : 'Enrolled'}
+                            {enrollment.transit_status === 'completed' ? t('status.completed')
+                             : enrollment.transit_status === 'in_progress' ? t('status.inProgress')
+                             : t('status.enrolled')}
                           </span>
                           <span>{enrollment.progress_percent}%</span>
                         </div>
@@ -234,25 +236,25 @@ export default async function CoursesPage({
                           href={`/courses/${course.id}/edit`}
                           className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                         >
-                          Edit
+                          {t('courses.list.editAction')}
                         </Link>
                         <Link
                           href={`/courses/${course.id}/build`}
                           className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                         >
-                          Build
+                          {t('courses.list.buildAction')}
                         </Link>
                         <Link
                           href={`/courses/${course.id}/analytics`}
                           className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                         >
-                          Analytics
+                          {t('courses.list.analyticsAction')}
                         </Link>
                         <Link
                           href={`/courses/${course.id}/submissions`}
                           className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                         >
-                          Grades
+                          {t('courses.list.gradesAction')}
                         </Link>
                       </div>
                     ) : enrollmentBadge
@@ -279,14 +281,14 @@ export default async function CoursesPage({
           <div className="bg-white border border-border rounded-xl p-12 text-center">
             <p className="text-muted-foreground italic mb-4">
               {activeTrack
-                ? 'No courses in this track.'
+                ? t('courses.list.emptyTrack')
                 : isStaff
-                ? 'No courses yet.'
-                : 'No courses available yet.'}
+                ? t('courses.list.emptyGeneric')
+                : t('courses.list.emptyStudent')}
             </p>
             {isStaff && !activeTrack && (
               <Button asChild>
-                <Link href="/courses/new">Create your first course</Link>
+                <Link href="/courses/new">{t('courses.list.emptyCreateCta')}</Link>
               </Button>
             )}
           </div>

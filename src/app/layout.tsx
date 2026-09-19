@@ -10,6 +10,8 @@ import MobileAdminDrawerServer from '@/components/layout/MobileAdminDrawerServer
 import { Toaster } from '@/components/ui/toaster'
 import { FeedbackSessionProvider } from '@/components/feedback/FeedbackSessionProvider'
 import { FeedbackButton }          from '@/components/feedback/FeedbackButton'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages, getLocale } from 'next-intl/server'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -45,9 +47,11 @@ async function getBrandingColor(): Promise<string | null> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const primaryColor = await getBrandingColor()
   const brandCss     = primaryColor ? `:root{--color-primary:${primaryColor};}` : null
+  const messages     = await getMessages()
+  const locale       = await getLocale()
 
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         {brandCss && <style>{brandCss}</style>}
         <link rel="manifest" href="/manifest.json" />
@@ -58,6 +62,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className={inter.className}>
+        <NextIntlClientProvider messages={messages}>
         {/* WCAG 2.1 AA — skip navigation */}
         <a
           href="#main-content"
@@ -79,6 +84,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Toaster />
           <FeedbackButton />
         </FeedbackSessionProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

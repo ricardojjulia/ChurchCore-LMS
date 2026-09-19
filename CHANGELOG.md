@@ -11,6 +11,30 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.27.0] — 2026-09-18
+
+### Added
+
+- **Cookie-based i18n — English / Spanish** (COUNCIL-2026-020) — full EN/ES translation for all student- and parent/guardian-facing UI; locale stored in `NEXT_LOCALE` cookie (no URL segments), default `en`
+- `messages/en.json` and `messages/es.json` — 562 ICU-format message keys covering courses, learning player, assignments, quiz, discussion, live session, attendance, certificates, calendar, announcements, reports, groups, messages, profile, notifications, leaderboard, onboarding, guardian, performance, join, offline, and all shared layout strings
+- `src/i18n/request.ts` — `getRequestConfig` reads `NEXT_LOCALE` cookie server-side, loads the matching message bundle
+- `src/components/layout/LocaleSwitcher.tsx` — EN/ES toggle button; sets `NEXT_LOCALE` cookie and calls `router.refresh()` to reload locale without a full navigation; mounted inside `SidebarClient`
+- `NextIntlClientProvider` added to root layout wrapping body; `getMessages()` + `getLocale()` passed from server; `<html lang={locale}>` kept in sync
+- `next.config.mjs` updated to wrap config with `createNextIntlPlugin`
+
+### Changed
+
+- All student/guardian-facing pages and client components now use `getTranslations()` (Server Components) or `useTranslations()` (Client Components) — hardcoded strings fully removed from ~50 in-scope files
+- `EnrollmentTable` converted to `async` Server Component to support `getTranslations()`
+- `BlockPlayer` gained an explicit `'use client'` directive (was already in a client tree; directive required for `useTranslations()` hook)
+- Static label objects (`ROLE_LABELS`, `CATEGORIES`, `PROVIDER_LABEL`, `STATUS_META`, `PRIORITY_STYLE`) that contained hardcoded strings were refactored: values-only arrays or inline ternary `t()` calls replace them
+
+### Scope
+
+- Phase 1 covers student/learner/guardian-facing only. Admin (`src/app/admin/`), platform (`src/app/platform/`), HQ (`src/app/hq/`), instructor reports, and `MobileAdminDrawer.tsx` are NOT translated (Phase 2 follow-up). Middleware (`src/middleware.ts`) is unchanged.
+
+---
+
 ## [0.26.0] — 2026-09-18
 
 ### Added

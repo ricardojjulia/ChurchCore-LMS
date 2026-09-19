@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
+import { getTranslations } from 'next-intl/server'
 import GroupDiscussionBoard from './GroupDiscussionBoard'
 
 export const dynamic = 'force-dynamic'
@@ -11,6 +12,7 @@ export default async function GroupDiscussionPage({
   params: Promise<{ groupId: string }>
 }) {
   const { groupId } = await params
+  const t = await getTranslations()
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -66,7 +68,7 @@ export default async function GroupDiscussionPage({
     <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-8">
         <nav className="flex items-center gap-2 text-sm text-slate-400">
-          <Link href="/my-groups" className="hover:text-primary font-medium">My Groups</Link>
+          <Link href="/my-groups" className="hover:text-primary font-medium">{t('nav.myGroups')}</Link>
           <span>/</span>
           <span className="text-foreground font-semibold">{group.group_name}</span>
         </nav>
@@ -81,7 +83,7 @@ export default async function GroupDiscussionPage({
               </p>
               {membership && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  You are a <strong className="text-foreground capitalize">{membership.role}</strong> of this group
+                  {t('myGroups.detail.roleNoticeTemplate', { role: membership.role })}
                 </p>
               )}
             </div>
