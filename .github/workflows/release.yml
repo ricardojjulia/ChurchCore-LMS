@@ -155,26 +155,20 @@ jobs:
         run: |
           deadline=$((SECONDS + 900))
           while (( SECONDS < deadline )); do
-            deployment_id="$(
-              gh api \
-                "repos/$GITHUB_REPOSITORY/deployments?ref=$GITHUB_SHA&environment=Production&per_page=20" \
-                --jq '[.[] | select(.creator.login == "vercel[bot]") | select((.created_at | fromdateiso8601) >= (env.TRIGGERED_AT | tonumber))][0].id // empty'
-            )"
-
-            if [[ -n "$deployment_id" ]]; then
-              deployment_ref="$(gh api "repos/$GITHUB_REPOSITORY/deployments/$deployment_id" --jq '.ref // empty')"
-              if [[ "$deployment_ref" != "$GITHUB_SHA" ]]; then
-                printf '::error::Vercel deployed a different commit than the approved release.\n'
+            status="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/status" --jq '[.statuses[] | select(.context == "Vercel") | select((.updated_at | fromdateiso8601) >= (env.TRIGGERED_AT | tonumber))][0] // empty')"
+            if [[ -n "$status" ]]; then
+              state="$(jq -r '.state' <<< "$status")"
+              target_url="$(jq -r '.target_url // empty' <<< "$status")"
+              if [[ "$target_url" != https://vercel.com/* ]]; then
+                printf '::error::Vercel status did not provide a Vercel deployment URL.\n'
                 exit 1
               fi
-              state="$(gh api "repos/$GITHUB_REPOSITORY/deployments/$deployment_id/statuses" --jq '.[0].state // empty')"
               case "$state" in
                 success)
-                  url="$(gh api "repos/$GITHUB_REPOSITORY/deployments/$deployment_id/statuses" --jq '.[0].environment_url // empty')"
-                  echo "Vercel production deployment succeeded: $url" >> "$GITHUB_STEP_SUMMARY"
+                  echo "Vercel production deployment succeeded: $target_url" >> "$GITHUB_STEP_SUMMARY"
                   exit 0
                   ;;
-                error|failure|inactive)
+                error|failure)
                   printf '::error::Vercel production deployment ended with state %s.\n' "$state"
                   exit 1
                   ;;

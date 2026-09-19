@@ -11,6 +11,14 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.26.6] — 2026-09-19
+
+### Fixed
+
+- Verify an accepted Vercel deploy-hook release through its commit-scoped Vercel status, rather than a GitHub Deployment record that deploy hooks do not create. The verifier still requires a post-trigger Vercel URL and fails on an explicit Vercel failure.
+
+---
+
 ## [0.26.5] — 2026-09-18
 
 ### Fixed

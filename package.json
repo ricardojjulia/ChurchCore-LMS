@@ -1,6 +1,6 @@
 {
   "name": "churchcore-lms",
-  "version": "0.26.5",
+  "version": "0.26.6",
   "license": "AGPL-3.0-only",
   "private": true,
   "scripts": {
