@@ -6,7 +6,7 @@
 **built for churches, seminaries, and faith communities**
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](./LICENSE)
-[![Version](https://img.shields.io/badge/version-0.26.5-brightgreen)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.26.6-brightgreen)](./CHANGELOG.md)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org)
@@ -37,7 +37,7 @@ ChurchCore LMS is an **open-source learning platform** purpose-built for churche
 
 ## Current delivery status
 
-Version 0.26.5 repairs tenant isolation and group discussions, preserves platform-admin read access, and enforces group capacity in the database, including concurrent assignments. The LMS side of signed OneRoster delivery is released; Academy sender integration and the later Gradebook/REST milestones remain open. See [MVP and verification status](./docs/factory-status.md) for tested behavior and release gates.
+Version 0.26.6 repairs tenant isolation and group discussions, preserves platform-admin read access, enforces group capacity in the database, and verifies deploy-hook releases through Vercel's commit status. The LMS side of signed OneRoster delivery is released; Academy sender integration and the later Gradebook/REST milestones remain open. See [MVP and verification status](./docs/factory-status.md) for tested behavior and release gates.
 
 ## Features
 

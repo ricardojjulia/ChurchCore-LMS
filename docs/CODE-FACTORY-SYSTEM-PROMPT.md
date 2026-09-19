@@ -583,7 +583,8 @@ CI suite → staging migrations/functions → production environment approval �
   `main`, and both project references must match reviewed workflow constants.
 - Vercel automatic deployment from `main` is disabled. The approved production
   job triggers the project deploy hook after Supabase and verifies the resulting
-  GitHub deployment status before reporting success.
+  exact-commit Vercel status (created after the hook) and its Vercel target URL
+  before reporting success. Deploy hooks do not create GitHub Deployment records.
 - Required production reviewers must be configured in GitHub. The environment name
   alone does not establish an approval gate.
 
