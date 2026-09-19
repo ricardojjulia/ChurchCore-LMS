@@ -40,13 +40,21 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Pilot Feedback & Error-Triage System** (COUNCIL-2026-023) — in-product feedback capture and automatic error reporting for pilot/demo sessions, feature-gated behind `NEXT_PUBLIC_DEMO_MODE` (server-enforced, not just client-hidden)
+- **Pilot Feedback & Error-Triage System** (COUNCIL-2026-025) — in-product feedback capture and automatic error reporting for pilot/demo sessions, feature-gated behind `NEXT_PUBLIC_DEMO_MODE` (server-enforced, not just client-hidden)
 - `platform_feedback` table — platform-plane only, RLS restricted to `is_platform_admin()` reads/updates and `service_role` writes; server-derived identity and SHA-256 dedupe fingerprint; upsert-on-conflict increments `hit_count` and reopens previously-triaged rows
 - `POST /api/feedback` — the one submission endpoint; validates and bounds every field, rate-limited via a new `feedbackLimiter` (Upstash-backed, 20/60s per session)
 - `FeedbackSessionProvider` / `FeedbackButton` — SSR-safe session context (sessionStorage UUID, last-5-route breadcrumbs, elapsed duration) and a fixed-position feedback button (BUG / ERROR / UNEXPECTED_RESULT / IMPROVEMENT), both fully inert when the gate is off
 - `src/app/error.tsx` now reports unhandled render errors automatically when the gate is on (capped `error.message` only — never `error.stack` or `error.digest`), swallowing its own reporting failures
 - `/platform/feedback` — staff triage workspace: open/done/all views, category/identity/date filters, unprocessed-first sort, detail drawer, optimistic triage-action and processed updates
 - `.claude/agents/pr-reviewer.md` + `.claude/skills/pr-review/SKILL.md` — a PR review gate (Critical/Important/Minor) that runs on every PR, including changes small enough to skip the full council/factory pipeline
+
+---
+
+## [0.26.6] — 2026-09-19
+
+### Fixed
+
+- Verify an accepted Vercel deploy-hook release through its commit-scoped Vercel status, rather than a GitHub Deployment record that deploy hooks do not create. The verifier still requires a post-trigger Vercel URL and fails on an explicit Vercel failure.
 
 ---
 

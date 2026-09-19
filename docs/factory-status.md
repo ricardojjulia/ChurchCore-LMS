@@ -1,6 +1,6 @@
 # LMS MVP and verification status
 
-Updated September 18, 2026. Application version 0.26.5 is prepared in PR #5 for architect review.
+Updated September 19, 2026. Production is live at `18df157`; version 0.26.6 is ready for review as a release-observability repair.
 
 | Area | Evidence and remaining scope |
 |---|---|
@@ -12,7 +12,7 @@ Updated September 18, 2026. Application version 0.26.5 is prepared in PR #5 for 
 | Shared OneRoster milestone | Academy sender and cross-repository delivery proof remain open, requiring separate repository authorization. M4 Gradebook and M5 REST/OpenAPI remain later work. No certification claim. |
 | Dependencies | Next.js 16.3.5, TipTap 3.31.3, Vitest 4.1.11. Current lockfile audit: zero vulnerabilities. No new dependency upgrade in September 18 repair. |
 | Verification | 240 unit tests with existing coverage gates; 16 SQL suites/340 assertions; 8 E2E files/77 tests against a production build on a fresh isolated local Supabase stack. Type/lint/version/build, application DB lint, migration reapply, OneRoster concurrency, RLS and client-secret scans pass. |
-| Publication | PR #5 remains subject to current-head CI and architect review. Main be17a76 includes controlled Vercel promotion and a check-in policy. Release 35148363218 completed staging but remains at the Production approval gate; its latest-main check would reject this stale commit. The current-main release is queued behind it. |
+| Publication | PR #5 merged to main as `18df157`; CI, CodeQL and the Vercel commit status are successful. Release 35364532446 applied the current migrations/functions and triggered Vercel, but falsely failed while polling for a Deployment record absent from deploy-hook deliveries. COUNCIL-2026-023 corrects that verifier; no new release is triggered by this change. |
 
 Current evidence is in `.ai-factory/runs/daily-churchcore-lms-2026-09-18/`.
 Previous daily snapshots remain historical. The September 18 run used its own disposable

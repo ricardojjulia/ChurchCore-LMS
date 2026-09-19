@@ -63,7 +63,7 @@ export default defineConfig({
         'src/app/actions/cohorts.ts':          { lines: 40 },
         'src/app/actions/messages.ts':         { lines: 35 },
         'src/app/actions/learning.ts':         { lines: 18 },
-        // COUNCIL-2026-023: Pilot Feedback & Error-Triage — per-file thresholds.
+        // COUNCIL-2026-025: Pilot Feedback & Error-Triage — per-file thresholds.
         // Raise and broaden as coverage expands.
         'src/lib/feedback.ts':                 { lines: 95 },  // measured 100%, threshold 95%
         'src/app/api/feedback/route.ts':       { lines: 91 },  // measured 96.55%, threshold 91%
