@@ -110,7 +110,7 @@ function GradeForm({
 export default function DiscussionPlayer({
   blockId,
   prompt,
-  ownReplyText,
+  ownReplyText: _ownReplyText,
   viewerRole,
   maxScore,
 }: {

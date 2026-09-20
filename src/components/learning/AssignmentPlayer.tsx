@@ -23,7 +23,7 @@ interface Props {
   } | null
 }
 
-export default function AssignmentPlayer({ blockId, instructions, maxPoints, submissionType = 'both', existingSub, onComplete }: Props) {
+export default function AssignmentPlayer({ blockId, instructions: _instructions, maxPoints, submissionType = 'both', existingSub, onComplete }: Props) {
   const [body,    setBody]    = useState(existingSub?.content?.text ?? '')
   const [file,    setFile]    = useState<File | null>(null)
   const [fileErr, setFileErr] = useState<string | null>(null)

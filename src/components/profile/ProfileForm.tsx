@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -90,11 +91,14 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
         />
         {avatarUrl && (
           <div className="mt-3 flex items-center gap-3">
-            <img
+            <Image
               src={avatarUrl}
               alt="Avatar preview"
+              width={48}
+              height={48}
               className="w-12 h-12 rounded-full object-cover border border-border"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+              unoptimized
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
             />
             <span className="text-xs text-muted-foreground">Preview</span>
           </div>

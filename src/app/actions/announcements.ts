@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
-import { createServiceClient } from '@/utils/supabase/service'
+
 
 type Priority = 'low' | 'normal' | 'high' | 'urgent'
 type Scope    = 'global' | 'course' | 'role'

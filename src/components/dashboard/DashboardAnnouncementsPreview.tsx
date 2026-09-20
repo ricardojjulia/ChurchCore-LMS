@@ -25,7 +25,7 @@ function timeAgo(iso: string): string {
 }
 
 export default async function DashboardAnnouncementsPreview({
-  uid,
+  uid: _uid,
   isStaff,
 }: {
   uid:     string

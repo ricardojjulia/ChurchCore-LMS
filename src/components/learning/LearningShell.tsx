@@ -50,7 +50,7 @@ interface Props {
 const CONTENT_TYPES = new Set(['page', 'video_stream', 'resource_file', 'external_url'])
 
 export default function LearningShell({
-  courseId, courseTitle, orgId, modules, blocks, contentPages = [], submissions, initialBlockId, progressPercent, isStaff, viewerRole,
+  courseId, courseTitle, orgId, modules: _modules, blocks, contentPages = [], submissions, initialBlockId, progressPercent, isStaff, viewerRole,
 }: Props) {
   const publishedBlocks = blocks.filter((b) => b.is_published || isStaff)
 

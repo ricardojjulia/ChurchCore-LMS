@@ -39,7 +39,7 @@ const TYPE_ICON: Record<string, string> = {
 
 export default function NotificationsClient({
   initialItems,
-  userId,
+  userId: _userId,
 }: {
   initialItems: NotificationItem[]
   userId:       string

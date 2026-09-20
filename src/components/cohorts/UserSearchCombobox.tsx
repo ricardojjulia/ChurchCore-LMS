@@ -103,7 +103,6 @@ export default function UserSearchCombobox({ existingMemberIds, onSelect, onClos
   // flags any JSX expression as an invalid ARIA attribute value (known false positive).
   // Spreading bypasses the check while preserving correct ARIA semantics at runtime.
   const inputAriaProps = {
-    'aria-expanded': (showList ? 'true' : 'false') as 'true' | 'false',
     'aria-activedescendant': activeIndex >= 0 ? `user-option-${activeIndex}` : undefined,
   }
 
@@ -120,6 +119,7 @@ export default function UserSearchCombobox({ existingMemberIds, onSelect, onClos
         placeholder="Search by name or email…"
         aria-label="Search for a user to add"
         aria-controls="user-search-listbox"
+        aria-expanded={showList}
         {...inputAriaProps}
         autoComplete="off"
         className="w-full border border-input rounded-lg px-4 py-2.5 text-sm bg-white text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
@@ -166,12 +166,13 @@ export default function UserSearchCombobox({ existingMemberIds, onSelect, onClos
             {!loading && !error && results.map((user, idx) => {
               // Spread aria-selected to avoid the HTML language service flagging JSX
               // expressions as invalid ARIA values — this is a known false positive.
-              const optionProps = { 'aria-selected': (idx === activeIndex ? 'true' : 'false') as 'true' | 'false' }
+              const optionProps = {}
               return (
               <div
                 key={user.id}
                 id={`user-option-${idx}`}
                 role="option"
+                aria-selected={idx === activeIndex}
                 {...optionProps}
                 onClick={() => onSelect(user)}
                 onMouseEnter={() => setActiveIndex(idx)}

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, BarChart3, BarChart2, Award, Trophy,
@@ -165,9 +166,12 @@ export default function SidebarClient({
             href="/dashboard"
             className="flex-1 min-w-0"
           >
-            <img
+            <Image
               src="/assets/brand/logo-horizontal-dark.svg"
               alt="ChurchCore LMS"
+              width={0}
+              height={0}
+              sizes="100vw"
               className="h-9 w-auto"
             />
           </Link>

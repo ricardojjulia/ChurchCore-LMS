@@ -13,7 +13,7 @@ const ROLE_ACTIVE: Record<string, string> = {
   student: 'bg-emerald-100 text-emerald-800 border-emerald-300',
 }
 
-export default function UsersControls({ total }: { total: number }) {
+export default function UsersControls({ total: _total }: { total: number }) {
   const router       = useRouter()
   const pathname     = usePathname()
   const searchParams = useSearchParams()

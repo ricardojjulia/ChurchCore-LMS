@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import { useSidebar } from './SidebarContext'
 
 export default function SidebarPlaceholder() {
@@ -26,10 +27,13 @@ export default function SidebarPlaceholder() {
         <div className="absolute bottom-16 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-[#8DA9C4]/80 shadow-[0_0_24px_rgba(141,169,196,0.45)]" />
 
         <div className={cn('relative flex flex-col items-center text-center', collapsed ? 'gap-5' : 'gap-7')}>
-          <img
+          <Image
             src="/assets/brand/icon-mark-dark.svg"
             alt=""
             aria-hidden="true"
+            width={0}
+            height={0}
+            sizes="100vw"
             className={cn(
               'drop-shadow-[0_0_34px_rgba(249,247,241,0.22)]',
               collapsed ? 'w-10' : 'w-40',

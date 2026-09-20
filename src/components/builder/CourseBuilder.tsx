@@ -69,7 +69,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     // Optimistic UI update
     const reorderedIds = reordered.map((b) => b.id)
     setBlocks((prev) => {
-      const otherBlocks = prev.filter((b) => b.parent_block_id !== active.id && !reorderedIds.includes(b.id)
+      const _otherBlocks = prev.filter((b) => b.parent_block_id !== active.id && !reorderedIds.includes(b.id)
         || b.parent_block_id !== items[0]?.parent_block_id)
       // Replace items in the active module with the reordered list (with updated sort_order)
       const reorderedWithOrder = reordered.map((b, i) => ({ ...b, sort_order: i + 1 }))

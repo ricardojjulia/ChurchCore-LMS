@@ -92,7 +92,7 @@ const DOCS = [
 const CONSENSUS_PROMPT = `Run a council review for the proposed feature. Return:\n1. Executive summary\n2. Recommendation\n3. Architecture impact\n4. Data model impact\n5. Security/RLS risks\n6. QA acceptance criteria\n7. UX concerns\n8. Implementation phases\n9. Decision record draft`
 
 const TASK_STATUSES = ['backlog', 'ready', 'in_progress', 'review', 'blocked', 'done'] as const
-const PRIORITIES    = ['P0', 'P1', 'P2', 'P3'] as const
+const _PRIORITIES    = ['P0', 'P1', 'P2', 'P3'] as const
 
 // Pre-generated static CSS for per-agent theming
 const AGENT_CSS = Object.values(AGENTS).map(a => (

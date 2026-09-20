@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { createClient, mockSupabaseClient } from './__mocks__/client'
 
 // This test validates the mock contract — not the real Supabase client.

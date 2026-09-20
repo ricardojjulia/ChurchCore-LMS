@@ -59,7 +59,7 @@ const NAV = [
   },
 ]
 
-export default function MobileBottomNav({ messageCount = 0, isStaff = false, isAdmin = false }: Props) {
+export default function MobileBottomNav({ messageCount = 0, isStaff: _isStaff = false, isAdmin: _isAdmin = false }: Props) {
   const pathname = usePathname()
 
   return (
