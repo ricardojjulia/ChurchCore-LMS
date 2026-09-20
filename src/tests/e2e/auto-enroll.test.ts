@@ -3,7 +3,7 @@
  * Auto-Enroll on Registration e2e tests — COUNCIL-2026-026 Prompt D.4
  *
  * THE regression test for the live bug documented in COUNCIL-2026-026 and
- * fixed by supabase/migrations/20260919120000_auto_enroll_courses_settings.sql:
+ * fixed by supabase/migrations/20260920073000_auto_enroll_courses_settings.sql:
  * enrollSelf() (and, before this feature, any insert into enrollments) used to
  * omit org_id, a NOT NULL column with no DEFAULT and no BEFORE INSERT trigger
  * to fill it — every real call threw a constraint violation. This was
@@ -255,7 +255,7 @@ describe('auto-enroll on registration (real Supabase — org_id regression)', ()
 
     // ── THE regression assertion ──────────────────────────────────────────
     // A real enrollments row for the open course, with org_id populated by
-    // trg_stamp_enrollment_org_id (migration 20260919120000). Pre-Prompt-A,
+    // trg_stamp_enrollment_org_id (migration 20260920073000). Pre-Prompt-A,
     // this insert would have thrown a NOT NULL violation inside enrollCore()
     // (swallowed by verifyAndEnroll's best-effort try/catch), and this row
     // simply would not exist.
