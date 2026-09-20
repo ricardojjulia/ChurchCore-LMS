@@ -24,6 +24,11 @@ const ORG_B = 'org-bbbbbbbb-0000-0000-0000-000000000002'
 // treated as belonging to whichever org is being queried against — this
 // keeps every pre-existing test in this file (written before H1's fix)
 // passing unmodified, since none of them care about course/org matching.
+// Mirrors the two atomic Postgres functions in
+// 20260920074500_atomic_auto_enroll_courses.sql (add_auto_enroll_course /
+// remove_auto_enroll_course) closely enough to exercise org-settings.ts's
+// call sites — cap check, dedupe-is-a-no-op, and store mutation semantics —
+// without needing a real database for these unit tests.
 function makeServiceClient(
   initialSettingsByOrg: Record<string, Record<string, unknown>>,
   courseOrgMap?: Record<string, string>,
@@ -53,13 +58,39 @@ function makeServiceClient(
               single: async () => ({ data: { settings: store.get(id) ?? {} }, error: null }),
             }),
           }),
-          update: (patch: { settings: Record<string, unknown> }) => ({
-            eq: async (_col: string, id: string) => {
-              store.set(id, patch.settings)
-              return { error: null }
-            },
-          }),
         }
+      }),
+      rpc: vi.fn().mockImplementation((fn: string, args: Record<string, unknown>) => {
+        const orgId    = args.p_org_id as string
+        const courseId = args.p_course_id as string
+        const settings = store.get(orgId)
+
+        if (!settings) return Promise.resolve({ data: null, error: { message: 'org_not_found' } })
+
+        const current = Array.isArray((settings as { auto_enroll_courses?: unknown }).auto_enroll_courses)
+          ? ((settings as { auto_enroll_courses: string[] }).auto_enroll_courses)
+          : []
+
+        if (fn === 'add_auto_enroll_course') {
+          const max = (args.p_max as number) ?? 10
+          if (current.includes(courseId)) {
+            return Promise.resolve({ data: current, error: null })
+          }
+          if (current.length >= max) {
+            return Promise.resolve({ data: null, error: { message: 'auto_enroll_cap_exceeded' } })
+          }
+          const updated = [...current, courseId]
+          store.set(orgId, { ...settings, auto_enroll_courses: updated })
+          return Promise.resolve({ data: updated, error: null })
+        }
+
+        if (fn === 'remove_auto_enroll_course') {
+          const updated = current.filter((id) => id !== courseId)
+          store.set(orgId, { ...settings, auto_enroll_courses: updated })
+          return Promise.resolve({ data: updated, error: null })
+        }
+
+        throw new Error(`unexpected rpc: ${fn}`)
       }),
     },
     store,
@@ -268,6 +299,45 @@ describe('addAutoEnrollCourse — cross-org course validation', () => {
     const result = await addAutoEnrollCourse(ORG_A, 'own-course')
     expect(result).toEqual({})
     expect(store.get(ORG_A)).toEqual({ auto_enroll_courses: ['own-course'] })
+  })
+})
+
+// ── RPC failure surfaces a generic error, not a raw DB message ──────────────────
+
+describe('addAutoEnrollCourse / removeAutoEnrollCourse — RPC failure handling', () => {
+  it('a non-cap RPC error from add_auto_enroll_course surfaces the generic failure message', async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      sessionClient({ isPlatformAdmin: false, callerOrgId: ORG_A, callerRole: 'admin' }) as any,
+    )
+    const service = {
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'courses') {
+          return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: 'course-1' }, error: null }) }) }) }) }
+        }
+        throw new Error(`unexpected table: ${table}`)
+      }),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'org_not_found' } }),
+    }
+    vi.mocked(createServiceClient).mockReturnValue(service as any)
+
+    await expect(addAutoEnrollCourse(ORG_A, 'course-1')).resolves.toEqual({
+      error: 'Failed to update auto-enroll courses',
+    })
+  })
+
+  it('an RPC error from remove_auto_enroll_course surfaces the generic failure message', async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      sessionClient({ isPlatformAdmin: false, callerOrgId: ORG_A, callerRole: 'admin' }) as any,
+    )
+    const service = {
+      from: vi.fn(),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'org_not_found' } }),
+    }
+    vi.mocked(createServiceClient).mockReturnValue(service as any)
+
+    await expect(removeAutoEnrollCourse(ORG_A, 'course-1')).resolves.toEqual({
+      error: 'Failed to update auto-enroll courses',
+    })
   })
 })
 

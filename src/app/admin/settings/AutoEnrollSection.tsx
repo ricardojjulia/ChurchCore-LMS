@@ -40,13 +40,21 @@ export default function AutoEnrollSection({
     }
 
     startTransition(async () => {
-      const result = checked
-        ? await addAutoEnrollCourse(orgId, courseId)
-        : await removeAutoEnrollCourse(orgId, courseId)
+      try {
+        const result = checked
+          ? await addAutoEnrollCourse(orgId, courseId)
+          : await removeAutoEnrollCourse(orgId, courseId)
 
-      if (result.error) {
-        setSelectedIds(previous) // rollback on failure
-        setError(result.error)
+        if (result.error) {
+          setSelectedIds(previous) // rollback on failure
+          setError(result.error)
+        }
+      } catch {
+        // A rejected Server Action (e.g. an expired session throwing inside
+        // assertOrgAdminOrPlatformAdmin()) must roll back the optimistic
+        // update too, not just a returned {error}.
+        setSelectedIds(previous)
+        setError('Something went wrong. Please try again.')
       }
     })
   }

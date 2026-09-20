@@ -80,7 +80,28 @@ export async function verifyAndEnroll({
 
   for (const courseId of autoEnrollCourseIds) {
     try {
-      await enrollCore({ supabase: service, authId: data.user.id, courseId })
+      // Defense-in-depth re-check: addAutoEnrollCourse() already validates a
+      // course belongs to the org before it can be added, but this list is
+      // read here independently at registration time (possibly long after
+      // it was configured), so re-confirm both org ownership and published
+      // status rather than trusting the stored JSONB entry as-is — a course
+      // can be unpublished for revision after being opted into auto-enroll.
+      const { data: courseCheck } = await service
+        .from('courses')
+        .select('id')
+        .eq('id', courseId)
+        .eq('org_id', orgId)
+        .eq('status', 'published')
+        .maybeSingle()
+
+      if (!courseCheck) continue
+
+      await enrollCore({
+        supabase: service,
+        authId:   data.user.id,
+        courseId,
+        requireVerifiableAge: true,
+      })
     } catch {
       // Auto-enrollment failure must never block registration
     }

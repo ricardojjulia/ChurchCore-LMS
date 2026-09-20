@@ -75,32 +75,22 @@ export async function addAutoEnrollCourse(orgId: string, courseId: string): Prom
 
   if (!course) return { error: 'Course not found in this organization.' }
 
-  const { data: existing } = await service
-    .from('organizations')
-    .select('settings')
-    .eq('id', orgId)
-    .single()
+  // Atomic add — add_auto_enroll_course() does the read-check-write as a
+  // single statement under SELECT ... FOR UPDATE, so two concurrent admin
+  // actions on the same org can't silently clobber each other's change (the
+  // same race already fixed for platform_feedback's dedupe path).
+  const { error } = await service.rpc('add_auto_enroll_course', {
+    p_org_id:    orgId,
+    p_course_id: courseId,
+    p_max:       AUTO_ENROLL_MAX,
+  })
 
-  const current = Array.isArray((existing?.settings as { auto_enroll_courses?: unknown } | null)?.auto_enroll_courses)
-    ? ((existing!.settings as { auto_enroll_courses: string[] }).auto_enroll_courses)
-    : []
-
-  if (current.includes(courseId)) return {}
-  if (current.length >= AUTO_ENROLL_MAX) {
-    return { error: `You can auto-enroll at most ${AUTO_ENROLL_MAX} courses.` }
+  if (error) {
+    if (error.message?.includes('auto_enroll_cap_exceeded')) {
+      return { error: `You can auto-enroll at most ${AUTO_ENROLL_MAX} courses.` }
+    }
+    return { error: 'Failed to update auto-enroll courses' }
   }
-
-  const updatedSettings = {
-    ...(existing?.settings ?? {}),
-    auto_enroll_courses: [...current, courseId],
-  }
-
-  const { error } = await service
-    .from('organizations')
-    .update({ settings: updatedSettings })
-    .eq('id', orgId)
-
-  if (error) return { error: 'Failed to update auto-enroll courses' }
 
   revalidatePath('/admin/settings')
   return {}
@@ -110,25 +100,10 @@ export async function removeAutoEnrollCourse(orgId: string, courseId: string): P
   await assertOrgAdminOrPlatformAdmin(orgId)
   const service = createServiceClient()
 
-  const { data: existing } = await service
-    .from('organizations')
-    .select('settings')
-    .eq('id', orgId)
-    .single()
-
-  const current = Array.isArray((existing?.settings as { auto_enroll_courses?: unknown } | null)?.auto_enroll_courses)
-    ? ((existing!.settings as { auto_enroll_courses: string[] }).auto_enroll_courses)
-    : []
-
-  const updatedSettings = {
-    ...(existing?.settings ?? {}),
-    auto_enroll_courses: current.filter((id) => id !== courseId),
-  }
-
-  const { error } = await service
-    .from('organizations')
-    .update({ settings: updatedSettings })
-    .eq('id', orgId)
+  const { error } = await service.rpc('remove_auto_enroll_course', {
+    p_org_id:    orgId,
+    p_course_id: courseId,
+  })
 
   if (error) return { error: 'Failed to update auto-enroll courses' }
 

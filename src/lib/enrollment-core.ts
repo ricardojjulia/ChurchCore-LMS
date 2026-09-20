@@ -12,12 +12,22 @@ export type SkipReason =
   | 'level_too_low'
   | 'prerequisite_incomplete'
   | 'age_out_of_range'
+  | 'age_unverifiable'
 
 export interface EnrollCoreParams {
   supabase:   SupabaseClient
   authId:     string
   courseId:   string
   sectionId?: string
+  // When true, an age-restricted course is skipped (not silently allowed)
+  // when the enrollee has no date_of_birth on file, instead of falling
+  // through ungated. A brand-new /join/[slug] registrant never has a DOB —
+  // the join form doesn't collect one — so without this, every age-gated
+  // auto-enroll course would bypass its own restriction for every new
+  // student. Only the registration-time auto-enroll loop
+  // (src/app/join/actions.ts) sets this; enrollSelf() leaves it unset so
+  // existing self-enrollment behavior (and its parity test) is unchanged.
+  requireVerifiableAge?: boolean
 }
 
 export type EnrollCoreResult =
@@ -30,6 +40,7 @@ export async function enrollCore({
   authId,
   courseId,
   sectionId,
+  requireVerifiableAge,
 }: EnrollCoreParams): Promise<EnrollCoreResult> {
   const { data: profile } = await supabase
     .from('profiles')
@@ -148,15 +159,26 @@ export async function enrollCore({
     // and the student has provided their date of birth.
     const ageMin = course.age_min ?? null
     const ageMax = course.age_max ?? null
-    if ((ageMin !== null || ageMax !== null) && profile.date_of_birth) {
-      const dob = new Date(profile.date_of_birth)
-      const now = Date.now()
-      const age = Math.floor((now - dob.getTime()) / (365.25 * 24 * 3600 * 1000))
-      if (ageMin !== null && age < ageMin) {
-        return { ok: false, skipped: true, reason: 'age_out_of_range', message: `This course is for ages ${ageMin}+.` }
-      }
-      if (ageMax !== null && age > ageMax) {
-        return { ok: false, skipped: true, reason: 'age_out_of_range', message: `This course is for ages up to ${ageMax}.` }
+    if (ageMin !== null || ageMax !== null) {
+      if (!profile.date_of_birth) {
+        if (requireVerifiableAge) {
+          return {
+            ok: false, skipped: true, reason: 'age_unverifiable',
+            message: 'Age could not be verified for this course.',
+          }
+        }
+        // enrollSelf() parity: an existing user with no DOB on file falls
+        // through ungated, as before this refactor.
+      } else {
+        const dob = new Date(profile.date_of_birth)
+        const now = Date.now()
+        const age = Math.floor((now - dob.getTime()) / (365.25 * 24 * 3600 * 1000))
+        if (ageMin !== null && age < ageMin) {
+          return { ok: false, skipped: true, reason: 'age_out_of_range', message: `This course is for ages ${ageMin}+.` }
+        }
+        if (ageMax !== null && age > ageMax) {
+          return { ok: false, skipped: true, reason: 'age_out_of_range', message: `This course is for ages up to ${ageMax}.` }
+        }
       }
     }
   }

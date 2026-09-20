@@ -191,6 +191,32 @@ describe('enrollCore', () => {
     })
   })
 
+  it('age-restricted course, no DOB on file, requireVerifiableAge unset — falls through ungated (enrollSelf parity)', async () => {
+    const supabase = coreClient({
+      profiles: { data: DEFAULT_PROFILE, error: null }, // date_of_birth: null
+      course_sections: { data: { enrollment_type: 'open' }, error: null },
+      courses: { data: { ...OPEN_COURSE, age_min: 18, age_max: null }, error: null },
+      enrollments: { data: null, error: null },
+    })
+    const result = await enrollCore({ supabase: supabase as any, authId: 'auth-1', courseId: 'course-1', sectionId: 'section-open' })
+    expect(result).toEqual({ ok: true, courseTitle: 'Open Course' })
+  })
+
+  it('age-restricted course, no DOB on file, requireVerifiableAge true (auto-enroll) — returns SkipReason "age_unverifiable"', async () => {
+    const supabase = coreClient({
+      profiles: { data: DEFAULT_PROFILE, error: null }, // date_of_birth: null
+      course_sections: { data: { enrollment_type: 'open' }, error: null },
+      courses: { data: { ...OPEN_COURSE, age_min: 18, age_max: null }, error: null },
+    })
+    const result = await enrollCore({
+      supabase: supabase as any, authId: 'auth-1', courseId: 'course-1', sectionId: 'section-open',
+      requireVerifiableAge: true,
+    })
+    expect(result).toEqual({
+      ok: false, skipped: true, reason: 'age_unverifiable', message: 'Age could not be verified for this course.',
+    })
+  })
+
   it('duplicate enrollment (23505) — returns { error: "Already enrolled" }, not a SkipReason', async () => {
     const supabase = coreClient({
       profiles: { data: DEFAULT_PROFILE, error: null },
