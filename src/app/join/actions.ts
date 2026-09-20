@@ -1,6 +1,7 @@
 'use server'
 
 import { createServiceClient } from '@/utils/supabase/service'
+import { enrollCore } from '@/lib/enrollment-core'
 
 interface EnrollParams {
   orgId:          string
@@ -36,7 +37,7 @@ export async function verifyAndEnroll({
   // Confirm org is still active (race condition guard)
   const { data: org } = await service
     .from('organizations')
-    .select('id, status')
+    .select('id, status, settings')
     .eq('id', orgId)
     .eq('status', 'active')
     .single()
@@ -63,6 +64,26 @@ export async function verifyAndEnroll({
       return { error: 'An account with that email already exists. Try signing in instead.' }
     }
     return { error: msg }
+  }
+
+  // Auto-enroll into any courses this org has configured for new joiners
+  // (organizations.settings.auto_enroll_courses, COUNCIL-2026-026 D3). Runs
+  // through the same enrollCore() gate as any other enrollment, so an
+  // invite-only/cohort-gated/prerequisite-gated course is silently skipped
+  // rather than failing. Best-effort — a failure here must never block
+  // account creation, which has already succeeded at this point.
+  const autoEnrollCourseIds = Array.isArray(
+    (org.settings as { auto_enroll_courses?: unknown } | null)?.auto_enroll_courses
+  )
+    ? ((org.settings as { auto_enroll_courses: string[] }).auto_enroll_courses).slice(0, 10)
+    : []
+
+  for (const courseId of autoEnrollCourseIds) {
+    try {
+      await enrollCore({ supabase: service, authId: data.user.id, courseId })
+    } catch {
+      // Auto-enrollment failure must never block registration
+    }
   }
 
   return {}

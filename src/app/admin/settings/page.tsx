@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { updateOrgBranding } from '@/app/actions/org-settings'
+import AutoEnrollSection from './AutoEnrollSection'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,6 +32,16 @@ export default async function OrgSettingsPage() {
 
   const branding = (org.settings?.branding ?? {}) as Record<string, string>
   const features = (org.settings?.features ?? {}) as Record<string, boolean>
+  const autoEnrollCourseIds = Array.isArray(org.settings?.auto_enroll_courses)
+    ? (org.settings.auto_enroll_courses as string[])
+    : []
+
+  const { data: publishedCourses } = await service
+    .from('courses')
+    .select('id, title')
+    .eq('org_id', org.id)
+    .eq('status', 'published')
+    .order('title', { ascending: true })
 
   const action = updateOrgBranding.bind(null, org.id)
 
@@ -142,6 +153,12 @@ export default async function OrgSettingsPage() {
             </div>
           </section>
         )}
+
+        <AutoEnrollSection
+          orgId={org.id}
+          courses={publishedCourses ?? []}
+          initialSelectedIds={autoEnrollCourseIds}
+        />
 
       </div>
     </main>
