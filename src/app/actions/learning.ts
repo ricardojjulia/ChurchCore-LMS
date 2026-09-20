@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
+import { enrollCore } from '@/lib/enrollment-core'
 import { revalidatePath } from 'next/cache'
 
 // ── Helper: award XP via RPC ─────────────────────────────────────────────────
@@ -66,140 +67,16 @@ export async function enrollSelf(
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('uid, current_level, display_name, email, date_of_birth')
+    .select('display_name, email')
     .eq('auth_id', user.id)
     .single()
 
   if (!profile) return { error: 'Profile not found' }
 
-  // ── Enrollment-type gate (COUNCIL-2026-016 Prompt A) ────────────────────
-  // Resolve which section governs this enrollment. When the caller passes an
-  // explicit sectionId we use it directly; otherwise we look up the most
-  // recently created active section linked to the course's blueprint (if any).
-  let resolvedSectionId: string | null = sectionId ?? null
+  const result = await enrollCore({ supabase, authId: user.id, courseId, sectionId })
 
-  if (!resolvedSectionId) {
-    const { data: courseForBlueprint } = await supabase
-      .from('courses')
-      .select('blueprint_id')
-      .eq('id', courseId)
-      .single()
-
-    if (courseForBlueprint?.blueprint_id) {
-      const { data: linkedSection } = await supabase
-        .from('course_sections')
-        .select('id')
-        .eq('blueprint_id', courseForBlueprint.blueprint_id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      resolvedSectionId = linkedSection?.id ?? null
-    }
-  }
-
-  if (resolvedSectionId) {
-    const { data: section } = await supabase
-      .from('course_sections')
-      .select('enrollment_type')
-      .eq('id', resolvedSectionId)
-      .single()
-
-    if (section) {
-      if (section.enrollment_type === 'invite_only') {
-        return { error: 'Enrollment by invitation only.' }
-      }
-
-      if (section.enrollment_type === 'cohort_gated') {
-        // Find active cohort memberships for this student.
-        // cohort_members.user_id is an FK to auth.users(id) — i.e. the auth_id.
-        const { data: membership } = await supabase
-          .from('cohort_members')
-          .select('cohort_id')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-
-        const cohortIds = (membership ?? []).map((m) => m.cohort_id) as string[]
-
-        let hasAccess = false
-        if (cohortIds.length > 0) {
-          // Confirm at least one of the student's cohorts is enrolled into
-          // this section via cohort_section_enrollments.
-          const { data: cse } = await supabase
-            .from('cohort_section_enrollments')
-            .select('id')
-            .eq('section_id', resolvedSectionId)
-            .in('cohort_id', cohortIds)
-            .limit(1)
-            .maybeSingle()
-
-          hasAccess = !!cse
-        }
-
-        if (!hasAccess) {
-          return { error: 'This course requires cohort membership.' }
-        }
-      }
-      // enrollment_type === 'open' → fall through and allow
-    }
-  }
-
-  // Server-side prerequisite validation
-  const { data: course } = await supabase
-    .from('courses')
-    .select('title, min_required_level, prerequisite_course_id, age_min, age_max')
-    .eq('id', courseId)
-    .single()
-
-  if (course) {
-    const studentLevel = profile.current_level ?? 1
-    const requiredLevel = course.min_required_level ?? 1
-    if (studentLevel < requiredLevel) {
-      return { error: `Level ${requiredLevel} required — you are level ${studentLevel}` }
-    }
-    if (course.prerequisite_course_id) {
-      const { data: prereq } = await supabase
-        .from('enrollments')
-        .select('transit_status')
-        .eq('user_id', profile.uid)
-        .eq('course_id', course.prerequisite_course_id)
-        .eq('transit_status', 'completed')
-        .maybeSingle()
-      if (!prereq) {
-        return { error: 'You must complete the prerequisite course first' }
-      }
-    }
-
-    // Server-side age gate — only enforced when at least one bound is set
-    // and the student has provided their date of birth.
-    const ageMin = course.age_min ?? null
-    const ageMax = course.age_max ?? null
-    if ((ageMin !== null || ageMax !== null) && profile.date_of_birth) {
-      const dob = new Date(profile.date_of_birth)
-      const now = Date.now()
-      const age = Math.floor((now - dob.getTime()) / (365.25 * 24 * 3600 * 1000))
-      if (ageMin !== null && age < ageMin) {
-        return { error: `This course is for ages ${ageMin}+.` }
-      }
-      if (ageMax !== null && age > ageMax) {
-        return { error: `This course is for ages up to ${ageMax}.` }
-      }
-    }
-  }
-
-  const { error } = await supabase
-    .from('enrollments')
-    .insert({
-      user_id:          profile.uid,
-      course_id:        courseId,
-      transit_status:   'not_started',
-      progress_percent: 0,
-    })
-
-  if (error) {
-    if (error.code === '23505') return { error: 'Already enrolled' }
-    return { error: error.message }
+  if (!result.ok) {
+    return { error: result.skipped ? result.message : result.error }
   }
 
   // Enrollment confirmation email (optional — skipped if RESEND_API_KEY not set)
@@ -210,7 +87,7 @@ export async function enrollSelf(
       const siteUrl   = process.env.NEXT_PUBLIC_SITE_URL ?? ''
       const from      = process.env.RESEND_FROM_EMAIL ?? 'ChurchCore LMS <noreply@churchcore.app>'
       const name      = profile.display_name ?? 'there'
-      const title     = course?.title ?? 'your new course'
+      const title     = result.courseTitle ?? 'your new course'
       await resend.emails.send({
         from,
         to:      profile.email,

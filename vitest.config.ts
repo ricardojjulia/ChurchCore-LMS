@@ -62,12 +62,24 @@ export default defineConfig({
         // Raise and broaden as coverage expands.
         'src/app/actions/cohorts.ts':          { lines: 40 },
         'src/app/actions/messages.ts':         { lines: 35 },
-        'src/app/actions/learning.ts':         { lines: 18 },
+        // COUNCIL-2026-026 D2 extracted enrollSelf()'s gating logic out into
+        // src/lib/enrollment-core.ts (enrollCore()), so the enrollSelf() body
+        // remaining in this file shrank sharply relative to the file's many
+        // other still-untested actions (submitAssignment, submitQuiz,
+        // markBlockViewed, etc. — out of scope for COUNCIL-2026-026). enrollSelf()
+        // itself is still fully covered (learning.test.ts + the dedicated
+        // enroll-self-parity.test.ts parity file); this is a mechanical
+        // recalibration of the denominator, not a coverage regression.
+        // Measured 13.84% post-refactor, threshold set at measured - ~5.
+        'src/app/actions/learning.ts':         { lines: 9 },
         // COUNCIL-2026-025: Pilot Feedback & Error-Triage — per-file thresholds.
         // Raise and broaden as coverage expands.
         'src/lib/feedback.ts':                 { lines: 95 },  // measured 100%, threshold 95%
         'src/app/api/feedback/route.ts':       { lines: 91 },  // measured 96.55%, threshold 91%
         'src/app/actions/groups.ts':           { lines: 80 },
+        // COUNCIL-2026-026: Automated Enrollment on Registration — per-file thresholds.
+        'src/lib/enrollment-core.ts':          { lines: 90 },  // measured 95.74%, threshold 90%
+        'src/app/actions/org-settings.ts':     { lines: 69 },  // measured 74%, threshold 69%
       },
     },
   },

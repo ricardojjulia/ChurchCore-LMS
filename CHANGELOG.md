@@ -11,6 +11,22 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.30.0] — 2026-09-20
+
+Council Review 3's #1-ranked competitive gap (COUNCIL-2026-026).
+
+### Added
+
+- **Automated enrollment on registration** — new students joining via `/join/[slug]` previously landed on a completely empty `/dashboard` with no course access and required manual enrollment by an admin. Org admins can now opt courses into auto-enrollment for new joiners (`/admin/settings`, capped at 10 courses), gated through the same `enrollCore()` checks (`enrollment_type`, prerequisite, age, level) as any other enrollment — a gated course is silently skipped, never blocking registration.
+- `src/lib/enrollment-core.ts` — `enrollCore()`, the shared enrollment-gating logic extracted from `enrollSelf()` so it's callable from both the session-bound Server Action and the service-client (no-session) registration path.
+
+### Fixed
+
+- **`enrollSelf()` NOT NULL constraint violation on `org_id`** — a genuine, previously-undetected live bug found while investigating the above: every real call to `enrollSelf()` threw a database constraint violation, because the insert never set the `NOT NULL` `org_id` column and no trigger filled it. Invisible because the unit test suite fully mocks Supabase (can't enforce real column constraints) and no e2e test exercised `enrollSelf()` against a real database. Fixed at the schema layer with a `BEFORE INSERT` trigger (`stamp_enrollment_org_id`) so the fix covers every insert path, not just the new registration one — verified with a real e2e regression test that fails without the trigger and passes with it.
+- **Cross-org course validation in `addAutoEnrollCourse`** — caught in pre-merge review: adding a course ID that belonged to a different org would have silently pointed every future registrant's real enrollment at a foreign org's course. Now validated before write.
+
+---
+
 ## [0.29.1] — 2026-09-19
 
 ### Security
