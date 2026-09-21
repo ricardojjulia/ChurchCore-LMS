@@ -6,11 +6,12 @@ export const dynamic = 'force-dynamic'
 // Publicly accessible — no auth required.
 // Used by learners to share proof-of-completion links.
 
+// Approved public scope (COUNCIL-2026-001): learner name, course, org, date,
+// and certificate number only. Grades are educational records and must never
+// be selected here, let alone rendered on this unauthenticated page.
 interface CertRow {
   certificate_no: string
   issued_at:      string
-  final_grade:    number | null
-  letter_grade:   string | null
   courses:        { title: string } | null
   profiles:       { display_name: string; organizations: { name: string } | null } | null
 }
@@ -28,8 +29,6 @@ export default async function VerifyCertificatePage({
     .select(`
       certificate_no,
       issued_at,
-      final_grade,
-      letter_grade,
       courses ( title ),
       profiles (
         display_name,
@@ -83,12 +82,6 @@ export default async function VerifyCertificatePage({
                 <Detail label="Organization" value={cert.profiles.organizations.name} />
               )}
               <Detail label="Issued on"  value={issuedDate!} />
-              {cert.final_grade != null && (
-                <Detail
-                  label="Final grade"
-                  value={`${cert.final_grade}%${cert.letter_grade ? ` (${cert.letter_grade})` : ''}`}
-                />
-              )}
               <Detail label="Certificate no." value={cert.certificate_no} mono />
             </div>
           </div>

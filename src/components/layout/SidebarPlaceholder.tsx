@@ -35,7 +35,7 @@ export default function SidebarPlaceholder() {
             height={0}
             sizes="100vw"
             className={cn(
-              'drop-shadow-[0_0_34px_rgba(249,247,241,0.22)]',
+              'drop-shadow-[0_0_34px_rgba(249,247,241,0.22)] h-auto',
               collapsed ? 'w-10' : 'w-40',
             )}
           />
