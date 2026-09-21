@@ -1,6 +1,6 @@
 # COUNCIL-APPROVED: Public Certificate Verification
 
-> **Status: IN PROGRESS** — Council approved 2026-09-20 (revised after discovery that core certificate system is already shipped). Pivot to genuine gap: public verification page. Step 1 implemented.
+> **Status: COMPLETE** ✅ — Both prompts shipped (2026-09-20 & 2026-09-21). Public verification page + share button fully deployed.
 
 **Council:** COUNCIL-2026-001 (4/4 unanimous)
 **Date:** 2026-09-20
@@ -36,10 +36,12 @@ The page is fully static-renderable and shareable. No login required.
 
 ---
 
-## PROMPT 2 OF 2 — Share button on /certificates and complete pages
+## PROMPT 2 OF 2 — Share button on /certificates and complete pages ✅ SHIPPED (2026-09-21)
 
 Add a "Copy verification link" button to:
 - `src/app/certificates/page.tsx` — per-cert share button
 - `src/app/courses/[id]/complete/page.tsx` — share button on completion
 
 The button copies `${NEXT_PUBLIC_SITE_URL}/verify/${cert.certificate_no}` to the clipboard.
+
+Commit: ceb84b7 — ESLint 0 warnings, 240/240 tests pass.
