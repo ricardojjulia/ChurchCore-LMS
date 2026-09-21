@@ -57,6 +57,11 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
+          # --include-all is required: 20260918100000_platform_feedback.sql is
+          # intentionally timestamped earlier than a migration already applied
+          # here. It's idempotent (CREATE TABLE IF NOT EXISTS etc.) and the CLI
+          # never re-applies an already-tracked migration, so this is safe —
+          # do not remove without checking `supabase migration list` first.
           supabase db push \
             --project-ref "$STAGING_SUPABASE_PROJECT_REF" --include-all --yes
 
@@ -119,6 +124,11 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
+          # --include-all is required: 20260918100000_platform_feedback.sql is
+          # intentionally timestamped earlier than a migration already applied
+          # here. It's idempotent (CREATE TABLE IF NOT EXISTS etc.) and the CLI
+          # never re-applies an already-tracked migration, so this is safe —
+          # do not remove without checking `supabase migration list` first.
           supabase db push \
             --project-ref "$SUPABASE_PROJECT_REF" --include-all --yes
 
