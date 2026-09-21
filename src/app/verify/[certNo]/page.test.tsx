@@ -2,11 +2,12 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import VerifyCertificatePage from './page'
 
-// COUNCIL-2026-001 Prompt 1 — regression coverage added during PR #15 review
+// COUNCIL-2026-028 Prompt A — regression coverage added during PR #15 review
 // after Copilot flagged this page had none. Covers: valid cert (approved
 // public scope only — no grade), not-found cert. The approved scope
-// (COUNCIL-APPROVED-IMPLEMENT.md) is name, course, org, date, cert no. only;
-// the grade-exposure assertion below is the load-bearing one for that scope.
+// (docs/council/COUNCIL-2026-028.md) is name, course, org, date, cert no.
+// only; the grade-exposure assertion below is the load-bearing one for that
+// scope.
 
 const maybeSingle = vi.fn()
 
@@ -45,7 +46,7 @@ describe('VerifyCertificatePage', () => {
     expect(screen.getByText('Test Church')).toBeInTheDocument()
     expect(screen.getByText('CERT-0001')).toBeInTheDocument()
 
-    // Approved scope (COUNCIL-2026-001) never includes a grade on this
+    // Approved scope (COUNCIL-2026-028) never includes a grade on this
     // unauthenticated page — assert it even though the fixture data has one.
     expect(screen.queryByText('Final grade')).not.toBeInTheDocument()
     expect(screen.queryByText(/97%/)).not.toBeInTheDocument()
@@ -64,7 +65,7 @@ describe('VerifyCertificatePage', () => {
     expect(screen.getByText('NOT-REAL')).toBeInTheDocument()
   })
 
-  it('renders the INVALID banner (not a crash) when the lookup itself errors', async () => {
+  it('renders the INVALID banner (not a crash) when the lookup itself errors, and never leaks the raw DB error', async () => {
     maybeSingle.mockResolvedValue({ data: null, error: { message: 'boom' } })
 
     const element = await VerifyCertificatePage({
@@ -73,5 +74,7 @@ describe('VerifyCertificatePage', () => {
     render(element)
 
     expect(screen.getByText('Certificate Not Found')).toBeInTheDocument()
+    // CLAUDE.md: "Do not return DB errors directly to the client."
+    expect(screen.queryByText('boom')).not.toBeInTheDocument()
   })
 })

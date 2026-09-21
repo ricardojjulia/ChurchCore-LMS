@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { ShareVerificationButton } from './ShareVerificationButton'
 
-// COUNCIL-2026-001 Prompt 2 — regression coverage added during PR #15 review
+// COUNCIL-2026-028 Prompt B — regression coverage added during PR #15 review
 // after Copilot flagged this component had none. Covers the copy-to-clipboard
 // happy path and the graceful new-tab fallback when the Clipboard API throws
 // (e.g. permission denied, insecure context, unsupported browser).

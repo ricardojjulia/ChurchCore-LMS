@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 // Publicly accessible — no auth required.
 // Used by learners to share proof-of-completion links.
 
-// Approved public scope (COUNCIL-2026-001): learner name, course, org, date,
+// Approved public scope (COUNCIL-2026-028): learner name, course, org, date,
 // and certificate number only. Grades are educational records and must never
 // be selected here, let alone rendered on this unauthenticated page.
 interface CertRow {

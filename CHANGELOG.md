@@ -11,6 +11,20 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.32.0] — 2026-09-21
+
+COUNCIL-2026-028 (relocated/renumbered from a root-level, misnumbered doc during PR #15 review — see docs/council/COUNCIL-2026-028.md for the full history).
+
+### Added
+
+- **Public certificate verification page** — a public, unauthenticated page at `/verify/[certNo]` lets anyone (an employer, a pastor, a congregation) verify a completion certificate's authenticity without logging in, showing learner name, course, organization, and issue date. A "Share verification link" button on `/certificates` and the post-completion page copies the verification URL to the clipboard, with a graceful new-tab fallback if the Clipboard API is unavailable.
+
+### Security
+
+- **Public scope is limited to non-sensitive fields only** — the verification query never selects `final_grade` or `letter_grade`; grades are educational records and were never approved for exposure on this unauthenticated surface (caught and fixed during PR review, before this ever shipped to a real user). The service-role read bypasses RLS by design, same as the existing `/join/[slug]` pattern — the security boundary here is the query's own field whitelist, not RLS.
+
+---
+
 ## [0.31.0] — 2026-09-20
 
 Council Review 3's #2-ranked competitive gap (COUNCIL-2026-027).
