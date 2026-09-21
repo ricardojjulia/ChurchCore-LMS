@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -85,11 +86,14 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
         />
         {avatarUrl && (
           <div className="mt-3 flex items-center gap-3">
-            <img
+            <Image
               src={avatarUrl}
               alt={t('profile.form.avatarPreviewAlt')}
               className="w-12 h-12 rounded-full object-cover border border-border"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+              width={48}
+              height={48}
+              unoptimized
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
             />
             <span className="text-xs text-muted-foreground">{t('profile.form.previewCaption')}</span>
           </div>

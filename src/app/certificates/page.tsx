@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
+import { ShareVerificationButton } from '@/components/certificates/ShareVerificationButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -131,6 +132,7 @@ export default async function CertificatesPage() {
                         >
                           {t('certificates.viewLink')}
                         </Link>
+                        <ShareVerificationButton certNo={cert.certificate_no} />
                         <a
                           href={`/api/certificates/${cert.id}/pdf`}
                           download

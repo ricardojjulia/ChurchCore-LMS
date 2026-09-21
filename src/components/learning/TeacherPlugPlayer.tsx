@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
+import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 
 interface BlockContent {
@@ -93,10 +94,13 @@ export default function TeacherPlugPlayer({
       <div className="flex items-start gap-4">
         {/* Avatar */}
         {photoUrl ? (
-          <img
+          <Image
             src={photoUrl}
             alt={name}
             className="w-14 h-14 rounded-full object-cover shrink-0 border border-border"
+            width={56}
+            height={56}
+            unoptimized
           />
         ) : (
           <div className="w-14 h-14 rounded-full bg-primary/10 text-primary font-bold text-lg flex items-center justify-center shrink-0 border border-primary/20">
