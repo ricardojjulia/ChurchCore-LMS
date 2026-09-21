@@ -32,7 +32,8 @@ This is a **separate** project from `/Users/rjulia/ChurchCore` and `/Users/rjuli
 npm run dev           — start dev server
 npm run build         — production build
 npm run typecheck     — tsc --noEmit (must pass before any commit)
-npm run lint          — next lint --max-warnings 0
+npm run lint          — eslint . --ext .js,.jsx,.ts,.tsx --quiet
+npm run verify        — typecheck + lint + unit tests (single pre-merge check)
 npm test              — vitest unit tests
 npm run test:e2e      — vitest e2e (real Supabase, requires env vars)
 npm run test:ci       — vitest run with coverage
@@ -171,7 +172,7 @@ The council document contains the implementation prompt. Implement from the prom
 
 See `docs/CODE-FACTORY-SYSTEM-PROMPT.md` for the full council governance rules.
 
-**PR review gate:** run the `pr-review` skill (`pr-reviewer` subagent, Critical/Important/Minor) against every PR before merge, non-trivial or not. This is in addition to `implementation-validator`'s Gate 3 inside `build-feature`/`run-factory` — a small change that skips the full factory pipeline still goes through `pr-review`.
+**PR review gate:** run the `pr-review` skill (`pr-reviewer` subagent, Critical/Important/Minor) against every PR before merge, non-trivial or not. This is in addition to `implementation-validator`'s Gate 3 inside `build-feature`/`run-factory` — a small change that skips the full factory pipeline still goes through `pr-review`. The gate also covers the PR's own comment/review/check threads, not just the diff — `@pr-reviewer`'s pass is diff-only and sees none of this on its own. Query all three surfaces (one endpoint alone misses most of it): `gh api repos/:owner/:repo/pulls/<pr_number>/comments` (inline, line-bound review comments), `gh api repos/:owner/:repo/pulls/<pr_number>/reviews` (review-level summaries — this is where an automated reviewer's overall assessment usually lands, e.g. GitHub Copilot's), and `gh api repos/:owner/:repo/issues/<pr_number>/comments` (general PR-level discussion; PRs are issues in GitHub's API). CodeQL findings aren't PR comments at all — they're check-run annotations, surfaced via `gh api repos/:owner/:repo/commits/<sha>/check-runs` or `gh run list`. Triage every finding across all of these by category (security, RLS policies, schemas, accessibility, assertion strictness), resolve actionable feedback directly on the branch, re-run `npm run verify`, and confirm a clean result before merging.
 
 **Pilot feedback loop:** the platform-only `platform_feedback` table + `/platform/feedback` triage workspace (COUNCIL-2026-025) is how uncoached pilot/demo usage gets instrumented — not a one-time build. Check the triage queue daily during an active pilot, weekly at minimum otherwise. Treat a cluster of related feedback as a legitimate trigger for the next `council-review` cycle.
 

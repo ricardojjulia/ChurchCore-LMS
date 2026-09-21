@@ -18,6 +18,7 @@
     "test:coverage": "vitest run --coverage",
     "demo:reset": "node scripts/reset-demo-data.mjs",
     "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm run lint && npm run test:run",
     "version:check": "node scripts/check-version.mjs"
   },
   "dependencies": {
