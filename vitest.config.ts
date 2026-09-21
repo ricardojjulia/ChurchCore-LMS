@@ -79,7 +79,8 @@ export default defineConfig({
         'src/app/actions/groups.ts':           { lines: 80 },
         // COUNCIL-2026-026: Automated Enrollment on Registration — per-file thresholds.
         'src/lib/enrollment-core.ts':          { lines: 90 },  // measured 95.74%, threshold 90%
-        'src/app/actions/org-settings.ts':     { lines: 69 },  // measured 74%, threshold 69%
+        // COUNCIL-2026-027: Public Course Catalog — raised with setCoursePublicPreview's added coverage.
+        'src/app/actions/org-settings.ts':     { lines: 72 },  // measured 77.96%, threshold 72%
       },
     },
   },

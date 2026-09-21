@@ -111,6 +111,49 @@ export async function removeAutoEnrollCourse(orgId: string, courseId: string): P
   return {}
 }
 
+// COUNCIL-2026-027 D3 — opt-in per course, admin/manager only (never a
+// teacher, even a teacher who owns the course being toggled). Enabling
+// requires the course to already be status = 'published'; the DB-level
+// CHECK constraint (courses_preview_requires_published, added in
+// 20260920200000_public_course_preview.sql) enforces this atomically
+// regardless of what this function does, closing any window where the flag
+// and status could briefly disagree under concurrent writes.
+export async function setCoursePublicPreview(courseId: string, enable: boolean): Promise<{ error?: string }> {
+  const service = createServiceClient()
+
+  const { data: course } = await service
+    .from('courses')
+    .select('id, org_id, status')
+    .eq('id', courseId)
+    .maybeSingle()
+
+  if (!course) return { error: 'Course not found.' }
+
+  // assertOrgAdminOrPlatformAdmin throws for anyone but an admin/manager of
+  // this course's org, or a platform admin — this also rejects a cross-org
+  // write attempt, since the caller's own org_id must match course.org_id.
+  await assertOrgAdminOrPlatformAdmin(course.org_id)
+
+  if (enable && course.status !== 'published') {
+    return { error: 'Only a published course can be marked as a public preview.' }
+  }
+
+  // Re-check status = 'published' in the WHERE clause when enabling so a
+  // concurrent unpublish is caught here even before the DB CHECK constraint
+  // would reject it.
+  let query = service.from('courses').update({ is_public_preview: enable }).eq('id', courseId)
+  if (enable) query = query.eq('status', 'published')
+  const { data: updated, error } = await query.select('id')
+
+  if (error) return { error: 'Failed to update public preview setting.' }
+  if (enable && (!updated || updated.length === 0)) {
+    return { error: 'Only a published course can be marked as a public preview.' }
+  }
+
+  revalidatePath(`/courses/${courseId}/edit`)
+  return {}
+}
+
 export async function updateOrgBranding(orgId: string, formData: FormData) {
   await assertOrgAdmin(orgId)
   const service = createServiceClient()
