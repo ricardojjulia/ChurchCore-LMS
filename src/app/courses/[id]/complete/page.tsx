@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
+import { ShareVerificationButton } from '@/components/certificates/ShareVerificationButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -143,6 +144,9 @@ export default async function CourseCompletePage({
           >
             {t('courses.complete.viewCertificatesButton')}
           </Link>
+          {cert?.certificate_no && (
+            <ShareVerificationButton certNo={cert.certificate_no} />
+          )}
           <Link
             href="/courses"
             className="inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-500 transition-colors text-sm"

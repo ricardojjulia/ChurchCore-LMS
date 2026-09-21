@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 interface Props {
   orgId:       string
@@ -17,7 +16,6 @@ const PLANS = [
 ]
 
 export default function BillingActions({ orgId, currentPlan, orgStatus, priceIds }: Props) {
-  const router  = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState<string | null>(null)
 

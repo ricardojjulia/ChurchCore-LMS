@@ -55,7 +55,7 @@ const STATUS_DESCRIPTIONS: Record<CourseStatus, string> = {
 }
 
 export default function CourseForm({
-  userId,
+  userId: _userId,
   existingCourses,
   blueprints = [],
   courseId,

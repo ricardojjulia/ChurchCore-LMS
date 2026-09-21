@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export default function AiWeeklySummary({ uid }: { uid: string }) {
+export default function AiWeeklySummary({ uid: _uid }: { uid: string }) {
   const [summary,   setSummary]   = useState<string | null>(null)
   const [loading,   setLoading]   = useState(false)
   const [error,     setError]     = useState<string | null>(null)
@@ -18,7 +18,7 @@ export default function AiWeeklySummary({ uid }: { uid: string }) {
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Failed')
       setSummary(json.summary)
-    } catch (e) {
+    } catch (_e) {
       setError('Could not generate summary. Try again later.')
     } finally {
       setLoading(false)

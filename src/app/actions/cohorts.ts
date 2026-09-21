@@ -22,7 +22,7 @@ async function requireAdmin() {
 }
 
 export async function createCohort(formData: FormData): Promise<{ error?: string }> {
-  const supabase = await requireAdmin().catch((e) => { throw redirect('/dashboard') })
+  const supabase = await requireAdmin().catch((_e) => { throw redirect('/dashboard') })
 
   const name        = (formData.get('cohort_name')      as string)?.trim()
   const code        = (formData.get('cohort_code')      as string)?.trim().toUpperCase()

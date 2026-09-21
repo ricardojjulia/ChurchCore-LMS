@@ -27,7 +27,7 @@ function GradeChip({ letter, avg }: { letter: string; avg: number | null }) {
   )
 }
 
-export default async function DashboardPerformancePanel({ uid }: { uid: string }) {
+export default async function DashboardPerformancePanel({ uid: _uid }: { uid: string }) {
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('get_my_academic_performance')
 

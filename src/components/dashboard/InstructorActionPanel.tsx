@@ -9,7 +9,7 @@ interface ActionItem {
 }
 
 export default async function InstructorActionPanel({
-  uid,
+  uid: _uid,
   courseIds,
 }: {
   uid:       string

@@ -80,7 +80,7 @@ beforeEach(() => {
 
 describe('signed OneRoster delivery route', () => {
   it('rejects a disabled connection before reading request authentication', async () => {
-    mocks.from.mockImplementation((table: string) => {
+    mocks.from.mockImplementation((_table: string) => {
       const query = {
         select: () => query,
         eq: () => query,

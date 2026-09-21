@@ -35,7 +35,7 @@ async function checkRateLimit(supabase: Awaited<ReturnType<typeof createClient>>
 }
 
 // ── Get existing direct thread between two users ─────────────────────
-async function findDirectThread(supabase: Awaited<ReturnType<typeof createClient>>, myUid: string, otherUid: string) {
+async function _findDirectThread(supabase: Awaited<ReturnType<typeof createClient>>, myUid: string, otherUid: string) {
   // Threads where both users are participants and type=direct
   const { data } = await supabase.rpc('find_direct_thread', {
     uid_a: myUid,
