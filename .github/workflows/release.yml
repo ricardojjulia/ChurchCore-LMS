@@ -24,7 +24,7 @@ jobs:
       EXPECTED_STAGING_SUPABASE_PROJECT_REF: gytbfezrfrpsltdyfdgj
       PRODUCTION_SUPABASE_PROJECT_REF: tpyvciujsrllvowqgeyq
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Validate staging deployment configuration
         env:
@@ -49,7 +49,7 @@ jobs:
           exit "$missing"
 
       - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
+        uses: supabase/setup-cli@v3
         with:
           version: 2.116.0
 
@@ -85,7 +85,7 @@ jobs:
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
       EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF: tpyvciujsrllvowqgeyq
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Verify this is the latest main release
         shell: bash
@@ -116,7 +116,7 @@ jobs:
           exit "$missing"
 
       - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
+        uses: supabase/setup-cli@v3
         with:
           version: 2.116.0
 
