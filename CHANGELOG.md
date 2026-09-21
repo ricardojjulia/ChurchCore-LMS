@@ -11,6 +11,21 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.31.0] — 2026-09-20
+
+Council Review 3's #2-ranked competitive gap (COUNCIL-2026-027).
+
+### Added
+
+- **Public course catalog / unauthenticated preview pages** — orgs can now let a prospective member browse a course's title, description, and curriculum outline (module/block titles only, never content) with no account, at `/join/[slug]/courses` and `/join/[slug]/courses/[courseId]`. Opt-in per course (`is_public_preview`, default `false`), toggleable only by an org admin or manager and only once the course is `published`, enforced atomically by a DB `CHECK` constraint. A course that doesn't exist, isn't previewable, isn't published, or belongs to an inactive org all return an identical 404 — never a distinguishing signal.
+
+### Security
+
+- **Column-level grants added alongside RLS for the new anon-facing surface** — the blanket `GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon` from `20260914154000` means RLS alone would not stop a direct PostgREST call from requesting `course_blocks.content` on a row its own policy allows. The new migration `REVOKE`s and re-`GRANT`s column-level `SELECT` to `anon` on `courses` and `course_blocks`, naming only the columns safe for public exposure — verified with a real anon-keyed regression test asserting a column-permission error, not an empty result.
+- **Fixed pre-existing infinite-recursion bug in `organizations`/`org_members` RLS**, discovered while implementing the above: two legacy self-referential policies (predating `profile_roles` as the RLS hot-path table) meant every query against `organizations` under RLS — for any role, including `anon` — has always raised `infinite recursion detected in policy for relation "org_members"`. This silently broke the already-shipped `"organizations: anon read active"` anon policy for every real caller since it was written; never noticed because the only existing anon-facing route (`/join/[slug]`) uses `createServiceClient()`, bypassing RLS. Fixed by dropping both legacy policies — confirmed to remove no live functionality (`org_members` is queried nowhere in application code) and superseded by the existing `"organizations: members read own"` policy.
+
+---
+
 ## [0.30.0] — 2026-09-20
 
 Council Review 3's #1-ranked competitive gap (COUNCIL-2026-026).

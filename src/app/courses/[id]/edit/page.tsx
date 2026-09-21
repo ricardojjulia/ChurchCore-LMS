@@ -2,6 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import CourseForm from '@/components/courses/CourseForm'
+import PublicPreviewToggle from '@/components/courses/PublicPreviewToggle'
 
 export default async function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -18,12 +19,16 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
     .eq('auth_id', user.id)
     .single()
 
-  if (profile?.role !== 'teacher' && profile?.role !== 'admin') redirect('/dashboard')
+  // COUNCIL-2026-027 D3 — a manager may reach this page to toggle public
+  // preview, but (unlike admin) gets no general course-edit rights below.
+  const canEditCourse = profile?.role === 'teacher' || profile?.role === 'admin'
+  const canTogglePreview = profile?.role === 'admin' || profile?.role === 'manager'
+  if (!canEditCourse && !canTogglePreview) redirect('/dashboard')
 
   const [courseResult, allCoursesResult, blueprintsResult] = await Promise.all([
     supabase
       .from('courses')
-      .select('id, title, description, status, min_required_level, prerequisite_course_id, owner_id, blueprint_id, age_min, age_max')
+      .select('id, title, description, status, min_required_level, prerequisite_course_id, owner_id, blueprint_id, age_min, age_max, is_public_preview')
       .eq('id', id)
       .single(),
     supabase
@@ -40,7 +45,8 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
 
   const course = courseResult.data
   if (!course) notFound()
-  if (course.owner_id !== profile?.uid && profile?.role !== 'admin') redirect('/courses')
+  const isOwnerOrAdmin = course.owner_id === profile?.uid || profile?.role === 'admin'
+  if (!isOwnerOrAdmin && !canTogglePreview) redirect('/courses')
 
   return (
     <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -58,22 +64,38 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
           <p className="text-slate-500 mt-1 text-sm">{course.title}</p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
-          <CourseForm
-            userId={profile?.uid ?? ''}
-            courseId={course.id}
-            existingCourses={allCoursesResult.data ?? []}
-            blueprints={blueprintsResult.data ?? []}
-            initialTitle={course.title}
-            initialDescription={course.description ?? ''}
-            initialLevel={course.min_required_level}
-            initialPrerequisiteId={course.prerequisite_course_id}
-            initialStatus={course.status}
-            initialBlueprintId={course.blueprint_id ?? null}
-            initialAgeMin={course.age_min ?? null}
-            initialAgeMax={course.age_max ?? null}
-          />
-        </div>
+        {/* A manager reaches this page only to toggle public preview (D3) —
+            never granted the general course-edit form below. */}
+        {canEditCourse && isOwnerOrAdmin && (
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
+            <CourseForm
+              userId={profile?.uid ?? ''}
+              courseId={course.id}
+              existingCourses={allCoursesResult.data ?? []}
+              blueprints={blueprintsResult.data ?? []}
+              initialTitle={course.title}
+              initialDescription={course.description ?? ''}
+              initialLevel={course.min_required_level}
+              initialPrerequisiteId={course.prerequisite_course_id}
+              initialStatus={course.status}
+              initialBlueprintId={course.blueprint_id ?? null}
+              initialAgeMin={course.age_min ?? null}
+              initialAgeMax={course.age_max ?? null}
+            />
+          </div>
+        )}
+
+        {/* COUNCIL-2026-027 D3 — public preview toggle is admin/manager only,
+            never a teacher even if they own the course. */}
+        {canTogglePreview && (
+          <div className="mt-6">
+            <PublicPreviewToggle
+              courseId={course.id}
+              initialValue={course.is_public_preview ?? false}
+              courseStatus={course.status}
+            />
+          </div>
+        )}
       </div>
     </main>
   )
