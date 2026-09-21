@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/utils/supabase/client'
+import { useTranslations } from 'next-intl'
 
 interface NotificationItem {
   id:           string
@@ -14,16 +15,6 @@ interface NotificationItem {
   is_read:      boolean
   is_dismissed: boolean
   created_at:   string
-}
-
-function timeAgo(iso: string): string {
-  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (s < 60)    return 'just now'
-  if (s < 3600)  return `${Math.floor(s / 60)}m ago`
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`
-  const d = Math.floor(s / 86400)
-  if (d < 7)     return `${d}d ago`
-  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
 const TYPE_ICON: Record<string, string> = {
@@ -39,14 +30,25 @@ const TYPE_ICON: Record<string, string> = {
 
 export default function NotificationsClient({
   initialItems,
-  userId: _userId,
+  userId,
 }: {
   initialItems: NotificationItem[]
   userId:       string
 }) {
+  const t = useTranslations()
   const [items,      setItems]      = useState(initialItems)
   const [filter,     setFilter]     = useState<'all' | 'unread'>('all')
   const [, start] = useTransition()
+
+  function timeAgo(iso: string): string {
+    const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
+    if (s < 60)    return t('common.timeAgoJustNow')
+    if (s < 3600)  return t('notifications.timeAgoMinutes', { n: Math.floor(s / 60) })
+    if (s < 86400) return t('notifications.timeAgoHours',   { n: Math.floor(s / 3600) })
+    const d = Math.floor(s / 86400)
+    if (d < 7)     return t('notifications.timeAgoDays', { n: d })
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  }
 
   const supabase = createClient()
 
@@ -91,7 +93,7 @@ export default function NotificationsClient({
     return (
       <div className="bg-white border border-border rounded-xl p-12 text-center">
         <p className="text-4xl mb-3">🔔</p>
-        <p className="text-muted-foreground italic">You're all caught up — no notifications.</p>
+        <p className="text-muted-foreground italic">{t('notifications.caughtUpEmpty')}</p>
       </div>
     )
   }
@@ -106,13 +108,13 @@ export default function NotificationsClient({
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
-                'text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors capitalize',
+                'text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors',
                 filter === f
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-white border-border text-muted-foreground hover:border-primary/40'
               )}
             >
-              {f}
+              {f === 'all' ? t('notifications.filterAll') : t('notifications.filterUnread')}
               {f === 'unread' && unreadIds.length > 0 && (
                 <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold">
                   {unreadIds.length}
@@ -126,7 +128,7 @@ export default function NotificationsClient({
             onClick={markAllRead}
             className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
           >
-            Mark all read
+            {t('notifications.markAllRead')}
           </button>
         )}
       </div>
@@ -134,7 +136,7 @@ export default function NotificationsClient({
       {/* List */}
       {displayed.length === 0 ? (
         <div className="bg-white border border-border rounded-xl p-8 text-center">
-          <p className="text-muted-foreground italic text-sm">No unread notifications.</p>
+          <p className="text-muted-foreground italic text-sm">{t('notifications.noUnreadEmpty')}</p>
         </div>
       ) : (
         <div className="bg-white border border-border rounded-xl overflow-hidden divide-y divide-border">
@@ -164,7 +166,7 @@ export default function NotificationsClient({
                       <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); dismiss(n.id) }}
                         className="text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 text-xs leading-none"
-                        aria-label="Dismiss notification"
+                        aria-label={t('notifications.dismissAriaLabel')}
                       >
                         ✕
                       </button>

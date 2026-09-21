@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, BarChart3, BarChart2, Award, Trophy,
@@ -15,11 +14,13 @@ import { useSidebar } from './SidebarContext'
 import NotificationBell from './NotificationBell'
 import GlobalSearch from './GlobalSearch'
 import SignOutButton from './SignOutButton'
+import LocaleSwitcher from './LocaleSwitcher'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { useTranslations } from 'next-intl'
 
 interface NavLink {
   href:              string
-  label:             string
+  labelKey:          string
   Icon:              LucideIcon
   staffOnly?:        boolean
   adminOnly?:        boolean
@@ -31,30 +32,30 @@ interface NavLink {
 }
 
 const LINKS: NavLink[] = [
-  { href: '/dashboard',          label: 'Dashboard',       Icon: LayoutDashboard },
-  { href: '/courses',            label: 'Courses',         Icon: BookOpen },
-  { href: '/performance',        label: 'Grades',          Icon: BarChart3 },
-  { href: '/reports',            label: 'Reports',         Icon: BarChart2,  featureGate: 'reporting' },
-  { href: '/certificates',       label: 'Certificates',    Icon: Award },
-  { href: '/leaderboard',        label: 'Leaderboard',     Icon: Trophy,     featureGate: 'leaderboard' },
-  { href: '/messages',           label: 'Messages',        Icon: MessageCircle, msgBadge: true },
-  { href: '/announcements',      label: 'Announcements',   Icon: Megaphone },
-  { href: '/calendar',           label: 'Calendar',        Icon: Calendar },
-  { href: '/my-groups',          label: 'My Groups',       Icon: Users },
-  { href: '/guardian',           label: 'Guardian Portal', Icon: Shield,         guardianOnly: true,    featureGate: 'guardian_portal' },
-  { href: '/hq',                 label: 'HQ',              Icon: Zap,            staffOnly: true,       featureGate: 'hq' },
-  { href: '/admin/users',        label: 'Users',           Icon: UserCog,        adminOnly: true },
-  { href: '/admin/cohorts',      label: 'Cohorts',         Icon: Users,          adminOnly: true },
-  { href: '/admin/sections',     label: 'Sections',        Icon: Layers,         adminOnly: true },
-  { href: '/admin/terms',        label: 'Terms',           Icon: Clock,          adminOnly: true },
-  { href: '/admin/program-tracks', label: 'Program Tracks', Icon: GitBranch,     adminOnly: true },
-  { href: '/admin/blueprints',   label: 'Blueprints',      Icon: FileText,       adminOnly: true },
-  { href: '/admin/ai-analytics', label: 'AI Analytics',    Icon: Sparkles,       adminOnly: true,       featureGate: 'ai_tutor' },
-  { href: '/admin/billing',      label: 'Billing',         Icon: CreditCard,     adminOnly: true },
-  { href: '/admin/health',       label: 'System Health',   Icon: Activity,       adminOnly: true,       healthBadge: true },
-  { href: '/admin/integrations/oneroster', label: 'OneRoster', Icon: Plug,        adminOnly: true },
-  { href: '/admin/settings',    label: 'Org Settings',    Icon: Settings,       adminOnly: true },
-  { href: '/platform',           label: 'Platform Admin',  Icon: Shield,         platformAdminOnly: true },
+  { href: '/dashboard',          labelKey: 'nav.dashboard',          Icon: LayoutDashboard },
+  { href: '/courses',            labelKey: 'nav.courses',            Icon: BookOpen },
+  { href: '/performance',        labelKey: 'nav.grades',             Icon: BarChart3 },
+  { href: '/reports',            labelKey: 'nav.reports',            Icon: BarChart2,  featureGate: 'reporting' },
+  { href: '/certificates',       labelKey: 'nav.certificates',       Icon: Award },
+  { href: '/leaderboard',        labelKey: 'nav.leaderboard',        Icon: Trophy,     featureGate: 'leaderboard' },
+  { href: '/messages',           labelKey: 'nav.messages',           Icon: MessageCircle, msgBadge: true },
+  { href: '/announcements',      labelKey: 'nav.announcements',      Icon: Megaphone },
+  { href: '/calendar',           labelKey: 'nav.calendar',           Icon: Calendar },
+  { href: '/my-groups',          labelKey: 'nav.myGroups',           Icon: Users },
+  { href: '/guardian',           labelKey: 'nav.guardianPortal',     Icon: Shield,         guardianOnly: true,    featureGate: 'guardian_portal' },
+  { href: '/hq',                 labelKey: 'nav.hq',                 Icon: Zap,            staffOnly: true,       featureGate: 'hq' },
+  { href: '/admin/users',        labelKey: 'nav.admin.users',        Icon: UserCog,        adminOnly: true },
+  { href: '/admin/cohorts',      labelKey: 'nav.admin.cohorts',      Icon: Users,          adminOnly: true },
+  { href: '/admin/sections',     labelKey: 'nav.admin.sections',     Icon: Layers,         adminOnly: true },
+  { href: '/admin/terms',        labelKey: 'nav.admin.terms',        Icon: Clock,          adminOnly: true },
+  { href: '/admin/program-tracks', labelKey: 'nav.admin.programTracks', Icon: GitBranch,   adminOnly: true },
+  { href: '/admin/blueprints',   labelKey: 'nav.admin.blueprints',   Icon: FileText,       adminOnly: true },
+  { href: '/admin/ai-analytics', labelKey: 'nav.admin.aiAnalytics',  Icon: Sparkles,       adminOnly: true,       featureGate: 'ai_tutor' },
+  { href: '/admin/billing',      labelKey: 'nav.admin.billing',      Icon: CreditCard,     adminOnly: true },
+  { href: '/admin/health',       labelKey: 'nav.admin.systemHealth', Icon: Activity,       adminOnly: true,       healthBadge: true },
+  { href: '/admin/integrations/oneroster', labelKey: 'nav.admin.oneRoster', Icon: Plug,   adminOnly: true },
+  { href: '/admin/settings',     labelKey: 'nav.admin.orgSettings',  Icon: Settings,       adminOnly: true },
+  { href: '/platform',           labelKey: 'nav.platformAdmin',      Icon: Shield,         platformAdminOnly: true },
 ]
 
 interface Props {
@@ -71,15 +72,18 @@ interface Props {
 }
 
 function NavItem({
-  link, collapsed, pathname, messageCount, healthErrorCount,
+  link, collapsed, pathname, messageCount, healthErrorCount, t,
 }: {
   link:             NavLink
   collapsed:        boolean
   pathname:         string
   messageCount:     number
   healthErrorCount: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t:                (key: string) => string
 }) {
-  const { href, label, Icon, msgBadge, healthBadge } = link
+  const { href, labelKey, Icon, msgBadge, healthBadge } = link
+  const label      = t(labelKey)
   const active     = pathname === href || pathname.startsWith(href + '/')
   const badgeCount = msgBadge ? messageCount : healthBadge ? healthErrorCount : 0
 
@@ -135,6 +139,7 @@ export default function SidebarClient({
 }: Props) {
   const { collapsed, toggle } = useSidebar()
   const pathname = usePathname()
+  const t = useTranslations()
 
   const visible = (l: NavLink) => !l.featureGate || features[l.featureGate] !== false
 
@@ -144,7 +149,7 @@ export default function SidebarClient({
   const admin     = LINKS.filter(l => l.adminOnly    && isAdmin     && visible(l))
   const platform  = LINKS.filter(l => l.platformAdminOnly && isPlatformAdmin)
 
-  const linkProps = { collapsed, pathname, messageCount, healthErrorCount }
+  const linkProps = { collapsed, pathname, messageCount, healthErrorCount, t }
 
   return (
     <aside
@@ -166,19 +171,16 @@ export default function SidebarClient({
             href="/dashboard"
             className="flex-1 min-w-0"
           >
-            <Image
+            <img
               src="/assets/brand/logo-horizontal-dark.svg"
-              alt="ChurchCore LMS"
-              width={0}
-              height={0}
-              sizes="100vw"
+              alt={t('nav.logoAlt')}
               className="h-9 w-auto"
             />
           </Link>
         )}
         <button
           onClick={toggle}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? t('common.expandSidebarTooltip') : t('common.collapseSidebarTooltip')}
           className={cn(
             'shrink-0 flex items-center justify-center rounded-lg transition-colors',
             'text-slate-500 hover:text-white hover:bg-slate-800',
@@ -198,28 +200,28 @@ export default function SidebarClient({
 
         {guardian.length > 0 && (
           <>
-            <SectionDivider label="Guardian" collapsed={collapsed} />
+            <SectionDivider label={t('nav.sectionDivider.guardian')} collapsed={collapsed} />
             {guardian.map(link => <NavItem key={link.href} link={link} {...linkProps} />)}
           </>
         )}
 
         {staff.length > 0 && (
           <>
-            <SectionDivider label="Staff" collapsed={collapsed} />
+            <SectionDivider label={t('nav.sectionDivider.staff')} collapsed={collapsed} />
             {staff.map(link => <NavItem key={link.href} link={link} {...linkProps} />)}
           </>
         )}
 
         {admin.length > 0 && (
           <>
-            <SectionDivider label="Admin" collapsed={collapsed} />
+            <SectionDivider label={t('nav.sectionDivider.admin')} collapsed={collapsed} />
             {admin.map(link => <NavItem key={link.href} link={link} {...linkProps} />)}
           </>
         )}
 
         {platform.length > 0 && (
           <>
-            <SectionDivider label="Platform" collapsed={collapsed} />
+            <SectionDivider label={t('nav.sectionDivider.platform')} collapsed={collapsed} />
             {platform.map(link => <NavItem key={link.href} link={link} {...linkProps} />)}
           </>
         )}
@@ -233,6 +235,9 @@ export default function SidebarClient({
           <NotificationBell userId={uid} sidebar collapsed={collapsed} />
         )}
 
+        {/* Locale switcher */}
+        <LocaleSwitcher collapsed={collapsed} />
+
         {/* Profile + sign out */}
         <div className={cn(
           'flex items-center rounded-lg transition-colors',
@@ -241,7 +246,7 @@ export default function SidebarClient({
         )}>
           <Link
             href="/profile"
-            title={collapsed ? 'Profile' : undefined}
+            title={collapsed ? t('nav.profileFallback') : undefined}
             className={cn('flex items-center gap-2 min-w-0', !collapsed && 'flex-1')}
           >
             <Avatar className="h-7 w-7 shrink-0">
@@ -253,7 +258,7 @@ export default function SidebarClient({
               'overflow-hidden whitespace-nowrap text-xs font-medium text-white transition-[max-width,opacity] duration-200',
               collapsed ? 'max-w-0 opacity-0' : 'max-w-[120px] opacity-100',
             )}>
-              {displayName ?? 'Profile'}
+              {displayName ?? t('nav.profileFallback')}
             </span>
           </Link>
 

@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
+import { getTranslations } from 'next-intl/server'
 
 export default async function ReportsPage() {
+  const t = await getTranslations()
   const supabase = await createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -21,9 +23,9 @@ export default async function ReportsPage() {
     default:
       return (
         <main className="mx-auto max-w-xl px-6 py-16 text-center">
-          <h1 className="text-xl font-semibold text-slate-950">Reports not available</h1>
+          <h1 className="text-xl font-semibold text-slate-950">{t('reports.fallback.heading')}</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Your account role does not have a reports view assigned. Contact your administrator.
+            {t('reports.fallback.description')}
           </p>
         </main>
       )

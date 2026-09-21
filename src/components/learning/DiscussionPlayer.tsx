@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/utils/supabase/client'
 import { gradeDiscussionSubmission } from '@/app/actions/learning'
 
@@ -41,6 +42,7 @@ function GradeForm({
   onSave:           (score: number, maxScore: number) => void
   onCancel:         () => void
 }) {
+  const t = useTranslations()
   const [score,    setScore]    = useState(existingScore ?? 0)
   const [maxScore, setMaxScore] = useState(existingMaxScore)
   const [saving,   setSaving]   = useState(false)
@@ -61,7 +63,7 @@ function GradeForm({
   return (
     <div className="mt-2 flex flex-col gap-2">
       <div className="flex gap-2 items-center flex-wrap">
-        <label className="text-xs text-muted-foreground">Score</label>
+        <label className="text-xs text-muted-foreground">{t('learning.discussion.scoreLabel')}</label>
         <input
           type="number"
           min={0}
@@ -70,9 +72,9 @@ function GradeForm({
           value={score}
           onChange={(e) => setScore(Number(e.target.value))}
           className="w-20 border border-border rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-          aria-label="Score"
+          aria-label={t('learning.discussion.scoreLabel')}
         />
-        <label className="text-xs text-muted-foreground">/ Max</label>
+        <label className="text-xs text-muted-foreground">{t('learning.discussion.maxScoreLabel')}</label>
         <input
           type="number"
           min={1}
@@ -91,14 +93,14 @@ function GradeForm({
           disabled={saving}
           className="text-xs bg-primary text-white px-3 py-1 rounded hover:bg-primary/90 disabled:opacity-50 transition-colors"
         >
-          {saving ? 'Saving…' : 'Save Grade'}
+          {saving ? t('common.savingButton') : t('learning.discussion.saveGradeButton')}
         </button>
         <button
           type="button"
           onClick={onCancel}
           className="text-xs text-muted-foreground hover:underline"
         >
-          Cancel
+          {t('common.cancel')}
         </button>
       </div>
     </div>
@@ -110,7 +112,7 @@ function GradeForm({
 export default function DiscussionPlayer({
   blockId,
   prompt,
-  ownReplyText: _ownReplyText,
+  ownReplyText,
   viewerRole,
   maxScore,
 }: {
@@ -120,6 +122,7 @@ export default function DiscussionPlayer({
   viewerRole?:   string
   maxScore?:     number
 }) {
+  const t = useTranslations()
   const [replies,     setReplies]     = useState<Reply[]>([])
   const [loading,     setLoading]     = useState(true)
   const [text,        setText]        = useState('')
@@ -224,7 +227,7 @@ export default function DiscussionPlayer({
   }
 
   function deleteReply(submissionId: string) {
-    if (!confirm('Delete your reply? This cannot be undone.')) return
+    if (!confirm(t('learning.discussion.deleteConfirm'))) return
     startEdit(async () => {
       const { error: err } = await supabase.rpc('delete_discussion_reply', {
         p_submission_id: submissionId,
@@ -241,7 +244,7 @@ export default function DiscussionPlayer({
       {/* Prompt card */}
       {prompt && (
         <div className="bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-4">
-          <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1.5">Discussion Prompt</p>
+          <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1.5">{t('learning.discussion.promptEyebrow')}</p>
           <p className="text-sm text-indigo-800 leading-relaxed whitespace-pre-wrap">{prompt}</p>
         </div>
       )}
@@ -250,10 +253,10 @@ export default function DiscussionPlayer({
       <div className="bg-white border border-border rounded-xl overflow-hidden">
         <div className="px-5 py-3 border-b border-border flex items-center justify-between">
           <p className="text-sm font-semibold text-foreground">
-            {loading ? 'Loading…' : `${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`}
+            {loading ? t('common.loading') : t('learning.discussion.replyCountTemplate', { n: replies.length })}
           </p>
           {replies.some((r) => r.is_own) && (
-            <span className="text-xs text-muted-foreground">✓ You replied</span>
+            <span className="text-xs text-muted-foreground">{t('learning.discussion.ownReplyBadge')}</span>
           )}
         </div>
 
@@ -263,7 +266,7 @@ export default function DiscussionPlayer({
           </div>
         ) : replies.length === 0 ? (
           <div className="px-5 py-8 text-center">
-            <p className="text-sm text-muted-foreground italic">Be the first to reply.</p>
+            <p className="text-sm text-muted-foreground italic">{t('learning.discussion.emptyReplies')}</p>
           </div>
         ) : (
           <>
@@ -281,12 +284,12 @@ export default function DiscussionPlayer({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2 mb-1">
                     <span className="text-sm font-semibold text-foreground truncate">
-                      {r.display_name ?? 'Student'}
-                      {r.is_own && <span className="ml-1 text-[10px] text-primary font-bold">(you)</span>}
+                      {r.display_name ?? t('common.studentFallback')}
+                      {r.is_own && <span className="ml-1 text-[10px] text-primary font-bold">({t('learning.discussion.youMarker')})</span>}
                     </span>
                     <span className="text-xs text-muted-foreground shrink-0">{timeAgo(r.submitted_at)}</span>
                     {r.content?.edited_at && (
-                      <span className="text-[10px] text-muted-foreground italic shrink-0">edited</span>
+                      <span className="text-[10px] text-muted-foreground italic shrink-0">{t('learning.discussion.editedMarker')}</span>
                     )}
                   </div>
 
@@ -298,7 +301,7 @@ export default function DiscussionPlayer({
                         rows={3}
                         maxLength={2000}
                         aria-label="Edit your reply"
-                        placeholder="Edit your reply…"
+                        placeholder={t('learning.discussion.editPlaceholder')}
                         className="w-full px-3 py-2 text-sm bg-white border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary/40"
                         autoFocus
                       />
@@ -309,14 +312,14 @@ export default function DiscussionPlayer({
                           disabled={editPending || editText.trim().length < 2}
                           className="text-xs font-semibold text-white bg-primary px-3 py-1.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors"
                         >
-                          {editPending ? 'Saving…' : 'Save'}
+                          {editPending ? t('common.savingButton') : t('common.save')}
                         </button>
                         <button
                           type="button"
                           onClick={cancelEdit}
                           className="text-xs font-medium text-muted-foreground hover:text-foreground"
                         >
-                          Cancel
+                          {t('common.cancel')}
                         </button>
                       </div>
                     </div>
@@ -346,8 +349,8 @@ export default function DiscussionPlayer({
                             className="text-xs text-primary hover:underline mt-1"
                           >
                             {r.score != null
-                              ? `Graded: ${r.score}/${r.max_score ?? effectiveMaxScore} — Edit`
-                              : 'Grade'}
+                              ? t('learning.discussion.gradedEditLink', { score: r.score, max: r.max_score ?? effectiveMaxScore })
+                              : t('learning.discussion.gradeActionButton')}
                           </button>
                         )
                       )}
@@ -355,7 +358,7 @@ export default function DiscussionPlayer({
                       {/* Student: show own grade */}
                       {r.is_own && r.score != null && !canGrade && (
                         <p className="text-xs text-emerald-700 mt-1 font-medium">
-                          Grade: {r.score} / {r.max_score ?? effectiveMaxScore}
+                          {t('learning.discussion.ownGradeDisplay', { score: r.score, max: r.max_score ?? effectiveMaxScore })}
                         </p>
                       )}
 
@@ -366,14 +369,14 @@ export default function DiscussionPlayer({
                             onClick={() => startEditing(r)}
                             className="text-xs text-muted-foreground hover:text-primary transition-colors font-medium"
                           >
-                            Edit
+                            {t('common.edit')}
                           </button>
                           <button
                             type="button"
                             onClick={() => deleteReply(r.submission_id)}
                             className="text-xs text-muted-foreground hover:text-rose-600 transition-colors font-medium"
                           >
-                            Delete
+                            {t('common.delete')}
                           </button>
                         </div>
                       )}
@@ -393,7 +396,7 @@ export default function DiscussionPlayer({
       {/* Reply form */}
       {alreadyPosted ? (
         <p className="text-xs text-muted-foreground text-center italic">
-          You&apos;ve replied — use Edit above to update your post.
+          {t('learning.discussion.alreadyPostedNotice')}
         </p>
       ) : (
         <form onSubmit={post} className="space-y-2">
@@ -402,7 +405,7 @@ export default function DiscussionPlayer({
             onChange={(e) => setText(e.target.value)}
             rows={3}
             maxLength={2000}
-            placeholder="Share your thoughts…"
+            placeholder={t('learning.discussion.replyPlaceholder')}
             className="w-full px-4 py-3 text-sm bg-white border border-border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
           />
           <div className="flex items-center justify-between">
@@ -412,7 +415,7 @@ export default function DiscussionPlayer({
               disabled={pending || text.trim().length < 2}
               className="bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
             >
-              {pending ? 'Posting…' : 'Post reply'}
+              {pending ? t('learning.discussion.postingButton') : t('learning.discussion.postReplyButton')}
             </button>
           </div>
         </form>

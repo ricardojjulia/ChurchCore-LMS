@@ -18,7 +18,7 @@ export function ReportsNav({ links, ariaLabel }: Props) {
   const pathname = usePathname()
 
   return (
-    <nav className="mt-8 space-y-1" aria-label={ariaLabel}>
+    <nav className="no-print mt-8 space-y-1" aria-label={ariaLabel}>
       {links.map((item) => {
         const baseHref = item.href.split('#')[0]
         const active = item.href.includes('#')

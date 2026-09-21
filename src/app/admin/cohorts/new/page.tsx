@@ -6,7 +6,7 @@ import NewCohortForm from './NewCohortForm'
 export default async function NewCohortPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/login')
 
   const { data: me } = await supabase
     .from('profiles')

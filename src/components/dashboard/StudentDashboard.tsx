@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { getTranslations } from 'next-intl/server'
 import SmartSummaryCard from './SmartSummaryCard'
 import DashboardCourseCard from './DashboardCourseCard'
 import DashboardMessagesPreview from './DashboardMessagesPreview'
@@ -58,7 +59,8 @@ function Section({
   )
 }
 
-export default function StudentDashboard({ ctx }: { ctx: DashboardContext }) {
+export default async function StudentDashboard({ ctx }: { ctx: DashboardContext }) {
+  const t = await getTranslations()
   const inProgress = ctx.enrollments.filter((e) => e.transitStatus === 'in_progress')
   const notStarted = ctx.enrollments.filter((e) => e.transitStatus === 'not_started')
   const completed  = ctx.enrollments.filter((e) => e.transitStatus === 'completed')
@@ -84,10 +86,10 @@ export default function StudentDashboard({ ctx }: { ctx: DashboardContext }) {
         {ctx.enrollments.length === 0 ? (
           <div className="bg-white border border-border rounded-xl p-10 text-center mb-8">
             <p className="text-muted-foreground italic mb-4">
-              You haven't enrolled in any courses yet.
+              {t('dashboard.student.emptyEnrollments')}
             </p>
             <Button asChild>
-              <Link href="/courses">Browse courses</Link>
+              <Link href="/courses">{t('dashboard.student.browseCoursesButton')}</Link>
             </Button>
           </div>
         ) : (
@@ -95,13 +97,13 @@ export default function StudentDashboard({ ctx }: { ctx: DashboardContext }) {
             {/* Morning / Afternoon: active courses up top */}
             {!showPerformanceFirst && (
               <>
-                <Section title="In Progress" courses={inProgress} />
+                <Section title={t('dashboard.student.inProgressSection')} courses={inProgress} />
                 <Section
-                  title="Coming Up"
+                  title={t('dashboard.student.comingUpSection')}
                   courses={notStarted}
-                  emptyText={inProgress.length === 0 ? "No courses started yet." : undefined}
+                  emptyText={inProgress.length === 0 ? t('dashboard.student.noCoursesStartedEmpty') : undefined}
                   emptyHref="/courses"
-                  emptyLabel="Browse courses"
+                  emptyLabel={t('dashboard.student.browseCoursesButton')}
                 />
               </>
             )}
@@ -113,13 +115,13 @@ export default function StudentDashboard({ ctx }: { ctx: DashboardContext }) {
             {showPerformanceFirst && (
               <>
                 <DashboardPerformancePanel uid={ctx.uid} />
-                <Section title="In Progress" courses={inProgress} />
-                <Section title="Coming Up" courses={notStarted} />
+                <Section title={t('dashboard.student.inProgressSection')} courses={inProgress} />
+                <Section title={t('dashboard.student.comingUpSection')} courses={notStarted} />
               </>
             )}
 
-            {paused.length  > 0 && <Section title="Paused" courses={paused} />}
-            {completed.length > 0 && <Section title="Completed" courses={completed} />}
+            {paused.length  > 0 && <Section title={t('dashboard.student.pausedSection')} courses={paused} />}
+            {completed.length > 0 && <Section title={t('status.completed')} courses={completed} />}
           </>
         )}
 

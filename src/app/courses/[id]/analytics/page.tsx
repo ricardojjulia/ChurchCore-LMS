@@ -56,7 +56,7 @@ export default async function CourseAnalyticsPage({
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect('/login')
 
   // Verify course exists and fetch basic info
   const { data: course } = await supabase

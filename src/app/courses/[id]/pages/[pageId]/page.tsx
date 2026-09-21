@@ -22,7 +22,7 @@ export default async function MaterialViewerPage({
     .eq('auth_id', user.id)
     .single()
 
-  if (!profile) redirect('/auth/login')
+  if (!profile) redirect('/login')
 
   const isStaff = ['admin', 'manager', 'teacher'].includes(profile.role)
 

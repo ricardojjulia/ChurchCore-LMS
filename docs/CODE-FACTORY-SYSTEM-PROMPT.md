@@ -850,6 +850,10 @@ test: add trajectoryClassifier unit tests (COUNCIL-2025-011)
 chore: bump resend to 7.0.0
 ```
 
+### PR review gate
+
+The `pr-review` skill (`pr-reviewer` subagent — read-only, ranks findings Critical/Important/Minor) runs on every PR before merge, in addition to the council process above. It exists specifically to cover changes small enough to skip the full council/factory pipeline — those never see `implementation-validator`'s Gate 3, but they still see `pr-review`. Critical or Important findings block merge.
+
 ### The non-negotiable checklist (before every commit)
 
 - [ ] `npm run typecheck` exits 0

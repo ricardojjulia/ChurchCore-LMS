@@ -1,6 +1,6 @@
 {
   "name": "churchcore-lms",
-  "version": "0.26.6",
+  "version": "0.31.0",
   "license": "AGPL-3.0-only",
   "private": true,
   "scripts": {
@@ -57,6 +57,7 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.395.0",
     "next": "^16.3.5",
+    "next-intl": "^4.14.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^3.8.1",
@@ -68,7 +69,8 @@
   "overrides": {
     "postcss": ">=8.5.10",
     "serialize-javascript": ">=7.0.5",
-    "uuid": ">=11.1.1"
+    "uuid": ">=11.1.1",
+    "fast-uri": "3.1.8"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",

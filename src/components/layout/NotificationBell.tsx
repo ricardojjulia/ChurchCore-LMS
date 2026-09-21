@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { useNotifications } from '@/hooks/useNotifications'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   userId:    string
@@ -19,12 +20,12 @@ function timeAgo(iso: string): string {
   return `${Math.floor(s / 86400)}d ago`
 }
 
-function ConnectionDot({ status }: { status: string }) {
+function ConnectionDot({ status, connectingLabel, reconnectingLabel }: { status: string; connectingLabel: string; reconnectingLabel: string }) {
   if (status === 'SUBSCRIBED') return null
   if (status === 'CONNECTING' || status === 'CHANNEL_ERROR') {
     return (
       <span
-        title={status === 'CONNECTING' ? 'Connecting…' : 'Reconnecting…'}
+        title={status === 'CONNECTING' ? connectingLabel : reconnectingLabel}
         className={cn(
           'absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-slate-900',
           status === 'CONNECTING' ? 'bg-amber-400 animate-pulse' : 'bg-rose-500',
@@ -36,6 +37,7 @@ function ConnectionDot({ status }: { status: string }) {
 }
 
 export default function NotificationBell({ userId, sidebar = false, collapsed = false }: Props) {
+  const t = useTranslations()
   const [open, setOpen] = useState(false)
   const [prevCount, setPrevCount] = useState<number | null>(null)
   const [badgePulse, setBadgePulse] = useState(false)
@@ -70,7 +72,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
       <button
         ref={bellRef}
         type="button"
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+        aria-label={unreadCount > 0 ? t('notificationBell.bellAriaLabelTemplate', { n: unreadCount }) : t('notificationBell.panelHeading')}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
@@ -109,7 +111,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
             'overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200',
             collapsed ? 'max-w-0 opacity-0' : 'max-w-[120px] opacity-100',
           )}>
-            Notifications
+            {t('notificationBell.sidebarLabel')}
           </span>
         )}
 
@@ -129,7 +131,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
           </span>
         )}
 
-        <ConnectionDot status={connectionStatus} />
+        <ConnectionDot status={connectionStatus} connectingLabel={t('notificationBell.connectingStatus')} reconnectingLabel={t('notificationBell.reconnectingStatus')} />
       </button>
 
       {open && (
@@ -139,7 +141,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
             ref={panelRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Notifications"
+            aria-label={t('notificationBell.panelHeading')}
             className={cn(
               'absolute z-50 w-80 bg-white border border-border rounded-2xl shadow-xl overflow-hidden',
               sidebar ? 'bottom-full mb-2 left-0' : 'right-0 top-10',
@@ -147,14 +149,14 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-              <p className="text-sm font-bold text-foreground">Notifications</p>
+              <p className="text-sm font-bold text-foreground">{t('notificationBell.panelHeading')}</p>
               {unreadCount > 0 && (
                 <button
                   type="button"
                   onClick={() => markAllAsRead()}
                   className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
                 >
-                  Mark all read
+                  {t('notificationBell.markAllReadButton')}
                 </button>
               )}
             </div>
@@ -163,7 +165,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
             <div className="max-h-72 overflow-y-auto divide-y divide-border">
               {notifications.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  No notifications yet.
+                  {t('notificationBell.emptyState')}
                 </p>
               ) : (
                 notifications.map((n) => {
@@ -226,7 +228,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
                 onClick={() => setOpen(false)}
                 className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
               >
-                See all notifications →
+                {t('notificationBell.seeAllLink')}
               </Link>
             </div>
           </div>

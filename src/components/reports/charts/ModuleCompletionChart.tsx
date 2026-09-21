@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   Area,
   AreaChart,
@@ -18,22 +19,23 @@ type ModuleCompletionPoint = {
 }
 
 export default function ModuleCompletionChart({ data }: { data: ModuleCompletionPoint[] }) {
+  const t = useTranslations()
   const [showTable, setShowTable] = useState(false)
   const summary = useMemo(() => {
-    if (data.length === 0) return 'No module completion data available'
+    if (data.length === 0) return t('reports.charts.moduleCompletion.emptyFallback')
     const latest = data[data.length - 1]
-    return `${latest.completed} of ${latest.total} modules completed in the latest reporting point`
-  }, [data])
+    return t('reports.charts.moduleCompletion.ariaSummaryTemplate', { completed: latest.completed, total: latest.total })
+  }, [data, t])
 
   return (
-    <div role="img" aria-label={`Module completion over time: ${summary}`}>
+    <div role="img" aria-label={t('reports.charts.moduleCompletion.containerAriaLabelTemplate', { summary })}>
       <div className="mb-3 flex justify-end">
         <button
           type="button"
           onClick={() => setShowTable((current) => !current)}
           className="text-sm font-semibold text-slate-700 underline-offset-4 hover:text-slate-950 hover:underline"
         >
-          {showTable ? 'View as chart' : 'View as table'}
+          {showTable ? t('common.viewAsChart') : t('common.viewAsTable')}
         </button>
       </div>
 
@@ -42,13 +44,13 @@ export default function ModuleCompletionChart({ data }: { data: ModuleCompletion
           <thead>
             <tr className="border-b border-slate-200 text-left">
               <th scope="col" className="py-2 pr-3 font-semibold text-slate-700">
-                Date
+                {t('reports.charts.moduleCompletion.dateHeader')}
               </th>
               <th scope="col" className="py-2 pr-3 font-semibold text-slate-700">
-                Completed
+                {t('reports.charts.moduleCompletion.completedHeader')}
               </th>
               <th scope="col" className="py-2 pr-3 font-semibold text-slate-700">
-                Total
+                {t('reports.charts.moduleCompletion.totalHeader')}
               </th>
             </tr>
           </thead>
@@ -73,7 +75,7 @@ export default function ModuleCompletionChart({ data }: { data: ModuleCompletion
               <YAxis domain={[0, 100]} />
               <Tooltip
                 labelFormatter={(value) => new Date(String(value)).toLocaleDateString()}
-                formatter={(value, name) => [value, name === 'completed' ? 'Completed' : 'Total']}
+                formatter={(value, name) => [value, name === 'completed' ? t('reports.charts.moduleCompletion.completedSeriesName') : t('reports.charts.moduleCompletion.totalSeriesName')]}
               />
               <Area type="monotone" dataKey="completed" stroke="#134074" fill="#8DA9C4" />
             </AreaChart>

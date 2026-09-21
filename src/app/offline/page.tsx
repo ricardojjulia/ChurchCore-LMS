@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 
 export const metadata: Metadata = {
   title: 'Offline — ChurchCore LMS',
 }
 
-export default function OfflinePage() {
+export default async function OfflinePage() {
+  const t = await getTranslations()
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
       <div
@@ -34,19 +36,18 @@ export default function OfflinePage() {
       </div>
 
       <div className="space-y-2 max-w-sm">
-        <h1 className="text-2xl font-semibold text-foreground">You are offline</h1>
+        <h1 className="text-2xl font-semibold text-foreground">{t('offline.heading')}</h1>
         <p className="text-sm text-muted-foreground">
-          This content is not available without an internet connection.
-          Visit this page while online to read it offline next time.
+          {t('offline.description')}
         </p>
       </div>
 
       <p className="text-xs text-muted-foreground max-w-xs">
-        Once you reconnect, you can return to your courses and all your progress will be intact.
+        {t('offline.reconnectDescription')}
       </p>
 
       <Link href="/dashboard" className="btn btn-outline mt-2">
-        Go to dashboard
+        {t('offline.dashboardButton')}
       </Link>
     </div>
   )

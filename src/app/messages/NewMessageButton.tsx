@@ -4,10 +4,12 @@ import { useState, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { searchUsers, getOrCreateDirectThread } from '@/app/actions/messages'
+import { useTranslations } from 'next-intl'
 
 interface User { uid: string; display_name: string; email: string; role: string }
 
 export default function NewMessageButton() {
+  const t = useTranslations()
   const [open, setOpen]         = useState(false)
   const [query, setQuery]       = useState('')
   const [results, setResults]   = useState<User[]>([])
@@ -49,7 +51,7 @@ export default function NewMessageButton() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} size="sm">+ New Message</Button>
+      <Button onClick={() => setOpen(true)} size="sm">{t('messages.newMessage.triggerButton')}</Button>
 
       {open && (
         <div
@@ -58,7 +60,7 @@ export default function NewMessageButton() {
         >
           <div className="bg-white border border-border rounded-2xl shadow-xl w-full max-w-md mx-4 p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-extrabold text-foreground">New Message</h2>
+              <h2 className="text-lg font-extrabold text-foreground">{t('messages.newMessage.dialogHeading')}</h2>
               <button type="button" onClick={() => { setOpen(false); reset() }}
                 className="text-muted-foreground hover:text-foreground text-xl leading-none">×</button>
             </div>
@@ -67,7 +69,7 @@ export default function NewMessageButton() {
               {/* Recipient search */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
-                  To <span className="text-destructive">*</span>
+                  {t('messages.newMessage.toLabel')} <span className="text-destructive">*</span>
                 </label>
                 {selected ? (
                   <div className="flex items-center gap-2 px-3 py-2 border border-input rounded-md bg-primary/5">
@@ -86,7 +88,7 @@ export default function NewMessageButton() {
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Search by name or email…"
+                      placeholder={t('messages.newMessage.searchPlaceholder')}
                       className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                     {results.length > 0 && (
@@ -116,7 +118,7 @@ export default function NewMessageButton() {
               {/* Message body */}
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
-                  Message <span className="text-destructive">*</span>
+                  {t('messages.newMessage.messageLabel')} <span className="text-destructive">*</span>
                 </label>
                 <textarea
                   required
@@ -124,7 +126,7 @@ export default function NewMessageButton() {
                   onChange={(e) => setBody(e.target.value)}
                   rows={4}
                   maxLength={10000}
-                  placeholder="Write your message…"
+                  placeholder={t('messages.newMessage.messagePlaceholder')}
                   className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                 />
                 <p className="text-xs text-muted-foreground mt-1 text-right">{body.length}/10000</p>
@@ -137,9 +139,9 @@ export default function NewMessageButton() {
               )}
 
               <div className="flex justify-end gap-3 pt-1">
-                <Button type="button" variant="ghost" onClick={() => { setOpen(false); reset() }}>Cancel</Button>
+                <Button type="button" variant="ghost" onClick={() => { setOpen(false); reset() }}>{t('common.cancel')}</Button>
                 <Button type="submit" disabled={isPending || !selected || !body.trim()}>
-                  {isPending ? 'Sending…' : 'Send'}
+                  {isPending ? t('messages.newMessage.sendingButton') : t('messages.newMessage.sendButton')}
                 </Button>
               </div>
             </form>

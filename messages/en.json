@@ -1,0 +1,684 @@
+{
+  "home": {
+    "brandName": "ChurchCore LMS",
+    "subtitle": "A fast, secure, ministry-ready learning platform.",
+    "projectHqLink": "Project HQ"
+  },
+  "auth": {
+    "login": {
+      "heading": "Sign in",
+      "brandSubtitle": "ChurchCore LMS",
+      "emailLabel": "Email",
+      "submitLoading": "Signing in…",
+      "submitButton": "Sign in"
+    }
+  },
+  "common": {
+    "signIn": "Sign In",
+    "signOut": "Sign out",
+    "password": "Password",
+    "emailPlaceholder": "you@example.com",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "yes": "Yes",
+    "no": "No",
+    "published": "Published",
+    "draft": "Draft",
+    "updated": "Updated",
+    "notAvailable": "Not available",
+    "notGraded": "Not graded",
+    "studentFallback": "Student",
+    "optionalHint": "(optional)",
+    "submittingButton": "Submitting…",
+    "savingButton": "Saving…",
+    "timeAgoJustNow": "just now",
+    "unreadCountTemplate": "{n} unread",
+    "browseCoursesArrowLink": "Browse courses →",
+    "additionalMaterialsHeading": "Additional Materials",
+    "instructorCardUnavailable": "Instructor card not available.",
+    "levelLabel": "Level",
+    "expandSidebarTooltip": "Expand sidebar",
+    "collapseSidebarTooltip": "Collapse sidebar",
+    "viewAsChart": "View as chart",
+    "viewAsTable": "View as table",
+    "tryAgainButton": "Try again",
+    "searchButton": "Search"
+  },
+  "status": {
+    "completed": "Completed",
+    "inProgress": "In progress",
+    "enrolled": "Enrolled",
+    "dropped": "Dropped"
+  },
+  "nav": {
+    "logoAlt": "ChurchCore LMS",
+    "profileFallback": "Profile",
+    "dashboard": "Dashboard",
+    "courses": "Courses",
+    "grades": "Grades",
+    "reports": "Reports",
+    "certificates": "Certificates",
+    "leaderboard": "Leaderboard",
+    "messages": "Messages",
+    "announcements": "Announcements",
+    "calendar": "Calendar",
+    "myGroups": "My Groups",
+    "guardianPortal": "Guardian Portal",
+    "hq": "HQ",
+    "mobile": {
+      "home": "Home"
+    },
+    "sectionDivider": {
+      "guardian": "Guardian",
+      "staff": "Staff",
+      "admin": "Admin",
+      "platform": "Platform"
+    },
+    "adminDrawer": {
+      "triggerButton": "Admin",
+      "openAriaLabel": "Open admin navigation",
+      "closeAriaLabel": "Close admin navigation",
+      "panelHeading": "Admin"
+    },
+    "admin": {
+      "users": "Users",
+      "cohorts": "Cohorts",
+      "sections": "Sections",
+      "terms": "Terms",
+      "programTracks": "Program Tracks",
+      "blueprints": "Blueprints",
+      "aiAnalytics": "AI Analytics",
+      "billing": "Billing",
+      "systemHealth": "System Health",
+      "oneRoster": "OneRoster",
+      "orgSettings": "Org Settings"
+    },
+    "platformAdmin": "Platform Admin"
+  },
+  "notificationBell": {
+    "bellAriaLabelTemplate": "Notifications ({n} unread)",
+    "sidebarLabel": "Notifications",
+    "panelHeading": "Notifications",
+    "markAllReadButton": "Mark all read",
+    "emptyState": "No notifications yet.",
+    "seeAllLink": "See all notifications →",
+    "connectingStatus": "Connecting…",
+    "reconnectingStatus": "Reconnecting…"
+  },
+  "globalSearch": {
+    "openSearchAriaLabel": "Open search",
+    "inputPlaceholder": "Search courses, announcements, people…",
+    "minCharsHint": "Type at least 2 characters to search",
+    "noResultsTemplate": "No results for \"{query}\"",
+    "coursesSectionLabel": "Courses",
+    "announcementsSectionLabel": "Announcements",
+    "peopleSectionLabel": "People",
+    "hintNavigate": "navigate",
+    "hintOpen": "open",
+    "hintClose": "close"
+  },
+  "offlineBanner": {
+    "statusMessage": "You are offline — interactive features (submissions, quizzes) are disabled."
+  },
+  "dashboard": {
+    "student": {
+      "emptyEnrollments": "You haven't enrolled in any courses yet.",
+      "browseCoursesButton": "Browse courses",
+      "inProgressSection": "In Progress",
+      "comingUpSection": "Coming Up",
+      "noCoursesStartedEmpty": "No courses started yet.",
+      "pausedSection": "Paused"
+    }
+  },
+  "courses": {
+    "list": {
+      "headingTeacher": "My Courses",
+      "headingStaff": "All Courses",
+      "headingStudent": "Course Catalog",
+      "subtitleTeacher": "Courses you own. Publish when ready for students.",
+      "subtitleStaff": "All courses on the platform.",
+      "subtitleFilteredTemplate": "Showing {n, plural, one {# course} other {# courses}} in this track",
+      "subtitleAvailableTemplate": "{n, plural, one {# course available} other {# courses available}}",
+      "newCourseButton": "+ New Course",
+      "allTracksFilter": "All Tracks",
+      "backToTracksLink": "← All tracks",
+      "editAction": "Edit",
+      "buildAction": "Build",
+      "analyticsAction": "Analytics",
+      "gradesAction": "Grades",
+      "emptyTrack": "No courses in this track.",
+      "emptyGeneric": "No courses yet.",
+      "emptyStudent": "No courses available yet.",
+      "emptyCreateCta": "Create your first course"
+    },
+    "detail": {
+      "notFoundHeading": "Course Not Found",
+      "notFoundMessage": "Check the URL or contact your administrator.",
+      "notFoundBackLink": "← Back to courses",
+      "coursescrumb": "Courses",
+      "statusPublished": "Published",
+      "statusDraft": "Draft",
+      "lessonCountTemplate": "{publishedCount, plural, one {# lesson} other {# lessons}}",
+      "xpAvailableTemplate": "{totalXp} XP available",
+      "moduleCountTemplate": "{count, plural, one {# module} other {# modules}}",
+      "materialsCountTemplate": "{materialsCount, plural, one {# additional material} other {# additional materials}}",
+      "levelRequiredBadge": "Level {level}+ required",
+      "requiresLabel": "Requires:",
+      "ageRangeTemplate": "Ages {min}–{max}",
+      "ageRangeMinTemplate": "Ages {min}+",
+      "ageRangeMaxTemplate": "Up to age {max}",
+      "ctaReview": "Review Course",
+      "ctaContinue": "Continue Learning",
+      "ctaStart": "Start Learning",
+      "progressBarLabel": "Progress",
+      "materialsLink": "Additional Materials ({materialsCount})",
+      "inviteOnlyNotice": "Enrollment by invitation only",
+      "cohortRequiredNotice": "Cohort enrollment required",
+      "loginToEnrollButton": "Log in to Enroll",
+      "curriculumHeading": "Curriculum",
+      "emptyCurriculum": "No content published yet.",
+      "moduleItemCountTemplate": "{count, plural, one {# item} other {# items}}",
+      "emptyModule": "No lessons yet.",
+      "lockedTooltip": "Locked"
+    },
+    "materials": {
+      "breadcrumbCurrent": "Additional Materials",
+      "backLink": "← Back to Additional Materials",
+      "heading": "Additional Materials",
+      "subheading": "Supplementary reading and reference pages from your instructor.",
+      "emptyHeading": "No materials available",
+      "emptyDescription": "Your instructor hasn't published any additional materials for this course yet.",
+      "publishedPrefix": "Published",
+      "updatedPrefix": "Updated",
+      "contentTypeTag": "Additional Material",
+      "emptyBody": "No content."
+    },
+    "complete": {
+      "heading": "Course Complete!",
+      "finishedPrefix": "You finished",
+      "certificateHeader": "Certificate of Completion",
+      "certifiesText": "This certifies that",
+      "hasCompletedText": "has successfully completed",
+      "finalGradeLabel": "Final Grade",
+      "xpEarnedLabel": "XP Earned",
+      "completionStatLabel": "Completion",
+      "currentStandingLabel": "Your current standing",
+      "levelBadgeTemplate": "Level {level} · {xp} total XP",
+      "leaderboardLink": "Leaderboard →",
+      "viewCertificatesButton": "View all certificates",
+      "browseMoreCoursesButton": "Browse more courses →",
+      "viewPerformanceLink": "View full academic performance →"
+    }
+  },
+  "messages": {
+    "newMessage": {
+      "triggerButton": "+ New Message",
+      "dialogHeading": "New Message",
+      "toLabel": "To",
+      "searchPlaceholder": "Search by name or email…",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Write your message…",
+      "sendingButton": "Sending…",
+      "sendButton": "Send"
+    },
+    "list": {
+      "heading": "Messages",
+      "unreadSubtitleTemplate": "{n, plural, one {# unread conversation} other {# unread conversations}}",
+      "emptyState": "No conversations yet.",
+      "threadPreviewEmpty": "No messages yet"
+    },
+    "thread": {
+      "titleFallback": "Conversation",
+      "emptyState": "No messages yet. Say hello!",
+      "deletedPlaceholder": "Message deleted",
+      "composerPlaceholder": "Write a message… (Ctrl+Enter to send)",
+      "composerHint": "Ctrl+Enter to send",
+      "deleteAriaLabel": "Delete message"
+    }
+  },
+  "calendar": {
+    "view": {
+      "selectDayPlaceholder": "Select a day",
+      "addButton": "Add",
+      "noEventsOnDay": "No events on this day.",
+      "allDay": "All day",
+      "upcomingThisMonth": "Upcoming This Month",
+      "moreEventsTemplate": "+{n} more"
+    },
+    "list": {
+      "heading": "Calendar",
+      "subtitle": "Your schedule at a glance.",
+      "addEventButton": "+ Add Event"
+    },
+    "new": {
+      "heading": "New Calendar Event",
+      "breadcrumbParent": "Calendar",
+      "breadcrumbCurrent": "New Event",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Formation cohort check-in",
+      "startsLabel": "Starts",
+      "endsLabel": "Ends",
+      "scopeLabel": "Scope",
+      "scopePersonal": "Personal",
+      "scopeCourse": "Course",
+      "typeLabel": "Type",
+      "typeCustom": "Custom",
+      "typeAssignmentDue": "Assignment due",
+      "typeCourseStart": "Course start",
+      "typeCourseEnd": "Course end",
+      "typeExam": "Exam",
+      "typeOfficeHours": "Office hours",
+      "typeHoliday": "Holiday",
+      "typeInstitutional": "Institutional",
+      "courseFieldLabel": "Course",
+      "selectCoursePlaceholder": "Select course",
+      "locationLabel": "Location",
+      "locationPlaceholder": "Room, campus, or remote link",
+      "colorLabel": "Color",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional notes for learners or staff.",
+      "createEventButton": "Create Event"
+    }
+  },
+  "announcements": {
+    "heading": "Announcements",
+    "newButton": "+ Post Announcement",
+    "draftsHeading": "Your Drafts",
+    "draftMetaTemplate": "Draft · {scope}",
+    "publishAction": "Publish",
+    "scheduledHeading": "Scheduled",
+    "publishesDateTemplate": "Publishes {date}",
+    "emptyState": "No announcements yet.",
+    "postedByTemplate": "Posted by {authorName}",
+    "priority": {
+      "urgent": "Urgent",
+      "high": "High",
+      "normal": "Normal",
+      "low": "Low"
+    }
+  },
+  "certificates": {
+    "heading": "My Certificates",
+    "subtitleCertTemplate": "{n, plural, one {# certificate earned} other {# certificates earned}}",
+    "subtitleDiplomaTemplate": "{n, plural, one {# diploma earned} other {# diplomas earned}}",
+    "performanceLink": "Academic performance →",
+    "emptyState": "No certificates yet.",
+    "browseCoursesLink": "Browse courses →",
+    "cardKicker": "Certificate",
+    "xpEarnedLabel": "XP earned",
+    "viewLink": "View →",
+    "downloadPdfButton": "Download PDF",
+    "programDiplomasHeading": "Program Diplomas",
+    "programDiplomaKicker": "Program Diploma",
+    "diplomaIconAlt": "graduation cap"
+  },
+  "leaderboard": {
+    "heading": "Leaderboard",
+    "subtitle": "Top students by XP earned",
+    "yourStandingLabel": "Your standing",
+    "levelXpTemplate": "Level {level} · {xp} XP",
+    "myGradesLink": "My grades →",
+    "anonymousFallback": "Anonymous",
+    "emptyState": "No students have earned XP yet.",
+    "youSuffix": " (you)"
+  },
+  "notifications": {
+    "heading": "Notifications",
+    "backToDashboardLink": "← Dashboard",
+    "filterAll": "All",
+    "filterUnread": "Unread",
+    "markAllRead": "Mark all read",
+    "caughtUpEmpty": "You're all caught up — no notifications.",
+    "noUnreadEmpty": "No unread notifications.",
+    "dismissAriaLabel": "Dismiss notification",
+    "timeAgoMinutes": "{n}m ago",
+    "timeAgoHours": "{n}h ago",
+    "timeAgoDays": "{n}d ago"
+  },
+  "guardian": {
+    "list": {
+      "heading": "Guardian Portal",
+      "subtitle": "Read-only view of the students in your care.",
+      "loadError": "Failed to load students. Please refresh.",
+      "emptyHeading": "No linked students yet",
+      "emptyDescription": "Ask a staff member or administrator to link you to your child's account.",
+      "coursesStat": "Courses",
+      "doneStat": "Done",
+      "viewProgressLink": "View progress →"
+    },
+    "detail": {
+      "coursesSectionHeadingTemplate": "Courses ({n})",
+      "xpStatLabel": "XP",
+      "emptyEnrollments": "Not enrolled in any courses yet.",
+      "progressBarLabel": "Progress",
+      "recentGradesHeading": "Recent Grades",
+      "emptyGrades": "No graded work yet.",
+      "certificatesSectionHeadingTemplate": "Certificates ({n})"
+    }
+  },
+  "reports": {
+    "fallback": {
+      "heading": "Reports not available",
+      "description": "Your account role does not have a reports view assigned. Contact your administrator."
+    },
+    "student": {
+      "emptyHeading": "No report data yet",
+      "emptyDescription": "Enroll in a course or complete your first activity to populate progress reports.",
+      "heading": "My Progress Reports",
+      "lastUpdatedTemplate": "Last updated {date}",
+      "exportPdfButton": "Export PDF",
+      "exportXlsxButton": "Export XLSX",
+      "noscriptFallback": "JavaScript is disabled. Use the table view below for your accessible progress report.",
+      "moduleCompletionHeading": "Module Completion",
+      "gradeHistoryHeading": "Grade History",
+      "courseEnrollmentsHeading": "Course Enrollments"
+    },
+    "export": {
+      "preparingStatus": "Preparing...",
+      "processingStatus": "Processing... check Your Reports",
+      "readyStatus": "Ready",
+      "generationFailedError": "Report generation failed",
+      "exportFailedError": "Report export failed",
+      "readyToastTitle": "Report ready",
+      "readyToastDescription": "Open Your Reports to download it.",
+      "failedToastTitle": "Report failed",
+      "processingToastTitle": "Report is processing",
+      "processingToastDescription": "It will appear in Your Reports.",
+      "downloadedToastTitle": "Report downloaded",
+      "catchToastTitle": "Export failed"
+    },
+    "tables": {
+      "enrollment": {
+        "emptyState": "No enrollments found",
+        "caption": "Student course enrollment report",
+        "enrolledDateLabel": "Enrolled Date",
+        "statusLabel": "Status",
+        "avgGradeLabel": "Average Grade",
+        "certificateLabel": "Certificate",
+        "courseNameHeader": "Course Name",
+        "completionStatusHeader": "Completion Status"
+      }
+    },
+    "charts": {
+      "gradeHistory": {
+        "emptyFallback": "No graded assignments available",
+        "ariaSummaryTemplate": "{n, plural, one {# graded item} other {# graded items}} with an average grade of {avg} percent",
+        "containerAriaLabelTemplate": "Grade history: {summary}",
+        "assignmentHeader": "Assignment",
+        "gradeHeader": "Grade",
+        "submittedHeader": "Submitted"
+      },
+      "moduleCompletion": {
+        "emptyFallback": "No module completion data available",
+        "ariaSummaryTemplate": "{completed} of {total} modules completed in the latest reporting point",
+        "containerAriaLabelTemplate": "Module completion over time: {summary}",
+        "dateHeader": "Date",
+        "completedHeader": "Completed",
+        "totalHeader": "Total",
+        "completedSeriesName": "Completed",
+        "totalSeriesName": "Total"
+      }
+    }
+  },
+  "myGroups": {
+    "list": {
+      "heading": "My Groups",
+      "subtitle": "Your section groups and discussion boards.",
+      "emptyState": "You haven't been assigned to any groups yet.",
+      "emptyDescription": "Your instructor will add you when group work begins.",
+      "leaderBadge": "Leader",
+      "memberCountTemplate": "{n, plural, one {# member} other {# members}}"
+    },
+    "detail": {
+      "roleNoticeTemplate": "You are a {role} of this group"
+    },
+    "discussion": {
+      "heading": "Discussions",
+      "emptyThreads": "No threads yet.",
+      "selectThreadPlaceholder": "Select a thread to read",
+      "lockedThreadNotice": "This thread is locked — no new replies.",
+      "emptyPosts": "No posts yet. Be the first!",
+      "ownPostAuthorLabel": "You",
+      "cancelToggleButton": "✕ Cancel",
+      "newThreadButton": "+ New Thread",
+      "startButton": "Start",
+      "threadTitlePlaceholder": "Thread title…",
+      "replyPlaceholder": "Write a reply… (⌘↵ to send)"
+    }
+  },
+  "onboarding": {
+    "heading": "Organization not configured",
+    "description": "Your account isn't linked to an organization yet. This is required before you can access reports and other org-scoped features.",
+    "adminFixLabel": "Admin: fix via SQL editor",
+    "orRerunFragment": "Or re-run",
+    "regenerateDataFragment": "to regenerate all demo data with organization links in place."
+  },
+  "performance": {
+    "heading": "Academic Performance",
+    "subtitle": "Your grades, progress, and standing across all enrolled courses.",
+    "gpaLabel": "Overall GPA",
+    "enrolledCoursesLabel": "Enrolled Courses",
+    "atRiskLabel": "At-Risk",
+    "totalXpLabel": "Total XP Earned",
+    "xpSublabel": "Across all courses",
+    "atRiskAlertTemplate": "⚠ {n, plural, one {# course is} other {# courses are}} flagged at-risk. Contact your instructor or catch up on missing work.",
+    "emptyState": "No enrollment data yet.",
+    "table": {
+      "courseHeader": "Course",
+      "statusHeader": "Status",
+      "progressHeader": "Progress",
+      "avgGradeHeader": "Avg Grade",
+      "gpaHeader": "GPA",
+      "submissionsHeader": "Submissions"
+    }
+  },
+  "profile": {
+    "page": {
+      "heading": "Your Profile",
+      "subtitle": "How you appear in ChurchCore LMS.",
+      "setNameFallback": "Set your name below"
+    },
+    "form": {
+      "roleAdministrator": "Administrator",
+      "roleManager": "Manager",
+      "roleTeacher": "Teacher",
+      "roleStudent": "Student",
+      "displayNameLabel": "Display Name",
+      "avatarUrlLabel": "Avatar URL",
+      "avatarUrlHint": "(optional — paste any image URL)",
+      "previewCaption": "Preview",
+      "dobLabel": "Date of Birth",
+      "dobHint": "(optional — used for age-restricted courses)",
+      "roleFieldLabel": "Role",
+      "roleManagedHint": "Managed by administrators",
+      "fullNamePlaceholder": "Your full name",
+      "avatarUrlPlaceholder": "https://example.com/avatar.jpg",
+      "avatarPreviewAlt": "Avatar preview",
+      "saveButton": "Save Profile",
+      "displayNameRequiredError": "Display name is required.",
+      "saveSuccessNotice": "Profile saved successfully."
+    }
+  },
+  "offline": {
+    "pageTitle": "Offline — ChurchCore LMS",
+    "heading": "You are offline",
+    "description": "This content is not available without an internet connection. Visit this page while online to read it offline next time.",
+    "reconnectDescription": "Once you reconnect, you can return to your courses and all your progress will be intact.",
+    "dashboardButton": "Go to dashboard"
+  },
+  "join": {
+    "page": {
+      "headingTemplate": "Join {name}",
+      "subtitle": "Create your account to access courses and learning materials."
+    },
+    "form": {
+      "fullNameLabel": "Full name",
+      "namePlaceholder": "Your name",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "turnstileMissingError": "Please complete the security check.",
+      "turnstileFailedError": "Security check failed. Please refresh and try again.",
+      "accountCreatedNotice": "Account created — please sign in.",
+      "submitLoading": "Creating account…",
+      "submitButtonTemplate": "Join {orgName}",
+      "alreadyHaveAccountText": "Already have an account?",
+      "signInLink": "Sign in"
+    }
+  },
+  "learning": {
+    "teacherPlug": {
+      "yourInstructorLabel": "Your Instructor",
+      "notFoundError": "Instructor not found"
+    },
+    "block": {
+      "emptyPageBody": "No content yet.",
+      "noVideoUrl": "No video URL configured.",
+      "fileUnavailable": "File not available.",
+      "downloadFileFallback": "Download file",
+      "noUrlConfigured": "No URL configured.",
+      "dueLabel": "Due:",
+      "quizEmpty": "No questions configured for this quiz.",
+      "questionCountTemplate": "{count, plural, one {# question} other {# questions}}",
+      "pointsTotalTemplate": "{n} points total",
+      "noMeetingUrl": "Meeting URL not configured.",
+      "unsupportedType": "Block type not supported.",
+      "downloadButton": "Download →"
+    },
+    "assignment": {
+      "submittedBanner": "✓ Submitted — awaiting instructor grade",
+      "attachedFileFallback": "Attached file",
+      "gradeLabel": "Grade:",
+      "responseFieldLabel": "Your Response",
+      "responsePlaceholder": "Write your response here…",
+      "charCountHelperTemplate": "{n} characters · Max points: {maxPoints}",
+      "uploadFileTypeLabel": "Upload File",
+      "attachmentTypeLabel": "Attachment",
+      "dropzoneLabel": "Upload a file",
+      "dropzoneHint": "PDF, Word, image — max 10 MB",
+      "removeFileButton": "Remove",
+      "submitButton": "Submit Assignment",
+      "fileTooLargeError": "File exceeds 10 MB limit",
+      "notAuthenticatedError": "Not authenticated",
+      "uploadFailedPrefix": "Upload failed:",
+      "signedUrlError": "Upload succeeded but file link could not be generated. Please try again.",
+      "alreadyEnrolledError": "You are already enrolled."
+    },
+    "attendance": {
+      "blockTitle": "Attendance",
+      "statusPresent": "Present",
+      "statusLate": "Late",
+      "statusAbsent": "Absent",
+      "statusExcused": "Excused",
+      "pointsPossibleTemplate": "{points, plural, one {# point possible} other {# points possible}}",
+      "recordingBadge": "Recording…",
+      "unmarkedBadge": "Unmarked",
+      "manualNotice": "Your teacher will record your attendance for this session.",
+      "autoConfirmation": "Your attendance was recorded automatically when you opened this block."
+    },
+    "discussion": {
+      "scoreLabel": "Score",
+      "maxScoreLabel": "/ Max",
+      "promptEyebrow": "Discussion Prompt",
+      "replyCountTemplate": "{n, plural, one {# reply} other {# replies}}",
+      "ownReplyBadge": "✓ You replied",
+      "emptyReplies": "Be the first to reply.",
+      "youMarker": "(you)",
+      "editedMarker": "edited",
+      "ownGradeDisplay": "Grade: {score} / {max}",
+      "alreadyPostedNotice": "You've replied — use Edit above to update your post.",
+      "editPlaceholder": "Edit your reply…",
+      "replyPlaceholder": "Share your thoughts…",
+      "deleteConfirm": "Delete your reply? This cannot be undone.",
+      "saveGradeButton": "Save Grade",
+      "gradedEditLink": "Graded: {score}/{max} — Edit",
+      "gradeActionButton": "Grade",
+      "postingButton": "Posting…",
+      "postReplyButton": "Post reply"
+    },
+    "shell": {
+      "progressLabel": "Progress",
+      "pageEyebrowLabel": "Page",
+      "welcomeTemplate": "Welcome to {courseTitle}",
+      "noContentPlaceholder": "No published content yet.",
+      "selectLessonPlaceholder": "Select a lesson from the sidebar to begin.",
+      "backToCourseLink": "Back to course",
+      "completeCourseButton": "Complete course 🎓",
+      "previousAriaLabel": "Previous: {title}",
+      "nextAriaLabel": "Next: {title}"
+    },
+    "liveSession": {
+      "providerZoom": "Zoom",
+      "providerGoogleMeet": "Google Meet",
+      "providerTeams": "Microsoft Teams",
+      "providerYouTube": "YouTube Live",
+      "providerDefault": "Live Session",
+      "liveBadge": "LIVE",
+      "startingInLabel": "Starting in",
+      "endedNotice": "This session has ended.",
+      "joinNowButton": "🔴 Join Now",
+      "joinTemplate": "Join {label}",
+      "opensBeforeButton": "Opens 15 min before start",
+      "viewRecordingButton": "🎬 View Recording"
+    },
+    "quiz": {
+      "preparingLoading": "Preparing quiz…",
+      "pointsTemplate": "{n, plural, one {# pt} other {# pts}}",
+      "questionGroupAriaLabel": "Question {n}",
+      "matchForTitle": "Match for: {left}",
+      "blankInputAriaLabel": "Blank {blankN} for question {questionN}",
+      "noAttemptsHeading": "No attempts remaining",
+      "attemptsExhaustedDescription": "This quiz allows {n, plural, one {# attempt} other {# attempts}}. You have used all of them.",
+      "feedbackExcellent": "Excellent work!",
+      "feedbackGood": "Good job — keep it up!",
+      "feedbackNeedsWork": "Keep studying and try again.",
+      "noAnswerFallback": "No answer",
+      "correctAnswerTemplate": "Correct: {right}",
+      "blankResultLabelTemplate": "Blank {n}:",
+      "acceptedAnswersTemplate": "Accepted: {answers}",
+      "attemptCounterTemplate": "Attempt {n} of {m}",
+      "passingScoreTemplate": "Passing score: {pct}%",
+      "timeRemainingTemplate": "{time} remaining",
+      "selectPlaceholder": "— Select —",
+      "blankInputPlaceholderTemplate": "Blank {n}",
+      "submitButtonTemplate": "Submit Quiz ({n}/{m} answered)"
+    },
+    "video": {
+      "watchRequiredNotice": "Watch required to mark complete",
+      "watchedBadge": "Watched",
+      "markWatchedButton": "✓ Mark as Watched"
+    },
+    "moduleItem": {
+      "viewRequiredBadge": "View Required",
+      "minGradeBadgeTemplate": "Min Grade: {pct}%"
+    },
+    "enroll": {
+      "lockedButton": "🔒 Enrollment Locked",
+      "loadingButton": "Enrolling…",
+      "ctaButton": "Enroll Now — It's Free",
+      "alreadyEnrolledError": "You are already enrolled.",
+      "ariaLabel": "Enroll in this course"
+    }
+  },
+  "feedback": {
+    "dialogHeading": "Send Feedback",
+    "categoryBug": "Bug",
+    "categoryErrorCrash": "Error / Crash",
+    "categoryUnexpectedResult": "Unexpected Result",
+    "categoryImprovementIdea": "Improvement Idea",
+    "categoryFieldLabel": "Category",
+    "categoryPlaceholder": "Select a category…",
+    "notesFieldLabel": "Notes",
+    "notesPlaceholder": "Describe what you saw or what you expected to happen…",
+    "sendingButton": "Sending…",
+    "sendButton": "Send",
+    "successMessage": "Thank you! Your feedback was received.",
+    "submitError": "Something went wrong — please try again.",
+    "triggerAriaLabel": "Send feedback",
+    "closeAriaLabel": "Close feedback dialog"
+  }
+}

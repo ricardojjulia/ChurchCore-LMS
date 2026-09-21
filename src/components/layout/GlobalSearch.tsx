@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useTransition, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 interface Course        { id: string; title: string; description: string | null }
 interface Announcement  { id: string; title: string; body: string | null }
@@ -36,6 +37,7 @@ export default function GlobalSearch({
   variant?:  'navbar' | 'sidebar'
   collapsed?: boolean
 }) {
+  const t = useTranslations()
   const [open,     setOpen]     = useState(false)
   const [query,    setQuery]    = useState('')
   const [results,  setResults]  = useState<SearchResults>(EMPTY)
@@ -105,7 +107,7 @@ export default function GlobalSearch({
       <button
         type="button"
         onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 50) }}
-        aria-label="Open search"
+        aria-label={t('globalSearch.openSearchAriaLabel')}
         className={cn(
           variant === 'sidebar'
             ? cn(
@@ -136,10 +138,10 @@ export default function GlobalSearch({
             'overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200',
             collapsed ? 'max-w-0 opacity-0' : 'max-w-[100px] opacity-100',
           )}>
-            Search
+            {t('common.searchButton')}
           </span>
         ) : (
-          <span className="hidden sm:inline">Search</span>
+          <span className="hidden sm:inline">{t('common.searchButton')}</span>
         )}
 
         {variant === 'sidebar' && !collapsed && (
@@ -173,7 +175,7 @@ export default function GlobalSearch({
                 value={query}
                 onChange={onInput}
                 onKeyDown={onKeyDown}
-                placeholder="Search courses, announcements, people…"
+                placeholder={t('globalSearch.inputPlaceholder')}
                 className="flex-1 text-sm text-foreground placeholder:text-muted-foreground outline-none bg-transparent"
                 autoComplete="off"
               />
@@ -192,13 +194,13 @@ export default function GlobalSearch({
             {/* Results */}
             <div className="max-h-[60vh] overflow-y-auto">
               {query.length < 2 ? (
-                <p className="text-xs text-muted-foreground text-center py-8">Type at least 2 characters to search</p>
+                <p className="text-xs text-muted-foreground text-center py-8">{t('globalSearch.minCharsHint')}</p>
               ) : !hasResults ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No results for &ldquo;{query}&rdquo;</p>
+                <p className="text-sm text-muted-foreground text-center py-8">{t('globalSearch.noResultsTemplate', { query })}</p>
               ) : (
                 <div className="py-2">
                   {results.courses.length > 0 && (
-                    <ResultSection label="Courses">
+                    <ResultSection label={t('globalSearch.coursesSectionLabel')}>
                       {results.courses.map((c) => {
                         const i = itemIdx++
                         return (
@@ -216,7 +218,7 @@ export default function GlobalSearch({
                   )}
 
                   {results.announcements.length > 0 && (
-                    <ResultSection label="Announcements">
+                    <ResultSection label={t('globalSearch.announcementsSectionLabel')}>
                       {results.announcements.map((a) => {
                         const i = itemIdx++
                         return (
@@ -234,7 +236,7 @@ export default function GlobalSearch({
                   )}
 
                   {results.people.length > 0 && (
-                    <ResultSection label="People">
+                    <ResultSection label={t('globalSearch.peopleSectionLabel')}>
                       {results.people.map((p) => {
                         const i = itemIdx++
                         return (
@@ -256,9 +258,9 @@ export default function GlobalSearch({
 
             {/* Footer hints */}
             <div className="border-t border-border px-4 py-2 flex items-center gap-4 text-[10px] text-muted-foreground">
-              <span><kbd className="bg-muted rounded px-1">↑↓</kbd> navigate</span>
-              <span><kbd className="bg-muted rounded px-1">↵</kbd> open</span>
-              <span><kbd className="bg-muted rounded px-1">Esc</kbd> close</span>
+              <span><kbd className="bg-muted rounded px-1">↑↓</kbd> {t('globalSearch.hintNavigate')}</span>
+              <span><kbd className="bg-muted rounded px-1">↵</kbd> {t('globalSearch.hintOpen')}</span>
+              <span><kbd className="bg-muted rounded px-1">Esc</kbd> {t('globalSearch.hintClose')}</span>
             </div>
           </div>
         </div>

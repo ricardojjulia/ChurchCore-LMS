@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useTranslations } from 'next-intl'
 import { markVideoWatched } from '@/app/actions/learning'
 
 function extractYouTubeId(url: string): string | null {
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function VideoPlayer({ url, title, blockId, durationMinutes, mustView, existingSub, onComplete }: Props) {
+  const t = useTranslations()
   const ytId    = extractYouTubeId(url)
   const vimeoId = extractVimeoId(url)
 
@@ -82,12 +84,12 @@ export default function VideoPlayer({ url, title, blockId, durationMinutes, must
           )}
           {mustView && !watched && (
             <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
-              <span aria-hidden="true">👁</span> Watch required to mark complete
+              <span aria-hidden="true">👁</span> {t('learning.video.watchRequiredNotice')}
             </span>
           )}
           {mustView && watched && (
             <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
-              <span aria-hidden="true">✅</span> Watched
+              <span aria-hidden="true">✅</span> {t('learning.video.watchedBadge')}
             </span>
           )}
         </div>
@@ -102,7 +104,7 @@ export default function VideoPlayer({ url, title, blockId, durationMinutes, must
             disabled={pending}
             className="self-start inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors"
           >
-            {pending ? 'Saving…' : '✓ Mark as Watched'}
+            {pending ? t('common.savingButton') : t('learning.video.markWatchedButton')}
           </button>
           {error && <p className="text-xs text-rose-600" role="alert">{error}</p>}
         </div>

@@ -11,6 +11,112 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.31.0] — 2026-09-20
+
+Council Review 3's #2-ranked competitive gap (COUNCIL-2026-027).
+
+### Added
+
+- **Public course catalog / unauthenticated preview pages** — orgs can now let a prospective member browse a course's title, description, and curriculum outline (module/block titles only, never content) with no account, at `/join/[slug]/courses` and `/join/[slug]/courses/[courseId]`. Opt-in per course (`is_public_preview`, default `false`), toggleable only by an org admin or manager and only once the course is `published`, enforced atomically by a DB `CHECK` constraint. A course that doesn't exist, isn't previewable, isn't published, or belongs to an inactive org all return an identical 404 — never a distinguishing signal.
+
+### Security
+
+- **Column-level grants added alongside RLS for the new anon-facing surface** — the blanket `GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon` from `20260914154000` means RLS alone would not stop a direct PostgREST call from requesting `course_blocks.content` on a row its own policy allows. The new migration `REVOKE`s and re-`GRANT`s column-level `SELECT` to `anon` on `courses` and `course_blocks`, naming only the columns safe for public exposure — verified with a real anon-keyed regression test asserting a column-permission error, not an empty result.
+- **Fixed pre-existing infinite-recursion bug in `organizations`/`org_members` RLS**, discovered while implementing the above: two legacy self-referential policies (predating `profile_roles` as the RLS hot-path table) meant every query against `organizations` under RLS — for any role, including `anon` — has always raised `infinite recursion detected in policy for relation "org_members"`. This silently broke the already-shipped `"organizations: anon read active"` anon policy for every real caller since it was written; never noticed because the only existing anon-facing route (`/join/[slug]`) uses `createServiceClient()`, bypassing RLS. Fixed by dropping both legacy policies — confirmed to remove no live functionality (`org_members` is queried nowhere in application code) and superseded by the existing `"organizations: members read own"` policy.
+
+---
+
+## [0.30.0] — 2026-09-20
+
+Council Review 3's #1-ranked competitive gap (COUNCIL-2026-026).
+
+### Added
+
+- **Automated enrollment on registration** — new students joining via `/join/[slug]` previously landed on a completely empty `/dashboard` with no course access and required manual enrollment by an admin. Org admins can now opt courses into auto-enrollment for new joiners (`/admin/settings`, capped at 10 courses), gated through the same `enrollCore()` checks (`enrollment_type`, prerequisite, age, level) as any other enrollment — a gated course is silently skipped, never blocking registration.
+- `src/lib/enrollment-core.ts` — `enrollCore()`, the shared enrollment-gating logic extracted from `enrollSelf()` so it's callable from both the session-bound Server Action and the service-client (no-session) registration path.
+
+### Fixed
+
+- **`enrollSelf()` NOT NULL constraint violation on `org_id`** — a genuine, previously-undetected live bug found while investigating the above: every real call to `enrollSelf()` threw a database constraint violation, because the insert never set the `NOT NULL` `org_id` column and no trigger filled it. Invisible because the unit test suite fully mocks Supabase (can't enforce real column constraints) and no e2e test exercised `enrollSelf()` against a real database. Fixed at the schema layer with a `BEFORE INSERT` trigger (`stamp_enrollment_org_id`) so the fix covers every insert path, not just the new registration one — verified with a real e2e regression test that fails without the trigger and passes with it.
+- **Cross-org course validation in `addAutoEnrollCourse`** — caught in pre-merge review: adding a course ID that belonged to a different org would have silently pointed every future registrant's real enrollment at a foreign org's course. Now validated before write.
+
+---
+
+## [0.29.1] — 2026-09-19
+
+### Security
+
+- Pin transitive dependency `fast-uri` (via `ajv`/webpack/workbox) to exactly `3.1.8` in `package.json` overrides, closing 5 Dependabot high-severity advisories (host confusion / SSRF via URI normalization, CVE-2026-75931/76172/75975/75899/18446). The version had regressed to the vulnerable `3.1.4` (fixed upstream in `fast-uri` 3.1.5-3.1.6) as a side effect of merging an older Dependabot bump (`3.1.2`→`3.1.4`, itself predating the later patches) alongside this session's own branch — this pin makes the intended version explicit and unambiguous, and prevents either source from silently regressing it again. `npm audit` reports 0 vulnerabilities.
+
+---
+
+## [0.29.0] — 2026-09-19
+
+Fixes from Council Review 3's implementation prompts (bug/reliability fixes only — competitive/feature gaps from that review were explicitly held back for a product decision).
+
+### Fixed
+
+- **Broken `/auth/login` redirects** — 35 files called `redirect('/auth/login')` (a route that doesn't exist; the real login page is `/login`), 404ing instead of redirecting unauthenticated users. Fixed globally; `middleware.ts` was already correct.
+- **Guardian notification delivery silently marked "sent" on failure** (ADR-2026-010) — `send-guardian-notifications` previously set `sent_at` on every queue row regardless of whether the Resend call actually succeeded, with failures only logged to console. Now tracks real failures per row: up to 3 retries with backoff, then dead-lettered (`failed_at`) rather than silently disappearing. `guardian_notification_queue` gains `attempt_count`/`last_error`/`failed_at` and platform-admin read access (previously zero authenticated-role access existed on this table).
+- **`stripe_customer_id` never written** — every org's Stripe billing portal request failed with "No active subscription" regardless of actual subscription status, because no code path ever persisted `organizations.stripe_customer_id`. Now written synchronously at checkout-session creation (reusing an existing customer on retry instead of minting duplicates), with the webhook as an idempotent safety net.
+- **Missing `loading.tsx`/`error.tsx`** for `/platform`, `/guardian`, `/hq` — blank screens on slow connections and raw framework error pages instead of the app's error boundary pattern.
+- **No print stylesheet** — certificates and reports rendered nav chrome, dark backgrounds, and interactive buttons as-is under browser print. Added a `@media print` block plus `.no-print` on shell nav, report filters, and certificate/report action rows.
+- **`/admin/question-banks/new` dead link** — button existed with no page behind it; the server action (`upsertQuestionBank`) already existed, only the page and form were missing.
+
+### Investigated, not changed
+
+- Two prior council-audit claims (`profile_roles.tenant_active` staleness, platform-admin bootstrap) and one from this round (OneRoster partial-failure rollback in `apply_oneroster_job`) were checked against the actual code and found to already be correct — the sync function is properly called from `platform/actions.ts`, the bootstrap is CLAUDE.md's deliberate design, and the OneRoster apply function already isolates each row in its own subtransaction. No fix applied where none was needed.
+
+---
+
+## [0.28.1] — 2026-09-19
+
+### Fixed
+
+- **Feedback submission race condition** (COUNCIL-2026-023) — `POST /api/feedback`'s dedupe path was a SELECT-then-branch, so two concurrent submissions with the same fingerprint could both observe no existing row and race into the `fingerprint` UNIQUE constraint, silently losing the loser's report (previously masked by 201 responses that didn't check write errors). Replaced with `upsert_platform_feedback()`, a single atomic `INSERT ... ON CONFLICT DO UPDATE` Postgres function, verified race-free directly against a local database.
+- **Feedback triage table keyboard accessibility** — the detail-drawer row in `/platform/feedback` was only openable by mouse click; added `tabIndex`, `role="button"`, an `aria-label`, and Enter/Space keyboard activation.
+
+---
+
+## [0.28.0] — 2026-09-19
+
+### Added
+
+- **Cookie-based i18n — English / Spanish** (COUNCIL-2026-024) — full EN/ES translation for all student- and parent/guardian-facing UI; locale stored in `NEXT_LOCALE` cookie (no URL segments), default `en`
+- `messages/en.json` and `messages/es.json` — 508 ICU-format message keys covering courses, learning player, assignments, quiz, discussion, live session, attendance, certificates, calendar, announcements, reports, groups, messages, profile, notifications, leaderboard, onboarding, guardian, performance, join, offline, and all shared layout strings
+- `src/i18n/request.ts` — `getRequestConfig` reads `NEXT_LOCALE` cookie server-side, loads the matching message bundle
+- `src/components/layout/LocaleSwitcher.tsx` — EN/ES toggle button, with an icon-only variant when the sidebar is collapsed; sets `NEXT_LOCALE` cookie and calls `router.refresh()` to reload locale without a full navigation; mounted inside `SidebarClient`
+- `NextIntlClientProvider` added to root layout wrapping body; `getMessages()` + `getLocale()` passed from server; `<html lang={locale}>` kept in sync
+- `next.config.mjs` updated to wrap config with `createNextIntlPlugin`
+
+### Changed
+
+- All student/guardian-facing pages and client components now use `getTranslations()` (Server Components) or `useTranslations()` (Client Components) — hardcoded strings fully removed from the in-scope surface
+- `EnrollmentTable` converted to `async` Server Component to support `getTranslations()`
+- `BlockPlayer` gained an explicit `'use client'` directive (was already in a client tree; directive required for `useTranslations()` hook)
+- Static label objects (`ROLE_LABELS`, `CATEGORIES`, `PROVIDER_LABEL`, `STATUS_META`, `PRIORITY_STYLE`) that contained hardcoded strings were refactored: values-only arrays or inline ternary `t()` calls replace them
+- `CalendarView` month/weekday names now derive from `Intl.DateTimeFormat` for the active locale instead of static English arrays
+
+### Scope
+
+- Phase 1 covers student/learner/guardian-facing only. Admin (`src/app/admin/`), platform (`src/app/platform/`), HQ (`src/app/hq/`), instructor reports, and `MobileAdminDrawer.tsx` are NOT translated (Phase 2 follow-up). Middleware (`src/middleware.ts`) is unchanged.
+
+---
+
+## [0.27.0] — 2026-09-18
+
+### Added
+
+- **Pilot Feedback & Error-Triage System** (COUNCIL-2026-025) — in-product feedback capture and automatic error reporting for pilot/demo sessions, feature-gated behind `NEXT_PUBLIC_DEMO_MODE` (server-enforced, not just client-hidden)
+- `platform_feedback` table — platform-plane only, RLS restricted to `is_platform_admin()` reads/updates and `service_role` writes; server-derived identity and SHA-256 dedupe fingerprint; upsert-on-conflict increments `hit_count` and reopens previously-triaged rows
+- `POST /api/feedback` — the one submission endpoint; validates and bounds every field, rate-limited via a new `feedbackLimiter` (Upstash-backed, 20/60s per session)
+- `FeedbackSessionProvider` / `FeedbackButton` — SSR-safe session context (sessionStorage UUID, last-5-route breadcrumbs, elapsed duration) and a fixed-position feedback button (BUG / ERROR / UNEXPECTED_RESULT / IMPROVEMENT), both fully inert when the gate is off
+- `src/app/error.tsx` now reports unhandled render errors automatically when the gate is on (capped `error.message` only — never `error.stack` or `error.digest`), swallowing its own reporting failures
+- `/platform/feedback` — staff triage workspace: open/done/all views, category/identity/date filters, unprocessed-first sort, detail drawer, optimistic triage-action and processed updates
+- `.claude/agents/pr-reviewer.md` + `.claude/skills/pr-review/SKILL.md` — a PR review gate (Critical/Important/Minor) that runs on every PR, including changes small enough to skip the full council/factory pipeline
+
+---
+
 ## [0.26.6] — 2026-09-19
 
 ### Fixed

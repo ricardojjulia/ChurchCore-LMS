@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Check, Download, FileText, Loader2, Table2 } from 'lucide-react'
 
 import { toast } from '@/hooks/use-toast'
@@ -39,6 +40,7 @@ function downloadBase64(base64: string, fileName: string, mimeType: string) {
 }
 
 export default function ExportButton({ label, action, format, onSyncComplete }: ExportButtonProps) {
+  const t = useTranslations()
   const [state, setState] = useState<ExportState>('idle')
   const [artifactId, setArtifactId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -52,17 +54,17 @@ export default function ExportButton({ label, action, format, onSyncComplete }: 
     if (artifactStatus.status === 'complete') {
       setState('complete')
       setArtifactId(null)
-      toast({ title: 'Report ready', description: 'Open Your Reports to download it.' })
+      toast({ title: t('reports.export.readyToastTitle'), description: t('reports.export.readyToastDescription') })
       const timeout = window.setTimeout(() => setState('idle'), 3000)
       return () => window.clearTimeout(timeout)
     }
 
     if (artifactStatus.status === 'failed') {
-      const message = artifactStatus.error ?? 'Report generation failed'
+      const message = artifactStatus.error ?? t('reports.export.generationFailedError')
       setErrorMessage(message)
       setState('error')
       setArtifactId(null)
-      toast({ title: 'Report failed', description: message, variant: 'destructive' })
+      toast({ title: t('reports.export.failedToastTitle'), description: message, variant: 'destructive' })
       const timeout = window.setTimeout(() => setState('idle'), 5000)
       return () => window.clearTimeout(timeout)
     }
@@ -83,7 +85,7 @@ export default function ExportButton({ label, action, format, onSyncComplete }: 
       if (result.artifactId) {
         setArtifactId(result.artifactId)
         setState('processing')
-        toast({ title: 'Report is processing', description: 'It will appear in Your Reports.' })
+        toast({ title: t('reports.export.processingToastTitle'), description: t('reports.export.processingToastDescription') })
         return
       }
 
@@ -98,7 +100,7 @@ export default function ExportButton({ label, action, format, onSyncComplete }: 
               : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         )
         setState('complete')
-        toast({ title: 'Report downloaded' })
+        toast({ title: t('reports.export.downloadedToastTitle') })
         window.setTimeout(() => setState('idle'), 3000)
         return
       }
@@ -106,10 +108,10 @@ export default function ExportButton({ label, action, format, onSyncComplete }: 
       setState('complete')
       window.setTimeout(() => setState('idle'), 3000)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Report export failed'
+      const message = error instanceof Error ? error.message : t('reports.export.exportFailedError')
       setErrorMessage(message)
       setState('error')
-      toast({ title: 'Export failed', description: message, variant: 'destructive' })
+      toast({ title: t('reports.export.catchToastTitle'), description: message, variant: 'destructive' })
       window.setTimeout(() => setState('idle'), 5000)
     } finally {
       inFlightRef.current = false
@@ -118,13 +120,13 @@ export default function ExportButton({ label, action, format, onSyncComplete }: 
 
   const statusLabel =
     state === 'submitting'
-      ? 'Preparing...'
+      ? t('reports.export.preparingStatus')
       : state === 'processing'
-        ? 'Processing... check Your Reports'
+        ? t('reports.export.processingStatus')
         : state === 'complete'
-          ? 'Ready'
+          ? t('reports.export.readyStatus')
           : state === 'error'
-            ? 'Try again'
+            ? t('common.tryAgainButton')
             : label
 
   return (

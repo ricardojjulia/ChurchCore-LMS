@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { createClient } from '@/utils/supabase/client'
+import { useTranslations } from 'next-intl'
 
 interface Props {
   orgId:        string
@@ -13,6 +14,7 @@ interface Props {
 
 export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
   const router = useRouter()
+  const t = useTranslations()
   const [displayName, setDisplayName]   = useState('')
   const [email, setEmail]               = useState('')
   const [password, setPassword]         = useState('')
@@ -27,7 +29,7 @@ export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
     setError(null)
 
     if (!turnstileToken) {
-      setError('Please complete the security check.')
+      setError(t('join.form.turnstileMissingError'))
       return
     }
 
@@ -54,7 +56,7 @@ export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
         password,
       })
       if (signInError) {
-        setError('Account created — please sign in.')
+        setError(t('join.form.accountCreatedNotice'))
         router.push('/login')
         return
       }
@@ -73,7 +75,7 @@ export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="displayName" className="block text-sm font-medium mb-1">
-          Full name
+          {t('join.form.fullNameLabel')}
         </label>
         <input
           id="displayName"
@@ -82,13 +84,13 @@ export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder="Your name"
+          placeholder={t('join.form.namePlaceholder')}
         />
       </div>
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium mb-1">
-          Email address
+          {t('join.form.emailLabel')}
         </label>
         <input
           id="email"
@@ -97,13 +99,13 @@ export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder="you@example.com"
+          placeholder={t('join.form.emailPlaceholder')}
         />
       </div>
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium mb-1">
-          Password
+          {t('join.form.passwordLabel')}
         </label>
         <input
           id="password"
@@ -113,14 +115,14 @@ export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder="At least 8 characters"
+          placeholder={t('join.form.passwordPlaceholder')}
         />
       </div>
 
       <Turnstile
         siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''}
         onSuccess={setTurnstileToken}
-        onError={() => setError('Security check failed. Please refresh and try again.')}
+        onError={() => setError(t('join.form.turnstileFailedError'))}
         className="mt-2"
       />
 
@@ -134,13 +136,13 @@ export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
         style={btnStyle}
         className="w-full bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50"
       >
-        {loading ? 'Creating account…' : `Join ${orgName}`}
+        {loading ? t('join.form.submitLoading') : t('join.form.submitButtonTemplate', { orgName })}
       </button>
 
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{' '}
+        {t('join.form.alreadyHaveAccountText')}{' '}
         <a href="/login" className="underline">
-          Sign in
+          {t('join.form.signInLink')}
         </a>
       </p>
     </form>

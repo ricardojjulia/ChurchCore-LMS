@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { markSelfAttendance } from '@/app/actions/attendance'
 
 type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
@@ -17,14 +18,15 @@ interface Props {
   } | null
 }
 
-const STATUS_META: Record<AttendanceStatus, { label: string; color: string; bg: string; border: string }> = {
-  present: { label: 'Present',  color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200' },
-  late:    { label: 'Late',     color: 'text-amber-700',   bg: 'bg-amber-50',    border: 'border-amber-200'   },
-  absent:  { label: 'Absent',   color: 'text-rose-700',    bg: 'bg-rose-50',     border: 'border-rose-200'    },
-  excused: { label: 'Excused',  color: 'text-slate-600',   bg: 'bg-slate-50',    border: 'border-slate-200'   },
+const STATUS_META: Record<AttendanceStatus, { color: string; bg: string; border: string }> = {
+  present: { color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200' },
+  late:    { color: 'text-amber-700',   bg: 'bg-amber-50',    border: 'border-amber-200'   },
+  absent:  { color: 'text-rose-700',    bg: 'bg-rose-50',     border: 'border-rose-200'    },
+  excused: { color: 'text-slate-600',   bg: 'bg-slate-50',    border: 'border-slate-200'   },
 }
 
 export default function AttendancePlayer({ blockId, sessionTitle, trackingMode, points, existingSub }: Props) {
+  const t = useTranslations()
   const marked     = useRef(false)
   const [status,   setStatus]   = useState<AttendanceStatus | null>(
     (existingSub?.content?.attendance_status as AttendanceStatus) ?? null
@@ -49,35 +51,39 @@ export default function AttendancePlayer({ blockId, sessionTitle, trackingMode, 
       <div className="flex items-start gap-4 bg-white border border-border rounded-2xl p-6 shadow-sm">
         <span className="text-4xl mt-0.5" aria-hidden="true">🗓️</span>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-foreground text-base">Attendance</p>
+          <p className="font-bold text-foreground text-base">{t('learning.attendance.blockTitle')}</p>
           {sessionTitle && (
             <p className="text-sm text-muted-foreground mt-0.5">{sessionTitle}</p>
           )}
           {points > 0 && (
-            <p className="text-xs text-muted-foreground mt-1">{points} point{points !== 1 ? 's' : ''} possible</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('learning.attendance.pointsPossibleTemplate', { points })}</p>
           )}
         </div>
 
         {meta ? (
           <span className={`inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-full border ${meta.color} ${meta.bg} ${meta.border}`}>
-            {status === 'present' ? '✅' : status === 'late' ? '⏰' : status === 'absent' ? '❌' : '🔕'} {meta.label}
+            {status === 'present' ? '✅' : status === 'late' ? '⏰' : status === 'absent' ? '❌' : '🔕'}
+            {' '}{status === 'present' ? t('learning.attendance.statusPresent')
+              : status === 'late' ? t('learning.attendance.statusLate')
+              : status === 'absent' ? t('learning.attendance.statusAbsent')
+              : t('learning.attendance.statusExcused')}
           </span>
         ) : autoSent ? (
-          <span className="text-xs text-muted-foreground italic">Recording…</span>
+          <span className="text-xs text-muted-foreground italic">{t('learning.attendance.recordingBadge')}</span>
         ) : (
-          <span className="text-xs text-muted-foreground italic">Unmarked</span>
+          <span className="text-xs text-muted-foreground italic">{t('learning.attendance.unmarkedBadge')}</span>
         )}
       </div>
 
       {!status && trackingMode === 'manual' && (
         <p className="text-sm text-muted-foreground bg-slate-50 border border-border rounded-xl px-4 py-3">
-          Your teacher will record your attendance for this session.
+          {t('learning.attendance.manualNotice')}
         </p>
       )}
 
       {status === 'present' && trackingMode !== 'manual' && !existingSub && (
         <p className="text-xs text-muted-foreground text-center">
-          Your attendance was recorded automatically when you opened this block.
+          {t('learning.attendance.autoConfirmation')}
         </p>
       )}
     </div>

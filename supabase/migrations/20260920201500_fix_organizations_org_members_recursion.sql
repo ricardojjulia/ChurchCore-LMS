@@ -1,0 +1,48 @@
+-- ─── Fix infinite recursion in legacy organizations/org_members RLS ────────────
+--
+-- Discovered while building COUNCIL-2026-027 (public course catalog): both new
+-- anon RLS policies added for that feature join through `organizations`, and
+-- ANY query against `organizations` under RLS — for every role, including
+-- anon — has always raised:
+--
+--   ERROR: infinite recursion detected in policy for relation "org_members"
+--
+-- Root cause, confirmed directly against this database: two policies survive
+-- from 20240601000002_canvas_block_model.sql, written before profile_roles
+-- existed as the RLS hot-path table (see CLAUDE.md Security Rule 2):
+--
+--   "org members can view their org" ON organizations
+--     USING (id IN (SELECT org_id FROM org_members WHERE user_id = auth.uid()))
+--
+--   "members can view co-members" ON org_members
+--     USING (org_id IN (SELECT org_id FROM org_members WHERE user_id = auth.uid()))
+--
+-- The second policy is self-referential (its own USING clause subqueries the
+-- table it protects), and the first policy's subquery against org_members
+-- triggers that same policy — so any SELECT against `organizations` that
+-- reaches the first policy recurses into the second, indefinitely.
+--
+-- This has been live and silently broken since 20240601000002. It was masked
+-- because every code path that reads `organizations` today
+-- (src/app/join/[slug]/page.tsx, src/app/admin/settings/page.tsx, etc.) uses
+-- createServiceClient(), which bypasses RLS entirely (service_role has
+-- BYPASSRLS) — so the already-shipped "organizations: anon read active"
+-- policy (20260620200800_handle_new_user_org_id.sql) has never actually been
+-- exercised by a real anon-role caller until this feature's own RLS policies
+-- (which do join through organizations under real anon/authenticated
+-- queries) surfaced it.
+--
+-- Fix: drop both legacy policies. Verified safe to remove, not just to patch:
+--   - `org_members` is not queried by any live application code path — its
+--     only reference in src/ is a static copy-paste SQL snippet shown on an
+--     error-state admin page (src/app/onboarding/page.tsx), never executed.
+--   - The capability "org members can view their org" was meant to provide
+--     is already covered correctly by "organizations: members read own"
+--     (current_user_org_id() = id AND deleted_at IS NULL), which reads from
+--     profile_roles as the mandatory hot-path per CLAUDE.md, not org_members.
+--
+-- This migration removes no functionality — only removes broken,
+-- superseded, and unreachable policies.
+
+DROP POLICY IF EXISTS "org members can view their org" ON public.organizations;
+DROP POLICY IF EXISTS "members can view co-members" ON public.org_members;
