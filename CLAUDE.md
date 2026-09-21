@@ -171,7 +171,7 @@ The council document contains the implementation prompt. Implement from the prom
 
 See `docs/CODE-FACTORY-SYSTEM-PROMPT.md` for the full council governance rules.
 
-**PR review gate:** run the `pr-review` skill (`pr-reviewer` subagent, Critical/Important/Minor) against every PR before merge, non-trivial or not. This is in addition to `implementation-validator`'s Gate 3 inside `build-feature`/`run-factory` — a small change that skips the full factory pipeline still goes through `pr-review`.
+**PR review gate:** run the `pr-review` skill (`pr-reviewer` subagent, Critical/Important/Minor) against every PR before merge, non-trivial or not. This is in addition to `implementation-validator`'s Gate 3 inside `build-feature`/`run-factory` — a small change that skips the full factory pipeline still goes through `pr-review`. The gate also covers the PR's own comment thread, not just the diff: query `gh api repos/:owner/:repo/pulls/<pr_number>/comments`, triage every finding (security, RLS policies, schemas, accessibility, assertion strictness), resolve actionable feedback directly on the branch, re-run `npm run verify` (typecheck + lint + unit tests), and confirm a clean result before merging. This is how automated reviewers (GitHub Copilot, CodeQL) get folded in — `@pr-reviewer`'s diff-only pass doesn't see PR comments on its own.
 
 **Pilot feedback loop:** the platform-only `platform_feedback` table + `/platform/feedback` triage workspace (COUNCIL-2026-025) is how uncoached pilot/demo usage gets instrumented — not a one-time build. Check the triage queue daily during an active pilot, weekly at minimum otherwise. Treat a cluster of related feedback as a legitimate trigger for the next `council-review` cycle.
 
