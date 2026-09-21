@@ -16,7 +16,14 @@ Every PR before merge. This is separate from `council-review` (periodic sprint a
 3. Findings come back ranked Critical / Important / Minor.
 4. Critical or Important findings block merge — fix, then re-run this gate.
 5. Minor findings are the author's call; note them in the PR description either way.
-6. Once the PR is open (this step needs a real PR number, so it runs after the PR exists — before or interleaved with 2-5 is fine, but it must complete before merge): query external review comments via `gh api repos/:owner/:repo/pulls/<pr_number>/comments` — this catches GitHub Copilot's automated review, CodeQL annotations, and human reviewer comments that `@pr-reviewer`'s diff-only pass never sees. Triage every finding by category (security, RLS policies, schemas, accessibility, assertion strictness). Resolve actionable feedback directly on the branch, then re-run `npm run verify` (typecheck + lint + unit tests) and confirm a clean result before merging.
+6. Once the PR is open (this step needs a real PR number, so it runs after the PR exists — before or interleaved with 2-5 is fine, but it must complete before merge): query external review threads via all three comment surfaces, since no single endpoint covers them all —
+   - `gh api repos/:owner/:repo/pulls/<pr_number>/comments` — inline, line-bound review comments
+   - `gh api repos/:owner/:repo/pulls/<pr_number>/reviews` — review-level summaries (this is usually where an automated reviewer's overall assessment lives, e.g. GitHub Copilot's)
+   - `gh api repos/:owner/:repo/issues/<pr_number>/comments` — general PR-level discussion (PRs are issues in GitHub's API)
+
+   CodeQL findings aren't PR comments — they're check-run annotations: `gh api repos/:owner/:repo/commits/<sha>/check-runs` or `gh run list`.
+
+   Triage every finding across all of these by category (security, RLS policies, schemas, accessibility, assertion strictness). Resolve actionable feedback directly on the branch, then re-run `npm run verify` (typecheck + lint + unit tests) and confirm a clean result before merging.
 
 ## Rules
 
