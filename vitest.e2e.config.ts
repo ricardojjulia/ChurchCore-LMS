@@ -1,5 +1,11 @@
 import path from 'path'
+import { loadEnvConfig } from '@next/env'
 import { defineConfig } from 'vitest/config'
+
+// Vitest does not load Next's .env.test.local automatically. Load it before
+// test files are evaluated so real-Supabase e2e tests receive only their
+// dedicated TEST_* credentials.
+loadEnvConfig(process.cwd())
 
 export default defineConfig({
   test: {
