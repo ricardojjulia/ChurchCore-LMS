@@ -11,6 +11,24 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.33.0] — 2026-09-22
+
+COUNCIL-2026-030 (numbered 030, not 029 — 029 was independently used the same day by a concurrent `.ai-factory` daily-loop run for an unrelated Learning Paths feature on a separate branch).
+
+### Added
+
+- **Holistic gradebook grid** — a per-course grid at `/courses/[id]/gradebook` lets a teacher see and grade every active student × every published assignment/quiz block in one screen, instead of expanding submission cards one at a time (Council Review 3's #1-ranked competitive gap). Supports grading a student who never submitted (e.g. an in-person assessment) directly from the grid, and CSV export of the current grid state.
+
+### Security
+
+- **Fixed a pre-existing authorization gap**: the `"block_submissions: staff grade own org"` RLS policy checked only org membership and role, not course ownership — any teacher in an organization could grade any other teacher's course submissions. Restored the course-ownership check for the `teacher` role (`admin`/`manager` remain org-wide, matching existing precedent elsewhere in the app), and added the same check at the application layer in both the new grid's `setGradeCell()` and the existing `gradeSubmission()`.
+
+### Fixed
+
+- **Fixed a live production bug in grading's side effects**: `gradeSubmission()`'s in-app notification insert omitted `org_id`, a `NOT NULL` column with no default — every grade submitted through the existing Submissions page threw an uncaught exception immediately after the grade itself saved, silently breaking the guardian-notification-queue insert and optional grading email for every teacher who ever graded a submission. The grading side effects (XP award, notification, email, guardian queue) were extracted into a shared `applyGradeSideEffects()` helper, used by both the old and new grading paths, with the `org_id` fix applied once for both.
+
+---
+
 ## [0.32.0] — 2026-09-21
 
 COUNCIL-2026-028 (relocated/renumbered from a root-level, misnumbered doc during PR #15 review — see docs/council/COUNCIL-2026-028.md for the full history).
