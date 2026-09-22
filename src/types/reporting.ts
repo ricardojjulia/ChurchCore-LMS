@@ -216,7 +216,7 @@ export interface GradebookSummary {
  * Per-cell gradebook row returned by `get_course_gradebook_grid()`.
  * One row per (active student enrollment × published assignment/quiz block).
  * Submission columns are null when the student has not yet submitted.
- * See COUNCIL-2026-029 D2 for the RPC design rationale.
+ * See COUNCIL-2026-030 D2 for the RPC design rationale.
  */
 export interface GradebookGridRow {
   enrollment_id:  string

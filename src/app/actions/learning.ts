@@ -492,7 +492,7 @@ export async function submitQuiz(
 }
 
 // ── Shared grade side-effects (XP, notification, email, guardian queue) ──────
-// Extracted from gradeSubmission() (COUNCIL-2026-029 D7) so setGradeCell()
+// Extracted from gradeSubmission() (COUNCIL-2026-030 D7) so setGradeCell()
 // can call the identical logic without any duplicated code.
 
 export async function applyGradeSideEffects(
@@ -628,6 +628,25 @@ export async function gradeSubmission(
     .single()
 
   if (!sub) return { error: 'Submission not found' }
+
+  // Ownership check (COUNCIL-2026-030 D4): a teacher may only grade submissions
+  // in a course they own; admin/manager remain org-wide. Same paranoia-level
+  // pattern as gradeDiscussionSubmission()'s cross-org check below — the RLS
+  // policy on block_submissions enforces this too, this is defense-in-depth.
+  if (profile.role === 'teacher') {
+    const service = createServiceClient()
+    const { data: ownerCheck } = await service
+      .from('course_blocks')
+      .select('courses!inner(owner_id)')
+      .eq('id', sub.block_id)
+      .single()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join type is not narrowed
+    const courseOwnerId = (ownerCheck?.courses as any)?.owner_id ?? null
+    if (courseOwnerId !== profile.uid) {
+      return { error: 'Submission not found' }
+    }
+  }
 
   const { error } = await supabase
     .from('block_submissions')

@@ -240,6 +240,8 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows }: Pr
       row['Grade']   = avg.letter
       return row
     })
+    // studentAverage closes only over `cells` and `blocks`, both already listed below —
+    // the lint rule can't see that through the function reference, false positive.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [students, blocks, cells])
 

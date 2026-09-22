@@ -163,6 +163,13 @@ beforeAll(async () => {
   if (mgrErr || !mgrData.user) throw new Error(`Failed to create manager auth user: ${mgrErr?.message}`)
   managerAuthId = mgrData.user.id
 
+  // The on_auth_user_created trigger (handle_new_user) fires on every auth.users
+  // insert above and immediately creates a 'student' profile row with an
+  // auto-generated uid for each auth_id. Delete those before inserting the
+  // fixture profiles below with the fixed TEACHER2_UID/MANAGER_UID — otherwise
+  // the insert fails on the profiles_auth_id_unique constraint.
+  await svc.from('profiles').delete().in('auth_id', [teacher2AuthId, managerAuthId])
+
   // Profiles for teacher-2 and manager
   const { error: profileErr } = await svc.from('profiles').insert([
     {

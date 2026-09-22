@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
+import { createServiceClient } from '@/utils/supabase/service'
 import { enrollSelf, gradeSubmission } from './learning'
 
 // ── Service client mock (used for XP award and notifications in gradeSubmission) ──
@@ -477,6 +478,44 @@ describe('gradeSubmission', () => {
         },
       }) as any,
     )
+    // Ownership check (D4): course_blocks -> courses.owner_id must match profile.uid
+    vi.mocked(createServiceClient).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue(resolvesWith({ data: { courses: { owner_id: 'p-001' } }, error: null })),
+    } as any)
+
+    const result = await gradeSubmission('sub-1', 85, 'Good work')
+    expect(result).toEqual({})
+  })
+
+  it('returns { error: "Submission not found" } when a non-owning teacher tries to grade (D4 ownership check)', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profiles: { data: { uid: 'p-001', role: 'teacher' }, error: null },
+        block_submissions: {
+          data: { id: 'sub-1', max_score: 100, user_id: 'student-uid', block_id: 'block-1' },
+          error: null,
+        },
+      }) as any,
+    )
+    // course_blocks -> courses.owner_id belongs to a *different* teacher
+    vi.mocked(createServiceClient).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue(resolvesWith({ data: { courses: { owner_id: 'some-other-teacher' } }, error: null })),
+    } as any)
+
+    const result = await gradeSubmission('sub-1', 85, 'Good work')
+    expect(result).toEqual({ error: 'Submission not found' })
+  })
+
+  it('admin role bypasses the course-ownership check (D4 — admin/manager stay org-wide)', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profiles: { data: { uid: 'p-001', role: 'admin' }, error: null },
+        block_submissions: {
+          data: { id: 'sub-1', max_score: 100, user_id: 'student-uid', block_id: 'block-1' },
+          error: null,
+        },
+      }) as any,
+    )
 
     const result = await gradeSubmission('sub-1', 85, 'Good work')
     expect(result).toEqual({})
@@ -511,6 +550,10 @@ describe('gradeSubmission', () => {
       },
       from: mockFrom,
       rpc:  vi.fn().mockResolvedValue({ data: null, error: null }),
+    } as any)
+    // Ownership check (D4): course_blocks -> courses.owner_id must match profile.uid
+    vi.mocked(createServiceClient).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue(resolvesWith({ data: { courses: { owner_id: 'p-001' } }, error: null })),
     } as any)
 
     const result = await gradeSubmission('sub-1', 85, 'feedback')

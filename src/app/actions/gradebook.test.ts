@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * Gradebook Grid — unit tests
- * COUNCIL-2026-029 Prompt D
+ * COUNCIL-2026-030 Prompt D
  *
  * Covers acceptance criteria:
  *   8. Non-staff role → rejected, no DB write attempted (getGradebookGrid + setGradeCell)
