@@ -193,28 +193,12 @@ beforeAll(async () => {
   ])
   if (profileErr) throw new Error(`Failed to insert fixture profiles: ${profileErr.message}`)
 
-  // profile_roles for teacher-2 and manager (current_user_role() reads from here)
-  const { error: prErr } = await svc.from('profile_roles').insert([
-    {
-      auth_id:       teacher2AuthId,
-      uid:           TEACHER2_UID,
-      role:          'teacher',
-      status:        'active',
-      current_level: 1,
-      org_id:        ORG_A,
-      tenant_active: true,
-    },
-    {
-      auth_id:       managerAuthId,
-      uid:           MANAGER_UID,
-      role:          'manager',
-      status:        'active',
-      current_level: 1,
-      org_id:        ORG_A,
-      tenant_active: true,
-    },
-  ])
-  if (prErr) throw new Error(`Failed to insert fixture profile_roles: ${prErr.message}`)
+  // profile_roles is NOT inserted manually here: the sync_profile_roles() trigger
+  // (migration 20240601000021_fix_cross_table_recursion.sql) fires ON INSERT to
+  // profiles and upserts the matching profile_roles row (auth_id, uid, role,
+  // status, current_level, org_id) via ON CONFLICT (auth_id) DO UPDATE — including
+  // tenant_active, which defaults to true (migration 20260618200100_tenant_lifecycle.sql).
+  // A separate manual insert here raced that trigger and violated profile_roles_pkey.
 
   // Clean up any leftover fixture data from a previous crashed run
   await wipeFixtureRows()
