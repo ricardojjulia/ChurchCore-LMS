@@ -116,7 +116,15 @@ export default async function CourseSubmissionsPage({
           >
             ← {course.title}
           </Link>
-          <h1 className="text-2xl font-extrabold text-foreground mt-1">Submissions</h1>
+          <div className="flex items-baseline justify-between gap-4 mt-1">
+            <h1 className="text-2xl font-extrabold text-foreground">Submissions</h1>
+            <Link
+              href={`/courses/${courseId}/gradebook`}
+              className="text-sm text-primary hover:underline font-medium shrink-0"
+            >
+              View gradebook grid →
+            </Link>
+          </div>
         </div>
 
         {/* Stats */}
