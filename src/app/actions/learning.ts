@@ -491,64 +491,32 @@ export async function submitQuiz(
   return { gradePct, earnedScore, xpAwarded }
 }
 
-// ── Grade a submission (instructor) ──────────────────────────────────────────
+// ── Shared grade side-effects (XP, notification, email, guardian queue) ──────
+// Extracted from gradeSubmission() (COUNCIL-2026-030 D7) so setGradeCell()
+// can call the identical logic without any duplicated code.
 
-export async function gradeSubmission(
-  submissionId: string,
-  score:        number,
-  feedback:     string,
-): Promise<{ error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('uid, role')
-    .eq('auth_id', user.id)
-    .single()
-
-  if (!profile || !['admin', 'manager', 'teacher'].includes(profile.role)) {
-    return { error: 'Unauthorized' }
-  }
-
-  const { data: sub } = await supabase
-    .from('block_submissions')
-    .select('id, max_score, user_id, block_id')
-    .eq('id', submissionId)
-    .single()
-
-  if (!sub) return { error: 'Submission not found' }
-
-  const { error } = await supabase
-    .from('block_submissions')
-    .update({
-      score:     score,
-      status:    'graded',
-      feedback:  feedback.trim() || null,
-      graded_by: profile.uid,
-      graded_at: new Date().toISOString(),
-    })
-    .eq('id', submissionId)
-
-  if (error) return { error: error.message }
+export async function applyGradeSideEffects(
+  sub: { user_id: string; block_id: string; max_score: number | null; org_id: string },
+  score: number,
+  feedback: string,
+): Promise<void> {
+  const service = createServiceClient()
 
   // Award XP to student proportional to their grade (max_score is block XP or 100)
   if (sub.max_score && sub.max_score > 0) {
     const gradePct = Math.round((score / sub.max_score) * 100)
     if (gradePct >= 50) {
-      const service = createServiceClient()
       const xpEarned = Math.round(50 * (gradePct / 100))
       await service.rpc('award_xp', { p_uid: sub.user_id, p_amount: xpEarned })
     }
   }
 
   // Notify student (in-app)
-  const service = createServiceClient()
   await service
     .from('notifications')
     .insert({
       user_id: sub.user_id,
+      org_id:  sub.org_id,
       type:    'grade_posted',
       title:   'Assignment graded',
       body:    `Your submission received a score of ${score}/${sub.max_score ?? '?'}${feedback ? `. Feedback: ${feedback.slice(0, 100)}` : ''}`,
@@ -618,10 +586,10 @@ export async function gradeSubmission(
             payload:     {
               guardian_uid: g.guardian_uid,
               score,
-              max_score:  sub.max_score,
-              grade_pct:  gradePct,
-              feedback:   feedback.trim() || null,
-              block_id:   sub.block_id,
+              max_score:   sub.max_score,
+              grade_pct:   gradePct,
+              feedback:    feedback.trim() || null,
+              block_id:    sub.block_id,
             },
           }))
         )
@@ -630,6 +598,70 @@ export async function gradeSubmission(
   } catch {
     // Guardian notification must never break the grading action
   }
+}
+
+// ── Grade a submission (instructor) ──────────────────────────────────────────
+
+export async function gradeSubmission(
+  submissionId: string,
+  score:        number,
+  feedback:     string,
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('uid, role')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!profile || !['admin', 'manager', 'teacher'].includes(profile.role)) {
+    return { error: 'Unauthorized' }
+  }
+
+  const { data: sub } = await supabase
+    .from('block_submissions')
+    .select('id, max_score, user_id, block_id, org_id')
+    .eq('id', submissionId)
+    .single()
+
+  if (!sub) return { error: 'Submission not found' }
+
+  // Ownership check (COUNCIL-2026-030 D4): a teacher may only grade submissions
+  // in a course they own; admin/manager remain org-wide. Same paranoia-level
+  // pattern as gradeDiscussionSubmission()'s cross-org check below — the RLS
+  // policy on block_submissions enforces this too, this is defense-in-depth.
+  if (profile.role === 'teacher') {
+    const service = createServiceClient()
+    const { data: ownerCheck } = await service
+      .from('course_blocks')
+      .select('courses!inner(owner_id)')
+      .eq('id', sub.block_id)
+      .single()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join type is not narrowed
+    const courseOwnerId = (ownerCheck?.courses as any)?.owner_id ?? null
+    if (courseOwnerId !== profile.uid) {
+      return { error: 'Submission not found' }
+    }
+  }
+
+  const { error } = await supabase
+    .from('block_submissions')
+    .update({
+      score:     score,
+      status:    'graded',
+      feedback:  feedback.trim() || null,
+      graded_by: profile.uid,
+      graded_at: new Date().toISOString(),
+    })
+    .eq('id', submissionId)
+
+  if (error) return { error: error.message }
+
+  await applyGradeSideEffects(sub, score, feedback)
 
   revalidatePath('/courses/[id]/submissions', 'page')
   return {}
