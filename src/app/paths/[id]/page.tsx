@@ -20,8 +20,8 @@ export default async function LearningPathDetailPage({
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('org_id')
+    .from('profile_roles')
+    .select('uid, org_id')
     .eq('auth_id', user.id)
     .single()
 
@@ -31,11 +31,12 @@ export default async function LearningPathDetailPage({
   const path = paths.find((p) => p.id === id)
   if (!path) notFound()
 
-  // Fetch the learner's completed course IDs
+  // Fetch the learner's completed course IDs. course_certificates.user_id
+  // references profiles.uid (the domain UID), not auth.users.id.
   const { data: certs } = await supabase
     .from('course_certificates')
     .select('course_id')
-    .eq('user_id', user.id)
+    .eq('user_id', profile.uid)
   const completedIds = new Set(certs?.map((c) => c.course_id) ?? [])
 
   return (

@@ -18,7 +18,7 @@ async function assertPathAdmin(orgId: string): Promise<void> {
   if (isPlatformAdmin) return
 
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('profile_roles')
     .select('org_id, role')
     .eq('auth_id', user.id)
     .single()
@@ -279,6 +279,15 @@ export async function getLearningPathsForLearner(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
+  // course_certificates.user_id references profiles.uid (the domain UID), not
+  // auth.users.id — resolve it via profile_roles before querying certificates.
+  const { data: callerProfile } = await supabase
+    .from('profile_roles')
+    .select('uid')
+    .eq('auth_id', user.id)
+    .single()
+  if (!callerProfile?.uid) return []
+
   // Fetch published paths with their published courses
   const { data: paths, error } = await supabase
     .from('learning_paths')
@@ -299,7 +308,7 @@ export async function getLearningPathsForLearner(
   const { data: certs } = await supabase
     .from('course_certificates')
     .select('course_id')
-    .eq('user_id', user.id)
+    .eq('user_id', callerProfile.uid)
 
   const completedCourseIds = new Set(certs?.map((c) => c.course_id) ?? [])
 

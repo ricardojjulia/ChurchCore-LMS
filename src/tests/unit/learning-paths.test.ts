@@ -13,7 +13,9 @@ import {
   updateLearningPath,
   deleteLearningPath,
   addCourseToPath,
+  removeCourseFromPath,
   reorderPathCourses,
+  getLearningPathsForLearner,
 } from '@/app/actions/learning-paths'
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -49,7 +51,7 @@ function makeClient({
     maybeSingle: vi.fn().mockResolvedValue({ data: resolvedData, error: resolvedError }),
     insert:      vi.fn().mockResolvedValue({ data: resolvedData, error: insertError }),
     update:      vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ select: vi.fn().mockResolvedValue({ data: resolvedData, error: updateError }) }) }),
-    delete:      vi.fn().mockResolvedValue({ data: resolvedData, error: deleteError }),
+    delete:      vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: resolvedData, error: deleteError }) }),
     order:       vi.fn().mockReturnThis(),
     limit:       vi.fn().mockReturnThis(),
     in:          vi.fn().mockReturnThis(),
@@ -59,14 +61,14 @@ function makeClient({
   const fromFn = vi.fn().mockImplementation((_table: string): any => {
     fromCallCount++
     // The call order in the actions:
-    // createLearningPath:     1=profiles (role check), 2=insert learning_paths
-    // updateLearningPath:     1=learning_paths (get org_id), 2=profiles (role), 3=update
-    // deleteLearningPath:     1=learning_paths (get org_id), 2=profiles (role), 3=delete
-    // addCourseToPath:        1=learning_paths (get org_id), 2=profiles (role), 3=courses, 4=max sort, 5=insert lpc
+    // createLearningPath:     1=profile_roles (role check), 2=insert learning_paths
+    // updateLearningPath:     1=learning_paths (get org_id), 2=profile_roles (role), 3=update
+    // deleteLearningPath:     1=learning_paths (get org_id), 2=profile_roles (role), 3=delete
+    // addCourseToPath:        1=learning_paths (get org_id), 2=profile_roles (role), 3=courses, 4=max sort, 5=insert lpc
     const profileData = { org_id: orgId, role }
     const pathCourses = { data: existingPathCourses, error: null }
     // Return relevant data per table name
-    if (_table === 'profiles') return makeChain(profileData)
+    if (_table === 'profile_roles') return makeChain(profileData)
     if (_table === 'learning_paths') return makeChain(pathData)
     if (_table === 'courses') return makeChain(courseData)
     if (_table === 'learning_path_courses') {
@@ -79,7 +81,7 @@ function makeClient({
         limit:       vi.fn().mockReturnThis(),
         single:      vi.fn().mockResolvedValue({ data: maxSortOrder, error: null }),
         insert:      vi.fn().mockResolvedValue({ data: null, error: insertError }),
-        delete:      vi.fn().mockResolvedValue({ data: null, error: deleteError }),
+        delete:      vi.fn().mockReturnValue({ eq: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: null, error: deleteError }) }) }),
         in:          vi.fn().mockReturnThis(),
       }
       // For list queries (no single()), resolve from pathCourses
@@ -195,6 +197,15 @@ describe('deleteLearningPath', () => {
     const result = await deleteLearningPath(PATH_A)
     expect(result.error).toMatch(/forbidden/i)
   })
+
+  it('succeeds for the owning org admin (learning_path_courses cascades via ON DELETE CASCADE at the DB layer, not application code)', async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      makeClient({ role: 'admin', orgId: ORG_A, pathData: { org_id: ORG_A }, deleteError: null }) as any
+    )
+    const result = await deleteLearningPath(PATH_A)
+    expect(result.error).toBeNull()
+  })
 })
 
 // ── addCourseToPath ────────────────────────────────────────────────────────────
@@ -225,6 +236,28 @@ describe('addCourseToPath', () => {
   })
 })
 
+// ── removeCourseFromPath ────────────────────────────────────────────────────────
+
+describe('removeCourseFromPath', () => {
+  it('rejects cross-org call', async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      makeClient({ orgId: ORG_B, pathData: { org_id: ORG_A } }) as any
+    )
+    const result = await removeCourseFromPath(PATH_A, COURSE_A)
+    expect(result.error).toMatch(/forbidden/i)
+  })
+
+  it('succeeds for the owning org admin', async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      makeClient({ role: 'admin', orgId: ORG_A, pathData: { org_id: ORG_A } }) as any
+    )
+    const result = await removeCourseFromPath(PATH_A, COURSE_A)
+    expect(result.error).toBeNull()
+  })
+})
+
 // ── reorderPathCourses ────────────────────────────────────────────────────────
 
 describe('reorderPathCourses', () => {
@@ -235,5 +268,87 @@ describe('reorderPathCourses', () => {
     )
     const result = await reorderPathCourses(PATH_A, [])
     expect(result.error).toBeNull()
+  })
+
+  it('rejects when a provided course ID does not belong to the path — no write attempted', async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      makeClient({
+        role: 'admin',
+        orgId: ORG_A,
+        pathData: { org_id: ORG_A },
+        existingPathCourses: [{ course_id: COURSE_A }],
+      }) as any
+    )
+    const result = await reorderPathCourses(PATH_A, [COURSE_A, 'course-not-in-path'])
+    expect(result.error).toMatch(/not in this path/i)
+  })
+})
+
+// ── getLearningPathsForLearner ──────────────────────────────────────────────────
+// Regression test for the completedCount bug found in PR review: course_certificates.user_id
+// references profiles.uid (the domain UID), not auth.users.id. This proves the fix resolves
+// the domain UID via profile_roles before querying certificates, rather than using the raw
+// auth id (which would always return zero matches, since domain uid != auth id in this schema).
+
+describe('getLearningPathsForLearner', () => {
+  it('resolves the domain uid via profile_roles and computes completedCount from course_certificates', async () => {
+    const AUTH_ID = 'auth-0000-0000-0000-000000000099'
+    const DOMAIN_UID = 'uid-0000-0000-0000-000000000099'
+
+    const path = {
+      id: PATH_A, org_id: ORG_A, title: 'Path', description: null,
+      is_published: true, cover_image_url: null, created_at: '', updated_at: '',
+      learning_path_courses: [
+        { id: 'lpc-1', path_id: PATH_A, course_id: COURSE_A, sort_order: 0, course: { id: COURSE_A, title: 'Course A', description: null, status: 'published' } },
+      ],
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client: any = {
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: AUTH_ID } }, error: null }) },
+      from: vi.fn().mockImplementation((table: string) => {
+        if (table === 'profile_roles') {
+          return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: { uid: DOMAIN_UID }, error: null }) }
+        }
+        if (table === 'learning_paths') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq:     vi.fn().mockReturnThis(),
+            order:  vi.fn().mockResolvedValue({ data: [path], error: null }),
+          }
+        }
+        if (table === 'course_certificates') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq:     vi.fn().mockImplementation((column: string, value: string) => {
+              // Assert the query filters by the resolved domain uid, not the raw auth id
+              expect(column).toBe('user_id')
+              expect(value).toBe(DOMAIN_UID)
+              return Promise.resolve({ data: [{ course_id: COURSE_A }], error: null })
+            }),
+          }
+        }
+        return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockResolvedValue({ data: [], error: null }) }
+      }),
+    }
+    vi.mocked(createClient).mockResolvedValue(client)
+
+    const result = await getLearningPathsForLearner(ORG_A)
+    expect(result).toHaveLength(1)
+    expect(result[0].completedCount).toBe(1)
+    expect(result[0].totalCount).toBe(1)
+  })
+
+  it('returns an empty array when the caller has no profile_roles row', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client: any = {
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'auth-x' } }, error: null }) },
+      from: vi.fn().mockReturnValue({ select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null, error: null }) }),
+    }
+    vi.mocked(createClient).mockResolvedValue(client)
+
+    const result = await getLearningPathsForLearner(ORG_A)
+    expect(result).toEqual([])
   })
 })

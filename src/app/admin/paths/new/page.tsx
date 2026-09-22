@@ -12,7 +12,7 @@ export default async function NewLearningPathPage() {
   if (!user) redirect('/login')
 
   const { data: profile } = await supabase
-    .from('profiles')
+    .from('profile_roles')
     .select('org_id, role')
     .eq('auth_id', user.id)
     .single()

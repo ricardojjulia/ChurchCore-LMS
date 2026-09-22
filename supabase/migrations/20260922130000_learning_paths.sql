@@ -100,7 +100,11 @@ CREATE POLICY "learning_paths: admin delete"
 -- 4. RLS policies — learning_path_courses
 -- ============================================================
 
--- Members: read courses for any path they can see (via learning_paths)
+-- Members: read courses only for a path they could also see directly — i.e. a
+-- published path in their own org (or any path, as platform admin). Without the
+-- is_published check here, a member who obtained a draft path's id (e.g. a
+-- guessed/leaked UUID) could read its course list via this junction table even
+-- though the learning_paths row itself is correctly hidden from them.
 CREATE POLICY "learning_path_courses: member read"
   ON public.learning_path_courses FOR SELECT TO authenticated
   USING (
@@ -109,7 +113,8 @@ CREATE POLICY "learning_path_courses: member read"
       WHERE lp.id = path_id
         AND (
           public.is_platform_admin()
-          OR public.current_user_org_id() = lp.org_id
+          OR (public.current_user_org_id() = lp.org_id AND lp.is_published = true)
+          OR (public.current_user_org_id() = lp.org_id AND public.current_user_role() IN ('admin', 'manager'))
         )
     )
   );

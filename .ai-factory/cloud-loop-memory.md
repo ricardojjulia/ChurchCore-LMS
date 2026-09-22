@@ -22,7 +22,7 @@
 
 - `.ai-factory/cloud-loop-memory.md`
 - `docs/council/COUNCIL-2026-029.md`
-- `supabase/migrations/20260922120000_learning_paths.sql`
+- `supabase/migrations/20260922130000_learning_paths.sql`
 - `src/types/learning-path.ts`
 - `src/app/actions/learning-paths.ts`
 - `src/components/lms/LearningPathCard.tsx`
@@ -92,7 +92,7 @@ gh pr checks --watch
 
 - [ ] OPEN: E2e tests (Prompt D items 6-8) need `TEST_SUPABASE_URL` env var
 - [ ] OPEN: Sidebar nav links for Learning Paths — see `docs/HOWTO-sidebar-nav.md`
-- [ ] OPEN: `supabase db push` to apply migration 20260922120000 (needs Supabase creds)
+- [ ] OPEN: `supabase db push` to apply migration 20260922130000 (needs Supabase creds)
 - [ ] OPEN: PR review gate (pr-reviewer subagent) should run against the diff after PR is open
 
 ---
