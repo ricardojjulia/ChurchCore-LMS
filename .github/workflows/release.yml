@@ -14,76 +14,13 @@ jobs:
     uses: ./.github/workflows/ci.yml
     secrets: inherit
 
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: ci
-    environment: staging
-    env:
-      STAGING_SUPABASE_PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
-      EXPECTED_STAGING_SUPABASE_PROJECT_REF: gytbfezrfrpsltdyfdgj
-      PRODUCTION_SUPABASE_PROJECT_REF: tpyvciujsrllvowqgeyq
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Validate staging deployment configuration
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        shell: bash
-        run: |
-          missing=0
-          for name in STAGING_SUPABASE_PROJECT_REF SUPABASE_ACCESS_TOKEN; do
-            if [[ -z "${!name}" ]]; then
-              printf '::error::Missing %s. Configure it in the staging GitHub environment.\n' "$name"
-              missing=1
-            fi
-          done
-          if [[ -n "$STAGING_SUPABASE_PROJECT_REF" && "$STAGING_SUPABASE_PROJECT_REF" != "$EXPECTED_STAGING_SUPABASE_PROJECT_REF" ]]; then
-            printf '::error::STAGING_SUPABASE_PROJECT_REF does not match the reviewed staging target.\n'
-            missing=1
-          fi
-          if [[ "$STAGING_SUPABASE_PROJECT_REF" == "$PRODUCTION_SUPABASE_PROJECT_REF" ]]; then
-            printf '::error::The staging project reference matches production.\n'
-            missing=1
-          fi
-          exit "$missing"
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v3
-        with:
-          version: 2.116.0
-
-      # `db push --project-ref` attempts a direct database connection, which is
-      # IPv6-only by default and therefore fails on GitHub-hosted runners.
-      # Linking first lets the CLI use the project's IPv4-compatible pooler.
-      - name: Link staging project
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase link --project-ref "$STAGING_SUPABASE_PROJECT_REF"
-
-      - name: Push migrations to staging
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          # --include-all is required: 20260918100000_platform_feedback.sql is
-          # intentionally timestamped earlier than a migration already applied
-          # here. It's idempotent (CREATE TABLE IF NOT EXISTS etc.) and the CLI
-          # never re-applies an already-tracked migration, so this is safe —
-          # do not remove without checking `supabase migration list` first.
-          supabase db push \
-            --linked --include-all --yes
-
-      - name: Deploy Edge Functions to staging
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          supabase functions deploy search-users weekly-digest \
-            --project-ref "$STAGING_SUPABASE_PROJECT_REF"
-
+  # No staging environment exists (ADR-2026-011). The production
+  # environment's required-reviewer approval is the pre-deploy gate, and CI
+  # (including E2E against a disposable local Supabase stack) runs first.
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: deploy-staging
+    needs: ci
     environment: production
     permissions:
       contents: read

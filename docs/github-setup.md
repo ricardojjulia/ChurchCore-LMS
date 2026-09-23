@@ -42,30 +42,25 @@ The E2E workflow starts an isolated local Supabase stack in its GitHub-hosted ru
 
 The E2E workflow starts an isolated local Supabase stack in its GitHub-hosted runner and generates a disposable password at runtime. It does not require repository secrets or access to a shared cloud database.
 
-## Staging Environment
+## Release Environment
 
-Create a dedicated second Supabase project for staging — never share schemas, always full project isolation.
-
-### Supabase project
-
-Create a second Supabase project named `churchcore-lms-staging` in the same organisation.
+There is no staging environment (see [ADR-2026-011](decisions/ADR-2026-011.md)).
+Releases go from CI straight to the `production` GitHub environment, whose
+required-reviewer approval is the gate before any production migration or deploy.
 
 ### GitHub environment
 
-In **GitHub → Settings → Environments → New environment**:
+In **GitHub → Settings → Environments**, the `production` environment must have:
 
-- Name: `staging`
-- No approval gate (auto-deploys on every push to `main`)
+- Required reviewers (the approval gate — the environment name alone is not a gate)
 - Deployment branches: `main` only
 
 ### Deployment secrets
 
-Configure these under **Settings → Environments → staging / production → Environment secrets**.
+Configure these under **Settings → Environments → production → Environment secrets**.
 
 | Environment | Secret | Purpose |
 |---|---|---|
-| `staging` | `STAGING_SUPABASE_PROJECT_REF` | Confirmed, dedicated staging project reference |
-| `staging` | `SUPABASE_ACCESS_TOKEN` | Supabase personal access token with access to the staging project |
 | `production` | `SUPABASE_PROJECT_REF` | Production project reference |
 | `production` | `SUPABASE_ACCESS_TOKEN` | Supabase personal access token with access to the production project |
 | `production` | `VERCEL_DEPLOY_HOOK_URL` | Secret URL for the ChurchCore LMS `main` production deploy hook |
@@ -86,11 +81,10 @@ runners cannot reach the IPv6-only direct endpoint). The access token is
 provided only to validation and Supabase deployment steps; checkout, CLI setup,
 and notification steps do not inherit it.
 
-The reviewed staging and production project references are also pinned as
-non-secret workflow constants. A secret that does not match its environment's
-reviewed target, or a staging reference that matches production, stops before
-any migration. Changing either project assignment requires a reviewed workflow
-change as well as updating the environment secret.
+The reviewed production project reference is also pinned as a non-secret
+workflow constant. A `SUPABASE_PROJECT_REF` secret that does not match it stops
+before any migration. Changing the project assignment requires a reviewed
+workflow change as well as updating the environment secret.
 
 For this pinned CLI, the token-based database connection obtains a temporary
 login role when no database password is supplied. This release therefore does
@@ -104,27 +98,25 @@ The pinned CLI also accepts multiple function names, so the release deploys only
 `search-users` and `weekly-digest`; it does not implicitly deploy every local
 function. See the [2.116.0 function argument definition](https://github.com/supabase/cli/blob/v2.116.0/apps/cli/src/legacy/commands/functions/deploy/deploy.command.ts#L11-L15).
 
-### Recovery from a failed staging release
+### Recovery from a failed release
 
-1. Confirm the staging project assignment before setting its reference. Keep it
-   separate from the existing production project.
-2. Populate both staging secrets above and verify the token's account can see that
-   project in Supabase. A 403 response requires an account or project-access fix.
-3. Ensure production environment reviewers are configured before retrying a release
-   that can reach the production job.
-4. Re-run the failed release in GitHub Actions. Missing configuration and permission
+1. Verify the production `SUPABASE_ACCESS_TOKEN` is a personal access token
+   (`sbp_…`, from supabase.com/dashboard/account/tokens) whose account is an
+   Owner or Administrator of the production project. `Unauthorized` means the
+   token is invalid or expired; `Missing required permission(s)` means the
+   account's role on the project is too low.
+2. Re-run the failed release in GitHub Actions. Missing configuration and permission
    failures must remain failed; do not replace required secrets with placeholders
    or skip deployment steps to obtain a green result.
-5. Confirm staging migration and function deployment succeeded, then approve
-   production separately. Confirm the production migration runs before the Edge
-   Functions deploy and that the release waits for Vercel production success.
+3. Approve the production deployment. Confirm the production migration runs before
+   the Edge Functions deploy and that the release waits for Vercel production success.
 
 References: [Supabase environment deployment](https://supabase.com/docs/guides/deployment/managing-environments),
 [GitHub deployment environments](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments).
 
 ### Pipeline order
 
-After this setup, `release.yml` serializes releases and enforces: **CI → staging migration/functions → production environment approval → latest-main check → production migration/functions → Vercel production deployment/verification**. Automatic Git deployment from `main` is disabled in `vercel.json`; pull-request preview deployments remain enabled. A failed migration, stale release, or failed Vercel deployment blocks success notification.
+After this setup, `release.yml` serializes releases and enforces: **CI → production environment approval → latest-main check → production migration/functions → Vercel production deployment/verification**. Automatic Git deployment from `main` is disabled in `vercel.json`; pull-request preview deployments remain enabled. A failed migration, stale release, or failed Vercel deployment blocks success notification.
 
 ---
 
