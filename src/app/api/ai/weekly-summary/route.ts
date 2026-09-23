@@ -96,7 +96,12 @@ Write the summary now:`
     return NextResponse.json({ error: 'AI unavailable' }, { status: 502 })
   }
 
-  const aiData = await aiRes.json()
+  let aiData: { content?: Array<{ text?: string }> } | null = null
+  try {
+    aiData = await aiRes.json()
+  } catch {
+    return NextResponse.json({ error: 'AI unavailable' }, { status: 502 })
+  }
   const summary = aiData?.content?.[0]?.text ?? 'Unable to generate summary right now.'
 
   return NextResponse.json({ summary })

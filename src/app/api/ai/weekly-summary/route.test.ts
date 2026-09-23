@@ -79,6 +79,11 @@ describe('GET /api/ai/weekly-summary', () => {
     expect((await GET(req())).status).toBe(502)
   })
 
+  it('502 when the provider returns a non-JSON body', async () => {
+    fetchMock.mockResolvedValue(new Response('<html>edge error</html>', { status: 200 }))
+    expect((await GET(req())).status).toBe(502)
+  })
+
   it('returns the summary, calling Anthropic directly rather than the /api/ai loopback', async () => {
     const res = await GET(req())
     expect(res.status).toBe(200)
