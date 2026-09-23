@@ -53,6 +53,14 @@ jobs:
         with:
           version: 2.116.0
 
+      # `db push --project-ref` attempts a direct database connection, which is
+      # IPv6-only by default and therefore fails on GitHub-hosted runners.
+      # Linking first lets the CLI use the project's IPv4-compatible pooler.
+      - name: Link staging project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase link --project-ref "$STAGING_SUPABASE_PROJECT_REF"
+
       - name: Push migrations to staging
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -63,7 +71,7 @@ jobs:
           # never re-applies an already-tracked migration, so this is safe —
           # do not remove without checking `supabase migration list` first.
           supabase db push \
-            --project-ref "$STAGING_SUPABASE_PROJECT_REF" --include-all --yes
+            --linked --include-all --yes
 
       - name: Deploy Edge Functions to staging
         env:
@@ -120,6 +128,13 @@ jobs:
         with:
           version: 2.116.0
 
+      # Keep the production connection on the pooler too; GitHub-hosted
+      # runners do not support the IPv6-only direct database endpoint.
+      - name: Link production project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+
       - name: Push migrations to production
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -130,7 +145,7 @@ jobs:
           # never re-applies an already-tracked migration, so this is safe —
           # do not remove without checking `supabase migration list` first.
           supabase db push \
-            --project-ref "$SUPABASE_PROJECT_REF" --include-all --yes
+            --linked --include-all --yes
 
       - name: Deploy Edge Functions
         env:
