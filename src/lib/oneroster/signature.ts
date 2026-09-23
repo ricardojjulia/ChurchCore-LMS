@@ -1,4 +1,4 @@
-import { createPublicKey, verify } from 'node:crypto'
+import { createPrivateKey, createPublicKey, verify } from 'node:crypto'
 
 const DELIVERY_WINDOW_MS = 5 * 60 * 1000
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -56,8 +56,22 @@ export function buildSignedDeliveryMessage({
 }
 
 export function isValidEd25519PublicKey(publicKeyPem: string): boolean {
+  // createPublicKey() also accepts a private-key PEM (deriving its public
+  // half), so reject anything that parses as private material first — it
+  // would otherwise be stored in signature_public_key and echoed by the API.
+  if (isPrivateKey(publicKeyPem)) return false
   try {
     return createPublicKey(publicKeyPem).asymmetricKeyType === 'ed25519'
+  } catch {
+    return false
+  }
+}
+
+function isPrivateKey(pem: string): boolean {
+  if (/PRIVATE KEY/i.test(pem)) return true
+  try {
+    createPrivateKey(pem)
+    return true
   } catch {
     return false
   }

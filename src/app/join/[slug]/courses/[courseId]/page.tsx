@@ -21,6 +21,8 @@ type PreviewBlock = {
 // to exceed this; it also bounds an anon-facing query's worst case.
 const BLOCK_LIMIT = 200
 
+const HEX_COLOR = /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i
+
 // COUNCIL-2026-027 — public course detail page, no authentication required.
 // D5: a request for a course that doesn't exist, belongs to an inactive org,
 // isn't marked is_public_preview, or isn't status = 'published' must all
@@ -67,6 +69,7 @@ export default async function PublicCourseDetailPage({ params }: Props) {
     .from('course_blocks')
     .select('id, title, block_type_id, parent_block_id, sort_order')
     .eq('course_id', courseId)
+    .eq('org_id', org.id)
     .eq('is_published', true)
     .order('sort_order', { ascending: true })
     .limit(BLOCK_LIMIT)
@@ -83,6 +86,11 @@ export default async function PublicCourseDetailPage({ params }: Props) {
   const branding = (org.settings as Record<string, unknown> | null)?.branding as
     | { logo_url?: string; primary_color?: string }
     | undefined
+  // Same inline-style approach as JoinForm's submit button. Hex-only so an
+  // arbitrary settings string can never become an unexpected CSS value.
+  const ctaStyle = branding?.primary_color && HEX_COLOR.test(branding.primary_color)
+    ? { backgroundColor: branding.primary_color }
+    : undefined
 
   return (
     <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -109,6 +117,7 @@ export default async function PublicCourseDetailPage({ params }: Props) {
           )}
           <Link
             href={`/join/${slug}`}
+            style={ctaStyle}
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm mt-6"
           >
             Sign up →

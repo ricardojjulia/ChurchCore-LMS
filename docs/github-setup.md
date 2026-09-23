@@ -80,7 +80,9 @@ repository secrets remain a fallback when the same account can access both.
 The release checks required variable names before installing the CLI or invoking
 Supabase and reports every missing setting without printing its value. Project
 references are quoted shell arguments; the release pins Supabase CLI `2.116.0`,
-whose `db push --project-ref` syntax is verified locally. The access token is
+links each project with `supabase link --project-ref`, then runs
+`db push --linked` so the connection uses the IPv4-compatible pooler (GitHub-hosted
+runners cannot reach the IPv6-only direct endpoint). The access token is
 provided only to validation and Supabase deployment steps; checkout, CLI setup,
 and notification steps do not inherit it.
 

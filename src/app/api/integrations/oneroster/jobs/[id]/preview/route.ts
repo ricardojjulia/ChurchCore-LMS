@@ -39,6 +39,9 @@ export async function POST(
       .select('file_type, row_number, status, error_code, error_message')
       .eq('job_id', id)
       .eq('org_id', context.orgId)
+      // (file_type, row_number) is unique per job; row_number alone restarts
+      // per file, and ties would let offset paging repeat or skip rows.
+      .order('file_type', { ascending: true })
       .order('row_number', { ascending: true })
       .range(offset, offset + 999)
     if (error) return NextResponse.json({ error: 'Unable to load staged rows' }, { status: 500 })

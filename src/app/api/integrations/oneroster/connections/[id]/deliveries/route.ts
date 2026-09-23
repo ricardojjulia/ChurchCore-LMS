@@ -95,8 +95,17 @@ export async function POST(
     sourceSystem: connection.source_system,
     sourceTenantId: connection.source_tenant_id,
   })
+  // Transient: another delivery of this package is mid-staging. Return before
+  // recording an attempt so the sender can retry with the same delivery ID
+  // (an attempt row would make that retry a 409 delivery_replayed).
+  if (!staging.ok && staging.error === 'staging_in_progress') {
+    return NextResponse.json({ error: staging.error }, { status: 409 })
+  }
+
+  // Validity wins over duplication: a redelivered invalid package is still
+  // invalid, and must never be acknowledged (or advance last_success_at).
   const status = staging.ok
-    ? staging.duplicate ? 'duplicate' : staging.valid ? 'validated' : 'invalid'
+    ? !staging.valid ? 'invalid' : staging.duplicate ? 'duplicate' : 'validated'
     : 'failed'
   const validation = staging.ok ? staging.validation : undefined
   const errorCode = staging.ok ? (staging.valid ? null : 'package_invalid') : staging.error
@@ -138,5 +147,5 @@ export async function POST(
     jobId: staging.jobId,
     status,
     valid: staging.valid,
-  }, { status: staging.duplicate ? 200 : staging.valid ? 202 : 422 })
+  }, { status: !staging.valid ? 422 : staging.duplicate ? 200 : 202 })
 }

@@ -24,12 +24,20 @@ async function assertOrgAdmin(orgId: string) {
 // managing any org (COUNCIL-2026-026 D3/Prompt B) — mirrors the
 // assertPlatformAdmin() shape in src/app/platform/actions.ts.
 async function assertOrgAdminOrPlatformAdmin(orgId: string) {
+  const scope = await getOrgAdminScope()
+  if (!scope.platformAdmin && scope.orgId !== orgId) throw new Error('Forbidden')
+}
+
+// Resolves the caller's admin reach without needing a target org up front:
+// a platform admin reaches every org, an org admin/manager only their own.
+// Throws for anyone else, before any target-specific lookup happens.
+async function getOrgAdminScope(): Promise<{ platformAdmin: true } | { platformAdmin: false; orgId: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthenticated')
 
   const { data: isPlatformAdmin } = await supabase.rpc('is_platform_admin')
-  if (isPlatformAdmin) return
+  if (isPlatformAdmin) return { platformAdmin: true }
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -37,9 +45,10 @@ async function assertOrgAdminOrPlatformAdmin(orgId: string) {
     .eq('auth_id', user.id)
     .single()
 
-  if (!profile || profile.org_id !== orgId || !['admin', 'manager'].includes(profile.role ?? '')) {
+  if (!profile?.org_id || !['admin', 'manager'].includes(profile.role ?? '')) {
     throw new Error('Forbidden')
   }
+  return { platformAdmin: false, orgId: profile.org_id }
 }
 
 const AUTO_ENROLL_MAX = 10
@@ -119,20 +128,22 @@ export async function removeAutoEnrollCourse(orgId: string, courseId: string): P
 // regardless of what this function does, closing any window where the flag
 // and status could briefly disagree under concurrent writes.
 export async function setCoursePublicPreview(courseId: string, enable: boolean): Promise<{ error?: string }> {
+  // Authorize BEFORE touching the course: this Server Action is callable
+  // outside the UI, and a lookup-first order would answer "does this course
+  // exist?" (private/unpublished included) to anyone. The lookup is then
+  // scoped to the caller's org, so another org's course and a nonexistent
+  // one are indistinguishable ("Course not found.").
+  const scope = await getOrgAdminScope()
   const service = createServiceClient()
 
-  const { data: course } = await service
+  let lookup = service
     .from('courses')
     .select('id, org_id, status')
     .eq('id', courseId)
-    .maybeSingle()
+  if (!scope.platformAdmin) lookup = lookup.eq('org_id', scope.orgId)
+  const { data: course } = await lookup.maybeSingle()
 
   if (!course) return { error: 'Course not found.' }
-
-  // assertOrgAdminOrPlatformAdmin throws for anyone but an admin/manager of
-  // this course's org, or a platform admin — this also rejects a cross-org
-  // write attempt, since the caller's own org_id must match course.org_id.
-  await assertOrgAdminOrPlatformAdmin(course.org_id)
 
   if (enable && course.status !== 'published') {
     return { error: 'Only a published course can be marked as a public preview.' }
