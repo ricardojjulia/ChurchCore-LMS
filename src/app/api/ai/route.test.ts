@@ -13,12 +13,20 @@ const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
   single: vi.fn(),
   checkLimit: vi.fn(),
+  filters: [] as Array<[string, unknown]>,
 }))
 
 vi.mock('@/utils/supabase/server', () => ({
   createClient: async () => ({
     auth: { getUser: mocks.getUser },
-    from: () => ({ select: () => ({ eq: () => ({ single: mocks.single }) }) }),
+    from: () => {
+      const q = {
+        select: () => q,
+        eq: (column: string, value: unknown) => { mocks.filters.push([column, value]); return q },
+        single: mocks.single,
+      }
+      return q
+    },
   }),
 }))
 
@@ -49,6 +57,7 @@ const fetchMock = vi.fn()
 
 beforeEach(() => {
   vi.resetAllMocks()
+  mocks.filters.length = 0
   vi.stubGlobal('fetch', fetchMock)
   vi.stubEnv('ANTHROPIC_API_KEY', 'test-key')
   mocks.getUser.mockResolvedValue({ data: { user: { id: 'auth-1' } } })
@@ -83,10 +92,19 @@ describe('POST /api/ai', () => {
     ['missing messages', { ...VALID, messages: [] }],
     ['bad message role', { ...VALID, messages: [{ role: 'system', content: 'x' }] }],
     ['non-string system', { ...VALID, system: { evil: true } }],
+    ['oversized system prompt', { ...VALID, system: 'x'.repeat(20_001) }],
   ])('rejects %s with 400', async (_label, body) => {
     const res = await POST(req(body))
     expect(res.status).toBe(400)
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('only admits staff whose organization is active', async () => {
+    await POST(req(VALID))
+    expect(mocks.filters).toContainEqual(['tenant_active', true])
+    mocks.single.mockResolvedValue({ data: null }) // suspended org → no active row
+    const res = await POST(req(VALID))
+    expect(res.status).toBe(403)
   })
 
   it('returns 429 when the per-user limit is exceeded', async () => {

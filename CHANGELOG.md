@@ -11,6 +11,14 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.34.1] — 2026-09-23
+
+Security hotfix (found while building the COUNCIL-2026-031 test suite).
+
+### Security
+
+- **Closed an unauthenticated Anthropic proxy at `POST /api/ai`.** The route forwarded any request body to Anthropic with the server's API key and no authentication (and with no rate limit when Upstash is unset). It now requires a signed-in admin/manager/teacher of an active organization, rate-limits per user, forwards only an allowlisted model with capped `max_tokens` and a bounded system prompt, returns 503 when AI is not configured, and no longer echoes upstream error bodies. HQ, its only caller, is unaffected.
+
 ## [0.34.0] — 2026-09-22
 
 COUNCIL-2026-029 — Learning Paths / Discipleship Tracks (autonomous `.ai-factory` daily-loop run, 6/6 council approve).

@@ -11,6 +11,7 @@ export const runtime = 'edge'
 // model, a capped max_tokens, and the fields HQ actually sends.
 const ALLOWED_MODELS = new Set(['claude-sonnet-4-6'])
 const MAX_TOKENS_CAP = 16_000
+const MAX_SYSTEM_CHARS = 20_000
 const STAFF_ROLES = ['admin', 'manager', 'teacher']
 
 type Message = { role: 'user' | 'assistant'; content: string }
@@ -28,7 +29,7 @@ function parseBody(raw: unknown):
       && typeof (m as Message).content === 'string',
   )
   if (!messages) return { ok: false }
-  if (b.system !== undefined && typeof b.system !== 'string') return { ok: false }
+  if (b.system !== undefined && (typeof b.system !== 'string' || b.system.length > MAX_SYSTEM_CHARS)) return { ok: false }
   const requested = typeof b.max_tokens === 'number' && b.max_tokens > 0 ? b.max_tokens : 1024
   return {
     ok: true,
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
     .from('profile_roles')
     .select('role')
     .eq('auth_id', user.id)
+    .eq('tenant_active', true) // staff of a suspended org get no AI access
     .single()
   if (!pr || !STAFF_ROLES.includes(pr.role)) return Response.json({ error: 'Forbidden' }, { status: 403 })
 
