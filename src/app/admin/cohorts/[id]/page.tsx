@@ -57,7 +57,7 @@ export default async function CohortDetailPage({
     <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-400">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500">
           <Link href="/admin/cohorts" className="hover:text-primary font-medium">Cohorts</Link>
           <span>/</span>
           <span className="text-foreground font-semibold">{cohort.cohort_name}</span>

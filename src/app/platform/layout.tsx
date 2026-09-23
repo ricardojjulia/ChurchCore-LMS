@@ -21,7 +21,7 @@ export default async function PlatformLayout({ children }: { children: React.Rea
           <span className="text-sm font-bold tracking-widest text-indigo-400 uppercase">Platform Admin</span>
           <PlatformNav />
           <div className="ml-auto">
-            <Link href="/dashboard" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+            <Link href="/dashboard" className="text-xs text-slate-400 hover:text-slate-300 transition-colors">
               ← Back to app
             </Link>
           </div>

@@ -32,7 +32,7 @@ export default async function EditBlueprintPage({ params }: { params: Promise<{ 
   return (
     <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-xl mx-auto">
-        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500 mb-6">
           <Link href="/admin/blueprints" className="hover:text-primary font-medium">Blueprints</Link>
           <span>/</span>
           <span className="text-foreground font-semibold">{bp.title}</span>

@@ -20,7 +20,7 @@ function StatusBadge({ status }: { status: string }) {
     trial:     'bg-sky-900 text-sky-300',
     active:    'bg-green-900 text-green-300',
     suspended: 'bg-amber-900 text-amber-300',
-    deleted:   'bg-slate-800 text-slate-500',
+    deleted:   'bg-slate-800 text-slate-400',
   }
   return (
     <span className={`rounded px-2 py-0.5 text-xs font-semibold ${styles[status] ?? styles.deleted}`}>
@@ -102,7 +102,7 @@ export default async function PlatformPage() {
         ].map(({ label, value }) => (
           <div key={label} className="rounded-lg border border-slate-800 bg-slate-900 p-4">
             <p className="text-2xl font-bold text-white">{value}</p>
-            <p className="mt-0.5 text-xs text-slate-500">{label}</p>
+            <p className="mt-0.5 text-xs text-slate-400">{label}</p>
           </div>
         ))}
       </div>
@@ -110,7 +110,7 @@ export default async function PlatformPage() {
       {/* Tenant table */}
       <div className="mt-8 overflow-x-auto rounded-md border border-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-slate-900 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <thead className="bg-slate-900 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
             <tr>
               {['Tenant', 'Status', 'Plan', 'Users', 'Courses', 'Health', 'Trial ends', 'Actions'].map(h => (
                 <th key={h} className="px-4 py-3">{h}</th>
@@ -120,7 +120,7 @@ export default async function PlatformPage() {
           <tbody className="divide-y divide-slate-800 bg-slate-950">
             {tenants.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-10 text-center text-slate-600">
+                <td colSpan={8} className="px-4 py-10 text-center text-slate-400">
                   No tenants yet. Create your first one.
                 </td>
               </tr>
@@ -131,14 +131,14 @@ export default async function PlatformPage() {
                   <Link href={`/platform/tenants/${t.id}`} className="font-medium text-white hover:text-indigo-400">
                     {t.name}
                   </Link>
-                  <p className="text-xs text-slate-600">{t.slug}</p>
+                  <p className="text-xs text-slate-400">{t.slug}</p>
                 </td>
                 <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
                 <td className="px-4 py-3"><PlanBadge plan={t.plan} /></td>
                 <td className="px-4 py-3 text-slate-300">{t.userCount}</td>
                 <td className="px-4 py-3 text-slate-300">{t.courseCount}</td>
                 <td className="px-4 py-3"><HealthBadge score={t.score} /></td>
-                <td className="px-4 py-3 text-slate-500 text-xs">
+                <td className="px-4 py-3 text-slate-400 text-xs">
                   {t.trial_ends_at
                     ? new Date(t.trial_ends_at).toLocaleDateString()
                     : '—'}

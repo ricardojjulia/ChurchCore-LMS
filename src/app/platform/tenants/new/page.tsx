@@ -4,22 +4,22 @@ export default function NewTenantPage() {
   return (
     <div className="max-w-xl">
       <h1 className="text-2xl font-bold text-white">New Tenant</h1>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-slate-400">
         Create a new organization. An invite will be sent to the admin email if provided.
       </p>
 
       <form action={createTenant} className="mt-8 space-y-6">
         {/* Basics */}
         <section className="rounded-lg border border-slate-800 bg-slate-900 p-6 space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Organization</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Organization</h2>
 
           <Field label="Name" name="name" required placeholder="Grace Church" />
           <Field label="Slug" name="slug" required placeholder="grace-church"
             hint="URL-safe identifier, e.g. grace-church" />
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Plan</label>
-            <select name="plan" className={selectCls}>
+            <label htmlFor="tenant-plan" className="block text-sm font-medium text-slate-300 mb-1">Plan</label>
+            <select id="tenant-plan" name="plan" className={selectCls}>
               <option value="free">Free / Trial</option>
               <option value="standard">Standard</option>
               <option value="premium">Premium</option>
@@ -32,13 +32,13 @@ export default function NewTenantPage() {
 
         {/* Admin invite */}
         <section className="rounded-lg border border-slate-800 bg-slate-900 p-6 space-y-4">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Admin Invite (optional)</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Admin Invite (optional)</h2>
           <Field label="Admin email" name="admin_email" type="email" placeholder="pastor@grace.org" />
         </section>
 
         {/* Feature flags */}
         <section className="rounded-lg border border-slate-800 bg-slate-900 p-6 space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Features</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Features</h2>
           <Toggle name="feat_ai_tutor"    label="AI Tutor" defaultChecked />
           <Toggle name="feat_guardian"    label="Guardian Portal" defaultChecked />
           <Toggle name="feat_leaderboard" label="Leaderboard" defaultChecked />
@@ -82,7 +82,7 @@ function Field({
         placeholder={placeholder}
         className="w-full rounded border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none"
       />
-      {hint && <p className="mt-1 text-xs text-slate-600">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
     </div>
   )
 }

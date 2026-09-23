@@ -66,7 +66,7 @@ export default async function BillingPage({ params }: { params: Promise<{ id: st
   return (
     <div className="max-w-3xl mx-auto py-8 space-y-8">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-slate-500">
+      <div className="flex items-center gap-2 text-sm text-slate-400">
         <Link href="/platform" className="hover:text-slate-300">Tenants</Link>
         <span>/</span>
         <Link href={`/platform/tenants/${org.id}`} className="hover:text-slate-300">{org.name}</Link>

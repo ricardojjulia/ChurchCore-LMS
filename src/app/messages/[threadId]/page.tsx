@@ -75,7 +75,7 @@ export default async function ThreadPage({ params }: { params: Promise<{ threadI
     <main className="min-h-screen bg-slate-50 flex flex-col">
       {/* Thread header */}
       <div className="bg-white border-b border-border px-4 py-3 flex items-center gap-3 sticky top-14 z-30">
-        <Link href="/messages" className="text-muted-foreground hover:text-foreground transition-colors p-1 -ml-1">
+        <Link href="/messages" aria-label="Back to messages" className="text-muted-foreground hover:text-foreground transition-colors p-1 -ml-1">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
             <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>

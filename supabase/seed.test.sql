@@ -81,6 +81,15 @@ DELETE FROM public.academic_terms
   WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
 DELETE FROM public.guardian_links
   WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
+-- Rows the full suite (seed.suite.sql + Playwright flows) creates that
+-- reference profiles without ON DELETE CASCADE — clear them first so the
+-- profile deletes below can run on a re-seed.
+DELETE FROM public.question_banks
+  WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
+DELETE FROM public.user_audit_log
+  WHERE actor_uid::text LIKE '00000000-0000-0000-0002-%' OR target_uid::text LIKE '00000000-0000-0000-0002-%';
+DELETE FROM public.report_definitions
+  WHERE created_by::text LIKE '00000000-0000-0000-0002-%';
 DELETE FROM public.profile_roles
   WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
 -- Also catch trigger-created profiles that may not yet have org_id set
@@ -89,13 +98,15 @@ DELETE FROM public.profile_roles
     SELECT id FROM auth.users
     WHERE email IN (
       'admin@test.churchcore.dev','teacher@test.churchcore.dev','student@test.churchcore.dev',
-      'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev'
+      'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev',
+      'manager@test.churchcore.dev','platform@test.churchcore.dev'
     )
   );
 DELETE FROM public.profiles
   WHERE email IN (
     'admin@test.churchcore.dev','teacher@test.churchcore.dev','student@test.churchcore.dev',
-    'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev'
+    'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev',
+    'manager@test.churchcore.dev','platform@test.churchcore.dev'
   );
 DELETE FROM public.organizations
   WHERE id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');

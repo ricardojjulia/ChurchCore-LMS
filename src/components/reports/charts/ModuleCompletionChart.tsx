@@ -28,7 +28,7 @@ export default function ModuleCompletionChart({ data }: { data: ModuleCompletion
   }, [data, t])
 
   return (
-    <div role="img" aria-label={t('reports.charts.moduleCompletion.containerAriaLabelTemplate', { summary })}>
+    <div role="group" aria-label={t('reports.charts.moduleCompletion.containerAriaLabelTemplate', { summary })}>
       <div className="mb-3 flex justify-end">
         <button
           type="button"

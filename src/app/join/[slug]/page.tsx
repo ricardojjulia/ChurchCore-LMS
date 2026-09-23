@@ -6,17 +6,18 @@ import { getTranslations } from 'next-intl/server'
 export const dynamic = 'force-dynamic'
 
 interface Props {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 export default async function JoinPage({ params }: Props) {
+  const { slug } = await params
   const t = await getTranslations()
   const service = createServiceClient()
 
   const { data: org } = await service
     .from('organizations')
     .select('id, name, settings')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .eq('status', 'active')
     .single()
 

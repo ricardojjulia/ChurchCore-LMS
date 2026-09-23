@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     .not('email', 'is', null)
 
   if (studentsErr) {
-    return NextResponse.json({ error: studentsErr.message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to load digest recipients' }, { status: 500 })
   }
   if (!students?.length) {
     return NextResponse.json({ sent: 0, total: 0 })

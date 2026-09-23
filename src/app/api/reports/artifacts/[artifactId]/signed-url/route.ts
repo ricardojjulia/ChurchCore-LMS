@@ -28,7 +28,7 @@ export async function GET(_request: Request, context: RouteContext) {
   const { data, error } = await service.storage.from('reports').createSignedUrl(storagePath, 60)
 
   if (error || !data?.signedUrl) {
-    return NextResponse.json({ error: error?.message ?? 'Unable to sign report URL' }, { status: 500 })
+    return NextResponse.json({ error: 'Unable to sign report URL' }, { status: 500 })
   }
 
   return NextResponse.json({ signedUrl: data.signedUrl })

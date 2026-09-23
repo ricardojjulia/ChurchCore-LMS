@@ -190,7 +190,7 @@ export function FeedbackTable({ rows: initialRows }: Props) {
         {/* Table */}
         <div className="overflow-x-auto rounded-md border border-slate-800">
           <table className="w-full text-sm">
-            <thead className="bg-slate-900 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <thead className="bg-slate-900 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
               <tr>
                 {['Time', 'Identity', 'Route', 'Category', 'Preview', 'Hits', 'Action', 'Done'].map(h => (
                   <th key={h} className="whitespace-nowrap px-4 py-3">{h}</th>
@@ -200,7 +200,7 @@ export function FeedbackTable({ rows: initialRows }: Props) {
             <tbody className="divide-y divide-slate-800 bg-slate-950">
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-slate-600">
+                  <td colSpan={8} className="px-4 py-10 text-center text-slate-400">
                     No feedback entries match the current filters.
                   </td>
                 </tr>
@@ -224,7 +224,7 @@ export function FeedbackTable({ rows: initialRows }: Props) {
                     }
                   }}
                 >
-                  <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-500">
+                  <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
                     {formatDate(row.created_at)}
                   </td>
                   <td className="px-4 py-3">
@@ -232,7 +232,7 @@ export function FeedbackTable({ rows: initialRows }: Props) {
                       {row.user_email ?? '—'}
                     </p>
                     {row.user_role && (
-                      <p className="text-xs text-slate-600">{row.user_role}</p>
+                      <p className="text-xs text-slate-400">{row.user_role}</p>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -287,7 +287,7 @@ export function FeedbackTable({ rows: initialRows }: Props) {
               type="button"
               onClick={() => setSelectedId(null)}
               aria-label="Close detail drawer"
-              className="rounded p-1 text-slate-500 hover:text-slate-300"
+              className="rounded p-1 text-slate-400 hover:text-slate-300"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22z" />
@@ -305,7 +305,7 @@ export function FeedbackTable({ rows: initialRows }: Props) {
                 <dt className="font-semibold text-slate-400">User</dt>
                 <dd className="mt-0.5 text-slate-200">
                   {selectedRow.user_email}
-                  {selectedRow.user_role && <span className="ml-1 text-slate-500">({selectedRow.user_role})</span>}
+                  {selectedRow.user_role && <span className="ml-1 text-slate-400">({selectedRow.user_role})</span>}
                 </dd>
               </div>
             )}
@@ -328,7 +328,7 @@ export function FeedbackTable({ rows: initialRows }: Props) {
                 {selectedRow.category === 'ERROR' ? 'Error message' : 'Note'}
               </dt>
               <dd className="mt-0.5 whitespace-pre-wrap break-words text-slate-200">
-                {(selectedRow.category === 'ERROR' ? selectedRow.error_message : selectedRow.note) || <span className="text-slate-600">None</span>}
+                {(selectedRow.category === 'ERROR' ? selectedRow.error_message : selectedRow.note) || <span className="text-slate-400">None</span>}
               </dd>
             </div>
             {selectedRow.breadcrumbs.length > 0 && (
@@ -338,7 +338,7 @@ export function FeedbackTable({ rows: initialRows }: Props) {
                   <ol className="space-y-0.5">
                     {selectedRow.breadcrumbs.map((b, i) => (
                       <li key={i} className="truncate text-slate-400">
-                        <span className="mr-1 text-slate-600">{i + 1}.</span>{b}
+                        <span className="mr-1 text-slate-400">{i + 1}.</span>{b}
                       </li>
                     ))}
                   </ol>
@@ -377,10 +377,10 @@ export function FeedbackTable({ rows: initialRows }: Props) {
 
           {/* Collapsed raw-JSON view */}
           <details className="mt-4">
-            <summary className="cursor-pointer text-xs text-slate-600 hover:text-slate-400">
+            <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-400">
               Raw JSON
             </summary>
-            <pre className="mt-2 max-h-48 overflow-auto rounded bg-slate-950 p-2 text-xs text-slate-500">
+            <pre className="mt-2 max-h-48 overflow-auto rounded bg-slate-950 p-2 text-xs text-slate-400">
               {JSON.stringify(selectedRow, null, 2)}
             </pre>
           </details>
