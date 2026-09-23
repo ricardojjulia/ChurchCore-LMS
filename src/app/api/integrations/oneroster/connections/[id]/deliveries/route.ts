@@ -95,6 +95,13 @@ export async function POST(
     sourceSystem: connection.source_system,
     sourceTenantId: connection.source_tenant_id,
   })
+  // Transient: another delivery of this package is mid-staging. Return before
+  // recording an attempt so the sender can retry with the same delivery ID
+  // (an attempt row would make that retry a 409 delivery_replayed).
+  if (!staging.ok && staging.error === 'staging_in_progress') {
+    return NextResponse.json({ error: staging.error }, { status: 409 })
+  }
+
   // Validity wins over duplication: a redelivered invalid package is still
   // invalid, and must never be acknowledged (or advance last_success_at).
   const status = staging.ok
@@ -133,12 +140,7 @@ export async function POST(
   }
   await service.from('oneroster_connections').update(timestamps).eq('id', connection.id)
 
-  if (!staging.ok) {
-    return NextResponse.json(
-      { error: staging.error },
-      { status: staging.error === 'staging_in_progress' ? 409 : 500 },
-    )
-  }
+  if (!staging.ok) return NextResponse.json({ error: staging.error }, { status: 500 })
   return NextResponse.json({
     deliveryId: parsedHeaders.value.deliveryId,
     duplicate: staging.duplicate,

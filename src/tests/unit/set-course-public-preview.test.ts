@@ -42,6 +42,8 @@ function makeServiceClient({
   // Honors .eq('org_id', ...) so the org-scoped lookup behaves like the DB:
   // a course outside the caller's org comes back as null.
   const lookupFilters: Array<[string, unknown]> = []
+  // any: a self-referencing query-builder stub; typing it would mean
+  // re-declaring Supabase's PostgrestFilterBuilder generics for a test double.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lookupChain: any = {}
   lookupChain.eq = vi.fn((column: string, value: unknown) => {

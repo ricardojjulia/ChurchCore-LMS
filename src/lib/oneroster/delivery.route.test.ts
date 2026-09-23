@@ -142,11 +142,23 @@ describe('signed OneRoster delivery route', () => {
     expect(updates[0]).not.toHaveProperty('last_success_at')
   })
 
-  it('returns 409 while the same package is still being staged by another delivery', async () => {
+  it('returns 409 while the package is mid-staging, without consuming the delivery ID', async () => {
+    const inserts: unknown[] = []
     mocks.stage.mockResolvedValue({ ok: false, error: 'staging_in_progress' })
+    mocks.from.mockImplementation((table: string) => {
+      const query = {
+        select: () => query,
+        eq: () => query,
+        maybeSingle: vi.fn(async () => ({ data: table === 'oneroster_connections' ? connection : null, error: null })),
+        insert: vi.fn(async (value: unknown) => { inserts.push(value); return { error: null } }),
+        update: vi.fn(() => query),
+      }
+      return query
+    })
     const response = await POST(request(), deliveryContext())
     expect(response.status).toBe(409)
     expect(await response.json()).toEqual({ error: 'staging_in_progress' })
+    expect(inserts).toHaveLength(0)
   })
 
   it('records a safe failed attempt when package staging fails', async () => {

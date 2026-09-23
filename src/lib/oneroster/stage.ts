@@ -122,6 +122,8 @@ async function stagePackage(options: StagePackageOptions): Promise<StagePackageR
         .maybeSingle()
       if (!existingError && existing) {
         const outcome = classifyExistingJob(existing)
+        // A 'retry' here means the winner's own staging already aborted;
+        // report failure and let the sender's next delivery restage it.
         return outcome === 'retry'
           ? { ok: false, error: 'staging_failed' }
           : existingJobResult(existing.id, packageHash, outcome)
