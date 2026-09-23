@@ -566,21 +566,21 @@ The checked-in [release workflow](../.github/workflows/release.yml) is the execu
 source of truth. It runs on push to `main` in this order:
 
 ```
-CI suite → staging migrations/functions → production environment approval → production migrations/functions → verified Vercel production deploy
+CI suite → production environment approval → production migrations/functions → verified Vercel production deploy
 ```
 
-- Both deployment jobs validate their required project reference and access token
-  before installing Supabase CLI `2.116.0` or making deployment calls.
-- Staging uses `STAGING_SUPABASE_PROJECT_REF`; production uses `SUPABASE_PROJECT_REF`.
-  References are quoted shell arguments. Migration pushes use `--yes`.
-- Each job references its own GitHub environment. The production environment must
-  be on the actual deployment job, which depends on staging; a separate approval
-  job does not pass environment secrets to a later job.
+- There is no staging environment ([ADR-2026-011](decisions/ADR-2026-011.md)); the
+  production environment's required-reviewer approval is the pre-deploy gate.
+- The deployment job validates its project reference and access token before
+  installing Supabase CLI `2.116.0` or making deployment calls. It uses
+  `SUPABASE_PROJECT_REF`, a quoted shell argument; migration pushes use `--yes`.
+- The production environment must be on the actual deployment job; a separate
+  approval job does not pass environment secrets to a later job.
 - Bind `SUPABASE_ACCESS_TOKEN` only to validation and Supabase deployment steps.
   Checkout, CLI installation, and notifications do not receive the token.
 - Production migrations run before Edge Functions; a failed migration stops the job.
 - Release runs are serialized. Production verifies its commit is still the latest
-  `main`, and both project references must match reviewed workflow constants.
+  `main`, and the project reference must match a reviewed workflow constant.
 - Vercel automatic deployment from `main` is disabled. The approved production
   job triggers the project deploy hook after Supabase and verifies the resulting
   exact-commit Vercel status (created after the hook) and its Vercel target URL
@@ -613,17 +613,12 @@ Required settings for `main`:
 
 ### 7.5 GitHub Environments
 
-**`staging` environment:**
-- No approval gate (auto-deploys on push to main after CI passes)
-- Deployment branches: `main` only
-- Secrets: `STAGING_SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` with access to the dedicated staging project
-
 **`production` environment:**
 - Required reviewers: architects team
 - Deployment branches: `main` only
 - Secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` with access to production, `VERCEL_DEPLOY_HOOK_URL`; optional `DEPLOY_WEBHOOK_URL`
 
-Staging and production must be separate, fully isolated infrastructure instances. Never share a database between staging and production. Never use a schema prefix as a substitute for project isolation.
+This project runs without a staging environment ([ADR-2026-011](decisions/ADR-2026-011.md)). If one is added later, it must be a separate, fully isolated infrastructure instance: never share a database with production, and never use a schema prefix as a substitute for project isolation.
 
 ### 7.6 Required secrets (document in `docs/github-setup.md`)
 
@@ -637,7 +632,6 @@ Staging and production must be separate, fully isolated infrastructure instances
 | `TEST_USER_PASSWORD` | Shared password for seed test users |
 | `SUPABASE_ACCESS_TOKEN` | Personal access token configured separately in each deployment environment with access to that environment's project |
 | `SUPABASE_PROJECT_REF` | Production Supabase project ref |
-| `STAGING_SUPABASE_PROJECT_REF` | Staging Supabase project ref |
 | `VERCEL_DEPLOY_HOOK_URL` | Vercel `main` production deploy hook URL (production environment only) |
 | `DEPLOY_WEBHOOK_URL` | Slack/Discord webhook (optional, skipped if absent) |
 | `CRON_SECRET` | Bearer token for cron route authorization |
@@ -750,7 +744,7 @@ src/
 .github/
   workflows/
     ci.yml             # CI pipeline (see Part 7.1)
-    release.yml        # Release pipeline with staging gate (see Part 7.2)
+    release.yml        # Release pipeline with production approval gate (see Part 7.2)
   CODEOWNERS           # Architecture-critical path protection (see Part 7.4)
 CHANGELOG.md           # Keep a Changelog format (see Part 6.2)
 ```

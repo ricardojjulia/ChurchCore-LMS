@@ -236,7 +236,7 @@ graph LR
 | Payments | [Stripe](https://stripe.com) | Checkout, webhooks, Customer Portal; idempotency via `platform_audit_log` |
 | PWA | `@ducanh2912/next-pwa` | Workbox service worker; offline fallback; App Router compatible |
 | Testing | [Vitest](https://vitest.dev) + Testing Library | 72+ unit tests; Proxy mock chain for Supabase |
-| CI/CD | GitHub Actions | Lint → typecheck → test → build → staging gate → production |
+| CI/CD | GitHub Actions | Lint → typecheck → test → build → approval gate → production |
 | Deployment | [Vercel](https://vercel.com) | Edge-optimized; cron via `vercel.json` |
 | PDF | `@react-pdf/renderer` | Server-rendered certificate PDFs |
 | Charts | Recharts + Tremor | Course analytics, admin dashboards |
@@ -343,7 +343,7 @@ node scripts/reset-demo-data.mjs --confirm --retain-email=you@example.com
 
 Add all environment variables in your Vercel project settings (Settings → Environment Variables).
 
-For the full GitHub Actions CI/CD setup with staging gate and production deploy, see [docs/github-setup.md](./docs/github-setup.md).
+For the full GitHub Actions CI/CD setup with the approval gate and production deploy, see [docs/github-setup.md](./docs/github-setup.md).
 
 ---
 
@@ -391,7 +391,6 @@ Course → Enroll → search by name or email → click Enroll
 See [docs/github-setup.md](./docs/github-setup.md) for:
 - Branch protection rules
 - Required GitHub Actions secrets
-- Staging environment configuration
 - Production deploy with manual approval gate
 
 ### Customise the sidebar navigation
@@ -458,7 +457,7 @@ src/
 ├── workflows/
 │   ├── ci.yml                 # lint → typecheck → test → build
 │   ├── e2e.yml                # edge function e2e (PR-only)
-│   └── release.yml            # staging gate → manual approval → production
+│   └── release.yml            # CI → manual approval → production
 └── CODEOWNERS                 # migrations and workflows require maintainer review
 docs/
 ├── decisions/                 # ADR-2025-001 through ADR-2025-007, COUNCIL-2025-008 through 011
