@@ -11,6 +11,12 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.34.2] — 2026-09-23
+
+### Fixed
+
+- **Dashboard weekly AI summary** now calls Anthropic directly. It used to loop back through `/api/ai` without a user session, which only worked while that route was an open proxy; after the 0.34.1 security fix it would have returned "AI unavailable" for everyone. Provider network errors now return a clean 502 instead of an unhandled 500.
+
 ## [0.34.1] — 2026-09-23
 
 Security hotfix (found while building the COUNCIL-2026-031 test suite).

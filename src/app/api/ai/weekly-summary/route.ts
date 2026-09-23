@@ -67,21 +67,41 @@ ${courseLines}
 
 Write the summary now:`
 
-  const aiRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/ai`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model:      'claude-haiku-4-5-20251001',
-      max_tokens: 200,
-      messages:   [{ role: 'user', content: prompt }],
-    }),
-  })
+  // Call Anthropic directly. This used to loop back through /api/ai with no
+  // user session, which only worked while /api/ai was an open proxy; it also
+  // turned any network error into an unhandled 500.
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) return NextResponse.json({ error: 'AI unavailable' }, { status: 503 })
+
+  let aiRes: Response
+  try {
+    aiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model:      'claude-haiku-4-5-20251001',
+        max_tokens: 200,
+        messages:   [{ role: 'user', content: prompt }],
+      }),
+    })
+  } catch {
+    return NextResponse.json({ error: 'AI unavailable' }, { status: 502 })
+  }
 
   if (!aiRes.ok) {
     return NextResponse.json({ error: 'AI unavailable' }, { status: 502 })
   }
 
-  const aiData = await aiRes.json()
+  let aiData: { content?: Array<{ text?: string }> } | null = null
+  try {
+    aiData = await aiRes.json()
+  } catch {
+    return NextResponse.json({ error: 'AI unavailable' }, { status: 502 })
+  }
   const summary = aiData?.content?.[0]?.text ?? 'Unable to generate summary right now.'
 
   return NextResponse.json({ summary })
