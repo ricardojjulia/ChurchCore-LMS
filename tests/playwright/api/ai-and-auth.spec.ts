@@ -85,7 +85,7 @@ test.describe('POST /api/ai/outline-generator', () => {
     expect((await clients.get('student').post('/api/ai/outline-generator', { data: body })).status()).toBe(403)
     expect((await clients.get('teacher').post('/api/ai/outline-generator', { data: {} })).status()).toBe(400)
     expect((await clients.get('teacher').post('/api/ai/outline-generator', {
-      data: { fileBase64: Buffer.from('not a pdf').toString('base64'), fileName: 'x.pdf' },
+      data: { fileBase64: Buffer.from('not a pdf').toString('base64'), fileType: 'application/pdf' },
     })).status()).toBe(400)
     expect((await clients.get('teacher').post('/api/ai/outline-generator', { data: body })).status()).toBe(502)
   })
