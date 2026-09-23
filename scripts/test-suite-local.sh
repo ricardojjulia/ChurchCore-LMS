@@ -49,11 +49,21 @@ psql "$TEST_DATABASE_URL" -q -v ON_ERROR_STOP=1 -f supabase/seed.test.sql >/dev/
 psql "$TEST_DATABASE_URL" -q -v ON_ERROR_STOP=1 -f supabase/seed.suite.sql >/dev/null
 echo "Seeded local stack at $API_URL"
 
+# Edge Functions, served like CI with a suite-only env (CRON_SECRET etc.).
+FN_ENV="${TMPDIR:-/tmp}/churchcore-suite-functions.env"
+printf 'CRON_SECRET=%s\nSUPABASE_JWT_SECRET=%s\n' "$CRON_SECRET" "$JWT_SECRET" > "$FN_ENV"
+supabase functions serve --env-file "$FN_ENV" > "${TMPDIR:-/tmp}/churchcore-suite-functions.log" 2>&1 &
+FN_PID=$!
+
 [[ "${SKIP_BUILD:-}" == 1 ]] || npm run build >/dev/null
 npx next start --hostname 127.0.0.1 --port "$PORT" > "${TMPDIR:-/tmp}/churchcore-suite-app.log" 2>&1 &
 APP_PID=$!
-trap 'kill $APP_PID 2>/dev/null || true' EXIT
+trap 'kill $APP_PID $FN_PID 2>/dev/null || true' EXIT
 for _ in $(seq 1 60); do curl -fs -o /dev/null "$APP_BASE_URL/login" && break; sleep 1; done
+for _ in $(seq 1 60); do
+  curl -fs -o /dev/null -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" "$API_URL/functions/v1/system-health-check" && break
+  sleep 1
+done
 
 DEFAULT_PROJECTS=(--project=setup --project=api --project=browser --project=mobile)
 [[ " $* " == *" --project"* ]] && DEFAULT_PROJECTS=()

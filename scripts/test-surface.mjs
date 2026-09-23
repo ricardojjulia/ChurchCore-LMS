@@ -102,7 +102,7 @@ export function scanCoverage(root) {
       const rel = toPosix(path.relative(root, file))
       const inTestTree = rel.startsWith('tests/') || rel.startsWith('supabase/tests/') || isTestFile(rel)
       if (!inTestTree) continue
-      if (rel.endsWith('fixtures/covers.ts')) continue
+      if (rel.endsWith('/covers.ts')) continue // the covers() helper itself
       const src = readFileSync(file, 'utf8')
       if (rel.endsWith('.sql')) {
         for (const m of src.matchAll(/--\s*covers:\s*(.+)$/gm)) m[1].split(',').forEach((id) => add(id, rel))

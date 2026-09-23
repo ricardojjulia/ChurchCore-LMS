@@ -114,7 +114,8 @@ test.describe('GET /callback (auth code exchange)', () => {
     for (const next of ['@evil.example', '//evil.example', 'https://evil.example']) {
       const res = await clients.get('anon').get(`/callback?code=bad&next=${encodeURIComponent(next)}`)
       const location = new URL(res.headers()['location'])
-      expect(location.hostname).toBe('127.0.0.1')
+      expect(['127.0.0.1', 'localhost']).toContain(location.hostname)
+      expect(location.host).not.toContain('evil')
     }
   })
 })

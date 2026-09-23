@@ -4,6 +4,7 @@
 // Auth: CRON_SECRET bearer token — no JWT required.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { rejectUnlessCron } from '../_shared/cron-auth.ts'
 
 const SUPABASE_URL  = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY   = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -13,9 +14,8 @@ const CRON_SECRET   = Deno.env.get('CRON_SECRET')!
 const APP_URL       = Deno.env.get('NEXT_PUBLIC_APP_URL') ?? ''
 
 Deno.serve(async (req) => {
-  if (req.headers.get('Authorization') !== `Bearer ${CRON_SECRET}`) {
-    return new Response('Unauthorized', { status: 401 })
-  }
+  const denied = rejectUnlessCron(req)
+  if (denied) return denied
 
   const svc = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },

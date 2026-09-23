@@ -1,6 +1,9 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { addCohortMember, removeCohortMember, searchCohortMembers } from './cohorts'
+import { covers } from '../../tests/covers'
+
+covers('action:cohorts.addCohortMember', 'action:cohorts.removeCohortMember', 'action:cohorts.searchCohortMembers')
 
 // ── Proxy that makes any query chain awaitable with a fixed resolved value ────
 function resolvesWith(value: Record<string, unknown>) {

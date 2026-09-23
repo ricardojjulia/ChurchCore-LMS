@@ -88,8 +88,10 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          supabase functions deploy search-users weekly-digest \
-            --project-ref "$SUPABASE_PROJECT_REF"
+          # Deploy every function in supabase/functions (per-function
+          # verify_jwt comes from supabase/config.toml). Listing names by hand
+          # meant fixes to any other function never reached production.
+          supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF"
 
       - name: Trigger Vercel production deployment
         id: vercel-trigger

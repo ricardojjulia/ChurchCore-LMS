@@ -23,6 +23,9 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { getGradebookGrid, setGradeCell } from './gradebook'
+import { covers } from '../../tests/covers'
+
+covers('action:gradebook.getGradebookGrid', 'action:gradebook.setGradeCell')
 
 // ── Module-level mocks ────────────────────────────────────────────────────────
 

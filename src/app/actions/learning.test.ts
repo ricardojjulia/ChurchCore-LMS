@@ -2,6 +2,9 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { enrollSelf, gradeSubmission } from './learning'
+import { covers } from '../../tests/covers'
+
+covers('action:learning.enrollSelf', 'action:learning.gradeSubmission')
 
 // ── Service client mock (used for XP award and notifications in gradeSubmission) ──
 vi.mock('@/utils/supabase/service', () => ({

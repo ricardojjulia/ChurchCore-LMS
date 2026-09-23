@@ -3,6 +3,9 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { createProgramTrack, updateProgramTrack } from './academic'
+import { covers } from '../../tests/covers'
+
+covers('action:academic.createProgramTrack', 'action:academic.updateProgramTrack')
 
 function form(values: Record<string, string>) {
   const fd = new FormData()

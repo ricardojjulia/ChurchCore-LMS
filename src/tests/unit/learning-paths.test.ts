@@ -17,6 +17,9 @@ import {
   reorderPathCourses,
   getLearningPathsForLearner,
 } from '@/app/actions/learning-paths'
+import { covers } from '../covers'
+
+covers('action:learning-paths.createLearningPath', 'action:learning-paths.updateLearningPath', 'action:learning-paths.deleteLearningPath', 'action:learning-paths.addCourseToPath', 'action:learning-paths.removeCourseFromPath', 'action:learning-paths.reorderPathCourses', 'action:learning-paths.getLearningPathsForLearner')
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const ORG_A   = 'org-aaaaaaaa-0000-0000-0000-000000000001'

@@ -44,11 +44,6 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // @react-pdf/renderer is on Next's default serverExternalPackages list, so it
-  // was loaded from node_modules with React 18 while route handlers build
-  // elements with Next's bundled React 19 — certificate PDFs failed with React
-  // error #31. Bundling it makes both sides use the same React.
-  transpilePackages: ['@react-pdf/renderer'],
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },

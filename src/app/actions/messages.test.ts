@@ -1,6 +1,9 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { sendMessage, deleteMessage, markThreadRead, getOrCreateDirectThread } from './messages'
+import { covers } from '../../tests/covers'
+
+covers('action:messages.sendMessage', 'action:messages.deleteMessage', 'action:messages.markThreadRead', 'action:messages.getOrCreateDirectThread')
 
 // ── Service client mock (used by sendMessage and getOrCreateDirectThread) ─────
 vi.mock('@/utils/supabase/service', () => ({
