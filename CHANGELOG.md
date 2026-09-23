@@ -11,6 +11,16 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.34.0] — 2026-09-22
+
+COUNCIL-2026-029 — Learning Paths / Discipleship Tracks (autonomous `.ai-factory` daily-loop run, 6/6 council approve).
+
+### Added
+
+- **Learning paths** — organizations can group existing courses into an ordered, opt-in sequence (e.g. "New Member Track," "Leadership Development Series") so learners see progression through a structured program instead of an unordered course list. Admins/managers create and manage paths (draft/published, reorder courses, add/remove) at `/admin/paths`; learners see their org's published paths and per-course completion progress at `/paths`. Path progress is derived from `course_certificates` at query time — no new enrollment/progress table.
+
+---
+
 ## [0.33.0] — 2026-09-22
 
 COUNCIL-2026-030 (numbered 030, not 029 — 029 was independently used the same day by a concurrent `.ai-factory` daily-loop run for an unrelated Learning Paths feature on a separate branch).

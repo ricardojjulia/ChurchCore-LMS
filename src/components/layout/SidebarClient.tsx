@@ -7,7 +7,7 @@ import {
   MessageCircle, Megaphone, Calendar, Users, Shield, Zap,
   UserCog, Layers, Clock, FileText, Sparkles, Activity,
   ChevronLeft, ChevronRight, GitBranch, CreditCard, Settings,
-  Plug, type LucideIcon,
+  Plug, Route, type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSidebar } from './SidebarContext'
@@ -34,6 +34,7 @@ interface NavLink {
 const LINKS: NavLink[] = [
   { href: '/dashboard',          labelKey: 'nav.dashboard',          Icon: LayoutDashboard },
   { href: '/courses',            labelKey: 'nav.courses',            Icon: BookOpen },
+  { href: '/paths',              labelKey: 'nav.paths',              Icon: Route },
   { href: '/performance',        labelKey: 'nav.grades',             Icon: BarChart3 },
   { href: '/reports',            labelKey: 'nav.reports',            Icon: BarChart2,  featureGate: 'reporting' },
   { href: '/certificates',       labelKey: 'nav.certificates',       Icon: Award },
@@ -49,6 +50,7 @@ const LINKS: NavLink[] = [
   { href: '/admin/sections',     labelKey: 'nav.admin.sections',     Icon: Layers,         adminOnly: true },
   { href: '/admin/terms',        labelKey: 'nav.admin.terms',        Icon: Clock,          adminOnly: true },
   { href: '/admin/program-tracks', labelKey: 'nav.admin.programTracks', Icon: GitBranch,   adminOnly: true },
+  { href: '/admin/paths',        labelKey: 'nav.admin.paths',        Icon: Route,          adminOnly: true },
   { href: '/admin/blueprints',   labelKey: 'nav.admin.blueprints',   Icon: FileText,       adminOnly: true },
   { href: '/admin/ai-analytics', labelKey: 'nav.admin.aiAnalytics',  Icon: Sparkles,       adminOnly: true,       featureGate: 'ai_tutor' },
   { href: '/admin/billing',      labelKey: 'nav.admin.billing',      Icon: CreditCard,     adminOnly: true },
