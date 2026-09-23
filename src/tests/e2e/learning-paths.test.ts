@@ -225,6 +225,7 @@ describe('Criterion 8 — course-completion data for progress tracking', () => {
     const { error: certErr } = await svc.from('course_certificates').insert({
       user_id:   STUDENT_A_UID,
       course_id: COURSE_A,
+      org_id:    ORG_A,
     })
     if (certErr) throw new Error(`Failed to insert fixture certificate: ${certErr.message}`)
 
