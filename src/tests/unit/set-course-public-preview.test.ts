@@ -39,18 +39,29 @@ function makeServiceClient({
 
   const updateFn = vi.fn().mockReturnValue(updateChain)
 
+  // Honors .eq('org_id', ...) so the org-scoped lookup behaves like the DB:
+  // a course outside the caller's org comes back as null.
+  const lookupFilters: Array<[string, unknown]> = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lookupChain: any = {}
+  lookupChain.eq = vi.fn((column: string, value: unknown) => {
+    lookupFilters.push([column, value])
+    return lookupChain
+  })
+  lookupChain.maybeSingle = vi.fn(async () => {
+    const orgFilter = lookupFilters.find(([column]) => column === 'org_id')
+    const visible = course && (!orgFilter || orgFilter[1] === course.org_id)
+    return { data: visible ? course : null, error: null }
+  })
+
   const client = {
     from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          maybeSingle: vi.fn().mockResolvedValue({ data: course, error: null }),
-        }),
-      }),
+      select: vi.fn().mockReturnValue(lookupChain),
       update: updateFn,
     }),
   }
 
-  return { client, updateFn, updateChain }
+  return { client, updateFn, updateChain, lookupChain }
 }
 
 // ── Session client mock ──────────────────────────────────────────────────────
@@ -107,7 +118,6 @@ beforeEach(() => {
 
 describe('setCoursePublicPreview — course not found', () => {
   it('returns an error when the course does not exist, no DB write attempted', async () => {
-    // Auth is never reached — early return before assertOrgAdminOrPlatformAdmin.
     vi.mocked(createClient).mockResolvedValue(
       sessionClient({ callerOrgId: ORG_A, callerRole: 'admin' }) as any,
     )
@@ -161,12 +171,23 @@ describe('setCoursePublicPreview — role rejection', () => {
     await expect(setCoursePublicPreview(COURSE_A, true)).rejects.toThrow('Unauthenticated')
     expect(updateFn).not.toHaveBeenCalled()
   })
+
+  it('unauthenticated caller gets the same error whether or not the course exists (no existence oracle)', async () => {
+    for (const course of [null, { id: COURSE_A, org_id: ORG_A, status: 'draft' }]) {
+      vi.mocked(createClient).mockResolvedValue(sessionClient({ authenticated: false }) as any)
+      const { client, lookupChain } = makeServiceClient({ course })
+      vi.mocked(createServiceClient).mockReturnValue(client as any)
+
+      await expect(setCoursePublicPreview(COURSE_A, true)).rejects.toThrow('Unauthenticated')
+      expect(lookupChain.maybeSingle).not.toHaveBeenCalled()
+    }
+  })
 })
 
 // ── Cross-org rejection ───────────────────────────────────────────────────────
 
 describe('setCoursePublicPreview — cross-org rejection', () => {
-  it('an org admin of Org B is rejected when the course belongs to Org A', async () => {
+  it('an org admin of Org B sees "not found" for an Org A course — indistinguishable from a missing one', async () => {
     vi.mocked(createClient).mockResolvedValue(
       sessionClient({ isPlatformAdmin: false, callerOrgId: ORG_B, callerRole: 'admin' }) as any,
     )
@@ -175,7 +196,8 @@ describe('setCoursePublicPreview — cross-org rejection', () => {
     })
     vi.mocked(createServiceClient).mockReturnValue(client as any)
 
-    await expect(setCoursePublicPreview(COURSE_A, true)).rejects.toThrow('Forbidden')
+    const result = await setCoursePublicPreview(COURSE_A, true)
+    expect(result).toEqual({ error: 'Course not found.' })
     expect(updateFn).not.toHaveBeenCalled()
   })
 })

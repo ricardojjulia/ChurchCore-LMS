@@ -51,6 +51,22 @@ describe('received OneRoster job preview route', () => {
     })
   })
 
+  it('pages staged rows on a unique (file_type, row_number) ordering', async () => {
+    const orderCalls: unknown[][] = []
+    mocks.from.mockImplementation((table: string) => {
+      const query = table === 'oneroster_import_jobs'
+        ? chain({ data: { id: 'job', status: 'validated', total_rows: 0, quarantined_count: 0 }, error: null })
+        : chain({ data: [], error: null })
+      query.order = (...args: unknown[]) => { orderCalls.push(args); return query }
+      return query
+    })
+    await POST(
+      new NextRequest('http://localhost/api/integrations/oneroster/jobs/job/preview', { method: 'POST' }),
+      { params: Promise.resolve({ id: 'job' }) },
+    )
+    expect(orderCalls.map(([column]) => column)).toEqual(['file_type', 'row_number'])
+  })
+
   it('does not preview a failed job', async () => {
     mocks.from.mockReturnValue(chain({ data: { id: 'job', status: 'failed', total_rows: 2, quarantined_count: 2 }, error: null }))
     const response = await POST(

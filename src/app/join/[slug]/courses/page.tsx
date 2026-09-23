@@ -36,7 +36,7 @@ export default async function PublicCourseCatalogPage({ params }: Props) {
     .eq('status', 'published')
 
   const branding = (org.settings as Record<string, unknown> | null)?.branding as
-    | { logo_url?: string; primary_color?: string }
+    | { logo_url?: string }
     | undefined
 
   return (

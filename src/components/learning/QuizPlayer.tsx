@@ -109,8 +109,10 @@ export default function QuizPlayer({
       }
     }
     return map
+  // Keyed on resolvedQuestions (not the derived `questions`) so a bank draw
+  // resolving after mount reshuffles, while parent re-renders don't.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [blockId])
+  }, [blockId, resolvedQuestions])
 
   // Restore timer from localStorage on mount
   useEffect(() => {
@@ -132,9 +134,10 @@ export default function QuizPlayer({
     }
   }, [submitted, timerKey])
 
-  // Countdown tick
+  // Countdown tick — held until bank questions resolve, so a slow draw can't
+  // consume the time limit (or auto-submit) before any question renders
   useEffect(() => {
-    if (timeLeft === null || submitted) return
+    if (timeLeft === null || submitted || loadingBank) return
     if (timeLeft <= 0) {
       try { localStorage.removeItem(timerKey) } catch {}
       if (!autoSubmittedRef.current) {
@@ -152,7 +155,7 @@ export default function QuizPlayer({
       })
     }, 1000)
     return () => clearTimeout(id)
-  }, [timeLeft, timerKey, submitted])
+  }, [timeLeft, timerKey, submitted, loadingBank])
 
   if (loadingBank) {
     return (

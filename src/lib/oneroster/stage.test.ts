@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { validateAndStageOneRosterPackage } from './stage'
+import { classifyExistingJob, validateAndStageOneRosterPackage } from './stage'
 
 const mocks = vi.hoisted(() => ({
   from: vi.fn(),
@@ -82,6 +82,70 @@ describe('validateAndStageOneRosterPackage', () => {
 
     expect(result).toMatchObject({ ok: true, duplicate: true, jobId: 'existing', valid: true })
     expect(mocks.readZip).not.toHaveBeenCalled()
+  })
+
+  it('reports a repeated invalid package as invalid, not as a successful duplicate', async () => {
+    mocks.from.mockImplementation(() => ({
+      select: () => chain({
+        data: { id: 'existing', status: 'failed', dry_run: true, error_count: 3, started_at: null },
+        error: null,
+      }),
+    }))
+    const result = await validateAndStageOneRosterPackage({
+      buffer: new ArrayBuffer(3), connectionId: 'connection', orgId: 'org',
+    })
+    expect(result).toMatchObject({ ok: true, duplicate: true, jobId: 'existing', valid: false })
+    expect(mocks.readZip).not.toHaveBeenCalled()
+  })
+
+  it('clears a job whose staging aborted and restages the package', async () => {
+    const events: Array<{ operation: string; filters?: unknown[][]; value?: unknown }> = []
+    mocks.from.mockImplementation(() => ({
+      select: () => chain({
+        data: { id: 'aborted', status: 'failed', dry_run: true, error_count: 0, started_at: null },
+        error: null,
+      }),
+      delete: () => {
+        const filters: unknown[][] = []
+        events.push({ operation: 'delete', filters })
+        const query = {
+          eq: (...args: unknown[]) => { filters.push(args); return query },
+          then: (resolve: (value: unknown) => void) => Promise.resolve({ error: null }).then(resolve),
+        }
+        return query
+      },
+      insert: (value: unknown) => {
+        events.push({ operation: 'insert', value })
+        return chain({ data: { id: 'fresh' }, error: null })
+      },
+      update: (value: unknown) => {
+        events.push({ operation: 'update', value })
+        return chain({ error: null })
+      },
+    }))
+    const result = await validateAndStageOneRosterPackage({
+      buffer: new ArrayBuffer(3), connectionId: 'connection', orgId: 'org',
+    })
+    expect(result).toMatchObject({ ok: true, duplicate: false, jobId: 'fresh', valid: true })
+    expect(events[0]).toEqual({
+      operation: 'delete',
+      filters: [['id', 'aborted'], ['org_id', 'org'], ['status', 'failed']],
+    })
+    expect(events[1]).toMatchObject({ operation: 'insert', value: { status: 'validating' } })
+  })
+
+  it('classifies existing jobs by whether staging actually finished', () => {
+    const now = Date.parse('2026-09-23T12:00:00Z')
+    const job = { id: 'j', dry_run: true, error_count: 0, started_at: null }
+    expect(classifyExistingJob({ ...job, status: 'validated' }, now)).toBe('valid')
+    expect(classifyExistingJob({ ...job, status: 'applied', dry_run: false }, now)).toBe('valid')
+    expect(classifyExistingJob({ ...job, status: 'failed', dry_run: false, error_count: 2 }, now)).toBe('valid')
+    expect(classifyExistingJob({ ...job, status: 'failed', error_count: 2 }, now)).toBe('invalid')
+    expect(classifyExistingJob({ ...job, status: 'failed' }, now)).toBe('retry')
+    expect(classifyExistingJob({ ...job, status: 'cancelled' }, now)).toBe('retry')
+    expect(classifyExistingJob({ ...job, status: 'validating', started_at: '2026-09-23T11:55:00Z' }, now)).toBe('in_progress')
+    expect(classifyExistingJob({ ...job, status: 'validating', started_at: '2026-09-23T11:00:00Z' }, now)).toBe('retry')
+    expect(classifyExistingJob({ ...job, status: 'validating' }, now)).toBe('retry')
   })
 
   it('contains parser exceptions behind a stable error code', async () => {

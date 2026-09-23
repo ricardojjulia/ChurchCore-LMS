@@ -33,6 +33,11 @@ describe('signed OneRoster delivery', () => {
     expect(isValidEd25519PublicKey(publicKey.export({ format: 'pem', type: 'spki' }).toString())).toBe(false)
   })
 
+  it('rejects Ed25519 private keys even though their public half is derivable', () => {
+    const { privateKey } = generateKeyPairSync('ed25519')
+    expect(isValidEd25519PublicKey(privateKey.export({ format: 'pem', type: 'pkcs8' }).toString())).toBe(false)
+  })
+
   it('parses complete headers inside the clock window', () => {
     const headers = new Headers({
       'x-churchcore-delivery-id': DELIVERY_ID,

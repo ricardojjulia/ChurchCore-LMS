@@ -5,6 +5,9 @@ import { validateOneRosterPackage } from './validate'
 import type { OneRosterIssue, OneRosterValidationResult } from './types'
 
 const MAX_PACKAGE_BYTES = 10 * 1024 * 1024
+// A job left in 'validating' longer than this was abandoned mid-staging
+// (crashed or timed-out request) and may be replaced by a redelivery.
+const STALE_STAGING_MS = 15 * 60 * 1000
 
 interface StagePackageOptions {
   buffer: ArrayBuffer
@@ -27,7 +30,7 @@ export type StagePackageResult =
       validation?: OneRosterValidationResult
       issues?: SafeOneRosterIssue[]
     }
-  | { ok: false; error: 'staging_failed' }
+  | { ok: false; error: 'staging_failed' | 'staging_in_progress' }
 
 export async function validateAndStageOneRosterPackage(
   options: StagePackageOptions,
@@ -46,20 +49,26 @@ async function stagePackage(options: StagePackageOptions): Promise<StagePackageR
   if (options.connectionId) {
     const { data: existing, error } = await service
       .from('oneroster_import_jobs')
-      .select('id, status')
+      .select(EXISTING_JOB_COLUMNS)
       .eq('connection_id', options.connectionId)
       .eq('org_id', options.orgId)
       .eq('package_hash', packageHash)
       .maybeSingle()
     if (error) return { ok: false, error: 'staging_failed' }
     if (existing) {
-      return {
-        ok: true,
-        duplicate: true,
-        jobId: existing.id,
-        packageHash,
-        valid: existing.status !== 'failed',
-      }
+      const outcome = classifyExistingJob(existing)
+      if (outcome !== 'retry') return existingJobResult(existing.id, packageHash, outcome)
+      // The earlier attempt never finished staging this package. Clear it
+      // (rows cascade) so the unique (connection_id, package_hash) index
+      // doesn't block the retry. Conditional on the observed status so a
+      // concurrent redelivery can't delete a job another request just began.
+      const { error: deleteError } = await service
+        .from('oneroster_import_jobs')
+        .delete()
+        .eq('id', existing.id)
+        .eq('org_id', options.orgId)
+        .eq('status', existing.status)
+      if (deleteError) return { ok: false, error: 'staging_failed' }
     }
   }
 
@@ -103,21 +112,19 @@ async function stagePackage(options: StagePackageOptions): Promise<StagePackageR
 
   if (jobError || !job) {
     if (jobError?.code === '23505' && options.connectionId) {
+      // Lost a race with a concurrent delivery of the same package.
       const { data: existing, error: existingError } = await service
         .from('oneroster_import_jobs')
-        .select('id, status')
+        .select(EXISTING_JOB_COLUMNS)
         .eq('connection_id', options.connectionId)
         .eq('org_id', options.orgId)
         .eq('package_hash', packageHash)
         .maybeSingle()
       if (!existingError && existing) {
-        return {
-          ok: true,
-          duplicate: true,
-          jobId: existing.id,
-          packageHash,
-          valid: existing.status !== 'failed',
-        }
+        const outcome = classifyExistingJob(existing)
+        return outcome === 'retry'
+          ? { ok: false, error: 'staging_failed' }
+          : existingJobResult(existing.id, packageHash, outcome)
       }
     }
     return { ok: false, error: 'staging_failed' }
@@ -159,6 +166,53 @@ async function stagePackage(options: StagePackageOptions): Promise<StagePackageR
   if (readyError) return { ok: false, error: 'staging_failed' }
 
   return { ok: true, duplicate: false, jobId: job.id, packageHash, valid, validation, issues }
+}
+
+const EXISTING_JOB_COLUMNS = 'id, status, dry_run, error_count, started_at'
+
+interface ExistingJob {
+  id: string
+  status: string
+  dry_run: boolean
+  error_count: number
+  started_at: string | null
+}
+
+type ExistingJobOutcome = 'valid' | 'invalid' | 'in_progress' | 'retry'
+
+// A repeated package is only acknowledged as a successful duplicate when its
+// earlier job actually finished staging as valid. 'failed' is overloaded:
+//  - dry_run + error_count > 0 → the package itself failed validation (invalid)
+//  - dry_run + error_count = 0 → a valid package whose staging aborted (retry)
+//  - !dry_run                  → validated, then applied with quarantines (valid)
+export function classifyExistingJob(job: ExistingJob, now = Date.now()): ExistingJobOutcome {
+  switch (job.status) {
+    case 'validated':
+    case 'ready':
+    case 'applying':
+    case 'applied':
+      return 'valid'
+    case 'failed':
+      if (!job.dry_run) return 'valid'
+      return job.error_count > 0 ? 'invalid' : 'retry'
+    case 'uploaded':
+    case 'validating': {
+      const started = job.started_at ? Date.parse(job.started_at) : NaN
+      return Number.isFinite(started) && now - started < STALE_STAGING_MS ? 'in_progress' : 'retry'
+    }
+    default:
+      // 'cancelled' — an operator abandoned it; stage the package afresh.
+      return 'retry'
+  }
+}
+
+function existingJobResult(
+  jobId: string,
+  packageHash: string,
+  outcome: Exclude<ExistingJobOutcome, 'retry'>,
+): StagePackageResult {
+  if (outcome === 'in_progress') return { ok: false, error: 'staging_in_progress' }
+  return { ok: true, duplicate: true, jobId, packageHash, valid: outcome === 'valid' }
 }
 
 async function markJobFailed(

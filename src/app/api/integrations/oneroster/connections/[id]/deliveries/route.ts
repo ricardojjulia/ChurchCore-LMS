@@ -95,8 +95,10 @@ export async function POST(
     sourceSystem: connection.source_system,
     sourceTenantId: connection.source_tenant_id,
   })
+  // Validity wins over duplication: a redelivered invalid package is still
+  // invalid, and must never be acknowledged (or advance last_success_at).
   const status = staging.ok
-    ? staging.duplicate ? 'duplicate' : staging.valid ? 'validated' : 'invalid'
+    ? !staging.valid ? 'invalid' : staging.duplicate ? 'duplicate' : 'validated'
     : 'failed'
   const validation = staging.ok ? staging.validation : undefined
   const errorCode = staging.ok ? (staging.valid ? null : 'package_invalid') : staging.error
@@ -131,12 +133,17 @@ export async function POST(
   }
   await service.from('oneroster_connections').update(timestamps).eq('id', connection.id)
 
-  if (!staging.ok) return NextResponse.json({ error: staging.error }, { status: 500 })
+  if (!staging.ok) {
+    return NextResponse.json(
+      { error: staging.error },
+      { status: staging.error === 'staging_in_progress' ? 409 : 500 },
+    )
+  }
   return NextResponse.json({
     deliveryId: parsedHeaders.value.deliveryId,
     duplicate: staging.duplicate,
     jobId: staging.jobId,
     status,
     valid: staging.valid,
-  }, { status: staging.duplicate ? 200 : staging.valid ? 202 : 422 })
+  }, { status: !staging.valid ? 422 : staging.duplicate ? 200 : 202 })
 }
