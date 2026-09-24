@@ -13,6 +13,11 @@ const EMAIL_FROM    = Deno.env.get('EMAIL_FROM')!
 const CRON_SECRET   = Deno.env.get('CRON_SECRET')!
 const APP_URL       = Deno.env.get('NEXT_PUBLIC_APP_URL') ?? ''
 
+// Names and AI output are interpolated into HTML: escape them.
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]!))
+}
+
 Deno.serve(async (req) => {
   const denied = rejectUnlessCron(req)
   if (denied) return denied
@@ -21,30 +26,23 @@ Deno.serve(async (req) => {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
-  // Fetch active users who opted into weekly summaries
-  // profiles.settings->'notifications'->>'weekly_summary' = 'true'
-  const { data: profiles, error: profileErr } = await svc
+  // Active students who have not opted out (profiles.email_digest_enabled,
+  // default true — the same preference the notification digest honours). The
+  // settings.notifications.weekly_summary flag read here before was never
+  // written anywhere, so no one ever qualified.
+  const { data: allProfiles, error: profileErr } = await svc
     .from('profiles')
     .select('uid, display_name, auth_id, org_id')
     .eq('status', 'active')
+    .eq('role', 'student')
+    .eq('email_digest_enabled', true)
     .not('org_id', 'is', null)
 
   if (profileErr) {
-    return new Response(JSON.stringify({ error: profileErr.message }), { status: 500 })
+    return new Response(JSON.stringify({ error: 'Failed to load recipients' }), { status: 500 })
   }
 
-  // Filter to opted-in users (settings JSON check done in code since
-  // Supabase PostgREST JSON path filtering varies by version)
-  const { data: allProfiles } = await svc
-    .from('profiles')
-    .select('uid, display_name, auth_id, org_id, settings')
-    .eq('status', 'active')
-    .not('org_id', 'is', null)
-
-  const optedIn = (allProfiles ?? []).filter(
-    (p: { settings?: { notifications?: { weekly_summary?: boolean } } }) =>
-      p.settings?.notifications?.weekly_summary === true
-  )
+  const optedIn = allProfiles ?? []
 
   let sent = 0
   let failed = 0
@@ -57,13 +55,16 @@ Deno.serve(async (req) => {
       const email = authUser?.user?.email
       if (!isDeliverableAddress(email)) { skipped++; continue }
 
-      // Request weekly summary from the app API
-      const summaryRes = await fetch(`${APP_URL}/api/ai/weekly-summary`, {
-        method:  'GET',
+      // Request the summary from the app's scheduler route. (It used to call the
+      // student-facing /api/ai/weekly-summary, which requires a user session,
+      // so every request was rejected and no digest was ever sent.)
+      const summaryRes = await fetch(`${APP_URL}/api/cron/weekly-summary`, {
+        method:  'POST',
         headers: {
-          'x-cron-user-auth-id': profile.auth_id,
-          Authorization:          `Bearer ${CRON_SECRET}`,
+          'Content-Type':  'application/json',
+          'x-cron-secret': CRON_SECRET,
         },
+        body: JSON.stringify({ uid: profile.uid }),
       })
 
       if (!summaryRes.ok) { failed++; continue }
@@ -85,17 +86,17 @@ Deno.serve(async (req) => {
             <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:40px 24px;color:#1e293b">
               <h1 style="font-size:22px;font-weight:700;margin-bottom:4px">Your weekly learning summary</h1>
               <p style="color:#64748b;font-size:14px;margin-bottom:24px">
-                Hi ${profile.display_name ?? 'there'} — here's what's been happening in your courses.
+                Hi ${escapeHtml(profile.display_name ?? 'there')} — here's what's been happening in your courses.
                 ${(coursesInProgress ?? 0) > 0 ? `You have ${coursesInProgress} course(s) in progress.` : ''}
               </p>
               <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px 24px;font-size:14px;line-height:1.7;white-space:pre-wrap;color:#334155">
-${summary}
+${escapeHtml(summary)}
               </div>
               <a href="${APP_URL}/dashboard" style="display:inline-block;background:#4f46e5;color:#fff;font-weight:600;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:15px;margin-top:28px">
                 Continue Learning
               </a>
               <p style="color:#94a3b8;font-size:12px;margin-top:32px">
-                Unsubscribe: update your notification preferences in your profile settings.
+                To stop these emails, turn off “Weekly progress email” on <a href="${APP_URL}/profile" style="color:#475569">your profile</a>.
               </p>
             </div>
           `,

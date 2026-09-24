@@ -54,7 +54,7 @@ export default function ProgramTrackForm({ mode, trackId, initial }: Props) {
 
       <div>
         <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="name">
-          Name <span className="text-rose-500">*</span>
+          Name <span className="text-rose-700">*</span>
         </label>
         <input
           id="name"
@@ -68,7 +68,7 @@ export default function ProgramTrackForm({ mode, trackId, initial }: Props) {
 
       <div>
         <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="code">
-          Code <span className="text-rose-500">*</span>
+          Code <span className="text-rose-700">*</span>
         </label>
         <input
           id="code"

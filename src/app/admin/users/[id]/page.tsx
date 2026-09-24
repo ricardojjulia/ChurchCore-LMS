@@ -39,7 +39,7 @@ export default async function UserDetailPage({
   }
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-6">
 
         {/* Breadcrumb */}

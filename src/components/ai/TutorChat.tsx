@@ -255,7 +255,7 @@ export default function TutorChat({ sectionId, courseId, courseTitle, isIndexed 
         onSubmit={handleSubmit}
         className="border-t border-border p-4 shrink-0 flex flex-col gap-2"
       >
-        <textarea
+        <textarea aria-label="Ask the tutor a question"
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}

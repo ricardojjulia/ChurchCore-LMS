@@ -76,7 +76,7 @@ export default async function StudentDashboard({ ctx }: { ctx: DashboardContext 
   const showMessagesFirst     = tod === 'night'
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <SmartSummaryCard ctx={ctx} />
         <EngagementWidget uid={ctx.uid} />

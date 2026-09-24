@@ -66,7 +66,7 @@ export default async function CohortDetailPage({
   const track = cohort.program_tracks as unknown as { name: string; code: string } | null
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500">
@@ -80,7 +80,7 @@ export default async function CohortDetailPage({
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs font-bold uppercase tracking-widest ${cohort.is_active ? 'text-emerald-600' : 'text-slate-400'}`}>
+                <span className={`text-xs font-bold uppercase tracking-widest ${cohort.is_active ? 'text-emerald-700' : 'text-slate-400'}`}>
                   {cohort.is_active ? 'Active' : 'Inactive'}
                 </span>
                 {track && (

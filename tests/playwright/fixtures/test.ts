@@ -64,6 +64,8 @@ export async function expectHealthyPage(page: Page) {
   const body = await page.locator('body').innerText()
   for (const re of ERROR_MARKERS) expect(body, `error marker ${re} on ${page.url()}`).not.toMatch(re)
   await expect(page.locator('#nextjs__container_errors_label, nextjs-portal [data-nextjs-dialog]')).toHaveCount(0)
+  // The skip link targets #main-content; ids must be unique (the root layout owns it).
+  await expect(page.locator('[id="main-content"]')).toHaveCount(1)
 }
 
 // Serious/critical axe violations fail the test; the rule/route pairs listed in

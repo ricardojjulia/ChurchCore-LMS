@@ -49,15 +49,10 @@ test.describe('GET /api/certificates/[id]/pdf', () => {
   })
 
   test('owner downloads their certificate as a PDF', async () => {
-    // KNOWN DEFECT (COUNCIL-2026-031 findings): the App Router renders with
-    // Next's bundled React 19 while @react-pdf/renderer (a default server
-    // external) loads node_modules React 18 — rendering fails with React
-    // error #31. Fix is the React 19 upgrade; this test then passes and
-    // test.fail() makes the suite demand this marker be removed.
-    test.fail()
     const own = await clients.get('student').get(`/api/certificates/${certId}/pdf`)
     expect(own.status()).toBe(200)
     expect(own.headers()['content-type']).toContain('application/pdf')
+    expect((await own.body()).subarray(0, 5).toString()).toBe('%PDF-')
   })
 })
 
@@ -167,5 +162,16 @@ test.describe('POST /api/upload/image', () => {
     expect(ok.status(), await ok.text()).toBe(200)
     const body = JSON.stringify(await ok.json())
     expect(body).toContain(USERS.teacher.org)
+  })
+})
+
+test.describe('middleware prefetch shortcut (COUNCIL-2026-033 D13)', () => {
+  test('a forged session cookie on a prefetch still gets no protected data', async () => {
+    covers('page:/admin/users')
+    const res = await clients.get('anon').get('/admin/users', {
+      headers: { 'next-router-prefetch': '1', rsc: '1', cookie: 'sb-forged-auth-token=not-a-real-token' },
+      maxRedirects: 0,
+    })
+    expect(await res.text()).not.toContain('@test.churchcore.dev')
   })
 })

@@ -75,27 +75,27 @@ export default async function BillingPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Current plan */}
-      <section className="bg-white rounded-xl border p-6 space-y-4">
+      <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4 text-slate-100">
         <h2 className="text-lg font-semibold">Current plan</h2>
         <div className="flex items-center gap-3">
           <span className="text-2xl font-bold capitalize">{plan}</span>
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-            org.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            org.status === 'active' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'
           }`}>
             {org.status}
           </span>
         </div>
         {nextBillingDate && (
-          <p className="text-sm text-muted-foreground">Next billing: {nextBillingDate}</p>
+          <p className="text-sm text-slate-400">Next billing: {nextBillingDate}</p>
         )}
 
         <div className="grid grid-cols-2 gap-2 mt-4">
           {Object.entries(features).map(([feature, enabled]) => (
             <div key={feature} className="flex items-center gap-2 text-sm">
-              <span className={enabled ? 'text-green-600' : 'text-slate-400'}>
+              <span className={enabled ? 'text-green-400' : 'text-slate-400'}>
                 {enabled ? '✓' : '✗'}
               </span>
-              <span className={enabled ? '' : 'text-muted-foreground'}>
+              <span className={enabled ? '' : 'text-slate-400'}>
                 {feature.replace(/_/g, ' ')}
               </span>
             </div>
@@ -113,12 +113,12 @@ export default async function BillingPage({ params }: { params: Promise<{ id: st
 
       {/* Past invoices */}
       {invoices.length > 0 && (
-        <section className="bg-white rounded-xl border p-6 space-y-4">
+        <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4 text-slate-100">
           <h2 className="text-lg font-semibold">Past invoices</h2>
           <div className="overflow-x-auto rounded-md border border-slate-800">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-muted-foreground border-b">
+                <tr className="text-left text-slate-400 border-b">
                   <th className="pb-2">Date</th>
                   <th className="pb-2">Amount</th>
                   <th className="pb-2">Status</th>
@@ -141,7 +141,7 @@ export default async function BillingPage({ params }: { params: Promise<{ id: st
                           href={inv.hosted_invoice_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary underline text-xs"
+                          className="text-indigo-400 underline text-xs"
                         >
                           View
                         </a>

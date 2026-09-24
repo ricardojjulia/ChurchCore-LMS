@@ -42,7 +42,7 @@ test.describe('OneRoster admin routes', () => {
   test('admin and manager read their own org connection and job history', async () => {
     for (const role of ['admin', 'manager'] as const) {
       const conn = await clients.get(role).get('/api/integrations/oneroster/connections')
-      expect(conn.status()).toBe(200)
+      expect(conn.status(), `${role}: ${await conn.text()}`).toBe(200)
       expect(await conn.json()).toHaveProperty('connection')
       expect((await clients.get(role).get('/api/integrations/oneroster/jobs')).status()).toBe(200)
     }

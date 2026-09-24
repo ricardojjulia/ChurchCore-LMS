@@ -55,7 +55,7 @@ export default async function LeaderboardPage() {
   const myRank = me ? rows.findIndex((r) => r.uid === me.uid) + 1 : 0
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
 
         {/* Header */}

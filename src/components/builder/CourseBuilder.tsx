@@ -223,7 +223,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
       {/* ── Module sidebar ─────────────────────────────────────────────── */}
       <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
         <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Modules</span>
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Modules</span>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -272,7 +272,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
 
           {addingModule && (
             <form onSubmit={handleAddModule} className="px-4 py-3">
-              <input
+              <input aria-label="New module title"
                 autoFocus
                 value={newModuleTitle}
                 onChange={(e) => setNewModuleTitle(e.target.value)}
@@ -306,7 +306,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
                   <h2 className="text-white font-bold text-lg">
                     {moduleHeaders.find((m) => m.id === activeModuleId)?.title}
                   </h2>
-                  <p className="text-slate-500 text-xs mt-0.5">
+                  <p className="text-slate-400 text-xs mt-0.5">
                     {activeModuleItems.length} item{activeModuleItems.length !== 1 ? 's' : ''}
                   </p>
                 </div>
@@ -461,7 +461,7 @@ function SortableBlockRow({
       <div className="flex-1 min-w-0">
         <p className="text-white font-semibold text-sm truncate">{block.title}</p>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-xs text-slate-500">{meta?.label ?? block.block_type_id}</span>
+          <span className="text-xs text-slate-400">{meta?.label ?? block.block_type_id}</span>
           {block.gamification?.base_xp_reward ? (
             <span className="text-xs text-indigo-400 font-bold">
               +{block.gamification.base_xp_reward} XP
@@ -472,15 +472,15 @@ function SortableBlockRow({
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
         <button type="button" onClick={() => onMove('up')} disabled={idx === 0}
           title="Move up"
-          className="p-1.5 text-slate-500 hover:text-white disabled:opacity-20 transition-colors text-xs">▲</button>
+          className="p-1.5 text-slate-400 hover:text-white disabled:opacity-20 transition-colors text-xs">▲</button>
         <button type="button" onClick={() => onMove('down')} disabled={idx === total - 1}
           title="Move down"
-          className="p-1.5 text-slate-500 hover:text-white disabled:opacity-20 transition-colors text-xs">▼</button>
+          className="p-1.5 text-slate-400 hover:text-white disabled:opacity-20 transition-colors text-xs">▼</button>
         <button type="button" onClick={onEdit}
-          className="p-1.5 text-slate-500 hover:text-indigo-400 transition-colors text-xs font-bold">Edit</button>
+          className="p-1.5 text-slate-400 hover:text-indigo-400 transition-colors text-xs font-bold">Edit</button>
         <button type="button" onClick={onDelete}
           title="Delete"
-          className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors text-xs">✕</button>
+          className="p-1.5 text-slate-400 hover:text-rose-400 transition-colors text-xs">✕</button>
       </div>
     </div>
   )

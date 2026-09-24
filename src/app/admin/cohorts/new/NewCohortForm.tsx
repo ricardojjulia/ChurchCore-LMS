@@ -31,7 +31,7 @@ export default function NewCohortForm({ tracks }: { tracks: Track[] }) {
 
       <div>
         <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="cohort_name">
-          Cohort Name <span className="text-rose-500">*</span>
+          Cohort Name <span className="text-rose-700">*</span>
         </label>
         <input
           id="cohort_name"
@@ -44,7 +44,7 @@ export default function NewCohortForm({ tracks }: { tracks: Track[] }) {
 
       <div>
         <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="cohort_code">
-          Code <span className="text-rose-500">*</span>
+          Code <span className="text-rose-700">*</span>
         </label>
         <input
           id="cohort_code"

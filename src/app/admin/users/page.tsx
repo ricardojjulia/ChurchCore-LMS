@@ -139,7 +139,7 @@ export default async function AdminUsersPage({
               : []),
           ].map(({ label, value, className }) => (
             <div key={label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold ${className}`}>
-              <span>{value}</span><span className="opacity-70">{label}</span>
+              <span>{value}</span><span className="font-normal">{label}</span>
             </div>
           ))}
         </div>

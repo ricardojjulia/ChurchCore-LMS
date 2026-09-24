@@ -16,6 +16,19 @@ export async function middleware(request: NextRequest) {
     )
   }
 
+  // Link prefetches (every visible nav link, on every page) each used to make
+  // a network getUser() round trip here — about 28 per page view. A prefetch
+  // that carries a session cookie skips it: the prefetched page verifies the
+  // user itself when it renders, and the next real navigation refreshes the
+  // session. Prefetches without a session still get the redirect below.
+  const isPrefetch =
+    request.headers.get('next-router-prefetch') === '1' ||
+    request.headers.get('purpose') === 'prefetch'
+  const hasSession = request.cookies.getAll().some((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token'))
+  if (isPrefetch && hasSession) {
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+
   let supabaseResponse = NextResponse.next({
     request: { headers: requestHeaders },
   })

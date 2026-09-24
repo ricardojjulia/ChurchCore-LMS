@@ -13,7 +13,7 @@ const name = `${runTag()} Tenant`
 const adminEmail = `suite-owner-${Date.now().toString(36)}@test.churchcore.dev`
 let orgId = ''
 
-const org = async () => (await db().from('organizations').select('id, name, status, plan, deleted_at').eq('slug', slug).maybeSingle()).data
+const org = async () => (await db().from('organizations').select('id, name, status, plan, deleted_at, settings').eq('slug', slug).maybeSingle()).data
 
 test.afterAll(async () => {
   if (!orgId) return
@@ -68,10 +68,25 @@ test('resets to demo data, issues a demo login link, then resets to empty', asyn
   await page.getByLabel('Demo scenario').selectOption('wed_bible_school')
   await page.getByRole('button', { name: 'Reset to Demo' }).click()
   await expect.poll(courses, { timeout: 30_000 }).toBeGreaterThan(0)
+  // Demo students are really enrolled (progress/XP read public.enrollments),
+  // and no password is stored for the demo accounts.
+  await expect.poll(async () => (await db().from('enrollments').select('id', { count: 'exact', head: true }).eq('org_id', orgId)).count ?? 0)
+    .toBeGreaterThan(0)
+  expect(((await org()) as { settings?: { demo?: Record<string, unknown> } } | null)?.settings?.demo).not.toHaveProperty('password')
 
   await open(page, `/platform/tenants/${orgId}`)
   await page.getByRole('button', { name: /Open as/ }).first().click()
   await expect(page.getByRole('button', { name: /Copy link/ })).toBeVisible()
+
+  // The one-time link signs in through a server-minted magic link.
+  const pending = ((await org()) as { settings?: { demo?: { pending_login?: { token: string } } } } | null)
+    ?.settings?.demo?.pending_login
+  expect(pending?.token).toBeTruthy()
+  const visitor = await page.context().browser()!.newContext({ storageState: { cookies: [], origins: [] } })
+  const vp = await visitor.newPage()
+  await vp.goto(`/api/auth/demo-login?t=${pending!.token}&org=${orgId}`)
+  await expect(vp).toHaveURL(/\/dashboard/)
+  await visitor.close()
 
   await open(page, `/platform/tenants/${orgId}`)
   await page.getByRole('button', { name: 'Reset to Empty' }).click()

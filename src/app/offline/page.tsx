@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default async function OfflinePage() {
   const t = await getTranslations()
   return (
-    <main id="main-content" className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
       <div
         className="flex items-center justify-center w-16 h-16 rounded-full bg-amber-50 border border-amber-200"
         aria-hidden="true"

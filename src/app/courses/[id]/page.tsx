@@ -87,7 +87,7 @@ export default async function CoursePage({
 
   if (!course) {
     return (
-      <main id="main-content" className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
         <div className="max-w-md text-center bg-white border border-rose-200 rounded-2xl p-10">
           <h2 className="text-lg font-bold text-rose-800">{t('courses.detail.notFoundHeading')}</h2>
           <p className="text-sm text-rose-600 mt-1">{t('courses.detail.notFoundMessage')}</p>
@@ -193,7 +193,7 @@ export default async function CoursePage({
     : t('courses.detail.ctaStart')
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50/50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50/50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6" aria-label="Breadcrumb">
@@ -209,7 +209,7 @@ export default async function CoursePage({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`text-xs font-bold uppercase tracking-widest ${
-                    course.status === 'published' ? 'text-emerald-600' : 'text-amber-600'
+                    course.status === 'published' ? 'text-emerald-700' : 'text-amber-700'
                   }`}>
                     {course.status === 'published' ? t('courses.detail.statusPublished') : (course.status ? t('common.draft') : t('courses.detail.statusDraft'))}
                   </span>
@@ -556,7 +556,7 @@ function CurriculumItem({
       </div>
       {(block.gamification as GamificationJSON)?.base_xp_reward != null &&
        (block.gamification as GamificationJSON).base_xp_reward! > 0 && (
-        <span className="text-xs text-indigo-500 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 shrink-0">
+        <span className="text-xs text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 shrink-0">
           +{(block.gamification as GamificationJSON).base_xp_reward} XP
         </span>
       )}

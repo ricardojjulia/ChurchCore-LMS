@@ -134,7 +134,7 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
           <p className="text-rose-600 text-xs mt-2" role="alert">{addErr}</p>
         )}
         {addSuccess && (
-          <p className="text-emerald-600 text-xs mt-2 font-semibold" role="status">
+          <p className="text-emerald-700 text-xs mt-2 font-semibold" role="status">
             ✓ {addSuccess}
           </p>
         )}

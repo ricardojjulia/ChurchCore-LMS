@@ -43,8 +43,8 @@ function HealthWidget({ checks }: { checks: SystemHealthCheck[] }) {
         <span className={cn(
           'text-xs font-bold px-2.5 py-1 rounded-full',
           errorCount > 0
-            ? 'bg-rose-500 text-white'
-            : 'bg-amber-400 text-white'
+            ? 'bg-rose-700 text-white'
+            : 'bg-amber-100 text-amber-900'
         )}>
           {errorCount > 0 ? `${errorCount} error${errorCount > 1 ? 's' : ''}` : `${warningCount} warn`}
         </span>
@@ -89,7 +89,7 @@ export default function AdminDashboard({
   const stats = ctx.stats
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <SmartSummaryCard ctx={ctx} />
 

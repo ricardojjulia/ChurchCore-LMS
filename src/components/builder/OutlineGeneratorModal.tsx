@@ -152,7 +152,7 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
               </div>
 
               {tab === 'text' ? (
-                <textarea
+                <textarea aria-label="Source text for the outline"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="Paste your sermon notes, Bible study guide, or curriculum text here…"

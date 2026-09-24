@@ -75,8 +75,11 @@ export default async function GuardianStudentPage({
     .single()
 
   if (!profile) redirect('/login')
-  if (profile.role !== 'guardian' && !['admin', 'manager', 'teacher'].includes(profile.role)) {
-    redirect('/dashboard')
+  // Guardian-only: get_guardian_student_overview authorizes the linked guardian
+  // and nobody else, so staff used to land on a 404 here. Staff see students
+  // through their own admin and gradebook views.
+  if (profile.role !== 'guardian') {
+    redirect(['admin', 'manager', 'teacher'].includes(profile.role) ? '/guardian' : '/dashboard')
   }
 
   const { data: raw, error } = await supabase.rpc('get_guardian_student_overview', {
@@ -89,7 +92,7 @@ export default async function GuardianStudentPage({
   const student  = overview.profile
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6" aria-label="Breadcrumb">

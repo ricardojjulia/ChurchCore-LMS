@@ -389,6 +389,10 @@ verify_jwt = false
 [functions.send-guardian-notifications]
 verify_jwt = false
 
+# Scheduler-only; authenticates with CRON_SECRET (rejectUnlessCron), not a JWT.
+[functions.weekly-digest]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

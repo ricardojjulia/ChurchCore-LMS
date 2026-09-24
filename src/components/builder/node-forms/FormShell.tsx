@@ -1,5 +1,7 @@
 'use client'
 
+import { Children, cloneElement, isValidElement, useId, type ReactElement } from 'react'
+
 interface ShellProps {
   title: string
   icon: string
@@ -38,7 +40,7 @@ export function FormShell({ title, icon, onCancel, onSubmit, children }: ShellPr
         .input { width:100%; background:#1e1e2e; border:1px solid #3f3f5a; color:#e5e7eb; border-radius:10px; padding:10px 14px; font-size:14px; outline:none; font-family:inherit; }
         .input:focus { border-color:#6366f1; }
         .label { display:block; font-size:12px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
-        .hint { font-size:11px; color:#64748b; margin-top:4px; }
+        .hint { font-size:11px; color:#94a3b8; margin-top:4px; }
       `}</style>
     </form>
   )
@@ -52,26 +54,36 @@ interface FieldProps {
 }
 
 export function Field({ label, required, hint, children }: FieldProps) {
+  // Associate the label with a single form control child (it used to be a
+  // sibling <label> with no htmlFor, so the control had no accessible name).
+  const generatedId = useId()
+  const control = Children.count(children) === 1 && isValidElement(children)
+    && ['input', 'select', 'textarea'].includes(children.type as string)
+    ? (children as ReactElement<{ id?: string }>)
+    : null
+  const controlId = control?.props.id ?? generatedId
   return (
     <div>
-      <label className="label">
-        {label}{required && <span className="text-rose-500 ml-0.5">*</span>}
+      <label className="label" htmlFor={control ? controlId : undefined}>
+        {label}{required && <span className="text-rose-400 ml-0.5">*</span>}
       </label>
-      {children}
+      {control ? cloneElement(control, { id: controlId }) : children}
       {hint && <p className="hint">{hint}</p>}
     </div>
   )
 }
 
 export function XpField({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const inputId = useId()
   return (
     <div className="flex items-center gap-4 p-4 bg-indigo-950/40 border border-indigo-800/40 rounded-xl">
       <span className="text-xl">⭐</span>
       <div className="flex-1">
-        <label className="label" style={{ marginBottom: 4 }}>XP Reward</label>
+        <label className="label" htmlFor={inputId} style={{ marginBottom: 4 }}>XP Reward</label>
         <p className="hint" style={{ marginTop: 0 }}>Awarded when student completes this item.</p>
       </div>
       <input
+        id={inputId}
         type="number"
         min={0}
         max={1000}

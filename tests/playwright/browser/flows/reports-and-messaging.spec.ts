@@ -19,9 +19,6 @@ test.describe('student reports', () => {
 
   test('exports progress as PDF', async ({ page }) => {
     covers('action:(reports)/student/reports/actions.generateStudentProgressReport')
-    // KNOWN DEFECT: PDF rendering fails under Next 16's bundled React 19 vs the
-    // project's React 18 (see the certificate PDF test). Remove when fixed.
-    test.fail()
     await open(page, '/student/reports')
     const download = page.waitForEvent('download', { timeout: 15_000 })
     await page.getByRole('button', { name: 'Export PDF' }).click()
@@ -61,7 +58,6 @@ test.describe('instructor gradebook reports', () => {
 
   test('exports a course gradebook as PDF', async ({ page }) => {
     covers('action:(reports)/instructor/reports/actions.generateGradebookPDFExport')
-    test.fail() // KNOWN DEFECT — PDF rendering (React 18/19 mismatch)
     await open(page, `/instructor/reports?course=${COURSE.a}`)
     const download = page.waitForEvent('download', { timeout: 15_000 })
     await page.getByRole('button', { name: 'Export PDF' }).click()

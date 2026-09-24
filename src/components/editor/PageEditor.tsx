@@ -156,7 +156,7 @@ export default function PageEditor({ pageId, courseId, title: initialTitle, body
 
       {/* Title */}
       <div className="mb-4">
-        <input
+        <input aria-label="Page title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}

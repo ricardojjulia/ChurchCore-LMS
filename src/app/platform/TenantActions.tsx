@@ -66,7 +66,7 @@ export default function TenantActions({
         <button
           onClick={handleDelete}
           disabled={pending}
-          className="text-rose-600 hover:text-rose-400 disabled:opacity-40 transition-colors"
+          className="text-rose-400 hover:text-rose-300 disabled:opacity-40 transition-colors"
         >
           Delete
         </button>

@@ -170,7 +170,7 @@ export default function GlobalSearch({
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground shrink-0">
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
               </svg>
-              <input
+              <input aria-label={t('globalSearch.inputPlaceholder')}
                 ref={inputRef}
                 value={query}
                 onChange={onInput}

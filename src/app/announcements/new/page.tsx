@@ -26,5 +26,5 @@ export default async function NewAnnouncementPage() {
     .order('title', { ascending: true })
 
   // Only admins may post global/role-scoped announcements (createAnnouncement).
-  return <NewAnnouncementForm courses={courses ?? []} canPostOrgWide={profile.role === 'admin'} />
+  return <NewAnnouncementForm courses={courses ?? []} canPostOrgWide={['admin', 'manager'].includes(profile.role)} />
 }

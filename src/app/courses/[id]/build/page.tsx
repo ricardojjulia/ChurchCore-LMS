@@ -43,7 +43,7 @@ export default async function BuildCoursePage({ params }: { params: Promise<{ id
   const initialBlocks = (blocksResult.data ?? []) as CourseBlock[]
 
   return (
-    <main id="main-content" className="min-h-[calc(100vh-3.5rem)] bg-slate-950 flex flex-col">
+    <main className="min-h-[calc(100vh-3.5rem)] bg-slate-950 flex flex-col">
       <header className="h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-4">
           <Link

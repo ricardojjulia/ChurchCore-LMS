@@ -31,7 +31,7 @@ export default async function NotificationsPage() {
   const unreadCount = (notifications ?? []).filter((n) => !n.is_read).length
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>

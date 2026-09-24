@@ -28,7 +28,7 @@ export function ShareVerificationButton({ certNo }: Props) {
       onClick={handleCopy}
       title={`Copy /verify/${certNo}`}
       aria-label="Copy verification link"
-      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-500 transition-colors"
+      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-500 transition-colors"
     >
       {copied ? (
         <>

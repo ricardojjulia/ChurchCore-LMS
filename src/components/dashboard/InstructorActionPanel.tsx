@@ -100,7 +100,7 @@ export default async function InstructorActionPanel({
       <section className="mb-8">
         <h2 className="text-lg font-bold text-foreground mb-3">Action Required</h2>
         <div className="bg-white border border-emerald-200 rounded-xl px-5 py-4 flex items-center gap-3">
-          <span className="text-emerald-600 text-lg">✓</span>
+          <span className="text-emerald-700 text-lg">✓</span>
           <p className="text-sm text-emerald-700 font-medium">All caught up — nothing needs your attention right now.</p>
         </div>
       </section>

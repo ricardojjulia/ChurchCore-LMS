@@ -83,7 +83,7 @@ export default function NewMessageButton() {
                   </div>
                 ) : (
                   <div className="relative">
-                    <input
+                    <input aria-label={t('messages.newMessage.searchPlaceholder')}
                       ref={inputRef}
                       type="text"
                       value={query}
@@ -120,7 +120,7 @@ export default function NewMessageButton() {
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
                   {t('messages.newMessage.messageLabel')} <span className="text-destructive">*</span>
                 </label>
-                <textarea
+                <textarea aria-label={t('messages.newMessage.messageLabel')}
                   required
                   value={body}
                   onChange={(e) => setBody(e.target.value)}

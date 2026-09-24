@@ -127,6 +127,20 @@ test('drafts, then publishes, an announcement; a learner marks it read', async (
   await admin.close()
 })
 
+test('a manager posts an org-wide announcement', async ({ browser }) => {
+  const manager = await browser.newContext(asActor('manager'))
+  const page = await manager.newPage()
+  covers('action:announcements.createAnnouncement', 'page:/announcements/new')
+  const title = `${runTag()} Manager announcement`
+  await open(page, '/announcements/new')
+  await page.getByPlaceholder('Announcement title…').fill(title)
+  await page.getByPlaceholder('Write your announcement…').fill('Org-wide from a manager.')
+  await page.getByRole('button', { name: 'Save Draft' }).click()
+  await expect.poll(async () => (await db().from('announcements').select('scope').eq('title', title).maybeSingle()).data)
+    .toMatchObject({ scope: 'global' })
+  await manager.close()
+})
+
 test('creates an institutional calendar event', async ({ page }) => {
   covers('action:announcements.createCalendarEvent')
   const title = `${runTag()} Event`
