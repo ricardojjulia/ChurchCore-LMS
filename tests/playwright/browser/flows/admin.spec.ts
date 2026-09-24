@@ -114,7 +114,8 @@ async function tempUser(role: 'student' | 'teacher') {
   const email = `suite-${Date.now().toString(36)}@test.churchcore.dev`
   const { data, error } = await db().auth.admin.createUser({
     email, password: `P-${Math.random()}`, email_confirm: true,
-    user_metadata: { org_id: ORG_A, role, display_name: `Suite Temp ${role}` },
+    user_metadata: { display_name: `Suite Temp ${role}` },
+    app_metadata: { org_id: ORG_A, role }, // role/org are only trusted from app_metadata
   })
   if (error) throw error
   await expect.poll(async () => (await db().from('profiles').select('uid').eq('auth_id', data.user.id).maybeSingle()).data?.uid).toBeTruthy()
@@ -138,8 +139,8 @@ test.describe('users', () => {
     await page.getByRole('button', { name: 'suspended', exact: true }).click()
     await expect.poll(async () => (await profile())?.status).toBe('suspended')
 
-    page.once('dialog', (d) => d.accept())
     await page.getByRole('button', { name: 'Delete user' }).click()
+    await page.getByRole('button', { name: 'Yes, delete' }).click()
     await expect.poll(async () => (await db().auth.admin.getUserById(user.authId)).data.user ?? null).toBeNull()
   })
 

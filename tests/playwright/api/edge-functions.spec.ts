@@ -97,7 +97,7 @@ test.describe('generate-certificate', () => {
   test('backend-only: the public anon key is refused; service role is validated', async () => {
     covers('edge:generate-certificate')
     expect((await fn.get('generate-certificate', { headers: gateway })).status()).toBe(405)
-    const body = { enrollmentId: '00000000-0000-0000-0090-000000000e01', userId: USERS.student.uid, courseId: COURSE.a, orgId: ORG_A }
+    const body = { enrollmentId: '00000000-0000-0000-00c0-000000000e01', userId: USERS.student.uid, courseId: COURSE.a, orgId: ORG_A }
     expect((await fn.post('generate-certificate', { headers: gateway, data: body })).status()).toBe(403)
     const service = { apikey: ANON_KEY, Authorization: `Bearer ${SERVICE_KEY}` }
     expect((await fn.post('generate-certificate', { headers: service, data: {} })).status()).toBe(400)

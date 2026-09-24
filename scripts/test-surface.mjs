@@ -166,6 +166,28 @@ export function evaluate({ surfaces, covered, exemptions, today = new Date() }) 
   }
 }
 
+// tests/surface/a11y-known.json: tolerated axe violations. Same discipline as
+// exemptions: reason + owner + an expiry at most MAX_EXEMPTION_DAYS out, and the
+// route must still exist.
+export function validateA11yKnown(entries, surfaceIds, today = new Date()) {
+  const problems = []
+  const todayStr = today.toISOString().slice(0, 10)
+  const maxDate = new Date(today.getTime() + MAX_EXEMPTION_DAYS * 86_400_000).toISOString().slice(0, 10)
+  for (const e of entries) {
+    const where = `a11y-known ${e.route ?? '?'} ${e.rule ?? '?'}`
+    if (!e.rule || !e.route || !e.reason || !e.owner || !/^\d{4}-\d{2}-\d{2}$/.test(e.expires ?? '')) {
+      problems.push({ kind: 'invalid-a11y-known', id: e.route ?? '', detail: `${where} needs rule, route, reason, owner, expires (YYYY-MM-DD)` })
+    } else if (!surfaceIds.has(e.route)) {
+      problems.push({ kind: 'unknown-a11y-known', id: e.route, detail: `${where} names a page that no longer exists` })
+    } else if (e.expires < todayStr) {
+      problems.push({ kind: 'expired-a11y-known', id: e.route, detail: `${where} expired on ${e.expires} — fix it or re-justify` })
+    } else if (e.expires > maxDate) {
+      problems.push({ kind: 'invalid-a11y-known', id: e.route, detail: `${where} expires more than ${MAX_EXEMPTION_DAYS} days out` })
+    }
+  }
+  return problems
+}
+
 function main() {
   const root = process.cwd()
   const args = new Set(process.argv.slice(2))
@@ -175,6 +197,12 @@ function main() {
     return
   }
   const result = evaluate({ surfaces, covered: scanCoverage(root), exemptions: loadExemptions(root) })
+  const a11yFile = path.join(root, 'tests/surface/a11y-known.json')
+  if (existsSync(a11yFile)) {
+    const extra = validateA11yKnown(JSON.parse(readFileSync(a11yFile, 'utf8')), new Set(surfaces.map((s) => s.id)))
+    result.problems.push(...extra)
+    result.ok = result.problems.length === 0
+  }
   if (args.has('--json')) {
     console.log(JSON.stringify(result, null, 2))
   } else {

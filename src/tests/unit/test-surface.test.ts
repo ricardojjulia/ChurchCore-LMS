@@ -11,6 +11,7 @@ import {
   evaluate,
   routeFromAppPath,
   scanCoverage,
+  validateA11yKnown,
 } from '../../../scripts/test-surface.mjs'
 
 let root: string
@@ -141,5 +142,22 @@ describe('scanCoverage + evaluate', () => {
       exemptions: [{ surface: 'edge:send-mail', reason: 'r', owner: 'o', expires: '2026-10-01' }],
     })
     expect(r.problems).toEqual([expect.objectContaining({ kind: 'stale-exemption' })])
+  })
+})
+
+describe('validateA11yKnown', () => {
+  const today = new Date('2026-09-24T00:00:00Z')
+  const ids = new Set(['page:/dashboard'])
+  const ok = { rule: 'color-contrast', route: 'page:/dashboard', reason: 'design pass', owner: 'o', expires: '2026-11-20' }
+  it('accepts a complete, in-window entry', () => {
+    expect(validateA11yKnown([ok], ids, today)).toEqual([])
+  })
+  it.each([
+    ['expired', { ...ok, expires: '2026-09-01' }, 'expired-a11y-known'],
+    ['too far out', { ...ok, expires: '2027-06-01' }, 'invalid-a11y-known'],
+    ['missing reason', { ...ok, reason: '' }, 'invalid-a11y-known'],
+    ['unknown page', { ...ok, route: 'page:/gone' }, 'unknown-a11y-known'],
+  ])('rejects %s', (_l, entry, kind) => {
+    expect(validateA11yKnown([entry], ids, today).map((p: { kind: string }) => p.kind)).toEqual([kind])
   })
 })

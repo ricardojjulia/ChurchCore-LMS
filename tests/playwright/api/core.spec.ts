@@ -39,7 +39,7 @@ test.describe('GET /api/calendar', () => {
 })
 
 test.describe('GET /api/certificates/[id]/pdf', () => {
-  const certId = '00000000-0000-0000-0090-000000000901'
+  const certId = '00000000-0000-0000-00c0-000000000901'
 
   test('requires auth; other tenants and unknown ids get 404', async () => {
     covers('api:GET /api/certificates/[id]/pdf')

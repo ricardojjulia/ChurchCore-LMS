@@ -1,1 +1,156 @@
-[]
+[
+  {
+    "rule": "color-contrast",
+    "route": "page:/admin/badges",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .text-rose-400). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/admin/cohorts/[id]",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .text-emerald-600). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/admin/health",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .bg-emerald-50.text-emerald-700.border-emerald-200:nth-child). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/admin/question-banks",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .text-rose-500). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/admin/users",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .bg-slate-100.text-slate-700.border-slate-200 > .opacity-70 ). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/admin/users/[id]",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .justify-between.text-sm:nth-child(2) > .gap-2.text-muted-fo). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/courses/[id]",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .text-emerald-600 | li:nth-child(1) > .block > .py-3\\\\.5.px-). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/courses/[id]/attendance",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .capitalize). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/courses/[id]/build",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .px-4.py-3.border-b > .uppercase.tracking-widest.font-bold |). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/courses/[id]/complete",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .font-mono). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/courses/[id]/learn",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .mb-1 > .px-4:nth-child(1) > .tracking-widest | .pt-2 > .px-). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/courses/[id]/pages",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .bg-slate-100). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/courses/[id]/submissions",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .bg-slate-100 > .opacity-70 | .opacity-80.hover\\\\:opacity-10). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/dashboard",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .bg-amber-400). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/hq",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .topActions > button[type=\\\"button\\\"] | .stat-indigo > .stat). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/messages/[threadId]",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .text-muted-foreground\\\\/50). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/onboarding",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. code). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/platform",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .bg-rose-500 | .hover\\\\:bg-slate-900:nth-child(1) > td:nth-c). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "nested-interactive",
+    "route": "page:/platform/feedback",
+    "reason": "Clickable table rows contain buttons (nested interactive). Needs row/action restructure.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/platform/tenants/[id]",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .text-rose-600). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/platform/tenants/[id]/billing",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. section:nth-child(2) > h2 | .text-2xl | .grid-cols-2 > .gap-). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  },
+  {
+    "rule": "color-contrast",
+    "route": "page:/verify/[certNo]",
+    "reason": "Page-specific colour contrast below 4.5:1 (e.g. .font-bold | .text-red-100 | .text-slate-400). Shared-component contrast was fixed in COUNCIL-2026-031; these need a design pass.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  }
+]
