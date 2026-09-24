@@ -2,7 +2,7 @@
 // seeded student, asserting what each step persisted.
 import { test, expect, asActor, open } from '../../fixtures/test'
 import { covers } from '../../fixtures/covers'
-import { BLOCK, COURSE } from '../../fixtures/data'
+import { BLOCK, CERT_NO, COURSE } from '../../fixtures/data'
 import { USERS } from '../../fixtures/roles'
 import { db } from '../../fixtures/db'
 
@@ -101,5 +101,16 @@ test.describe('teacher grades the discussion reply', () => {
     await page.getByLabel('Score', { exact: true }).fill('9')
     await page.getByRole('button', { name: 'Save Grade' }).click()
     await expect.poll(async () => Number((await submissionFor(BLOCK.discussion))?.score)).toBe(9)
+  })
+})
+
+test.describe('certificate verification', () => {
+  test.use(asActor('anon'))
+  test('a third party verifies a real certificate and rejects an unknown one', async ({ page }) => {
+    covers('page:/verify/[certNo]')
+    await open(page, `/verify/${CERT_NO}`)
+    await expect(page.getByText('Certificate Verified')).toBeVisible()
+    await open(page, '/verify/NOT-A-REAL-CERT')
+    await expect(page.getByText('No record matches this certificate number')).toBeVisible()
   })
 })

@@ -1,5 +1,6 @@
 'use server'
 
+import { randomBytes }           from 'node:crypto'
 import { revalidatePath }        from 'next/cache'
 import { redirect }              from 'next/navigation'
 import { headers }               from 'next/headers'
@@ -452,7 +453,10 @@ export async function resetTenantToDemo(
 
   // ── 2. Create demo users ──────────────────────────────────────────────────
   // handle_new_user trigger auto-creates profiles + profile_roles from metadata.
-  const DEMO_PASSWORD = 'Demo@2026!'
+  // Random per reset, never stored or shown: demo users are reached only through
+  // generateDemoLoginLink (a one-time, platform-admin-issued magic link). A
+  // shared, hard-coded password let anyone sign in as any demo tenant's admin.
+  const DEMO_PASSWORD = randomBytes(24).toString('base64url')
   const demoUserDefs = [
     { prefix: 'admin',    role: 'admin',   fullName: 'Alex Admin'     },
     { prefix: 'teacher',  role: 'teacher', fullName: 'Taylor Martin'  },
@@ -659,7 +663,6 @@ export async function resetTenantToDemo(
         scenario,
         admin_email:   `admin@${slug}.demo`,
         teacher_email: `teacher@${slug}.demo`,
-        password:      DEMO_PASSWORD,
       },
     },
   }).eq('id', orgId)
@@ -686,14 +689,15 @@ export async function generateDemoLoginLink(
   const { data: org } = await service.from('organizations').select('settings').eq('id', orgId).single()
   if (!org) return { error: 'Organization not found' }
 
-  const demo = org.settings?.demo as { password?: string; admin_email?: string; teacher_email?: string } | undefined
-  if (!demo?.password) return { error: 'No demo data seeded for this tenant' }
+  const demo = org.settings?.demo as { admin_email?: string; teacher_email?: string } | undefined
+  if (!demo?.admin_email) return { error: 'No demo data seeded for this tenant' }
   if (email !== demo.admin_email && email !== demo.teacher_email) {
     return { error: 'Email is not a recognized demo user for this tenant' }
   }
 
   // Store a one-time token in org settings (expires in 15 minutes).
-  // The /api/auth/demo-login route validates this token and signs in via password.
+  // The /api/auth/demo-login route validates this token and signs in with a
+  // server-generated magic link (no password involved).
   const token = crypto.randomUUID()
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
   const pendingLogin = { token, email, org_id: orgId, expires_at: expiresAt }

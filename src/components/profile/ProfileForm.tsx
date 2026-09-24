@@ -14,13 +14,15 @@ interface Props {
   initialAvatarUrl: string
   role: string
   initialDateOfBirth?: string | null
+  initialEmailDigest?: boolean
 }
 
-export default function ProfileForm({ userId, initialFullName, initialAvatarUrl, role, initialDateOfBirth = null }: Props) {
+export default function ProfileForm({ userId, initialFullName, initialAvatarUrl, role, initialDateOfBirth = null, initialEmailDigest = true }: Props) {
   const t = useTranslations()
   const [fullName, setFullName]         = useState(initialFullName)
   const [avatarUrl, setAvatarUrl]       = useState(initialAvatarUrl)
   const [dateOfBirth, setDateOfBirth]   = useState(initialDateOfBirth ?? '')
+  const [emailDigest, setEmailDigest]   = useState(initialEmailDigest)
   const [saving, setSaving]             = useState(false)
   const [success, setSuccess]           = useState(false)
   const [error, setError]               = useState<string | null>(null)
@@ -40,12 +42,13 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
         display_name:  fullName.trim(),
         avatar_url:    avatarUrl.trim() || null,
         date_of_birth: dateOfBirth.trim() || null,
+        email_digest_enabled: emailDigest,
         updated_at:    new Date().toISOString(),
       })
       .eq('auth_id', userId)
 
     setSaving(false)
-    if (updateError) { setError(updateError.message); return }
+    if (updateError) { setError(t('profile.form.saveError')); return }
     setSuccess(true)
     router.refresh()
   }
@@ -62,7 +65,7 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
         <label className="block text-sm font-semibold text-slate-700 mb-1">
           {t('profile.form.displayNameLabel')} <span className="text-destructive">*</span>
         </label>
-        <input
+        <input aria-label={t('profile.form.displayNameLabel')}
           type="text"
           value={fullName}
           onChange={(e) => { setFullName(e.target.value); setSuccess(false) }}
@@ -77,7 +80,7 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
           {t('profile.form.avatarUrlLabel')}
           <span className="ml-2 text-xs font-normal text-muted-foreground">{t('profile.form.avatarUrlHint')}</span>
         </label>
-        <input
+        <input aria-label={t('profile.form.avatarUrlLabel')}
           type="url"
           value={avatarUrl}
           onChange={(e) => { setAvatarUrl(e.target.value); setSuccess(false) }}
@@ -114,6 +117,22 @@ export default function ProfileForm({ userId, initialFullName, initialAvatarUrl,
           className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
         />
       </div>
+
+      {role === 'student' && (
+        <div className="flex items-start gap-3">
+          <input
+            id="email_digest_enabled"
+            type="checkbox"
+            checked={emailDigest}
+            onChange={(e) => { setEmailDigest(e.target.checked); setSuccess(false) }}
+            className="mt-1 h-4 w-4 rounded border-input"
+          />
+          <label htmlFor="email_digest_enabled" className="text-sm">
+            <span className="block font-semibold text-slate-700">{t('profile.form.emailDigestLabel')}</span>
+            <span className="block text-xs text-muted-foreground">{t('profile.form.emailDigestHint')}</span>
+          </label>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-semibold text-slate-700 mb-2">{t('profile.form.roleFieldLabel')}</label>

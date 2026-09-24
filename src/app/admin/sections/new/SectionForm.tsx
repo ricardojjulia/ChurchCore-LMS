@@ -52,7 +52,7 @@ export default function SectionForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="blueprint_id">
-            Blueprint <span className="text-rose-500">*</span>
+            Blueprint <span className="text-rose-700">*</span>
           </label>
           <select id="blueprint_id" name="blueprint_id" required defaultValue={initialBlueprintId} className="input w-full">
             <option value="">— Select blueprint —</option>
@@ -63,7 +63,7 @@ export default function SectionForm({
         </div>
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="term_id">
-            Term <span className="text-rose-500">*</span>
+            Term <span className="text-rose-700">*</span>
           </label>
           <select id="term_id" name="term_id" required className="input w-full">
             <option value="">— Select term —</option>
@@ -78,7 +78,7 @@ export default function SectionForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="section_code">
-            Section Code <span className="text-rose-500">*</span>
+            Section Code <span className="text-rose-700">*</span>
           </label>
           <input id="section_code" name="section_code" required
             placeholder="e.g. 001 or A" className="input w-full font-mono uppercase" />
@@ -86,7 +86,7 @@ export default function SectionForm({
         </div>
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="delivery_format">
-            Delivery Format <span className="text-rose-500">*</span>
+            Delivery Format <span className="text-rose-700">*</span>
           </label>
           <select id="delivery_format" name="delivery_format" required
             value={format} onChange={(e) => setFormat(e.target.value)}
@@ -99,7 +99,7 @@ export default function SectionForm({
       {/* Enrollment type */}
       <div>
         <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="enrollment_type">
-          Enrollment Type <span className="text-rose-500">*</span>
+          Enrollment Type <span className="text-rose-700">*</span>
         </label>
         <select id="enrollment_type" name="enrollment_type" defaultValue="open" className="input w-full">
           {ENROLLMENT_TYPES.map(({ value, label }) => (

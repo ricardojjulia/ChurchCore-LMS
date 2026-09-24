@@ -11,6 +11,35 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.36.0] — 2026-09-24
+
+Closes every known defect from COUNCIL-2026-031 (COUNCIL-2026-033).
+
+### Security
+
+- **XP could be awarded by anyone.** `award_xp` was callable without signing in, and engagement events trusted the caller's XP amount. XP is now derived server-side from real blocks, quiz scores and completions.
+- Anonymous visitors can no longer execute any `SECURITY DEFINER` function except the RLS helpers.
+- Demo tenants no longer share a hard-coded password. Demo sign-in uses a one-time magic link, and the password is never stored or shown.
+- `/api/digest` rejects requests when `CRON_SECRET` is unset instead of running unauthenticated.
+- Releases build and deploy the exact approved commit (Vercel CLI) instead of a deploy hook that built the current `main`.
+
+### Fixed
+
+- PDF certificates, student reports and gradebook exports (upgrade to React 19).
+- Large report exports no longer hang as "pending" forever.
+- Weekly progress emails: the digest now reaches its summary endpoint, and students can turn it off on their profile.
+- Certificate verification rejected every valid certificate.
+- Staff opening a guardian's student page get redirected instead of a 404.
+- Managers can post org-wide announcements.
+- Accessibility: all remaining WCAG contrast, labelling, landmark and nested-control issues. The platform billing page was unreadable.
+
+### Changed
+
+- React 19; `@tremor/react` removed; `lucide-react` 0.577.
+- Link prefetches no longer make an auth round trip in middleware.
+
+---
+
 ## [0.35.0] — 2026-09-24
 
 Full application test suite and release test-surface gate (COUNCIL-2026-031).

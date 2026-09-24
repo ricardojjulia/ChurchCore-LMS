@@ -65,7 +65,7 @@ export default function NewAnnouncementForm({ courses, canPostOrgWide }: Props) 
             <label className="block text-sm font-semibold text-slate-700 mb-1">
               Title <span className="text-destructive">*</span>
             </label>
-            <input
+            <input aria-label="Title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -80,7 +80,7 @@ export default function NewAnnouncementForm({ courses, canPostOrgWide }: Props) 
             <label className="block text-sm font-semibold text-slate-700 mb-1">
               Message <span className="text-destructive">*</span>
             </label>
-            <textarea
+            <textarea aria-label="Message"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={6}

@@ -39,6 +39,8 @@ async function requireAuth() {
   return { supabase, profile }
 }
 
+const ORG_WIDE_ROLES = ['admin', 'manager']
+
 export async function createAnnouncement(data: {
   title:      string
   body:       string
@@ -55,9 +57,10 @@ export async function createAnnouncement(data: {
   if (!data.title?.trim()) return { error: 'Title is required.' }
   if (!data.body?.trim())  return { error: 'Body is required.' }
 
-  // Instructors can only post course-scoped announcements
-  if (profile.role !== 'admin' && data.scope !== 'course') {
-    return { error: 'Only admins can post global or role-scoped announcements.' }
+  // Teachers can only post course-scoped announcements; admins and managers
+  // (org leadership) can also post org-wide.
+  if (!ORG_WIDE_ROLES.includes(profile.role) && data.scope !== 'course') {
+    return { error: 'Only admins and managers can post global or role-scoped announcements.' }
   }
   if (data.scope === 'course' && !data.courseId) {
     return { error: 'Course is required for course-scoped announcements.' }

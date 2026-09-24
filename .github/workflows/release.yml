@@ -24,8 +24,6 @@ jobs:
     environment: production
     permissions:
       contents: read
-      deployments: read
-      statuses: read
     env:
       SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
       EXPECTED_PRODUCTION_SUPABASE_PROJECT_REF: tpyvciujsrllvowqgeyq
@@ -44,11 +42,11 @@ jobs:
       - name: Validate production deployment configuration
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         shell: bash
         run: |
           missing=0
-          for name in SUPABASE_PROJECT_REF SUPABASE_ACCESS_TOKEN VERCEL_DEPLOY_HOOK_URL; do
+          for name in SUPABASE_PROJECT_REF SUPABASE_ACCESS_TOKEN VERCEL_TOKEN; do
             if [[ -z "${!name}" ]]; then
               printf '::error::Missing %s. Configure it in the production GitHub environment.\n' "$name"
               missing=1
@@ -93,58 +91,32 @@ jobs:
           # meant fixes to any other function never reached production.
           supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF"
 
-      - name: Trigger Vercel production deployment
-        id: vercel-trigger
+      # Build and deploy this exact commit with the Vercel CLI. The deploy hook
+      # used before built whatever main was when it fired, so a release could
+      # ship a different commit than the one that passed CI and was approved
+      # (Copilot review #6). The project ids are not secrets.
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Build and deploy this commit to Vercel production
         env:
-          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_NeSmoYaK8Ipt4aIP6PAW42Mi
+          VERCEL_PROJECT_ID: prj_SmWFVrpIrj8BXpmOKyRtqEInXnOd
         run: |
           git fetch --no-tags origin main
           if [[ "$GITHUB_SHA" != "$(git rev-parse origin/main)" ]]; then
-            printf '::error::A newer main commit exists; refusing to trigger Vercel for this stale release.\n'
+            printf '::error::A newer main commit exists; refusing to deploy this stale release.\n'
             exit 1
           fi
-          echo "triggered_at=$(date -u +%s)" >> "$GITHUB_OUTPUT"
-          response="$(curl --fail --silent --show-error --request POST "$VERCEL_DEPLOY_HOOK_URL")"
-          job_id="$(jq -r '.job.id // empty' <<< "$response")"
-          if [[ -z "$job_id" ]]; then
-            printf '::error::Vercel did not return a deployment job id.\n'
-            exit 1
-          fi
-          echo "Vercel deployment job accepted."
-
-      - name: Verify Vercel production deployment
-        timeout-minutes: 20
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TRIGGERED_AT: ${{ steps.vercel-trigger.outputs.triggered_at }}
-        run: |
-          deadline=$((SECONDS + 900))
-          while (( SECONDS < deadline )); do
-            status="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/status" --jq '[.statuses[] | select(.context == "Vercel") | select((.updated_at | fromdateiso8601) >= (env.TRIGGERED_AT | tonumber))][0] // empty')"
-            if [[ -n "$status" ]]; then
-              state="$(jq -r '.state' <<< "$status")"
-              target_url="$(jq -r '.target_url // empty' <<< "$status")"
-              if [[ "$target_url" != https://vercel.com/* ]]; then
-                printf '::error::Vercel status did not provide a Vercel deployment URL.\n'
-                exit 1
-              fi
-              case "$state" in
-                success)
-                  echo "Vercel production deployment succeeded: $target_url" >> "$GITHUB_STEP_SUMMARY"
-                  exit 0
-                  ;;
-                error|failure)
-                  printf '::error::Vercel production deployment ended with state %s.\n' "$state"
-                  exit 1
-                  ;;
-              esac
-            fi
-
-            sleep 10
-          done
-
-          printf '::error::Timed out waiting for Vercel production deployment.\n'
-          exit 1
+          npx --yes vercel@59.26.0 pull --yes --environment=production --token "$VERCEL_TOKEN"
+          npx --yes vercel@59.26.0 build --prod --token "$VERCEL_TOKEN"
+          url="$(npx --yes vercel@59.26.0 deploy --prebuilt --prod --token "$VERCEL_TOKEN" \
+            --meta githubCommitSha="$GITHUB_SHA")"
+          echo "Vercel production deployment of $GITHUB_SHA: $url" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Notify on success
         if: success()

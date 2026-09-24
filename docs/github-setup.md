@@ -63,7 +63,7 @@ Configure these under **Settings → Environments → production → Environment
 |---|---|---|
 | `production` | `SUPABASE_PROJECT_REF` | Production project reference |
 | `production` | `SUPABASE_ACCESS_TOKEN` | Supabase personal access token with access to the production project |
-| `production` | `VERCEL_DEPLOY_HOOK_URL` | Secret URL for the ChurchCore LMS `main` production deploy hook |
+| `production` | `VERCEL_TOKEN` | Vercel access token (ChurchCore team) used to build and deploy the approved commit |
 
 A project URL supplies the reference (the part before `.supabase.co`), but does not
 provide deployment authorization. Use a personal access token from an account with

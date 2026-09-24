@@ -203,7 +203,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
                             {n.body}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground/60 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {timeAgo(n.created_at)}
                         </p>
                       </div>

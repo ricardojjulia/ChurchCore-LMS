@@ -149,7 +149,7 @@ export default function EnrollWizard({ cohortId, memberCount, sections }: Props)
     <div className="space-y-6">
       <div>
         <label className="block text-sm font-semibold text-foreground mb-2" htmlFor="section_id">
-          Target Section <span className="text-rose-500">*</span>
+          Target Section <span className="text-rose-700">*</span>
         </label>
         <select
           id="section_id"

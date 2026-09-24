@@ -85,9 +85,7 @@ export const ROUTES: RouteSpec[] = [
 
   // ── Guardian ──────────────────────────────────────────────────────────────
   { surface: covers('page:/guardian'), path: '/guardian', allow: ['guardian', ...STAFF] },
-  // The page's own gate admits staff, but get_guardian_student_overview only
-  // authorizes the linked guardian, so staff get a 404. Recorded as-is; see
-  // COUNCIL-2026-031 findings — decide whether staff should have this view.
+  // Guardian-only (COUNCIL-2026-033): staff are redirected to /guardian.
   { surface: covers('page:/guardian/[studentId]'), path: `/guardian/${USERS.student.uid}`, allow: ['guardian'] },
 
   // ── Staff ─────────────────────────────────────────────────────────────────

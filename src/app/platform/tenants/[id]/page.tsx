@@ -25,7 +25,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
 
   const features = org.settings?.features ?? {}
   const branding = org.settings?.branding ?? {}
-  const demo     = org.settings?.demo as { seeded_at?: string; admin_email?: string; teacher_email?: string; password?: string } | undefined
+  const demo     = org.settings?.demo as { seeded_at?: string; admin_email?: string; teacher_email?: string } | undefined
 
   return (
     <>
@@ -146,7 +146,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
         <Section title="Demo Credentials" className="mt-8 border-indigo-900/50 bg-indigo-950/20">
           <p className="text-xs text-slate-400 mb-4">
             Seeded {demo.seeded_at ? new Date(demo.seeded_at).toLocaleString() : ''}.
-            Use these credentials or generate a one-time login link to access the tenant as a demo user.
+            Demo accounts have no usable password; open them with a one-time login link.
           </p>
           <div className="space-y-3">
             {[
@@ -157,8 +157,6 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
                 <div>
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-3">{u.role}</span>
                   <span className="font-mono text-xs text-slate-300">{u.email}</span>
-                  <span className="text-slate-400 mx-2">/</span>
-                  <span className="font-mono text-xs text-slate-400">{demo.password}</span>
                 </div>
                 <DemoLoginButton orgId={org.id} email={u.email!} label={`Open as ${u.role}`} />
               </div>

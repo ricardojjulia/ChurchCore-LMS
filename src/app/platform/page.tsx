@@ -7,7 +7,7 @@ function healthScore(userCount: number, courseCount: number) {
 }
 
 function HealthBadge({ score }: { score: number }) {
-  const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-500' : 'bg-rose-500'
+  const color = score >= 70 ? 'bg-green-700' : score >= 40 ? 'bg-amber-700' : 'bg-rose-700'
   return (
     <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-bold text-white ${color}`}>
       {score}

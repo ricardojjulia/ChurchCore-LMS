@@ -129,7 +129,7 @@ export default function PathAdminClient({ path, addableCourses }: Props) {
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
-        {success && <p className="text-sm text-emerald-600">{success}</p>}
+        {success && <p className="text-sm text-emerald-700">{success}</p>}
 
         <div className="flex gap-3">
           <Button onClick={handleSave} disabled={isPending}>

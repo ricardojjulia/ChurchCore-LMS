@@ -41,7 +41,7 @@ export default function UsersControls({ total: _total }: { total: number }) {
   return (
     <div className="flex flex-col sm:flex-row gap-3 mb-4">
       {/* Search */}
-      <input
+      <input aria-label="Search users"
         type="search"
         defaultValue={currentQ}
         onChange={(e) => handleSearch(e.target.value)}

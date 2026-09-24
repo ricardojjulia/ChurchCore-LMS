@@ -34,7 +34,7 @@ export default function AssetLibrary({ onSelect, onClose }: Props) {
           </div>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-white transition-colors text-xl leading-none"
+            className="text-slate-400 hover:text-white transition-colors text-xl leading-none"
           >
             ×
           </button>
@@ -43,7 +43,7 @@ export default function AssetLibrary({ onSelect, onClose }: Props) {
         <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
           {SECTIONS.map((section) => (
             <div key={section.label}>
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
                 {section.label}
               </h3>
               <div className="grid grid-cols-2 gap-3">

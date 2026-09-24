@@ -49,15 +49,10 @@ test.describe('GET /api/certificates/[id]/pdf', () => {
   })
 
   test('owner downloads their certificate as a PDF', async () => {
-    // KNOWN DEFECT (COUNCIL-2026-031 findings): the App Router renders with
-    // Next's bundled React 19 while @react-pdf/renderer (a default server
-    // external) loads node_modules React 18 — rendering fails with React
-    // error #31. Fix is the React 19 upgrade; this test then passes and
-    // test.fail() makes the suite demand this marker be removed.
-    test.fail()
     const own = await clients.get('student').get(`/api/certificates/${certId}/pdf`)
     expect(own.status()).toBe(200)
     expect(own.headers()['content-type']).toContain('application/pdf')
+    expect((await own.body()).subarray(0, 5).toString()).toBe('%PDF-')
   })
 })
 

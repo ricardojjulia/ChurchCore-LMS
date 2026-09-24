@@ -53,7 +53,7 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks, mana
       {mode === 'create' && (
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="course_code">
-            Course Code <span className="text-rose-500">*</span>
+            Course Code <span className="text-rose-700">*</span>
           </label>
           <input id="course_code" name="course_code" required
             placeholder="e.g. THEO-101" className="input w-full font-mono uppercase" />
@@ -63,7 +63,7 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks, mana
 
       <div>
         <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="title">
-          Title <span className="text-rose-500">*</span>
+          Title <span className="text-rose-700">*</span>
         </label>
         <input id="title" name="title" required defaultValue={initial?.title}
           placeholder="e.g. Introduction to Theology" className="input w-full" readOnly={Boolean(managedSource)} />

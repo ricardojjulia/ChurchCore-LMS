@@ -117,7 +117,7 @@ export default function LiveSessionPlayer({
           {/* Countdown */}
           {msUntilStart !== null && msUntilStart > 0 && !isEnded && (
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 text-center">
-              <p className="text-xs text-indigo-500 font-semibold uppercase tracking-widest mb-1">
+              <p className="text-xs text-indigo-700 font-semibold uppercase tracking-widest mb-1">
                 {t('learning.liveSession.startingInLabel')}
               </p>
               <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">

@@ -57,7 +57,7 @@ export default async function CertificatesPage() {
   const diplomas = (diplomasResult.data ?? []) as unknown as Diploma[]
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -124,7 +124,7 @@ export default async function CertificatesPage() {
                     </div>
 
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                      <p className="text-[10px] font-mono text-muted-foreground/60">{cert.certificate_no}</p>
+                      <p className="text-[10px] font-mono text-muted-foreground">{cert.certificate_no}</p>
                       <div className="flex items-center gap-3">
                         <Link
                           href={`/courses/${cert.course_id}/complete`}

@@ -208,24 +208,22 @@ export function FeedbackTable({ rows: initialRows }: Props) {
               {filtered.map(row => (
                 <tr
                   key={row.id}
-                  role="button"
-                  tabIndex={0}
-                  aria-expanded={selectedId === row.id}
-                  aria-label={`View details for feedback from ${row.user_email ?? 'anonymous session'} on ${row.route}`}
-                  className={`cursor-pointer transition-colors hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 ${selectedId === row.id ? 'bg-slate-900' : ''}`}
+                  className={`cursor-pointer transition-colors hover:bg-slate-900 ${selectedId === row.id ? 'bg-slate-900' : ''}`}
+                  // Mouse convenience only; the button in the first cell is the
+                  // accessible control (a role=button row nesting a select and a
+                  // checkbox was an axe nested-interactive violation).
                   onClick={() => setSelectedId(selectedId === row.id ? null : row.id)}
-                  onKeyDown={e => {
-                    // Only react when the row itself is focused, not a nested
-                    // control (select/checkbox) that already handles its own keys.
-                    if (e.target !== e.currentTarget) return
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      setSelectedId(selectedId === row.id ? null : row.id)
-                    }
-                  }}
                 >
                   <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-400">
-                    {formatDate(row.created_at)}
+                    <button
+                      type="button"
+                      aria-expanded={selectedId === row.id}
+                      aria-label={`View details for feedback from ${row.user_email ?? 'anonymous session'} on ${row.route}`}
+                      onClick={e => { e.stopPropagation(); setSelectedId(selectedId === row.id ? null : row.id) }}
+                      className="rounded text-left hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {formatDate(row.created_at)}
+                    </button>
                   </td>
                   <td className="px-4 py-3">
                     <p className="max-w-[140px] truncate text-xs text-slate-300">

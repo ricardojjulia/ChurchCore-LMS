@@ -46,12 +46,12 @@ function CheckRow({ check }: { check: SystemHealthCheck }) {
           <div className="min-w-0">
             <p className="text-sm font-semibold font-mono truncate">{check.check_name}</p>
             {check.message && (
-              <p className="text-xs mt-0.5 opacity-80">{check.message}</p>
+              <p className="text-xs mt-0.5">{check.message}</p>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs opacity-60 whitespace-nowrap">
+          <span className="text-xs whitespace-nowrap">
             {relativeTime(check.last_checked)}
           </span>
           {check.action_url && (
@@ -59,7 +59,7 @@ function CheckRow({ check }: { check: SystemHealthCheck }) {
               href={check.action_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs underline underline-offset-2 opacity-70 hover:opacity-100"
+              className="text-xs underline underline-offset-2 hover:no-underline"
             >
               view →
             </a>
@@ -68,7 +68,7 @@ function CheckRow({ check }: { check: SystemHealthCheck }) {
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="text-xs underline underline-offset-2 opacity-70 hover:opacity-100"
+              className="text-xs underline underline-offset-2 hover:no-underline"
             >
               {expanded ? 'hide' : 'details'}
             </button>
@@ -193,7 +193,7 @@ export default function SystemHealthPanel({ initialChecks = [] }: Props) {
       {panelState === 'error' && errorMsg && (
         <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
           Health check failed. Try again or check Edge Function logs.
-          <span className="block mt-1 text-xs opacity-70">{errorMsg}</span>
+          <span className="block mt-1 text-xs">{errorMsg}</span>
         </div>
       )}
 

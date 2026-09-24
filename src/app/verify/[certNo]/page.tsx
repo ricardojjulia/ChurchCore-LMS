@@ -32,7 +32,7 @@ export default async function VerifyCertificatePage({
       courses ( title ),
       profiles (
         display_name,
-        organizations ( name )
+        organizations!profiles_org_id_fkey ( name )
       )
     `)
     .eq('certificate_no', certNo)
@@ -64,13 +64,13 @@ export default async function VerifyCertificatePage({
           /* ── VALID ── */
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
             {/* Green banner */}
-            <div className="bg-emerald-500 px-6 py-5 flex items-center gap-3">
+            <div className="bg-emerald-700 px-6 py-5 flex items-center gap-3">
               <svg className="w-7 h-7 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
                 <p className="text-white font-bold text-lg leading-tight">Certificate Verified</p>
-                <p className="text-emerald-100 text-sm">This certificate is authentic</p>
+                <p className="text-emerald-50 text-sm">This certificate is authentic</p>
               </div>
             </div>
 
@@ -88,13 +88,13 @@ export default async function VerifyCertificatePage({
         ) : (
           /* ── INVALID ── */
           <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            <div className="bg-red-500 px-6 py-5 flex items-center gap-3">
+            <div className="bg-red-700 px-6 py-5 flex items-center gap-3">
               <svg className="w-7 h-7 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
               <div>
                 <p className="text-white font-bold text-lg leading-tight">Certificate Not Found</p>
-                <p className="text-red-100 text-sm">No record matches this certificate number</p>
+                <p className="text-red-50 text-sm">No record matches this certificate number</p>
               </div>
             </div>
             <div className="px-6 py-6">
@@ -110,7 +110,7 @@ export default async function VerifyCertificatePage({
           </div>
         )}
 
-        <p className="text-center text-slate-400 text-xs mt-6">
+        <p className="text-center text-slate-600 text-xs mt-6">
           Powered by ChurchCore LMS · Certificate verification
         </p>
       </div>

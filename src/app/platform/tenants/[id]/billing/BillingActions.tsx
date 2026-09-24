@@ -52,10 +52,10 @@ export default function BillingActions({ orgId, currentPlan, orgStatus, priceIds
   }
 
   return (
-    <section className="bg-white rounded-xl border p-6 space-y-4">
+    <section className="rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-4 text-slate-100">
       <h2 className="text-lg font-semibold">Change plan</h2>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-sm text-rose-400">{error}</p>}
 
       <div className="grid gap-3">
         {PLANS.map((plan) => {
@@ -64,20 +64,20 @@ export default function BillingActions({ orgId, currentPlan, orgStatus, priceIds
             <div
               key={plan.id}
               className={`flex items-center justify-between rounded-lg border p-4 ${
-                isCurrent ? 'border-primary bg-primary/5' : ''
+                isCurrent ? 'border-indigo-500 bg-indigo-950/40' : 'border-slate-800'
               }`}
             >
               <div>
                 <p className="font-medium">{plan.label}</p>
-                <p className="text-xs text-muted-foreground">{plan.description}</p>
+                <p className="text-xs text-slate-400">{plan.description}</p>
               </div>
               {isCurrent ? (
-                <span className="text-xs text-primary font-semibold">Current plan</span>
+                <span className="text-xs text-indigo-300 font-semibold">Current plan</span>
               ) : (
                 <button
                   onClick={() => startCheckout(plan.id as 'starter' | 'growth' | 'enterprise')}
                   disabled={loading || orgStatus === 'suspended'}
-                  className="text-sm px-4 py-1.5 rounded-lg bg-primary text-primary-foreground disabled:opacity-50"
+                  className="text-sm px-4 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50"
                 >
                   {loading ? 'Loading…' : 'Select'}
                 </button>
@@ -88,7 +88,7 @@ export default function BillingActions({ orgId, currentPlan, orgStatus, priceIds
       </div>
 
       {orgStatus === 'suspended' && (
-        <p className="text-sm text-destructive">
+        <p className="text-sm text-rose-400">
           This organization is suspended. Contact support to reactivate.
         </p>
       )}

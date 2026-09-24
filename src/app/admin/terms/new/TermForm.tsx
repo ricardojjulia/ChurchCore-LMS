@@ -70,14 +70,14 @@ export default function TermForm({ mode, termId, initial, parentTerms, managedSo
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="term_name">
-            Name <span className="text-rose-500">*</span>
+            Name <span className="text-rose-700">*</span>
           </label>
           <input id="term_name" name="term_name" required defaultValue={initial?.term_name}
             placeholder="e.g. Fall Semester 2025" className="input w-full" readOnly={Boolean(managedSource)} />
         </div>
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="term_code">
-            Code <span className="text-rose-500">*</span>
+            Code <span className="text-rose-700">*</span>
           </label>
           <input id="term_code" name="term_code" required defaultValue={initial?.term_code}
             placeholder="e.g. FALL-2025" className="input w-full font-mono uppercase"
@@ -88,7 +88,7 @@ export default function TermForm({ mode, termId, initial, parentTerms, managedSo
 
       <div>
         <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="type">
-          Type <span className="text-rose-500">*</span>
+          Type <span className="text-rose-700">*</span>
         </label>
         <select id="type" name="type" required defaultValue={initial?.type} className="input w-full"
           disabled={mode === 'edit'}>
@@ -101,14 +101,14 @@ export default function TermForm({ mode, termId, initial, parentTerms, managedSo
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="start_date">
-            Start Date <span className="text-rose-500">*</span>
+            Start Date <span className="text-rose-700">*</span>
           </label>
           <input id="start_date" name="start_date" type="date" required
             defaultValue={initial?.start_date} className="input w-full" readOnly={Boolean(managedSource)} />
         </div>
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="end_date">
-            End Date <span className="text-rose-500">*</span>
+            End Date <span className="text-rose-700">*</span>
           </label>
           <input id="end_date" name="end_date" type="date" required
             defaultValue={initial?.end_date} className="input w-full" readOnly={Boolean(managedSource)} />

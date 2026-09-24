@@ -501,7 +501,10 @@
       "avatarPreviewAlt": "Avatar preview",
       "saveButton": "Save Profile",
       "displayNameRequiredError": "Display name is required.",
-      "saveSuccessNotice": "Profile saved successfully."
+      "saveSuccessNotice": "Profile saved successfully.",
+      "emailDigestLabel": "Weekly progress email",
+      "emailDigestHint": "A short summary of your courses every Monday.",
+      "saveError": "Could not save your profile. Please try again."
     }
   },
   "offline": {

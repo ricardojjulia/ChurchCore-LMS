@@ -54,7 +54,7 @@ export default async function CourseCompletePage({
       : new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 
   return (
-    <main id="main-content" className="min-h-screen bg-gradient-to-b from-indigo-950 to-slate-900 flex flex-col items-center justify-center px-4 py-16">
+    <main className="min-h-screen bg-gradient-to-b from-indigo-950 to-slate-900 flex flex-col items-center justify-center px-4 py-16">
       {/* Confetti-like top accent */}
       <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-emerald-400 to-amber-400" />
 
@@ -106,14 +106,14 @@ export default async function CourseCompletePage({
                 </div>
               )}
               <div className="text-center">
-                <p className="text-3xl font-extrabold text-emerald-600">{enrollment.progress_percent}%</p>
+                <p className="text-3xl font-extrabold text-emerald-700">{enrollment.progress_percent}%</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{t('courses.complete.completionStatLabel')}</p>
               </div>
             </div>
 
             <p className="text-xs text-muted-foreground mb-2">{completedDate}</p>
             {cert?.certificate_no && (
-              <p className="text-[10px] font-mono text-muted-foreground/60">
+              <p className="text-[10px] font-mono text-muted-foreground">
                 {cert.certificate_no}
               </p>
             )}

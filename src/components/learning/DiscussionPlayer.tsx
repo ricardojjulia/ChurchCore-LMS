@@ -244,7 +244,7 @@ export default function DiscussionPlayer({
       {/* Prompt card */}
       {prompt && (
         <div className="bg-indigo-50 border border-indigo-200 rounded-xl px-5 py-4">
-          <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1.5">{t('learning.discussion.promptEyebrow')}</p>
+          <p className="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5">{t('learning.discussion.promptEyebrow')}</p>
           <p className="text-sm text-indigo-800 leading-relaxed whitespace-pre-wrap">{prompt}</p>
         </div>
       )}
@@ -400,7 +400,7 @@ export default function DiscussionPlayer({
         </p>
       ) : (
         <form onSubmit={post} className="space-y-2">
-          <textarea
+          <textarea aria-label={t('learning.discussion.replyPlaceholder')}
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={3}

@@ -105,7 +105,7 @@ export default async function CourseSubmissionsPage({
   }
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
@@ -137,10 +137,10 @@ export default async function CourseSubmissionsPage({
             <Link
               key={label}
               href={buildHref({ status: filter === 'all' ? '' : filter })}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${className} ${filterStatus === filter ? 'ring-2 ring-offset-1 ring-current' : 'opacity-80 hover:opacity-100'}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${className} ${filterStatus === filter ? 'ring-2 ring-offset-1 ring-current' : ''}`}
             >
               <span>{value}</span>
-              <span className="opacity-70">{label}</span>
+              <span className="font-normal">{label}</span>
             </Link>
           ))}
         </div>

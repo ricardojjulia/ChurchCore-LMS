@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { isDeliverableAddress } from '@/lib/email-deliverable'
+import { isCronRequest } from '@/lib/cron-auth'
 
 // Called weekly by a cron job (Vercel Cron, GitHub Actions, etc.)
 // Header: Authorization: Bearer <CRON_SECRET>
@@ -11,12 +12,10 @@ import { isDeliverableAddress } from '@/lib/email-deliverable'
 // from your job runner, or rely on Vercel's built-in auth header injection.
 
 export async function GET(request: Request) {
-  const expectedSecret = process.env.CRON_SECRET
-  if (expectedSecret) {
-    const auth = request.headers.get('authorization')
-    if (auth !== `Bearer ${expectedSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  // Fails closed: an unset CRON_SECRET used to leave this endpoint open, letting
+  // anyone trigger a digest email to every opted-in student.
+  if (!isCronRequest(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   if (!process.env.RESEND_API_KEY) {

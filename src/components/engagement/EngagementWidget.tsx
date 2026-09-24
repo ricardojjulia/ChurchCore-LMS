@@ -94,7 +94,7 @@ export default async function EngagementWidget({ uid }: { uid: string }) {
               </span>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 {ev.xp_earned > 0 && (
-                  <span className="text-emerald-600 font-semibold">+{ev.xp_earned} XP</span>
+                  <span className="text-emerald-700 font-semibold">+{ev.xp_earned} XP</span>
                 )}
                 <span>
                   {new Date(ev.recorded_at).toLocaleDateString('en-US', {

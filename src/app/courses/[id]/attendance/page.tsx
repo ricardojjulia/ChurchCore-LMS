@@ -77,7 +77,7 @@ export default async function AttendancePage({
   }>
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto">
         <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6" aria-label="Breadcrumb">
           <Link href="/courses" className="hover:text-primary transition-colors font-medium">Courses</Link>

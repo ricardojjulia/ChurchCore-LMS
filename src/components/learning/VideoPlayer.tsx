@@ -88,7 +88,7 @@ export default function VideoPlayer({ url, title, blockId, durationMinutes, must
             </span>
           )}
           {mustView && watched && (
-            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+            <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
               <span aria-hidden="true">✅</span> {t('learning.video.watchedBadge')}
             </span>
           )}

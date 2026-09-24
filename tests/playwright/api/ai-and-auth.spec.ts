@@ -6,7 +6,8 @@
 // back as a clean 502 — never a crash, never provider/DB detail.
 import { test, expect } from '@playwright/test'
 import { covers } from '../fixtures/covers'
-import { IDS } from '../fixtures/data'
+import { IDS, MISSING_ID } from '../fixtures/data'
+import { USERS } from '../fixtures/roles'
 import { actorClients, DB_LEAK } from './client'
 
 const clients = actorClients(['anon', 'student', 'teacher', 'admin', 'guardian'])
@@ -97,6 +98,22 @@ test.describe('GET /api/ai/weekly-summary', () => {
     expect((await clients.get('anon').get('/api/ai/weekly-summary')).status()).toBe(401)
     const res = await clients.get('student').get('/api/ai/weekly-summary')
     expect([200, 502]).toContain(res.status())
+  })
+})
+
+test.describe('POST /api/cron/weekly-summary (weekly-digest Edge Function)', () => {
+  const secret = { 'x-cron-secret': process.env.CRON_SECRET ?? 'suite-cron-secret' }
+  test('cron secret only; validates the uid; upstream failure is a clean 502', async () => {
+    covers('api:POST /api/cron/weekly-summary')
+    const body = { uid: USERS.student.uid }
+    expect((await clients.get('anon').post('/api/cron/weekly-summary', { data: body })).status()).toBe(401)
+    expect((await clients.get('admin').post('/api/cron/weekly-summary', { data: body })).status()).toBe(401) // a session is not the secret
+    expect((await clients.get('anon').post('/api/cron/weekly-summary', { data: body, headers: { 'x-cron-secret': 'wrong' } })).status()).toBe(401)
+    expect((await clients.get('anon').post('/api/cron/weekly-summary', { data: { uid: 'nope' }, headers: secret })).status()).toBe(400)
+    expect((await clients.get('anon').post('/api/cron/weekly-summary', { data: { uid: MISSING_ID }, headers: secret })).status()).toBe(404)
+    const res = await clients.get('anon').post('/api/cron/weekly-summary', { data: body, headers: secret })
+    expect([200, 502]).toContain(res.status())
+    expect(await res.text()).not.toMatch(DB_LEAK)
   })
 })
 

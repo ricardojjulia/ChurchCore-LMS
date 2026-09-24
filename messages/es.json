@@ -501,7 +501,10 @@
       "avatarPreviewAlt": "Vista previa del avatar",
       "saveButton": "Guardar perfil",
       "displayNameRequiredError": "El nombre para mostrar es obligatorio.",
-      "saveSuccessNotice": "Perfil guardado correctamente."
+      "saveSuccessNotice": "Perfil guardado correctamente.",
+      "emailDigestLabel": "Correo semanal de progreso",
+      "emailDigestHint": "Un breve resumen de tus cursos cada lunes.",
+      "saveError": "No se pudo guardar tu perfil. Inténtalo de nuevo."
     }
   },
   "offline": {
