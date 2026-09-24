@@ -86,3 +86,12 @@ export async function expectAccessible(page: Page, route: string, testInfo: Test
     `accessibility violations on ${route}`,
   ).toEqual([])
 }
+
+// Navigate and let streaming + hydration settle. Mid-stream, React keeps the
+// resolved content in a hidden container before swapping it in, so strict
+// locators can briefly see two copies of the same field.
+export async function open(page: Page, path: string) {
+  const res = await page.goto(path)
+  await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {})
+  return res
+}

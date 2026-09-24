@@ -1,6 +1,6 @@
 // COUNCIL-2026-031 D4.3 — the learner journey through a course, as the
 // seeded student, asserting what each step persisted.
-import { test, expect, asActor } from '../../fixtures/test'
+import { test, expect, asActor, open } from '../../fixtures/test'
 import { covers } from '../../fixtures/covers'
 import { BLOCK, COURSE } from '../../fixtures/data'
 import { USERS } from '../../fixtures/roles'
@@ -28,7 +28,7 @@ test.beforeAll(async () => {
 
 test('opens a lesson page and it counts as viewed', async ({ page }) => {
   covers('action:learning.markBlockViewed')
-  await page.goto(LEARN)
+  await open(page, LEARN)
   await page.getByRole('button', { name: /Suite Lesson Page/ }).click()
   await expect(page.getByText('Welcome to the suite lesson.').first()).toBeVisible()
   await expect.poll(async () => {
@@ -40,7 +40,7 @@ test('opens a lesson page and it counts as viewed', async ({ page }) => {
 
 test('submits a written assignment', async ({ page }) => {
   covers('action:learning.submitAssignment')
-  await page.goto(LEARN)
+  await open(page, LEARN)
   await page.getByRole('button', { name: /Suite Assignment/ }).first().click()
   await page.getByLabel('Assignment response').fill('The lesson was about welcome and belonging.')
   await page.getByRole('button', { name: 'Submit Assignment' }).click()
@@ -50,7 +50,7 @@ test('submits a written assignment', async ({ page }) => {
 
 test('takes and passes the auto-graded quiz', async ({ page }) => {
   covers('action:learning.submitQuiz')
-  await page.goto(LEARN)
+  await open(page, LEARN)
   await page.getByRole('button', { name: /Suite Quiz/ }).first().click()
   await page.getByRole('radiogroup').nth(0).getByRole('radio', { name: /Alpha/ }).click()
   await page.getByRole('radiogroup').nth(1).getByRole('radio', { name: /True/ }).click()
@@ -61,14 +61,14 @@ test('takes and passes the auto-graded quiz', async ({ page }) => {
 
 test('bank-drawn quiz loads its questions from the question bank', async ({ page }) => {
   covers('action:learning.loadQuizQuestions')
-  await page.goto(LEARN)
+  await open(page, LEARN)
   await page.getByRole('button', { name: /Suite Bank Quiz/ }).click()
   await expect(page.getByText('Bank question: pick Yes')).toBeVisible()
 })
 
 test('marks a video as watched', async ({ page }) => {
   covers('action:learning.markVideoWatched')
-  await page.goto(LEARN)
+  await open(page, LEARN)
   await page.getByRole('button', { name: /Suite Video/ }).click()
   await page.getByRole('button', { name: /Mark as Watched/ }).click()
   await expect.poll(async () => (await submissionFor(BLOCK.video))?.status).toBeTruthy()
@@ -76,14 +76,14 @@ test('marks a video as watched', async ({ page }) => {
 
 test('opening an attendance block records the learner present', async ({ page }) => {
   covers('action:attendance.markSelfAttendance')
-  await page.goto(LEARN)
+  await open(page, LEARN)
   await page.getByRole('button', { name: /Suite Attendance/ }).click()
   await expect.poll(async () => (await submissionFor(BLOCK.attendance))?.content, { timeout: 10_000 })
     .toMatchObject({ attendance_status: 'present' })
 })
 
 test('posts a discussion reply', async ({ page }) => {
-  await page.goto(LEARN)
+  await open(page, LEARN)
   await page.getByRole('button', { name: /Suite Discussion/ }).click()
   await page.getByPlaceholder('Share your thoughts…').fill('My takeaway: belonging matters.')
   await page.getByRole('button', { name: 'Post reply' }).click()
@@ -95,7 +95,7 @@ test.describe('teacher grades the discussion reply', () => {
   test.use(asActor('teacher'))
   test('from the learn view', async ({ page }) => {
     covers('action:learning.gradeDiscussionSubmission')
-    await page.goto(LEARN)
+    await open(page, LEARN)
     await page.getByRole('button', { name: /Suite Discussion/ }).click()
     await page.getByRole('button', { name: 'Grade' }).first().click()
     await page.getByLabel('Score', { exact: true }).fill('9')
