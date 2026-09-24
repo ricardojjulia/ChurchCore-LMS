@@ -1,6 +1,7 @@
 // COUNCIL-2026-031 D4.3 — org administration: academic structure, users,
 // badges, question banks, org settings. Every change is asserted in the
 // database; anything created is uniquely named and cleaned up.
+import { randomUUID } from 'node:crypto'
 import type { Page } from '@playwright/test'
 import { test, expect, asActor, open } from '../../fixtures/test'
 import { covers } from '../../fixtures/covers'
@@ -113,7 +114,7 @@ test.describe('academic structure', () => {
 async function tempUser(role: 'student' | 'teacher') {
   const email = `suite-${Date.now().toString(36)}@test.churchcore.dev`
   const { data, error } = await db().auth.admin.createUser({
-    email, password: `P-${Math.random()}`, email_confirm: true,
+    email, password: `P-${randomUUID()}`, email_confirm: true,
     user_metadata: { display_name: `Suite Temp ${role}` },
     app_metadata: { org_id: ORG_A, role }, // role/org are only trusted from app_metadata
   })

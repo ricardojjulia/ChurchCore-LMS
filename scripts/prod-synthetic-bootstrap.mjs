@@ -7,11 +7,13 @@
 //
 //   SUPABASE_URL=https://<ref>.supabase.co \
 //   SUPABASE_SERVICE_ROLE_KEY=<service role key> \
+//   SYNTHETIC_PASSWORD=<password> \
 //   node scripts/prod-synthetic-bootstrap.mjs --yes
 //
-// Optional: SYNTHETIC_PASSWORD=<existing password> to keep a known password;
-// otherwise one is generated and printed ONCE — store it as the GitHub
-// repository secret SYNTHETIC_PASSWORD (see docs/testing.md).
+// SYNTHETIC_PASSWORD is required: generate one yourself (for example
+// `openssl rand -base64 24`), pass it here, and store the same value as the
+// GitHub repository secret SYNTHETIC_PASSWORD (see docs/testing.md). The script
+// never prints it.
 //
 // Creates / refreshes:
 //   org        slug synthetic-qa, "ChurchCore Synthetic QA", is_synthetic = true
@@ -20,13 +22,12 @@
 //              to email it)
 //   content    one published course (module, lesson page, quiz), the student
 //              enrolled, and the guardian linked to the student
-import { randomBytes } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 
 const url = process.env.SUPABASE_URL
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-if (!url || !key) {
-  console.error('Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (service role) in your shell.')
+if (!url || !key || !process.env.SYNTHETIC_PASSWORD) {
+  console.error('Set SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (service role) and SYNTHETIC_PASSWORD in your shell.')
   process.exit(1)
 }
 if (!process.argv.includes('--yes')) {
@@ -37,8 +38,11 @@ if (!process.argv.includes('--yes')) {
 const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
 const DOMAIN = 'synthetic.churchcore.invalid'
 const ROLES = ['admin', 'manager', 'teacher', 'student', 'guardian']
-const generated = !process.env.SYNTHETIC_PASSWORD
-const password = process.env.SYNTHETIC_PASSWORD ?? `Syn-${randomBytes(18).toString('base64url')}`
+const password = process.env.SYNTHETIC_PASSWORD
+if (password.length < 16) {
+  console.error('SYNTHETIC_PASSWORD must be at least 16 characters.')
+  process.exit(1)
+}
 
 function must(result, what) {
   if (result.error) throw new Error(`${what}: ${result.error.message}`)
@@ -111,7 +115,4 @@ if (!link) {
 
 console.log(`Synthetic tenant ready in ${new URL(url).host}: org ${orgId}, course ${course.id}`)
 console.log(`Accounts: ${ROLES.map((r) => `${r}@${DOMAIN}`).join(', ')}`)
-if (generated) {
-  console.log('\nGenerated password (shown once) — store as GitHub repository secret SYNTHETIC_PASSWORD:')
-  console.log(password)
-}
+console.log('Password: the SYNTHETIC_PASSWORD you supplied (not printed). Store it as the GitHub repository secret.')

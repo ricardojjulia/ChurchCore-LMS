@@ -90,14 +90,16 @@ and the app refuses to email it anyway (`isDeliverableAddress`).
 
 **One-time setup (owner):**
 
-1. From your own shell, with the production service-role key (it's never stored):
+1. From your own shell, with the production service-role key (it's never stored)
+   and a password you generate (the script never prints it):
    ```bash
+   export SYNTHETIC_PASSWORD="$(openssl rand -base64 24)"
    SUPABASE_URL=https://<ref>.supabase.co SUPABASE_SERVICE_ROLE_KEY=<key> \
      node scripts/prod-synthetic-bootstrap.mjs --yes
+   echo "$SYNTHETIC_PASSWORD"   # copy into the GitHub secret below, then clear your terminal
    ```
-   It prints a generated password once.
 2. In GitHub → Settings → Secrets and variables → Actions:
-   - Secret `SYNTHETIC_PASSWORD`: the printed password.
+   - Secret `SYNTHETIC_PASSWORD`: the same password.
    - Variable `SYNTHETIC_BASE_URL`: the production app URL.
    - Variables `SYNTHETIC_SUPABASE_URL` and `SYNTHETIC_SUPABASE_ANON_KEY`: the public
      production Supabase URL and anon key, used to clean up the check's own draft.

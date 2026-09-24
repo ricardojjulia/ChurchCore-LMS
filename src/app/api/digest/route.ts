@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/utils/supabase/service'
-import { isDeliverableAddress } from '@/lib/email'
+import { isDeliverableAddress } from '@/lib/email-deliverable'
 
 // Called weekly by a cron job (Vercel Cron, GitHub Actions, etc.)
 // Header: Authorization: Bearer <CRON_SECRET>

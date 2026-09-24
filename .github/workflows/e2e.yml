@@ -5,6 +5,9 @@ on:
     branches: [main]
 
 # Branch protection requires both CI and this independent E2E workflow.
+permissions:
+  contents: read
+
 jobs:
   e2e:
     name: E2E Tests
