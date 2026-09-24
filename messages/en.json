@@ -600,7 +600,9 @@
       "gradedEditLink": "Graded: {score}/{max} — Edit",
       "gradeActionButton": "Grade",
       "postingButton": "Posting…",
-      "postReplyButton": "Post reply"
+      "postReplyButton": "Post reply",
+      "postError": "Could not post your reply. Please try again.",
+      "updateError": "Could not update your reply. Please try again."
     },
     "shell": {
       "progressLabel": "Progress",

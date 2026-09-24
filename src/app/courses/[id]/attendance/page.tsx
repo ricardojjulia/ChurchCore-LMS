@@ -41,10 +41,10 @@ export default async function AttendancePage({
 
   const blocks = attendanceBlocks ?? []
 
-  // Enrolled students (join with profiles via user_id = auth_id)
+  // Enrolled students (course_enrollments.user_id = profiles.uid)
   const { data: enrollmentRows } = await supabase
     .from('course_enrollments')
-    .select('id, user_id, profiles!inner(uid, first_name, last_name, email)')
+    .select('id, user_id, profiles!inner(uid, display_name, email)')
     .eq('course_id', courseId)
     .eq('role', 'student')
     .eq('status', 'active')
@@ -53,7 +53,7 @@ export default async function AttendancePage({
   type EnrollmentRow = {
     id:       string
     user_id:  string
-    profiles: { uid: string; first_name: string | null; last_name: string | null; email: string | null }
+    profiles: { uid: string; display_name: string | null; email: string | null }
   }
   const enrollments = (enrollmentRows ?? []) as unknown as EnrollmentRow[]
 
@@ -131,7 +131,7 @@ export default async function AttendancePage({
             enrollments={enrollments.map((e) => ({
               id:          e.id,
               authUserId:  e.user_id,
-              displayName: [e.profiles.first_name, e.profiles.last_name].filter(Boolean).join(' ') || e.profiles.email || 'Student',
+              displayName: e.profiles.display_name || e.profiles.email || 'Student',
             }))}
             initialSubmissions={submissions.map((s) => ({
               id:           s.id,

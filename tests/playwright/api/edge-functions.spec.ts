@@ -40,13 +40,14 @@ test.describe('scheduler-invoked functions', () => {
       'edge:refresh-report-views', 'edge:weekly-digest', 'edge:send-guardian-notifications',
     )
     for (const [, name] of CRON_FUNCTIONS) {
-      for (const headers of [
+      const variants: Array<Record<string, string>> = [
         { apikey: ANON_KEY },
         gateway,
         { apikey: ANON_KEY, Authorization: 'Bearer undefined' },
         { apikey: ANON_KEY, Authorization: 'Bearer wrong-secret' },
         { apikey: ANON_KEY, 'x-cron-secret': 'wrong-secret' },
-      ]) {
+      ]
+      for (const headers of variants) {
         const res = await fn.post(name, { headers })
         expect(res.status(), `${name} with ${JSON.stringify(Object.keys(headers))}`).toBe(401)
       }

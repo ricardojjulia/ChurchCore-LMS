@@ -115,11 +115,13 @@ export async function enrollSelf(
 // ── Mark a content block as viewed + update enrollment progress + award XP ───
 
 export async function markBlockViewed(
-  courseId:    string,
-  blockId:     string,
-  totalBlocks: number,
-  viewedCount: number,
-  blockXp:     number = 0,
+  courseId:     string,
+  blockId:      string,
+  // Kept for existing callers; progress is now derived server-side from
+  // recorded block views (sync_my_course_progress), not from client counts.
+  _totalBlocks: number,
+  _viewedCount: number,
+  blockXp:      number = 0,
 ): Promise<{ justCompleted: boolean; xpAwarded: number }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -132,32 +134,8 @@ export async function markBlockViewed(
     .single()
   if (!profile) return { justCompleted: false, xpAwarded: 0 }
 
-  const newProgress = totalBlocks > 0 ? Math.round((viewedCount / totalBlocks) * 100) : 0
-
-  // Never decrease progress (student may navigate back to review earlier blocks)
-  const { data: existing } = await supabase
-    .from('enrollments')
-    .select('progress_percent, transit_status')
-    .eq('user_id',   profile.uid)
-    .eq('course_id', courseId)
-    .single()
-
-  const finalProgress  = Math.max(newProgress, Number(existing?.progress_percent ?? 0))
-  const justCompleted  = finalProgress >= 100 && existing?.transit_status !== 'completed'
-  const transitStatus  = finalProgress >= 100 ? 'completed' : 'in_progress'
-
-  await supabase
-    .from('enrollments')
-    .update({
-      last_accessed_at: new Date().toISOString(),
-      progress_percent: finalProgress,
-      transit_status:   transitStatus,
-      ...(justCompleted ? { completed_at: new Date().toISOString() } : {}),
-    })
-    .eq('user_id',   profile.uid)
-    .eq('course_id', courseId)
-
-  // Record engagement event — handles XP award + streak + deduplication atomically
+  // Record the view — handles XP award + streak + deduplication atomically.
+  // This event is what server-side progress is computed from.
   let xpAwarded = 0
   const engResult = await supabase.rpc('record_engagement_event', {
     p_event_type:  'block_completion',
@@ -170,6 +148,12 @@ export async function markBlockViewed(
     const eng = engResult.data as { xp_earned?: number } | null
     xpAwarded = eng?.xp_earned ?? 0
   }
+
+  // Students have no UPDATE policy on enrollments (deliberately), so progress
+  // is persisted by a SECURITY DEFINER function scoped to the caller's own row.
+  const { data: progressRows } = await supabase.rpc('sync_my_course_progress', { p_course_id: courseId })
+  const progress = (progressRows as Array<{ progress_percent: number; just_completed: boolean }> | null)?.[0]
+  const justCompleted = progress?.just_completed ?? false
 
   // On course completion: bonus 100 XP + issue certificate (only on first completion)
   if (justCompleted) {
@@ -265,7 +249,7 @@ export async function markVideoWatched(blockId: string): Promise<{ error?: strin
     content:      { watched: true },
     submitted_at: new Date().toISOString(),
   })
-  return error ? { error: error.message } : {}
+  return error ? { error: 'Could not save your progress. Please try again.' } : {}
 }
 
 // ── Submit an assignment block ────────────────────────────────────────────────
@@ -335,7 +319,7 @@ export async function submitAssignment(
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save your submission. Please try again.' }
 
   const XP_ASSIGNMENT_SUBMIT = 10
   await tryAwardXp(supabase, profile.uid, XP_ASSIGNMENT_SUBMIT)
@@ -468,7 +452,7 @@ export async function submitQuiz(
       graded_at:      new Date().toISOString(),
     })
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save your submission. Please try again.' }
 
   // Record quiz engagement event — handles XP award + streak + deduplication atomically
   const quizXp = blockXp > 0
@@ -659,7 +643,7 @@ export async function gradeSubmission(
     })
     .eq('id', submissionId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save the grade. Please try again.' }
 
   await applyGradeSideEffects(sub, score, feedback)
 

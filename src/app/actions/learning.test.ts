@@ -524,7 +524,7 @@ describe('gradeSubmission', () => {
     expect(result).toEqual({})
   })
 
-  it('surfaces DB error when update fails', async () => {
+  it('returns a generic error (never the raw DB message) when the update fails', async () => {
     // First single() → teacher profile; second single() → submission;
     // update chain → error
     let singleCall = 0
@@ -560,6 +560,7 @@ describe('gradeSubmission', () => {
     } as any)
 
     const result = await gradeSubmission('sub-1', 85, 'feedback')
-    expect(result).toEqual({ error: 'update constraint violation' })
+    expect(result).toEqual({ error: 'Could not save the grade. Please try again.' })
+    expect(JSON.stringify(result)).not.toContain('constraint violation')
   })
 })

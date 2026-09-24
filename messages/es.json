@@ -600,7 +600,9 @@
       "gradedEditLink": "Calificado: {score}/{max} — Editar",
       "gradeActionButton": "Calificar",
       "postingButton": "Publicando…",
-      "postReplyButton": "Publicar respuesta"
+      "postReplyButton": "Publicar respuesta",
+      "postError": "No se pudo publicar tu respuesta. Inténtalo de nuevo.",
+      "updateError": "No se pudo actualizar tu respuesta. Inténtalo de nuevo."
     },
     "shell": {
       "progressLabel": "Progreso",
