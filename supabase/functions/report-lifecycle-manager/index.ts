@@ -1,4 +1,5 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { rejectUnlessCron } from '../_shared/cron-auth.ts'
 
 const SYSTEM_ACTOR_ID = '00000000-0000-4000-8000-000000000001'
 const BATCH_SIZE = 100
@@ -24,7 +25,10 @@ function daysAgo(days: number): string {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  // Deployed with verify_jwt = false; without this anyone could invoke it.
+  const denied = rejectUnlessCron(req)
+  if (denied) return denied
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 

@@ -92,7 +92,7 @@ export default async function GuardianStudentPage({
     <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6" aria-label="Breadcrumb">
+        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6" aria-label="Breadcrumb">
           <Link href="/guardian" className="hover:text-primary transition-colors font-medium">
             {t('guardian.list.heading')}
           </Link>

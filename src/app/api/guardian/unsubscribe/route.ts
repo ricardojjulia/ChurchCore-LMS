@@ -111,12 +111,14 @@ export async function GET(req: NextRequest): Promise<Response> {
   try {
     const svc = createServiceClient()
 
-    // Disable guardian email notifications in the profile settings JSONB column.
-    // PostgREST does not expose jsonb_set directly, so we fetch current settings,
-    // merge the opt-out flag in JS, then write back — leaving all other keys intact.
+    // Opt out of guardian emails in profiles.notification_prefs (JSONB) — the
+    // column send-guardian-notifications reads. (This used to target a
+    // `settings` column that does not exist, so every unsubscribe failed.)
+    // PostgREST does not expose jsonb_set directly, so fetch, merge the flag
+    // in JS, and write back — leaving all other preference keys intact.
     const { data: profile, error: fetchError } = await svc
       .from('profiles')
-      .select('settings')
+      .select('notification_prefs')
       .eq('uid', payload.guardian_uid)
       .single()
 
@@ -128,20 +130,11 @@ export async function GET(req: NextRequest): Promise<Response> {
       })
     }
 
-    const currentSettings     = (profile?.settings     ?? {}) as Record<string, unknown>
-    const currentNotifications = (currentSettings.notifications ?? {}) as Record<string, unknown>
-
-    const mergedSettings = {
-      ...currentSettings,
-      notifications: {
-        ...currentNotifications,
-        guardian_emails: false,
-      },
-    }
+    const currentPrefs = (profile?.notification_prefs ?? {}) as Record<string, unknown>
 
     const { error: updateError } = await svc
       .from('profiles')
-      .update({ settings: mergedSettings })
+      .update({ notification_prefs: { ...currentPrefs, guardian_emails: false } })
       .eq('uid', payload.guardian_uid)
 
     if (updateError) {

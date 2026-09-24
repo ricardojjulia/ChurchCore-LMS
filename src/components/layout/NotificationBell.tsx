@@ -119,7 +119,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
           <span
             className={cn(
               'min-w-[16px] h-4 px-1 rounded-full',
-              'bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center leading-none',
+              'bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center leading-none',
               'transition-transform',
               badgePulse && 'scale-125',
               sidebar && !collapsed ? 'ml-auto shrink-0' : 'absolute -top-0.5 -right-0.5',

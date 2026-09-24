@@ -195,7 +195,7 @@ export default function DiscussionPlayer({
           submitted_at: new Date().toISOString(),
         })
 
-      if (err) { setError(err.message); return }
+      if (err) { setError(t('learning.discussion.postError')); return }
       await loadReplies()
       setText('')
     })
@@ -220,7 +220,7 @@ export default function DiscussionPlayer({
         p_submission_id: submissionId,
         p_text:          trimmed,
       })
-      if (err) { setError(err.message); return }
+      if (err) { setError(t('learning.discussion.updateError')); return }
       setEditingId(null)
       await loadReplies()
     })
@@ -232,7 +232,7 @@ export default function DiscussionPlayer({
       const { error: err } = await supabase.rpc('delete_discussion_reply', {
         p_submission_id: submissionId,
       })
-      if (err) { setError(err.message); return }
+      if (err) { setError(t('learning.discussion.updateError')); return }
       setReplies((prev) => prev.filter((r) => r.submission_id !== submissionId))
     })
   }

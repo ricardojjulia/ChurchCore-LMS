@@ -32,7 +32,7 @@ export default function GradeDistributionChart({ data }: { data: GradebookSummar
   const summary = buckets.map((bucket) => `${bucket.count} ${bucket.letter}`).join(', ')
 
   return (
-    <div role="img" aria-label={`Grade distribution: ${summary}`}>
+    <div role="group" aria-label={`Grade distribution: ${summary}`}>
       <div className="mb-3 flex justify-end">
         <button
           type="button"

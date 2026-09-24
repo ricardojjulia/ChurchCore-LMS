@@ -8,8 +8,9 @@ export const dynamic = 'force-dynamic'
 export default async function NewCalendarEventPage({
   searchParams,
 }: {
-  searchParams?: { date?: string }
+  searchParams: Promise<{ date?: string }>
 }) {
+  const { date: initialDate } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -31,7 +32,7 @@ export default async function NewCalendarEventPage({
   return (
     <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500 mb-6">
           <Link href="/calendar" className="hover:text-primary font-medium">Calendar</Link>
           <span>/</span>
           <span className="text-foreground font-semibold">New Event</span>
@@ -40,7 +41,7 @@ export default async function NewCalendarEventPage({
           <h1 className="text-xl font-extrabold text-foreground mb-6">New Calendar Event</h1>
           <CalendarEventForm
             courses={(courses ?? []) as { id: string; title: string }[]}
-            initialDate={searchParams?.date}
+            initialDate={initialDate}
             isStaff={isStaff}
           />
         </div>

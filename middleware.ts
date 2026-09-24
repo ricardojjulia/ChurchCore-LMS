@@ -57,7 +57,12 @@ export async function middleware(request: NextRequest) {
     !user &&
     !pathname.startsWith('/login') &&
     !pathname.startsWith('/auth') &&
+    // The auth code exchange runs before a session exists by definition.
+    pathname !== '/callback' &&
     !pathname.startsWith('/join') &&
+    // Certificate verification links are shared with third parties
+    // (COUNCIL-2026-028) and must open without an account.
+    !pathname.startsWith('/verify/') &&
     !pathname.startsWith('/api/')
   ) {
     return NextResponse.redirect(new URL('/login', request.url))

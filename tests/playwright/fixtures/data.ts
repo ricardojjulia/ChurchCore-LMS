@@ -1,0 +1,47 @@
+// Deterministic fixture IDs — keep in sync with supabase/seed.test.sql and
+// supabase/seed.suite.sql (namespace 00c0 is the suite's own).
+import { ORG_A, ORG_B } from './roles'
+
+export { ORG_A, ORG_B }
+
+export const ORG_A_SLUG = 'alpha'
+export const ORG_B_SLUG = 'beta'
+
+export const COURSE = {
+  a: '00000000-0000-0000-0011-000000000001',        // teacher-owned, published, public preview, student enrolled
+  b: '00000000-0000-0000-0011-000000000002',        // Org B
+  standalone: '00000000-0000-0000-0011-000000000003',
+  draft: '00000000-0000-0000-0011-000000000004',
+  advanced: '00000000-0000-0000-0011-000000000005', // has the student's certificate
+}
+
+export const BLOCK = {
+  module: '00000000-0000-0000-00c0-000000000101',
+  page: '00000000-0000-0000-00c0-000000000102',
+  assignment: '00000000-0000-0000-00c0-000000000103',
+  quiz: '00000000-0000-0000-00c0-000000000104',
+  discussion: '00000000-0000-0000-00c0-000000000105',
+  attendance: '00000000-0000-0000-00c0-000000000106',
+  draft: '00000000-0000-0000-00c0-000000000107',
+  video: '00000000-0000-0000-00c0-000000000108',
+  bankQuiz: '00000000-0000-0000-00c0-000000000109',
+}
+
+export const IDS = {
+  contentPage: '00000000-0000-0000-00c0-000000000201',
+  cohort: '00000000-0000-0000-00c0-000000000301',
+  programTrack: '00000000-0000-0000-00c0-000000000401',
+  questionBank: '00000000-0000-0000-00c0-000000000501',
+  learningPath: '00000000-0000-0000-00c0-000000000601',
+  group: '00000000-0000-0000-00c0-000000000701',
+  thread: '00000000-0000-0000-00c0-000000000801',
+  term: '00000000-0000-0000-0020-000000000001',
+  blueprint: '00000000-0000-0000-0021-000000000001',
+  section: '00000000-0000-0000-0022-000000000001',
+  termB: '00000000-0000-0000-0020-000000000002',
+  blueprintB: '00000000-0000-0000-0021-000000000002',
+  sectionB: '00000000-0000-0000-0022-000000000002',
+}
+
+export const CERT_NO = 'SUITE-CERT-0001'
+export const MISSING_ID = '00000000-0000-0000-0099-000000000000'

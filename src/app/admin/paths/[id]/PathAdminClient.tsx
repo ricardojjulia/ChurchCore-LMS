@@ -153,6 +153,7 @@ export default function PathAdminClient({ path, addableCourses }: Props) {
         {addableCourses.length > 0 && (
           <div className="flex gap-2 items-center pt-2 border-t">
             <select
+              aria-label="Course to add"
               value={selectedCourseId}
               onChange={(e) => setSelectedCourseId(e.target.value)}
               className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"

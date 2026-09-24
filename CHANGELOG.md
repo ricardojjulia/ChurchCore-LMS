@@ -11,6 +11,50 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.35.0] — 2026-09-24
+
+Full application test suite and release test-surface gate (COUNCIL-2026-031).
+
+### Added
+
+- **Browser and API test suite** (Playwright): it sweeps all 85 pages as every role, checking
+  rendering, access denial, console errors and axe accessibility. It also runs API contract tests
+  for every route and Edge Function, and end-to-end flows for learners, authoring, admin,
+  the platform console, reports and messaging. It includes a mobile pass. `npm run test:suite:local`.
+- **Test-surface gate** (`npm run test:surface`, in `verify` and CI): every page, API route,
+  Server Action and Edge Function must be tagged by a test via `covers()`, or carry a dated exemption.
+- **Production synthetic checks** after each release, run as an isolated `is_synthetic` tenant
+  (`scripts/prod-synthetic-bootstrap.mjs`). Synthetic tenants cannot check out, and
+  reserved-domain addresses are never emailed.
+- `docs/testing.md` explains how to add tests for new features. PR template and council
+  template gain a **Test surfaces** section.
+
+### Fixed
+
+- Messaging never worked (RLS recursion). Non-members could post into a thread by id.
+- Learner progress was never saved. Assignment, quiz, video and discussion submissions failed.
+  Bank-only quizzes could not be played.
+- Many inserts failed without `org_id` (announcements, calendar, and others). `org_id` now
+  defaults to the caller's organization.
+- Attendance (self and teacher marking); cross-org `markStudentAttendance`.
+- Drafts could not be published. Badges could not be managed. Cohort members never listed.
+  Students could not add personal events. Content autosave could lose edits.
+- `/join/[slug]` crashed. `/verify` was blocked for anonymous visitors. `/hq` and course
+  analytics were not role-gated.
+- Guardian emails never sent; unsubscribe broken.
+- `content-images` and `reports` storage buckets created.
+- CSP blocked Supabase realtime; accessibility contrast and labelling fixes.
+
+### Security
+
+- Open redirect in `/callback` (`next` parameter).
+- Scheduled Edge Functions failed open without `CRON_SECRET`. `generate-embedding` and
+  `generate-certificate` accepted the public anon key.
+- Database error text is no longer returned to clients.
+- The release deploys every Edge Function (previously two).
+
+---
+
 ## [0.34.3] — 2026-09-24
 
 Security hotfix (found while building the COUNCIL-2026-031 test suite).

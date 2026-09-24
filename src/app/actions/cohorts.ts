@@ -127,16 +127,27 @@ export async function searchCohortMembers(
   }
 
   // cohort_id is the first and required WHERE predicate — COUNCIL-2025-006
-  const { data } = await supabase
+  const { data: rows } = await supabase
     .from('cohort_members')
-    .select('id, user_id, status, joined_at, notes, auth_user:user_id(email)')
+    .select('id, user_id, status, joined_at, notes')
     .eq('cohort_id', cohortId)
     .order('joined_at', { ascending: false })
 
-  if (!data) return []
+  if (!rows) return []
+
+  // user_id is an auth user id; PostgREST cannot embed the auth schema, so
+  // emails are resolved from profiles (auth_id) in a second query.
+  const { data: profiles } = rows.length
+    ? await supabase.from('profiles').select('auth_id, email').in('auth_id', rows.map((r) => r.user_id))
+    : { data: [] as Array<{ auth_id: string; email: string | null }> }
+  const emailByAuthId = new Map((profiles ?? []).map((p) => [p.auth_id, p.email]))
+  const data: CohortMember[] = rows.map((r) => ({
+    ...r,
+    auth_user: emailByAuthId.has(r.user_id) ? { email: emailByAuthId.get(r.user_id) ?? '' } : null,
+  }))
 
   const lower = query.toLowerCase()
-  return (data as unknown as CohortMember[]).filter(
+  return data.filter(
     (m) =>
       (m.auth_user?.email?.toLowerCase().includes(lower) ?? false) ||
       m.user_id.toLowerCase().includes(lower),

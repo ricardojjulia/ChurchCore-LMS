@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/utils/supabase/service'
+import { isDeliverableAddress } from '@/lib/email-deliverable'
 
 // Called weekly by a cron job (Vercel Cron, GitHub Actions, etc.)
 // Header: Authorization: Bearer <CRON_SECRET>
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
     .not('email', 'is', null)
 
   if (studentsErr) {
-    return NextResponse.json({ error: studentsErr.message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to load digest recipients' }, { status: 500 })
   }
   if (!students?.length) {
     return NextResponse.json({ sent: 0, total: 0 })
@@ -136,10 +137,11 @@ export async function GET(request: Request) {
 </body>
 </html>`
 
+    if (!isDeliverableAddress(student.email)) continue
     try {
       await resend.emails.send({
         from,
-        to:      student.email!,
+        to:      student.email,
         subject: `Your weekly ChurchCore LMS summary`,
         html,
       })

@@ -31,7 +31,7 @@ export default async function CohortDetailPage({
       .single(),
     supabase
       .from('cohort_members')
-      .select(`id, user_id, status, joined_at, notes, auth_user:user_id(email)`)
+      .select('id, user_id, status, joined_at, notes')
       .eq('cohort_id', cohortId)
       .order('joined_at', { ascending: false }),
     supabase
@@ -45,7 +45,19 @@ export default async function CohortDetailPage({
   const cohort = cohortResult.data
   if (!cohort) redirect('/admin/cohorts')
 
-  const members = membersResult.data ?? []
+  // cohort_members.user_id is an auth user id. PostgREST cannot embed the
+  // auth schema, so the old `auth_user:user_id(email)` embed made the whole
+  // query fail and the member list was always empty. Resolve emails from
+  // profiles (auth_id) instead, keeping the shape CohortMemberPanel expects.
+  const memberRows = membersResult.data ?? []
+  const { data: memberProfiles } = memberRows.length
+    ? await supabase.from('profiles').select('auth_id, email').in('auth_id', memberRows.map((m) => m.user_id))
+    : { data: [] as Array<{ auth_id: string; email: string | null }> }
+  const emailByAuthId = new Map((memberProfiles ?? []).map((p) => [p.auth_id, p.email]))
+  const members = memberRows.map((m) => ({
+    ...m,
+    auth_user: emailByAuthId.has(m.user_id) ? { email: emailByAuthId.get(m.user_id) ?? '' } : null,
+  }))
   const jobs    = jobsResult.data ?? []
 
   const activeCount    = members.filter((m) => m.status === 'active').length
@@ -57,7 +69,7 @@ export default async function CohortDetailPage({
     <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-400">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500">
           <Link href="/admin/cohorts" className="hover:text-primary font-medium">Cohorts</Link>
           <span>/</span>
           <span className="text-foreground font-semibold">{cohort.cohort_name}</span>

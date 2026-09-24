@@ -1,6 +1,9 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { addCohortMember, removeCohortMember, searchCohortMembers } from './cohorts'
+import { covers } from '../../tests/covers'
+
+covers('action:cohorts.addCohortMember', 'action:cohorts.removeCohortMember', 'action:cohorts.searchCohortMembers')
 
 // ── Proxy that makes any query chain awaitable with a fixed resolved value ────
 function resolvesWith(value: Record<string, unknown>) {
@@ -111,34 +114,29 @@ describe('searchCohortMembers', () => {
     expect(result).toEqual([])
   })
 
-  it('returns members matching the query string (client-side filter)', async () => {
-    const mockMembers = [
-      {
-        id: 'cm-001',
-        user_id: 'u-111',
-        status: 'active',
-        joined_at: '2026-01-01T00:00:00Z',
-        notes: null,
-        auth_user: { email: 'alice@example.com' },
-      },
-      {
-        id: 'cm-002',
-        user_id: 'u-222',
-        status: 'active',
-        joined_at: '2026-01-02T00:00:00Z',
-        notes: null,
-        auth_user: { email: 'bob@example.com' },
-      },
+  it('returns members matching the query string, with emails resolved from profiles', async () => {
+    // cohort_members.user_id is an auth id; emails come from profiles.auth_id
+    // (PostgREST cannot embed auth.users).
+    const members = [
+      { id: 'cm-001', user_id: 'u-111', status: 'active', joined_at: '2026-01-01T00:00:00Z', notes: null },
+      { id: 'cm-002', user_id: 'u-222', status: 'active', joined_at: '2026-01-02T00:00:00Z', notes: null },
     ]
-
-    vi.mocked(createClient).mockResolvedValueOnce(
-      adminClient({
-        cohort_members: { data: mockMembers, error: null },
-      }) as any,
-    )
+    const client = adminClient({ cohort_members: { data: members, error: null } })
+    let profilesCalls = 0
+    const baseFrom = client.from.getMockImplementation()!
+    client.from.mockImplementation((table: string) => {
+      if (table === 'profiles' && ++profilesCalls > 1) {
+        return resolvesWith({
+          data: [{ auth_id: 'u-111', email: 'alice@example.com' }, { auth_id: 'u-222', email: 'bob@example.com' }],
+          error: null,
+        })
+      }
+      return baseFrom(table)
+    })
+    vi.mocked(createClient).mockResolvedValueOnce(client as any)
 
     const result = await searchCohortMembers('cohort-1', 'alice')
     expect(result).toHaveLength(1)
-    expect((result[0] as any).auth_user?.email).toBe('alice@example.com')
+    expect(result[0].auth_user?.email).toBe('alice@example.com')
   })
 })

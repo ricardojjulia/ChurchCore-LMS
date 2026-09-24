@@ -8,6 +8,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Resend } from 'https://esm.sh/resend@4'
+import { isDeliverableAddress, rejectUnlessCron } from '../_shared/cron-auth.ts'
 
 // ─── Environment ─────────────────────────────────────────────────────────────
 
@@ -43,7 +44,8 @@ interface ProfileRow {
   uid:          string
   display_name: string
   email:        string
-  settings:     { notifications?: { guardian_emails?: boolean } } | null
+  // profiles has no `settings` column; opt-outs live in notification_prefs.
+  notification_prefs: { guardian_emails?: boolean } | null
 }
 
 // ─── HMAC-SHA256 JWT for unsubscribe tokens ───────────────────────────────────
@@ -157,14 +159,20 @@ Deno.serve(async (req: Request) => {
   }
 
   // Require CRON_SECRET bearer token — no user JWT needed.
-  if (req.headers.get('Authorization') !== `Bearer ${CRON_SECRET}`) {
-    return new Response('Unauthorized', { status: 401 })
-  }
+  const denied = rejectUnlessCron(req)
+  if (denied) return denied
 
   const svc = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
+  // Without a key the Resend constructor throws; report it plainly instead.
+  if (!RESEND_KEY) {
+    return new Response(JSON.stringify({ error: 'Email provider not configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
   const resend = new Resend(RESEND_KEY)
 
   // ── Fetch ready rows (debounce window elapsed, not yet sent, not dead-lettered) ──
@@ -245,7 +253,7 @@ Deno.serve(async (req: Request) => {
       // Fetch guardian profile — need email and notification preferences.
       const { data: guardianProfile, error: profileErr } = await svc
         .from('profiles')
-        .select('uid, display_name, email, settings')
+        .select('uid, display_name, email, notification_prefs')
         .eq('uid', guardianUid)
         .single()
 
@@ -258,12 +266,12 @@ Deno.serve(async (req: Request) => {
       const profile = guardianProfile as ProfileRow
 
       // Respect opt-out: skip if guardian has explicitly disabled guardian emails.
-      if (profile.settings?.notifications?.guardian_emails === false) {
+      if (profile.notification_prefs?.guardian_emails === false) {
         skipped++
         continue
       }
 
-      if (!profile.email) {
+      if (!isDeliverableAddress(profile.email)) {
         skipped++
         continue
       }

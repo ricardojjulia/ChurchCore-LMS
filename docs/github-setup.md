@@ -10,7 +10,7 @@ Configure in **GitHub → Repository → Settings → Branches → Branch protec
 | Required approving reviews | **1** minimum |
 | Dismiss stale pull request approvals when new commits are pushed | **YES** |
 | Require status checks to pass before merging | **YES** |
-| Required status checks | `Lint`, `Type Check`, `Unit Tests`, `Build` |
+| Required status checks | `Lint`, `Type Check`, `Unit Tests`, `Build`, `Test Surface`, `E2E Tests`, `Browser & API` |
 | Require branches to be up to date before merging | **YES** |
 | Restrict who can push to matching branches | Admins only |
 | Allow force pushes | **NO** |
@@ -94,9 +94,11 @@ to the required deployment access. An authorization failure in that flow must be
 resolved before deployment; successful secret creation alone does not prove access.
 See the [2.116.0 database connection implementation](https://github.com/supabase/cli/blob/v2.116.0/apps/cli/src/legacy/shared/legacy-db-config.layer.ts#L102-L117).
 
-The pinned CLI also accepts multiple function names, so the release deploys only
-`search-users` and `weekly-digest`; it does not implicitly deploy every local
-function. See the [2.116.0 function argument definition](https://github.com/supabase/cli/blob/v2.116.0/apps/cli/src/legacy/commands/functions/deploy/deploy.command.ts#L11-L15).
+The release deploys **every** function in `supabase/functions` (per-function
+`verify_jwt` comes from `supabase/config.toml`). Scheduler-invoked functions
+fail closed unless the `CRON_SECRET` function secret is set in the project
+(`supabase secrets set CRON_SECRET=…`), and backend-only functions require the
+service role — see `supabase/functions/_shared/cron-auth.ts`.
 
 ### Recovery from a failed release
 

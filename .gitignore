@@ -40,3 +40,8 @@ next-env.d.ts
 
 # ai-factory temp artifacts
 .ai-factory/locks/
+
+# Playwright suite (COUNCIL-2026-031)
+tests/playwright/.auth/
+playwright-report/
+test-results/

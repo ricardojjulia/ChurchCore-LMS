@@ -33,12 +33,12 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <Link href="/platform" className="text-sm text-slate-500 hover:text-slate-300">Tenants</Link>
+            <Link href="/platform" className="text-sm text-slate-400 hover:text-slate-300">Tenants</Link>
             <span className="text-slate-700">/</span>
             <span className="text-sm text-slate-300">{org.name}</span>
           </div>
           <h1 className="mt-2 text-2xl font-bold text-white">{org.name}</h1>
-          <p className="text-xs text-slate-600 mt-0.5">{org.slug} · {org.id}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{org.slug} · {org.id}</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -59,7 +59,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           { label: 'Courses', value: courses?.length ?? 0 },
         ].map(({ label, value }) => (
           <div key={label} className="rounded-lg border border-slate-800 bg-slate-900 p-4">
-            <p className="text-xs text-slate-500">{label}</p>
+            <p className="text-xs text-slate-400">{label}</p>
             <p className="mt-1 text-xl font-bold text-white capitalize">{value}</p>
           </div>
         ))}
@@ -72,7 +72,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
             {Object.entries(features).map(([key, enabled]) => (
               <div key={key} className="flex items-center justify-between">
                 <span className="text-sm text-slate-400 capitalize">{key.replace(/_/g, ' ')}</span>
-                <span className={`rounded px-2 py-0.5 text-xs font-semibold ${enabled ? 'bg-green-900 text-green-300' : 'bg-slate-800 text-slate-500'}`}>
+                <span className={`rounded px-2 py-0.5 text-xs font-semibold ${enabled ? 'bg-green-900 text-green-300' : 'bg-slate-800 text-slate-400'}`}>
                   {enabled ? 'Enabled' : 'Disabled'}
                 </span>
               </div>
@@ -83,7 +83,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
         {/* Branding */}
         <Section title="Branding">
           {Object.keys(branding).length === 0 ? (
-            <p className="text-sm text-slate-600">No branding configured.</p>
+            <p className="text-sm text-slate-400">No branding configured.</p>
           ) : (
             <div className="space-y-2">
               {branding.primary_color && (
@@ -93,7 +93,7 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
                 </div>
               )}
               {branding.logo_url && (
-                <p className="text-xs text-slate-500 break-all">{branding.logo_url}</p>
+                <p className="text-xs text-slate-400 break-all">{branding.logo_url}</p>
               )}
               {branding.email_from_name && (
                 <p className="text-sm text-slate-400">From: {branding.email_from_name}</p>
@@ -109,16 +109,16 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
               <div key={u.uid} className="flex items-center justify-between px-4 py-2">
                 <div>
                   <p className="text-sm font-medium text-slate-200">{u.full_name || '—'}</p>
-                  <p className="text-xs text-slate-600">{u.email}</p>
+                  <p className="text-xs text-slate-400">{u.email}</p>
                 </div>
-                <span className="text-xs text-slate-500 capitalize">
+                <span className="text-xs text-slate-400 capitalize">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join returns role as array; shape not narrowed */}
                   {(u.role as any)?.[0]?.role ?? '—'}
                 </span>
               </div>
             ))}
             {(users?.length ?? 0) > 10 && (
-              <p className="px-4 py-2 text-xs text-slate-600">+{(users?.length ?? 0) - 10} more</p>
+              <p className="px-4 py-2 text-xs text-slate-400">+{(users?.length ?? 0) - 10} more</p>
             )}
           </div>
         </Section>
@@ -129,13 +129,13 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
             {(courses ?? []).map(c => (
               <div key={c.id} className="flex items-center justify-between px-4 py-2">
                 <p className="text-sm text-slate-300">{c.title}</p>
-                <span className={`text-xs ${c.status === 'published' ? 'text-green-500' : 'text-slate-600'}`}>
+                <span className={`text-xs ${c.status === 'published' ? 'text-green-500' : 'text-slate-400'}`}>
                   {c.status}
                 </span>
               </div>
             ))}
             {(courses?.length ?? 0) === 0 && (
-              <p className="px-4 py-2 text-xs text-slate-600">No courses yet.</p>
+              <p className="px-4 py-2 text-xs text-slate-400">No courses yet.</p>
             )}
           </div>
         </Section>
@@ -157,8 +157,8 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
                 <div>
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mr-3">{u.role}</span>
                   <span className="font-mono text-xs text-slate-300">{u.email}</span>
-                  <span className="text-slate-600 mx-2">/</span>
-                  <span className="font-mono text-xs text-slate-500">{demo.password}</span>
+                  <span className="text-slate-400 mx-2">/</span>
+                  <span className="font-mono text-xs text-slate-400">{demo.password}</span>
                 </div>
                 <DemoLoginButton orgId={org.id} email={u.email!} label={`Open as ${u.role}`} />
               </div>
@@ -181,13 +181,13 @@ export default async function TenantDetailPage({ params }: { params: Promise<{ i
           {(auditEntries ?? []).map(e => (
             <div key={e.id} className="flex items-center justify-between gap-4 px-4 py-2">
               <span className="text-xs font-mono text-indigo-400">{e.action}</span>
-              <span className="text-xs text-slate-500 shrink-0">
+              <span className="text-xs text-slate-400 shrink-0">
                 {new Date(e.created_at).toLocaleString()}
               </span>
             </div>
           ))}
           {(auditEntries?.length ?? 0) === 0 && (
-            <p className="px-4 py-2 text-xs text-slate-600">No audit entries.</p>
+            <p className="px-4 py-2 text-xs text-slate-400">No audit entries.</p>
           )}
         </div>
       </Section>
@@ -202,7 +202,7 @@ function Section({ title, children, className }: {
 }) {
   return (
     <div className={`rounded-lg border border-slate-800 bg-slate-900 p-4 ${className ?? ''}`}>
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</h2>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">{title}</h2>
       {children}
     </div>
   )

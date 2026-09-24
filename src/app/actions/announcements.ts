@@ -81,7 +81,7 @@ export async function createAnnouncement(data: {
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save. Please try again.' }
 
   revalidatePath('/announcements')
   revalidatePath('/dashboard')
@@ -96,7 +96,7 @@ export async function publishAnnouncement(id: string): Promise<{ error?: string 
     .update({ is_published: true, published_at: new Date().toISOString() })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save. Please try again.' }
   revalidatePath('/announcements')
   revalidatePath('/dashboard')
   return {}
@@ -149,7 +149,7 @@ export async function createCalendarEvent(data: {
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save. Please try again.' }
   revalidatePath('/calendar')
   return { id: row.id }
 }

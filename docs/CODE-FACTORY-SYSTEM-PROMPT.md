@@ -97,6 +97,9 @@ There are two document types. Both live in `docs/decisions/`.
 ## Implementation Prompt
 [A complete, self-contained prompt that can be pasted into a new AI session to implement this decision. See Part 5 for the format.]
 
+## Test Surfaces
+[Required (COUNCIL-2026-031). Every page, API method, Server Action and Edge Function this decision adds or changes — by surface id (`npm run test:surface -- --list`) — and the spec file that will cover each: route-table row for pages, `tests/playwright/api/*` for routes, a `tests/playwright/browser/flows/*` journey or unit test for actions. The implementation is not done until `npm run test:surface` and the Browser & API job are green.]
+
 ## Definition of Done
 [Checkboxes. Every item must be green before the commit lands.]
 
@@ -596,7 +599,7 @@ Required settings for `main`:
 - Require pull request before merging
 - Require 1 approving review minimum
 - Dismiss stale reviews on new push
-- Require status checks: `Lint`, `Type Check`, `Unit Tests`, `Build`
+- Require status checks: `Lint`, `Type Check`, `Unit Tests`, `Build`, `Test Surface`, `E2E Tests`, `Browser & API`
 - Require branches to be up to date before merging
 - No force pushes
 - No deletions

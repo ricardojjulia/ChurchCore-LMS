@@ -145,7 +145,7 @@ export default function GlobalSearch({
         )}
 
         {variant === 'sidebar' && !collapsed && (
-          <kbd className="ml-auto shrink-0 text-[10px] bg-slate-700 rounded px-1 py-0.5 text-slate-500">⌘K</kbd>
+          <kbd className="ml-auto shrink-0 text-[10px] bg-slate-700 rounded px-1 py-0.5 text-slate-300">⌘K</kbd>
         )}
         {variant === 'navbar' && (
           <kbd className="hidden sm:inline text-[10px] bg-slate-700 rounded px-1 py-0.5 text-slate-400">⌘K</kbd>

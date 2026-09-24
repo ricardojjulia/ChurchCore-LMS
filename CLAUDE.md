@@ -160,6 +160,10 @@ export async function POST(req: NextRequest) {
 - E2E tests: real Supabase, deterministic seed UUIDs, env vars only (no hardcoded credentials)
 - Every feature needs: happy path + validation failure + not-found (minimum)
 - Coverage thresholds enforced in `vitest.config.ts` — do not lower them
+- **Features ship with tests (COUNCIL-2026-031, enforced by CI).** Every new page, API method, Server Action and Edge Function must be exercised by a test tagged `covers('<surface id>')` in the same PR, or carry a dated exemption (≤ 60 days) in `tests/surface/exemptions.json`. `npm run test:surface` (part of `npm run verify`) fails otherwise. `npm run test:surface -- --list` prints every surface id.
+- **Browser + API suite:** Playwright in `tests/playwright/` — `browser/routes.ts` declares who may see every page (add a row for each new page), `api/*.spec.ts` covers every route's auth/validation/not-found/tenant contract, `browser/flows/*.spec.ts` drive real UI and assert what was persisted. Run it all locally with `npm run test:suite:local` (needs `supabase start`). See `docs/testing.md`.
+- **Accessibility:** serious/critical axe violations fail the page sweep. Known ones may be listed in `tests/surface/a11y-known.json` with a reason, owner and ≤ 60-day expiry.
+- **Never point tests at a hosted project.** The suite refuses non-local Supabase URLs; keep `.env.test.local` on the local stack.
 
 ---
 

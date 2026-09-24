@@ -34,12 +34,14 @@ export default function LoginPage() {
     <main className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-8">
         <h1 className="text-2xl font-extrabold text-white mb-1">{t('auth.login.heading')}</h1>
-        <p className="text-slate-500 text-sm mb-6">{t('auth.login.brandSubtitle')}</p>
+        <p className="text-slate-400 text-sm mb-6">{t('auth.login.brandSubtitle')}</p>
         <form onSubmit={handleSignIn} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">{t('auth.login.emailLabel')}</label>
+            <label htmlFor="login-email" className="block text-sm font-medium text-slate-300 mb-1">{t('auth.login.emailLabel')}</label>
             <input
+              id="login-email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -48,9 +50,11 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">{t('common.password')}</label>
+            <label htmlFor="login-password" className="block text-sm font-medium text-slate-300 mb-1">{t('common.password')}</label>
             <input
+              id="login-password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -58,7 +62,7 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </div>
-          {error && <p className="text-rose-400 text-sm">{error}</p>}
+          {error && <p role="alert" className="text-rose-400 text-sm">{error}</p>}
           <button
             type="submit"
             disabled={loading}

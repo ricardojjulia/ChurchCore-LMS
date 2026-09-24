@@ -2,6 +2,9 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { enrollSelf, gradeSubmission } from './learning'
+import { covers } from '../../tests/covers'
+
+covers('action:learning.enrollSelf', 'action:learning.gradeSubmission')
 
 // ── Service client mock (used for XP award and notifications in gradeSubmission) ──
 vi.mock('@/utils/supabase/service', () => ({
@@ -521,7 +524,7 @@ describe('gradeSubmission', () => {
     expect(result).toEqual({})
   })
 
-  it('surfaces DB error when update fails', async () => {
+  it('returns a generic error (never the raw DB message) when the update fails', async () => {
     // First single() → teacher profile; second single() → submission;
     // update chain → error
     let singleCall = 0
@@ -557,6 +560,7 @@ describe('gradeSubmission', () => {
     } as any)
 
     const result = await gradeSubmission('sub-1', 85, 'feedback')
-    expect(result).toEqual({ error: 'update constraint violation' })
+    expect(result).toEqual({ error: 'Could not save the grade. Please try again.' })
+    expect(JSON.stringify(result)).not.toContain('constraint violation')
   })
 })

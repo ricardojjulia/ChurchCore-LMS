@@ -196,7 +196,7 @@ export default async function CoursePage({
     <main id="main-content" className="min-h-screen bg-slate-50/50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6" aria-label="Breadcrumb">
+        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6" aria-label="Breadcrumb">
           <Link href="/courses" className="hover:text-primary transition-colors font-medium">{t('courses.detail.coursescrumb')}</Link>
           <span aria-hidden="true">/</span>
           <span className="text-foreground font-semibold truncate">{course.title}</span>
