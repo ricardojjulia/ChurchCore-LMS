@@ -71,12 +71,24 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO 'public'
 AS $function$
+DECLARE
+  v_org  uuid;
+  v_role public.user_role;
 BEGIN
   IF (NEW.raw_app_meta_data->>'org_id') IS DISTINCT FROM (OLD.raw_app_meta_data->>'org_id')
      OR (NEW.raw_app_meta_data->>'role') IS DISTINCT FROM (OLD.raw_app_meta_data->>'role') THEN
+    -- Malformed values (e.g. a future SSO claim mapping) must not break the
+    -- auth.users update itself: skip the sync and leave the profile as is.
+    BEGIN
+      v_org  := (NEW.raw_app_meta_data->>'org_id')::uuid;
+      v_role := (NEW.raw_app_meta_data->>'role')::public.user_role;
+    EXCEPTION WHEN invalid_text_representation OR invalid_parameter_value THEN
+      RAISE WARNING 'sync_profile_from_app_metadata: ignoring malformed app_metadata for %', NEW.id;
+      RETURN NEW;
+    END;
     UPDATE public.profiles p
-    SET org_id     = COALESCE((NEW.raw_app_meta_data->>'org_id')::uuid, p.org_id),
-        role       = COALESCE((NEW.raw_app_meta_data->>'role')::public.user_role, p.role),
+    SET org_id     = COALESCE(v_org, p.org_id),
+        role       = COALESCE(v_role, p.role),
         updated_at = now()
     WHERE p.auth_id = NEW.id;
   END IF;
