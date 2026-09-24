@@ -1,4 +1,4 @@
-import { timingSafeEqual } from 'node:crypto'
+import { createHash, timingSafeEqual } from 'node:crypto'
 
 // Scheduler-only endpoints (cron jobs, Edge Functions calling back into the app).
 // Fails closed: when CRON_SECRET is not configured, every request is rejected.
@@ -11,8 +11,9 @@ export function isCronRequest(req: Request): boolean {
   return [bearer, header].some((candidate) => safeEqual(candidate, secret))
 }
 
+// Compare fixed-length digests so the timing reveals nothing, not even
+// whether the candidate has the secret's length.
 function safeEqual(a: string, b: string): boolean {
-  const left = Buffer.from(a)
-  const right = Buffer.from(b)
-  return left.length === right.length && timingSafeEqual(left, right)
+  const digest = (v: string) => createHash('sha256').update(v).digest()
+  return timingSafeEqual(digest(a), digest(b))
 }

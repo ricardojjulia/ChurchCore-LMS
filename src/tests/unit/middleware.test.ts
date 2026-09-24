@@ -38,6 +38,18 @@ describe('middleware', () => {
     expect(res.headers.get('location')).toContain('/login')
   })
 
+  it('a forged session cookie only skips the middleware check; pages still verify', async () => {
+    // Documents the design: the cookie is a name heuristic, so an attacker can
+    // skip the middleware round trip on prefetches — but every protected page
+    // calls auth.getUser() itself (the page sweep's anon denial checks cover
+    // this for every route in tests/playwright/browser/routes.ts).
+    const req = new NextRequest('http://localhost/admin/users', { headers: { 'next-router-prefetch': '1' } })
+    req.cookies.set('sb-forged-auth-token', 'not-a-real-token')
+    const res = await middleware(req)
+    expect(m.getUser).not.toHaveBeenCalled()
+    expect(res.headers.get('location')).toBeNull()
+  })
+
   it('verifies the session on a normal navigation', async () => {
     m.user = { id: 'u1' }
     const res = await middleware(request('/courses', {}, true))

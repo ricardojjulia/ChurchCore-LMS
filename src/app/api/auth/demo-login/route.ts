@@ -15,10 +15,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const token  = searchParams.get('t')
   const orgId  = searchParams.get('org')
-  const origin = new URL(request.url).origin
-
-  const fail = (reason: string) =>
-    NextResponse.redirect(new URL(`/platform?error=${encodeURIComponent(reason)}`, origin))
+  // Relative Location headers: the browser resolves them against the host it
+  // actually used, so the session cookie set below always matches (request.url
+  // can name a different host than the browser's behind a proxy or bind).
+  const redirectTo = (path: string) => new NextResponse(null, { status: 307, headers: { Location: path } })
+  const fail = (reason: string) => redirectTo(`/platform?error=${encodeURIComponent(reason)}`)
 
   if (!token || !orgId) return fail('missing_params')
 
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
 
   // Sign in as the demo user. Cookies are set directly on the redirect response
   // so the browser receives the new session without a separate exchange step.
-  const redirectResponse = NextResponse.redirect(new URL('/dashboard', origin))
+  const redirectResponse = redirectTo('/dashboard')
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

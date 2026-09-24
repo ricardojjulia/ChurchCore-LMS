@@ -164,3 +164,14 @@ test.describe('POST /api/upload/image', () => {
     expect(body).toContain(USERS.teacher.org)
   })
 })
+
+test.describe('middleware prefetch shortcut (COUNCIL-2026-033 D13)', () => {
+  test('a forged session cookie on a prefetch still gets no protected data', async () => {
+    covers('page:/admin/users')
+    const res = await clients.get('anon').get('/admin/users', {
+      headers: { 'next-router-prefetch': '1', rsc: '1', cookie: 'sb-forged-auth-token=not-a-real-token' },
+      maxRedirects: 0,
+    })
+    expect(await res.text()).not.toContain('@test.churchcore.dev')
+  })
+})

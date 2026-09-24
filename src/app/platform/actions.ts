@@ -621,16 +621,23 @@ export async function resetTenantToDemo(
   }
 
   // ── 5. Enroll students in all courses ────────────────────────────────────
-  const enrollments = studentAuthIds.flatMap(authId =>
-    allCourseIds.map(courseId => ({
-      course_id: courseId,
-      user_id:   authId,
-      role:      'student',
-      status:    'active',
-      source:    'admin',
-    }))
-  )
-  if (enrollments.length) await service.from('course_enrollments').insert(enrollments)
+  // Both tables key on profiles.uid (not the auth id), and learning progress,
+  // XP and certificates read public.enrollments. Inserting auth ids into
+  // course_enrollments alone failed its foreign key, so demo students were
+  // never actually enrolled.
+  const { data: studentProfiles } = studentAuthIds.length
+    ? await service.from('profiles').select('uid').in('auth_id', studentAuthIds)
+    : { data: [] as { uid: string }[] }
+  const studentUids = (studentProfiles ?? []).map(p => p.uid)
+  const pairs = studentUids.flatMap(uid => allCourseIds.map(courseId => ({ uid, courseId })))
+  if (pairs.length) {
+    await service.from('course_enrollments').insert(pairs.map(({ uid, courseId }) => ({
+      course_id: courseId, user_id: uid, org_id: orgId, role: 'student', status: 'active', source: 'admin',
+    })))
+    await service.from('enrollments').insert(pairs.map(({ uid, courseId }) => ({
+      course_id: courseId, user_id: uid, org_id: orgId, transit_status: 'not_started', progress_percent: 0,
+    })))
+  }
 
   // ── 6. Create welcome announcements ──────────────────────────────────────
   if (ownerUid) {

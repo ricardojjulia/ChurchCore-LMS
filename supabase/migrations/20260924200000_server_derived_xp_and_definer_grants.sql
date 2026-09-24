@@ -231,4 +231,7 @@ END;
 $$;
 
 -- New functions created by the migration role default to no anon EXECUTE.
+-- Scope: this covers functions created by the role that runs migrations only;
+-- functions created by other roles (Supabase internals) are not covered.
+-- supabase/tests/definer_grants_test.sql is the backstop for public schema.
 ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM anon;
