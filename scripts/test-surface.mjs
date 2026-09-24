@@ -109,12 +109,36 @@ export function scanCoverage(root) {
         continue
       }
       if (!SOURCE_EXT.test(rel)) continue
-      for (const call of src.matchAll(/\bcovers\(([\s\S]*?)\)/g)) {
-        for (const lit of call[1].matchAll(/(['"`])((?:(?!\1).)+)\1/g)) add(lit[2], rel)
-      }
+      for (const id of coversArgs(src)) add(id, rel)
     }
   }
   return covered
+}
+
+// String-literal arguments of every covers(...) call. Quote-aware, so ids
+// that contain parentheses (route groups such as "(reports)") are read whole.
+export function coversArgs(src) {
+  const ids = []
+  const re = /\bcovers\(/g
+  let m
+  while ((m = re.exec(src))) {
+    let i = m.index + m[0].length
+    let quote = null
+    let current = ''
+    for (; i < src.length; i++) {
+      const ch = src[i]
+      if (quote) {
+        if (ch === '\\') { current += src[++i] ?? ''; continue }
+        if (ch === quote) { if (current) ids.push(current); current = ''; quote = null; continue }
+        current += ch
+      } else if (ch === "'" || ch === '"' || ch === '`') {
+        quote = ch
+      } else if (ch === ')') {
+        break
+      }
+    }
+  }
+  return ids
 }
 
 export function loadExemptions(root) {

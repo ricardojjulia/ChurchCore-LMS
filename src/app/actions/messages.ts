@@ -11,7 +11,7 @@ async function requireAuth() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('uid, display_name, role')
+    .select('uid, display_name, role, org_id')
     .eq('auth_id', user.id)
     .single()
 
@@ -85,8 +85,11 @@ export async function getOrCreateDirectThread(
   if (!ok) return { error: 'You are sending messages too quickly. Please wait a moment.' }
 
   // Use service client to create thread + participants atomically
-  // (bypasses RLS for controlled multi-table insert)
+  // (bypasses RLS for controlled multi-table insert). The service role has no
+  // session, so org_id must be set explicitly on every row — it was omitted,
+  // and every new conversation failed on the NOT NULL org_id constraint.
   const service = createServiceClient()
+  const orgId = profile.org_id as string
 
   // Check for existing direct thread
   const { data: existingRows } = await service
@@ -119,8 +122,9 @@ export async function getOrCreateDirectThread(
       thread_id: existingThreadId,
       sender_id: profile.uid,
       body,
+      org_id:    orgId,
     })
-    if (error) return { error: error.message }
+    if (error) return { error: 'Could not send the message. Please try again.' }
     revalidatePath('/messages')
     return { threadId: existingThreadId }
   }
@@ -128,25 +132,26 @@ export async function getOrCreateDirectThread(
   // Create new thread
   const { data: thread, error: threadErr } = await service
     .from('message_threads')
-    .insert({ thread_type: 'direct', created_by: profile.uid })
+    .insert({ thread_type: 'direct', created_by: profile.uid, org_id: orgId })
     .select('id')
     .single()
-  if (threadErr || !thread) return { error: threadErr?.message ?? 'Failed to create thread.' }
+  if (threadErr || !thread) return { error: 'Could not start the conversation. Please try again.' }
 
   // Add both participants
   const { error: partErr } = await service.from('message_thread_participants').insert([
-    { thread_id: thread.id, user_id: profile.uid,    role: 'owner',  can_reply: true },
-    { thread_id: thread.id, user_id: recipientUid,   role: 'member', can_reply: true },
+    { thread_id: thread.id, user_id: profile.uid,    role: 'owner',  can_reply: true, org_id: orgId },
+    { thread_id: thread.id, user_id: recipientUid,   role: 'member', can_reply: true, org_id: orgId },
   ])
-  if (partErr) return { error: partErr.message }
+  if (partErr) return { error: 'Could not start the conversation. Please try again.' }
 
   // Send first message
   const { error: msgErr } = await service.from('messages').insert({
     thread_id: thread.id,
     sender_id: profile.uid,
     body,
+    org_id:    orgId,
   })
-  if (msgErr) return { error: msgErr.message }
+  if (msgErr) return { error: 'Could not send the message. Please try again.' }
 
   // Create notification for recipient
   await service.from('notifications').insert({
@@ -156,6 +161,7 @@ export async function getOrCreateDirectThread(
     body:           body.slice(0, 80),
     link:           `/messages/${thread.id}`,
     reference_type: 'message_thread',
+    org_id:         orgId,
     reference_id:   thread.id,
   })
 
@@ -192,7 +198,7 @@ export async function sendMessage(
     .from('messages')
     .insert({ thread_id: threadId, sender_id: profile.uid, body: clean })
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not complete that. Please try again.' }
 
   // Notify other participants
   const service = createServiceClient()
@@ -246,6 +252,6 @@ export async function deleteMessage(messageId: string): Promise<{ error?: string
     .eq('id', messageId)
     .eq('sender_id', profile.uid)
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not complete that. Please try again.' }
   return {}
 }

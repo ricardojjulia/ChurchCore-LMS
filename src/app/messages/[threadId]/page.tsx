@@ -60,7 +60,7 @@ export default async function ThreadPage({ params }: { params: Promise<{ threadI
       body,
       is_deleted,
       created_at,
-      profiles (
+      profiles!messages_sender_id_fkey (
         uid,
         display_name
       )

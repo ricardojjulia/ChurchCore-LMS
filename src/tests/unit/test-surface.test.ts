@@ -12,6 +12,7 @@ import {
   routeFromAppPath,
   scanCoverage,
   validateA11yKnown,
+  coversArgs,
 } from '../../../scripts/test-surface.mjs'
 
 let root: string
@@ -159,5 +160,12 @@ describe('validateA11yKnown', () => {
     ['unknown page', { ...ok, route: 'page:/gone' }, 'unknown-a11y-known'],
   ])('rejects %s', (_l, entry, kind) => {
     expect(validateA11yKnown([entry], ids, today).map((p: { kind: string }) => p.kind)).toEqual([kind])
+  })
+})
+
+describe('coversArgs', () => {
+  it('reads ids containing parentheses (route groups) whole', () => {
+    expect(coversArgs(`${C}('action:(reports)/student/reports/actions.x', "page:/a")`))
+      .toEqual(['action:(reports)/student/reports/actions.x', 'page:/a'])
   })
 })
