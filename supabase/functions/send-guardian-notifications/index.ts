@@ -8,7 +8,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { Resend } from 'https://esm.sh/resend@4'
-import { rejectUnlessCron } from '../_shared/cron-auth.ts'
+import { isDeliverableAddress, rejectUnlessCron } from '../_shared/cron-auth.ts'
 
 // ─── Environment ─────────────────────────────────────────────────────────────
 
@@ -271,7 +271,7 @@ Deno.serve(async (req: Request) => {
         continue
       }
 
-      if (!profile.email) {
+      if (!isDeliverableAddress(profile.email)) {
         skipped++
         continue
       }

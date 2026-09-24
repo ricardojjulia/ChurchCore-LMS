@@ -47,7 +47,7 @@ export default async function PlatformPage() {
 
   const { data: orgs } = await service
     .from('organizations')
-    .select('id, name, slug, status, plan, trial_ends_at, deleted_at, created_at, settings')
+    .select('id, name, slug, status, plan, trial_ends_at, deleted_at, created_at, settings, is_synthetic')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
@@ -131,6 +131,11 @@ export default async function PlatformPage() {
                   <Link href={`/platform/tenants/${t.id}`} className="font-medium text-white hover:text-indigo-400">
                     {t.name}
                   </Link>
+                  {t.is_synthetic && (
+                    <span className="ml-2 rounded border border-slate-600 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300">
+                      Synthetic QA
+                    </span>
+                  )}
                   <p className="text-xs text-slate-400">{t.slug}</p>
                 </td>
                 <td className="px-4 py-3"><StatusBadge status={t.status} /></td>

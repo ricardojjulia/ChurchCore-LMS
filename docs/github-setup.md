@@ -10,7 +10,7 @@ Configure in **GitHub → Repository → Settings → Branches → Branch protec
 | Required approving reviews | **1** minimum |
 | Dismiss stale pull request approvals when new commits are pushed | **YES** |
 | Require status checks to pass before merging | **YES** |
-| Required status checks | `Lint`, `Type Check`, `Unit Tests`, `Build` |
+| Required status checks | `Lint`, `Type Check`, `Unit Tests`, `Build`, `Test Surface`, `E2E Tests`, `Browser & API` |
 | Require branches to be up to date before merging | **YES** |
 | Restrict who can push to matching branches | Admins only |
 | Allow force pushes | **NO** |

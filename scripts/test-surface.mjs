@@ -238,7 +238,7 @@ function main() {
     }
     if (!result.ok) {
       console.log('\nEvery page, API method, Server Action and Edge Function needs a covers() tag in a test')
-      console.log('(see docs/TESTING.md) or a dated exemption in tests/surface/exemptions.json.')
+      console.log('(see docs/testing.md) or a dated exemption in tests/surface/exemptions.json.')
     }
   }
   if (!result.ok) process.exitCode = 1

@@ -158,3 +158,74 @@ jobs:
           else
             echo "DEPLOY_WEBHOOK_URL not set — skipping notification"
           fi
+
+  # COUNCIL-2026-031 D8 — post-release checks against production as the
+  # synthetic-QA tenant (scripts/prod-synthetic-bootstrap.mjs). Uses
+  # repository-level secret/variables (not the production environment) so it
+  # does not ask for a second approval. Skips until the one-time setup is done.
+  synthetic:
+    name: Production synthetic checks
+    runs-on: ubuntu-latest
+    needs: deploy
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      SYNTHETIC_BASE_URL: ${{ vars.SYNTHETIC_BASE_URL }}
+      SYNTHETIC_SUPABASE_URL: ${{ vars.SYNTHETIC_SUPABASE_URL }}
+      SYNTHETIC_SUPABASE_ANON_KEY: ${{ vars.SYNTHETIC_SUPABASE_ANON_KEY }}
+    steps:
+      - name: Check configuration
+        id: config
+        env:
+          SYNTHETIC_PASSWORD: ${{ secrets.SYNTHETIC_PASSWORD }}
+        run: |
+          if [[ -z "$SYNTHETIC_BASE_URL" || -z "$SYNTHETIC_PASSWORD" ]]; then
+            echo "::notice::Synthetic checks skipped: set repository variable SYNTHETIC_BASE_URL and secret SYNTHETIC_PASSWORD (see docs/testing.md)."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.config.outputs.enabled == 'true'
+
+      - name: Setup Node
+        if: steps.config.outputs.enabled == 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies and Chromium
+        if: steps.config.outputs.enabled == 'true'
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run synthetic checks against production
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          SYNTHETIC_PASSWORD: ${{ secrets.SYNTHETIC_PASSWORD }}
+          CI: 'true'
+        run: npx playwright test -c tests/playwright/playwright.config.ts --project=prod-synthetic
+
+      - name: Upload report
+        if: failure() && steps.config.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        run: |
+          if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
+            curl -s -X POST "$DEPLOY_WEBHOOK_URL" -H "Content-Type: application/json" \
+              -d "{\"text\": \"⚠️ ChurchCore LMS production synthetic checks FAILED after deploy of ${{ github.sha }} — see ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
+          fi

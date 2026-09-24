@@ -119,3 +119,126 @@ jobs:
         run: |
           test ! -f "$RUNNER_TEMP/churchcore-functions.log" || cat "$RUNNER_TEMP/churchcore-functions.log"
           test ! -f "$RUNNER_TEMP/churchcore-e2e.log" || cat "$RUNNER_TEMP/churchcore-e2e.log"
+
+  # COUNCIL-2026-031 D7 — full browser + API suite against a production build
+  # on a disposable local Supabase stack. Independent of the job above so a
+  # failure in one never masks the other.
+  browser-api:
+    name: Browser & API
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      APP_BASE_URL: http://127.0.0.1:3000
+      NEXT_PUBLIC_DEMO_MODE: 'true'
+      # Cloudflare's documented always-pass Turnstile test keys (public).
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+      TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+      # Deliberately invalid provider keys: routes pass their "configured"
+      # checks so auth/validation run; upstream calls fail fast (asserted 502).
+      OPENAI_API_KEY: sk-suite-invalid
+      ANTHROPIC_API_KEY: suite-invalid
+      CRON_SECRET: suite-cron-secret
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Export local test environment
+        shell: bash
+        run: |
+          eval "$(supabase status --output env)"
+          TEST_USER_PASSWORD="$(openssl rand -base64 32)"
+          echo "::add-mask::$ANON_KEY"
+          echo "::add-mask::$SERVICE_ROLE_KEY"
+          echo "::add-mask::$JWT_SECRET"
+          echo "::add-mask::$TEST_USER_PASSWORD"
+          {
+            echo "TEST_SUPABASE_URL=$API_URL"
+            echo "TEST_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "TEST_SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "TEST_DATABASE_URL=$DB_URL"
+            echo "SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "SUPABASE_JWT_SECRET=$JWT_SECRET"
+            echo "TEST_USER_PASSWORD=$TEST_USER_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Wait for test services
+        run: |
+          for attempt in {1..120}; do
+            curl --fail --silent --output /dev/null "$SUPABASE_URL/auth/v1/health" && exit 0
+            sleep 1
+          done
+          supabase status
+          exit 1
+
+      - name: Prepare users and seed fixtures
+        run: |
+          node scripts/ci-setup-test-env.mjs
+          psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/seed.test.sql
+          psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/seed.suite.sql
+
+      - name: Serve Edge Functions
+        run: |
+          printf 'CRON_SECRET=%s\nSUPABASE_JWT_SECRET=%s\n' "$CRON_SECRET" "$SUPABASE_JWT_SECRET" > "$RUNNER_TEMP/functions.env"
+          supabase functions serve --env-file "$RUNNER_TEMP/functions.env" > "$RUNNER_TEMP/functions.log" 2>&1 &
+          for attempt in {1..90}; do
+            curl --fail --silent --output /dev/null \
+              --header "apikey: $TEST_SUPABASE_ANON_KEY" \
+              --header "Authorization: Bearer $TEST_SUPABASE_ANON_KEY" \
+              "$TEST_SUPABASE_URL/functions/v1/system-health-check" && exit 0
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/functions.log"
+          exit 1
+
+      - name: Build and start the app (production build)
+        run: |
+          npm run build
+          npx next start --hostname 127.0.0.1 --port 3000 > "$RUNNER_TEMP/app.log" 2>&1 &
+          for attempt in {1..60}; do
+            curl --fail --silent --output /dev/null "$APP_BASE_URL/login" && exit 0
+            sleep 1
+          done
+          cat "$RUNNER_TEMP/app.log"
+          exit 1
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser and API suite
+        run: npx playwright test -c tests/playwright/playwright.config.ts --project=setup --project=api --project=browser --project=mobile
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+      - name: Print service logs on failure
+        if: failure()
+        run: |
+          test ! -f "$RUNNER_TEMP/functions.log" || tail -200 "$RUNNER_TEMP/functions.log"
+          test ! -f "$RUNNER_TEMP/app.log" || tail -200 "$RUNNER_TEMP/app.log"

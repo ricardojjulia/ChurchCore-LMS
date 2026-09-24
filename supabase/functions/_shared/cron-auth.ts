@@ -45,3 +45,13 @@ export function rejectUnlessServiceRole(req: Request): Response | null {
   }
   return null
 }
+
+// Mirror of src/lib/email.ts#isDeliverableAddress for Edge Functions: never
+// send to reserved domains (the production synthetic tenant uses .invalid).
+const UNDELIVERABLE_TLDS = ['.invalid', '.test', '.example', '.localhost']
+export function isDeliverableAddress(email: string | null | undefined): email is string {
+  if (!email) return false
+  const domain = email.trim().toLowerCase().split('@')[1] ?? ''
+  if (!domain) return false
+  return !UNDELIVERABLE_TLDS.some((tld) => domain === tld.slice(1) || domain.endsWith(tld))
+}

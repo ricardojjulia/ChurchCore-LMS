@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/utils/supabase/service'
+import { isDeliverableAddress } from '@/lib/email'
 
 // Called weekly by a cron job (Vercel Cron, GitHub Actions, etc.)
 // Header: Authorization: Bearer <CRON_SECRET>
@@ -136,10 +137,11 @@ export async function GET(request: Request) {
 </body>
 </html>`
 
+    if (!isDeliverableAddress(student.email)) continue
     try {
       await resend.emails.send({
         from,
-        to:      student.email!,
+        to:      student.email,
         subject: `Your weekly ChurchCore LMS summary`,
         html,
       })

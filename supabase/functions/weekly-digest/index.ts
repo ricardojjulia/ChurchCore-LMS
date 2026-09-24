@@ -4,7 +4,7 @@
 // Auth: CRON_SECRET bearer token — no JWT required.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { rejectUnlessCron } from '../_shared/cron-auth.ts'
+import { isDeliverableAddress, rejectUnlessCron } from '../_shared/cron-auth.ts'
 
 const SUPABASE_URL  = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY   = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
       // Get email from auth.users
       const { data: authUser } = await svc.auth.admin.getUserById(profile.auth_id)
       const email = authUser?.user?.email
-      if (!email) { skipped++; continue }
+      if (!isDeliverableAddress(email)) { skipped++; continue }
 
       // Request weekly summary from the app API
       const summaryRes = await fetch(`${APP_URL}/api/ai/weekly-summary`, {

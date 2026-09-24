@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { enrollCore } from '@/lib/enrollment-core'
 import { revalidatePath } from 'next/cache'
+import { isDeliverableAddress } from '@/lib/email-deliverable'
 
 // ── Helper: award XP via RPC ─────────────────────────────────────────────────
 
@@ -80,7 +81,7 @@ export async function enrollSelf(
   }
 
   // Enrollment confirmation email (optional — skipped if RESEND_API_KEY not set)
-  if (process.env.RESEND_API_KEY && profile.email) {
+  if (process.env.RESEND_API_KEY && isDeliverableAddress(profile.email)) {
     try {
       const { Resend } = await import('resend')
       const resend    = new Resend(process.env.RESEND_API_KEY)
@@ -173,7 +174,7 @@ export async function markBlockViewed(
     const cert = certData as { certificate_no?: string; letter_grade?: string } | null
 
     // Certificate issued email (optional — skipped if RESEND_API_KEY not set)
-    if (process.env.RESEND_API_KEY && profile.email) {
+    if (process.env.RESEND_API_KEY && isDeliverableAddress(profile.email)) {
       try {
         const { data: courseRow } = await supabase
           .from('courses')
@@ -517,7 +518,7 @@ export async function applyGradeSideEffects(
         .eq('uid', sub.user_id)
         .single()
 
-      if (studentProfile?.email) {
+      if (isDeliverableAddress(studentProfile?.email)) {
         const { Resend } = await import('resend')
         const resend = new Resend(process.env.RESEND_API_KEY)
         const pct = sub.max_score ? Math.round((score / sub.max_score) * 100) : null

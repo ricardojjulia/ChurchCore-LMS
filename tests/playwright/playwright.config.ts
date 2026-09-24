@@ -1,7 +1,7 @@
 // COUNCIL-2026-031 — browser + API suite configuration.
 //
 // The app and a local Supabase stack must already be running (CI: e2e.yml;
-// locally: see docs/TESTING.md). This config never starts or seeds anything,
+// locally: see docs/testing.md). This config never starts or seeds anything,
 // and the setup project refuses to run against a non-local Supabase.
 import { defineConfig, devices } from '@playwright/test'
 
