@@ -168,4 +168,14 @@ describe('coversArgs', () => {
     expect(coversArgs(`${C}('action:(reports)/student/reports/actions.x', "page:/a")`))
       .toEqual(['action:(reports)/student/reports/actions.x', 'page:/a'])
   })
+
+  it('ignores calls in line and block comments', () => {
+    const src = [
+      `// ${C}('page:/line')`,
+      `/* ${C}('page:/block') */`,
+      `const url = 'https://x.test/${C}' // trailing`,
+      `${C}('page:/real')`,
+    ].join('\n')
+    expect(coversArgs(src)).toEqual(['page:/real'])
+  })
 })

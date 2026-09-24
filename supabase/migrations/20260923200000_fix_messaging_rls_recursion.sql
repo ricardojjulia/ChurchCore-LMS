@@ -27,6 +27,7 @@ AS $$
   SELECT thread_id
   FROM public.message_thread_participants
   WHERE user_id = public.current_user_uid()
+    AND org_id = public.current_user_org_id()
     AND left_at IS NULL;
 $$;
 

@@ -62,11 +62,18 @@ if (!org) {
 const orgId = org.id
 
 // ── Accounts ─────────────────────────────────────────────────────────────────
-const { data: listed } = await db.auth.admin.listUsers({ perPage: 1000 })
+// Page through every auth user: a truncated list would miss existing
+// synthetic accounts and createUser would then fail on the duplicate email.
+const allUsers = []
+for (let page = 1; ; page++) {
+  const { users } = must(await db.auth.admin.listUsers({ page, perPage: 1000 }), 'list users')
+  allUsers.push(...users)
+  if (users.length < 1000) break
+}
 const uidByRole = {}
 for (const role of ROLES) {
   const email = `${role}@${DOMAIN}`
-  const existing = listed.users.find((u) => u.email === email)
+  const existing = allUsers.find((u) => u.email === email)
   const attrs = {
     password, email_confirm: true,
     user_metadata: { display_name: `Synthetic ${role[0].toUpperCase()}${role.slice(1)}` },

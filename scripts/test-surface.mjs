@@ -117,7 +117,36 @@ export function scanCoverage(root) {
 
 // String-literal arguments of every covers(...) call. Quote-aware, so ids
 // that contain parentheses (route groups such as "(reports)") are read whole.
-export function coversArgs(src) {
+// Blank out // and /* */ comments (string-aware) so a commented-out covers()
+// call cannot count as coverage.
+export function stripComments(src) {
+  let out = ''
+  let quote = null
+  for (let i = 0; i < src.length; i++) {
+    const ch = src[i]
+    if (quote) {
+      out += ch
+      if (ch === '\\') { out += src[++i] ?? ''; continue }
+      if (ch === quote) quote = null
+    } else if (ch === "'" || ch === '"' || ch === '`') {
+      quote = ch
+      out += ch
+    } else if (ch === '/' && src[i + 1] === '/') {
+      while (i < src.length && src[i] !== '\n') i++
+      out += '\n'
+    } else if (ch === '/' && src[i + 1] === '*') {
+      const end = src.indexOf('*/', i + 2)
+      i = end === -1 ? src.length : end + 1
+      out += ' '
+    } else {
+      out += ch
+    }
+  }
+  return out
+}
+
+export function coversArgs(input) {
+  const src = stripComments(input)
   const ids = []
   const re = /\bcovers\(/g
   let m

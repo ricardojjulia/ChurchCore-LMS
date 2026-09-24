@@ -55,7 +55,18 @@ export async function POST(req: NextRequest) {
 
 type Svc = ReturnType<typeof createServiceClient>
 
+// Synthetic QA tenants are never billed (COUNCIL-2026-031 D8): billing events
+// naming one are acknowledged but never change its status or plan.
+async function isSyntheticOrg(svc: Svc, orgId: string | undefined) {
+  if (!orgId) return false
+  const { data } = await svc.from('organizations').select('is_synthetic').eq('id', orgId).maybeSingle()
+  return data?.is_synthetic === true
+}
+
 async function handleStripeEvent(event: Stripe.Event, svc: Svc) {
+  const metadata = (event.data.object as { metadata?: Stripe.Metadata | null }).metadata
+  if (await isSyntheticOrg(svc, metadata?.org_id)) return
+
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session

@@ -1,11 +1,5 @@
 [
   {
-    "surface": "action:learning.recordEngagement",
-    "reason": "Exported Server Action with no caller: engagement is recorded through the record_engagement_event RPC inside markBlockViewed/submitQuiz. Remove the export (smaller attack surface) or wire it up with a test.",
-    "owner": "ricardojjulia",
-    "expires": "2026-11-20"
-  },
-  {
     "surface": "action:cohorts.updateCohort",
     "reason": "Exported Server Action with no UI caller: the cohort detail page has no edit form. Add the edit UI with a flow test, or remove the export.",
     "owner": "ricardojjulia",

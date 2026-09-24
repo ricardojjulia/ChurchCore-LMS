@@ -14,48 +14,6 @@ async function tryAwardXp(supabase: Awaited<ReturnType<typeof createClient>>, ui
   return data as { new_xp: number; new_level: number; leveled_up: boolean; prev_level: number } | null
 }
 
-// ── Record engagement event (log + streak + XP) ──────────────────────────────
-
-type EngagementResult = { error?: string; xpEarned?: number; leveledUp?: boolean; currentStreak?: number; newXp?: number }
-
-export async function recordEngagement({
-  eventType,
-  sourceType,
-  sourceId,
-  xpAmount = 0,
-}: {
-  eventType: 'block_completion' | 'quiz_pass' | 'discussion_post' | 'daily_login' | 'course_completion' | 'manual'
-  sourceType?: string
-  sourceId?: string
-  xpAmount?: number
-}): Promise<EngagementResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
-
-  const { data, error } = await supabase.rpc('record_engagement_event', {
-    p_event_type:  eventType,
-    p_source_type: sourceType ?? null,
-    p_source_id:   sourceId   ?? null,
-    p_xp:          xpAmount,
-    p_metadata:    {},
-  })
-
-  if (error) return { error: 'Engagement tracking unavailable' }
-
-  const result = data as {
-    inserted: boolean; xp_earned: number; new_xp: number
-    new_level: number; leveled_up: boolean; current_streak: number
-  } | null
-
-  return {
-    xpEarned:      result?.xp_earned       ?? 0,
-    leveledUp:     result?.leveled_up       ?? false,
-    currentStreak: result?.current_streak   ?? 0,
-    newXp:         result?.new_xp           ?? 0,
-  }
-}
-
 // ── Enroll self in a course ───────────────────────────────────────────────────
 
 export async function enrollSelf(
