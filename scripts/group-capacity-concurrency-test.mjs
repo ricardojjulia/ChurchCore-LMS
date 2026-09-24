@@ -26,7 +26,7 @@ const cleanup = `DELETE FROM public.section_groups WHERE id='${ids.group}';
 let holder
 try {
   query(`INSERT INTO public.organizations(id,name,slug) VALUES('${ids.org}','Capacity race','capacity-${ids.org}');
-    INSERT INTO auth.users(id,email,raw_user_meta_data) VALUES
+    INSERT INTO auth.users(id,email,raw_app_meta_data) VALUES
       ('${ids.admin}','${ids.admin}@capacity.invalid','{"org_id":"${ids.org}","role":"admin"}'),
       ('${ids.student}','${ids.student}@capacity.invalid','{"org_id":"${ids.org}","role":"student"}');
     INSERT INTO public.course_blueprints(id,org_id,course_code,title,created_by)

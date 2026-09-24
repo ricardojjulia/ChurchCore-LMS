@@ -46,7 +46,7 @@ try {
   query(`
     INSERT INTO public.organizations(id, name, slug)
       VALUES ('${orgId}'::uuid, 'OneRoster concurrency test', 'oneroster-concurrency-c101');
-    INSERT INTO auth.users(id, email, raw_user_meta_data)
+    INSERT INTO auth.users(id, email, raw_app_meta_data)
       VALUES ('${authId}'::uuid, 'oneroster-concurrency-c102@example.invalid',
         jsonb_build_object('org_id', '${orgId}', 'role', 'admin'));
     INSERT INTO public.oneroster_import_jobs(id, org_id, status, package_hash, total_rows)

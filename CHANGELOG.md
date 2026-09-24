@@ -11,6 +11,20 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.34.3] — 2026-09-24
+
+Security hotfix (found while building the COUNCIL-2026-031 test suite).
+
+### Security
+
+- **Closed self-service privilege escalation and tenant hopping.** Any signed-in user could update their own `profiles.role` and `profiles.org_id` through the public API and become an admin of any organization. Users can now update only their personal profile fields (column-level grant).
+- **Sign-up metadata no longer grants a role or organization.** New profiles take role and org only from server-controlled `app_metadata`. All trusted creation paths (join links, invites, bulk invite, tenant creation, demo reset) set it; changes to `app_metadata` now sync to the profile.
+- **Admin user management is org-scoped.** Role and status changes, invites and deletions only affect users in the admin's own organization. Previously `deleteUser` could delete a user in any tenant, and invited users were created without an organization.
+
+### Fixed
+
+- Org admins can change user roles and status again. These silently did nothing, because RLS gave admins no way to update other users' profiles.
+
 ## [0.34.2] — 2026-09-23
 
 ### Fixed

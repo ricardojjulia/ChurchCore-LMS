@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
+import { assignMembership, type MemberRole } from '@/lib/membership'
 
 type UserRole   = 'admin' | 'manager' | 'teacher' | 'student'
 type UserStatus = 'active' | 'suspended' | 'pending' | 'archived'
@@ -13,82 +14,99 @@ async function requireAdmin() {
   if (!user) throw new Error('Unauthenticated')
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
+    .from('profile_roles')
+    .select('uid, role, org_id')
     .eq('auth_id', user.id)
+    .eq('tenant_active', true)
     .single()
 
-  if (profile?.role !== 'admin') throw new Error('Forbidden')
-  return { supabase, actorId: user.id }
+  if (profile?.role !== 'admin' || !profile.org_id) throw new Error('Forbidden')
+  return { supabase, actorId: user.id, actorUid: profile.uid as string, orgId: profile.org_id as string }
+}
+
+// Admin user-management writes go through the service role (users cannot
+// update role/status/org on profiles — see 20260924100000), so tenant scope
+// is enforced here: the target must belong to the admin's own org.
+async function targetInOrg(uid: string, orgId: string) {
+  const service = createServiceClient()
+  const { data } = await service
+    .from('profiles')
+    .select('uid, auth_id, org_id')
+    .eq('uid', uid)
+    .eq('org_id', orgId)
+    .maybeSingle()
+  return data ? { service, target: data } : null
 }
 
 export async function updateUserRole(uid: string, role: UserRole) {
-  const { supabase } = await requireAdmin()
+  const { orgId, actorUid } = await requireAdmin()
+  if (!['admin', 'manager', 'teacher', 'student'].includes(role)) return { error: 'Invalid role.' }
+  if (uid === actorUid) return { error: 'You cannot change your own role.' }
 
-  const { error } = await supabase
+  const scoped = await targetInOrg(uid, orgId)
+  if (!scoped) return { error: 'User not found.' }
+
+  const { error } = await scoped.service
     .from('profiles')
     .update({ role, updated_at: new Date().toISOString() })
     .eq('uid', uid)
-
-  if (error) return { error: error.message }
+    .eq('org_id', orgId)
+  if (error) return { error: 'Could not update the role. Please try again.' }
+  await scoped.service.auth.admin.updateUserById(scoped.target.auth_id, { app_metadata: { org_id: orgId, role } })
   revalidatePath('/admin/users')
   return { success: true }
 }
 
 export async function updateUserStatus(uid: string, status: UserStatus) {
-  const { supabase } = await requireAdmin()
+  const { orgId, actorUid } = await requireAdmin()
+  if (!['active', 'suspended', 'pending', 'archived'].includes(status)) return { error: 'Invalid status.' }
+  if (uid === actorUid) return { error: 'You cannot change your own status.' }
 
-  const { error } = await supabase
+  const scoped = await targetInOrg(uid, orgId)
+  if (!scoped) return { error: 'User not found.' }
+
+  const { error } = await scoped.service
     .from('profiles')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('uid', uid)
-
-  if (error) return { error: error.message }
+    .eq('org_id', orgId)
+  if (error) return { error: 'Could not update the status. Please try again.' }
   revalidatePath('/admin/users')
   return { success: true }
 }
 
-export async function inviteUser(email: string, role: UserRole) {
-  await requireAdmin()
+export async function inviteUser(email: string, role: UserRole): Promise<{ error?: string; success?: boolean; userId?: string }> {
+  const { orgId } = await requireAdmin()
   if (!email?.trim()) return { error: 'Email is required.' }
+  if (!['admin', 'manager', 'teacher', 'student'].includes(role)) return { error: 'Invalid role.' }
 
   const service = createServiceClient()
 
-  // Invite sends a magic-link email. The handle_new_user trigger creates the
-  // profile on first sign-in; we patch the role immediately after via admin API.
-  const { data, error } = await service.auth.admin.inviteUserByEmail(email.trim(), {
-    data: { role },   // stored in raw_user_meta_data; trigger can read it
-  })
+  // Invite sends a magic-link email; the trigger creates a bare profile. Org
+  // and role are then assigned server-side (app_metadata + profile) — the
+  // invite used to pass only `role` in user metadata, so invitees had no org.
+  const { data, error } = await service.auth.admin.inviteUserByEmail(email.trim())
+  if (error) return { error: 'Could not send the invitation. Please try again.' }
 
-  if (error) return { error: error.message }
-
-  // If a profile was already created by the trigger synchronously, set role now.
-  // This is a best-effort patch — the trigger may also read raw_user_meta_data.
-  await service
-    .from('profiles')
-    .update({ role, updated_at: new Date().toISOString() })
-    .eq('auth_id', data.user.id)
+  const assigned = await assignMembership(service, data.user.id, orgId, role)
+  if (assigned.error) return { error: assigned.error }
 
   revalidatePath('/admin/users')
   return { success: true, userId: data.user.id }
 }
 
 export async function deleteUser(uid: string) {
-  await requireAdmin()
+  const { orgId, actorUid } = await requireAdmin()
+  if (uid === actorUid) return { error: 'You cannot delete your own account here.' }
 
-  // Look up auth_id from profiles so we can delete the auth user
-  const service = createServiceClient()
-  const { data: profile, error: lookupErr } = await service
-    .from('profiles')
-    .select('auth_id')
-    .eq('uid', uid)
-    .single()
-
-  if (lookupErr || !profile) return { error: 'User not found.' }
+  // Only users in the admin's own org (this used the service role with no org
+  // check, so an admin could delete any user of any tenant by uid).
+  const scoped = await targetInOrg(uid, orgId)
+  if (!scoped) return { error: 'User not found.' }
 
   // Deleting the auth user cascades to profiles (ON DELETE CASCADE)
-  const { error } = await service.auth.admin.deleteUser(profile.auth_id)
-  if (error) return { error: error.message }
+  const { error } = await scoped.service.auth.admin.deleteUser(scoped.target.auth_id)
+  if (error) return { error: 'Could not delete the user. Please try again.' }
 
   revalidatePath('/admin/users')
   return { success: true }
@@ -179,18 +197,15 @@ export async function bulkInviteUsers(
     }
 
     // Send the invite — org_id and role come from server, never from client input
-    const { error: inviteError } = await service.auth.admin.inviteUserByEmail(
+    const { data: invited, error: inviteError } = await service.auth.admin.inviteUserByEmail(
       row.email,
-      {
-        data: {
-          org_id: orgId,
-          role: row.role,
-          display_name: row.display_name,
-        },
-      },
+      { data: { display_name: row.display_name } },
     )
+    const assigned = invited?.user
+      ? await assignMembership(service, invited.user.id, orgId, row.role as MemberRole)
+      : { error: 'no user' }
 
-    if (inviteError) {
+    if (inviteError || assigned.error) {
       // Do NOT expose the raw Supabase error to the client
       results.push({
         email: row.email,
