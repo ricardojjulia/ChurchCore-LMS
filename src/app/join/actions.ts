@@ -44,17 +44,14 @@ export async function verifyAndEnroll({
 
   if (!org) return { error: 'Organization not found or is no longer accepting registrations.' }
 
-  // Create the auth user — raw_user_meta_data passes org_id and display_name
-  // to the handle_new_user trigger which sets profiles.org_id.
+  // Create the auth user. handle_new_user() takes org and role only from
+  // app_metadata (server-controlled); user_metadata carries the display name.
   const { data, error: signUpError } = await service.auth.admin.createUser({
     email,
     password,
     email_confirm: false,
-    user_metadata: {
-      org_id:       orgId,
-      display_name: displayName,
-      role:         'student',
-    },
+    user_metadata: { display_name: displayName },
+    app_metadata:  { org_id: orgId, role: 'student' },
   })
 
   if (signUpError || !data.user) {

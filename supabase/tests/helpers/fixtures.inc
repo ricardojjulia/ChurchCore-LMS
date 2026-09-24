@@ -10,7 +10,7 @@ END $$;
 INSERT INTO public.organizations(id, name, slug) VALUES
   (pg_temp.fixture_id('org-a'), 'Regression A', 'regression-a'),
   (pg_temp.fixture_id('org-b'), 'Regression B', 'regression-b');
-INSERT INTO auth.users(id, email, raw_user_meta_data)
+INSERT INTO auth.users(id, email, raw_app_meta_data)
 SELECT pg_temp.fixture_id(name || '-auth'), name || '@regression.invalid',
   jsonb_build_object('org_id', pg_temp.fixture_id(org), 'role', role)
 FROM (VALUES ('admin','org-a','admin'), ('manager','org-a','manager'),

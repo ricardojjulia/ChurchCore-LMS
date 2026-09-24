@@ -5,6 +5,7 @@ import { redirect }              from 'next/navigation'
 import { headers }               from 'next/headers'
 import { createServerClient }    from '@/lib/supabase/server'
 import { createServiceClient }   from '@/utils/supabase/service'
+import { assignMembership } from '@/lib/membership'
 
 async function assertPlatformAdmin() {
   const supabase = await createServerClient()
@@ -76,10 +77,9 @@ export async function createTenant(formData: FormData) {
   if (orgErr) throw new Error(orgErr.message)
 
   if (adminEmail) {
-    const { error: inviteErr } = await service.auth.admin.inviteUserByEmail(adminEmail, {
-      data: { org_id: org.id, role: 'admin' },
-    })
+    const { data: invited, error: inviteErr } = await service.auth.admin.inviteUserByEmail(adminEmail)
     if (inviteErr) console.warn('Invite failed:', inviteErr.message)
+    else if (invited.user) await assignMembership(service, invited.user.id, org.id, 'admin')
   }
 
   await logAction(actor.id, 'create_tenant', org.id, {
@@ -468,7 +468,8 @@ export async function resetTenantToDemo(
       email,
       password:      DEMO_PASSWORD,
       email_confirm: true,
-      user_metadata: { full_name: u.fullName, org_id: orgId, role: u.role },
+      user_metadata: { full_name: u.fullName },
+      app_metadata:  { org_id: orgId, role: u.role },
     })
     if (created.user) createdAuthIds[u.prefix] = created.user.id
   }

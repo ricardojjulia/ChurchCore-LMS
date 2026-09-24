@@ -12,7 +12,7 @@ DECLARE
 BEGIN
   INSERT INTO public.organizations(id, name, slug)
     VALUES (v_org, 'OneRoster preview test', 'oneroster-preview-' || v_org);
-  INSERT INTO auth.users(id, email, raw_user_meta_data)
+  INSERT INTO auth.users(id, email, raw_app_meta_data)
     VALUES (v_auth, v_auth || '@example.invalid', jsonb_build_object('org_id', v_org, 'role', 'admin'));
   SELECT uid INTO v_uid FROM public.profiles WHERE auth_id = v_auth;
   PERFORM set_config('test.oneroster_org', v_org::text, true);
