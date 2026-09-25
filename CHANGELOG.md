@@ -16,6 +16,7 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 
 - **Guardian notification emails were never sent.** The every-5-minute `guardian-notify` job calls `net.http_post()`, but the `pg_net` extension was never enabled in production. All 27,756 runs since 2026-06-21 failed. Enabling it also unblocks the weekly-digest schedule.
+- **Release could not deploy the frontend.** The CI-side `vercel build` could not read the project's Sensitive variables. The release now uploads the approved commit and Vercel builds it.
 
 ---
 
