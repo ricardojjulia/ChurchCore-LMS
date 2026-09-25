@@ -11,6 +11,14 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.36.1] — 2026-09-25
+
+### Fixed
+
+- **Guardian notification emails were never sent.** The every-5-minute `guardian-notify` job calls `net.http_post()`, but the `pg_net` extension was never enabled in production. All 27,756 runs since 2026-06-21 failed. Enabling it also unblocks the weekly-digest schedule.
+
+---
+
 ## [0.36.0] — 2026-09-24
 
 Closes every known defect from COUNCIL-2026-031 (COUNCIL-2026-033).
