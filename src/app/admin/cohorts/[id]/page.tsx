@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import CohortMemberPanel from './CohortMemberPanel'
+import EditCohortForm from './EditCohortForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,10 +24,10 @@ export default async function CohortDetailPage({
 
   if (!me || !['admin', 'manager'].includes(me.role)) redirect('/dashboard')
 
-  const [cohortResult, membersResult, jobsResult] = await Promise.all([
+  const [cohortResult, membersResult, jobsResult, tracksResult] = await Promise.all([
     supabase
       .from('global_cohorts')
-      .select(`id, cohort_name, cohort_code, description, is_active, created_at, program_tracks(name, code)`)
+      .select(`id, cohort_name, cohort_code, description, is_active, program_track_id, created_at, program_tracks(name, code)`)
       .eq('id', cohortId)
       .single(),
     supabase
@@ -40,6 +41,7 @@ export default async function CohortDetailPage({
       .eq('cohort_id', cohortId)
       .order('created_at', { ascending: false })
       .limit(10),
+    supabase.from('program_tracks').select('id, name').order('name'),
   ])
 
   const cohort = cohortResult.data
@@ -109,6 +111,17 @@ export default async function CohortDetailPage({
             </Link>
           </div>
         </div>
+
+        <EditCohortForm
+          cohortId={cohortId}
+          initial={{
+            cohort_name: cohort.cohort_name,
+            description: cohort.description,
+            program_track_id: cohort.program_track_id,
+            is_active: cohort.is_active,
+          }}
+          tracks={tracksResult.data ?? []}
+        />
 
         {/* Members panel — client component for add/remove */}
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase select return shape doesn't match component prop signature */}

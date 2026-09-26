@@ -356,6 +356,21 @@ export default async function CoursePage({
           </div>
         </div>
 
+        {isStaff && allBlocks.some((b) => b.block_type_id === 'survey') && (
+          <section className="bg-white border border-border rounded-2xl p-6 mb-8 shadow-sm">
+            <h2 className="text-lg font-bold text-foreground">Survey results</h2>
+            <ul className="mt-3 space-y-2">
+              {allBlocks.filter((b) => b.block_type_id === 'survey').map((b) => (
+                <li key={b.id}>
+                  <Link href={`/courses/${courseId}/surveys/${b.id}`} className="text-sm font-semibold text-primary hover:underline">
+                    {b.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         {isStaff && (
           <section className="bg-white border border-border rounded-2xl p-6 mb-8 shadow-sm">
             <div className="flex items-start justify-between gap-4 flex-wrap">

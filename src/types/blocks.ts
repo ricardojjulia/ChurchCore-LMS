@@ -1,6 +1,6 @@
 export type BlockCategory = 'content' | 'activity' | 'structure'
 
-export type StructureBlockTypeId = 'module_header' | 'section' | 'certificate'
+export type StructureBlockTypeId = 'module_header'
 export type ContentBlockTypeId   = 'page' | 'video_stream' | 'resource_file' | 'external_url' | 'scorm' | 'live_session' | 'teacher_plug'
 export type ActivityBlockTypeId  = 'assignment' | 'quiz' | 'discussion' | 'survey' | 'checklist' | 'flashcard_set' | 'attendance'
 export type BlockTypeId          = StructureBlockTypeId | ContentBlockTypeId | ActivityBlockTypeId
@@ -17,8 +17,6 @@ export interface BlockTypeMeta {
 export const BLOCK_TYPE_META: Record<BlockTypeId, BlockTypeMeta> = {
   // Structure
   module_header: { label: 'Module',       icon: '📁', category: 'structure', color: 'slate',   description: 'Top-level course section',             is_active: true  },
-  section:       { label: 'Section',      icon: '📂', category: 'structure', color: 'slate',   description: 'Sub-group within a module',            is_active: false },
-  certificate:   { label: 'Certificate',  icon: '🏆', category: 'structure', color: 'amber',   description: 'Completion certificate block',         is_active: false },
   // Content
   page:          { label: 'Page',         icon: '📄', category: 'content',   color: 'blue',    description: 'Rich text or markdown content page',   is_active: true  },
   video_stream:  { label: 'Video',        icon: '🎬', category: 'content',   color: 'amber',   description: 'YouTube, Vimeo, or direct video link', is_active: true  },
@@ -31,9 +29,9 @@ export const BLOCK_TYPE_META: Record<BlockTypeId, BlockTypeMeta> = {
   assignment:    { label: 'Assignment',   icon: '📝', category: 'activity',  color: 'emerald', description: 'Written or file submission task',      is_active: true  },
   quiz:          { label: 'Quiz',         icon: '🧠', category: 'activity',  color: 'violet',  description: 'Auto-graded knowledge check',          is_active: true  },
   discussion:    { label: 'Discussion',   icon: '💬', category: 'activity',  color: 'rose',    description: 'Peer discussion prompt',               is_active: true  },
-  survey:        { label: 'Survey',       icon: '📊', category: 'activity',  color: 'teal',    description: 'Anonymous feedback form',              is_active: false },
-  checklist:     { label: 'Checklist',    icon: '✅', category: 'activity',  color: 'emerald', description: 'Student self-completion list',         is_active: false },
-  flashcard_set: { label: 'Flashcards',   icon: '🗂️', category: 'activity',  color: 'amber',   description: 'Spaced-repetition study cards',        is_active: false },
+  survey:        { label: 'Survey',       icon: '📊', category: 'activity',  color: 'teal',    description: 'Feedback questions, anonymous by default', is_active: true  },
+  checklist:     { label: 'Checklist',    icon: '✅', category: 'activity',  color: 'emerald', description: 'Steps a learner ticks off',            is_active: true  },
+  flashcard_set: { label: 'Flashcards',   icon: '🗂️', category: 'activity',  color: 'amber',   description: 'Front-and-back study cards',           is_active: true  },
   attendance:    { label: 'Attendance',   icon: '🗓️', category: 'activity',  color: 'cyan',    description: 'Track student presence and engagement', is_active: true  },
 }
 
@@ -74,3 +72,19 @@ export interface QuizQuestion {
   template?:     string
   blanks?:       Array<{ id: string; acceptable_answers: string[] }>
 }
+
+// Survey, checklist and flashcard content (COUNCIL-2026-044). The builder
+// forms write these keys and the players read the same keys.
+export interface SurveyQuestion {
+  id:       string
+  text:     string
+  type:     'scale' | 'choice' | 'text'
+  options?: string[]
+}
+export interface SurveyContent { questions: SurveyQuestion[]; anonymous: boolean }
+
+export interface ChecklistItem { id: string; text: string; required: boolean }
+export interface ChecklistContent { items: ChecklistItem[] }
+
+export interface Flashcard { id: string; front: string; back: string }
+export interface FlashcardContent { cards: Flashcard[] }

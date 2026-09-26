@@ -11,6 +11,9 @@ import DiscussionForm from './node-forms/DiscussionForm'
 import LiveSessionForm from './node-forms/LiveSessionForm'
 import TeacherPlugForm from './node-forms/TeacherPlugForm'
 import AttendanceForm from './node-forms/AttendanceForm'
+import SurveyForm from './node-forms/SurveyForm'
+import ChecklistForm from './node-forms/ChecklistForm'
+import FlashcardForm from './node-forms/FlashcardForm'
 
 interface Props {
   blockTypeId: BlockTypeId
@@ -39,6 +42,9 @@ export default function NodeForm({ blockTypeId, initial, onSave, onCancel }: Pro
     case 'live_session':  return <LiveSessionForm {...props} />
     case 'teacher_plug':  return <TeacherPlugForm {...props} />
     case 'attendance':    return <AttendanceForm {...props} />
+    case 'survey':        return <SurveyForm {...props} />
+    case 'checklist':     return <ChecklistForm {...props} />
+    case 'flashcard_set': return <FlashcardForm {...props} />
     default:              return null
   }
 }

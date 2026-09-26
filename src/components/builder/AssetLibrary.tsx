@@ -19,7 +19,7 @@ interface Props {
 
 const SECTIONS: { label: string; types: BlockTypeId[] }[] = [
   { label: 'Content',    types: ['page', 'video_stream', 'resource_file', 'external_url'] },
-  { label: 'Activities', types: ['assignment', 'quiz', 'discussion', 'attendance'] },
+  { label: 'Activities', types: ['assignment', 'quiz', 'discussion', 'attendance', 'survey', 'checklist', 'flashcard_set'] },
 ]
 
 export default function AssetLibrary({ onSelect, onClose }: Props) {
