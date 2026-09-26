@@ -669,6 +669,26 @@
       "ctaButton": "Enroll Now — It's Free",
       "alreadyEnrolledError": "You are already enrolled.",
       "ariaLabel": "Enroll in this course"
+    },
+    "activities": {
+      "surveyIntroAnonymous": "Your answers are anonymous: your teacher sees results without names.",
+      "surveyIntroNamed": "Your teacher will see your name with your answers.",
+      "scaleLow": "Strongly disagree",
+      "scaleHigh": "Strongly agree",
+      "submitSurvey": "Submit responses",
+      "submitting": "Saving…",
+      "surveyThanks": "Thanks. Your response has been recorded.",
+      "textAnswerLabel": "Your answer",
+      "checklistProgress": "{done} of {total} done",
+      "checklistComplete": "All required steps are done.",
+      "optionalTag": "optional",
+      "flipCard": "Show answer",
+      "flipBack": "Show question",
+      "cardOf": "Card {current} of {total}",
+      "previousCard": "Previous card",
+      "nextCard": "Next card",
+      "flashcardsDone": "You've reviewed every card.",
+      "emptyActivity": "This activity has no content yet."
     }
   },
   "feedback": {

@@ -109,6 +109,21 @@ test.describe('academic structure', () => {
       .eq('cohort_id', IDS.cohort).order('created_at', { ascending: false }).limit(1).maybeSingle()).data?.dry_run)
       .toBe(true)
   })
+
+  test('edits a cohort', async ({ page }) => {
+    covers('action:cohorts.updateCohort')
+    const read = async () => (await db().from('global_cohorts').select('cohort_name, description, is_active')
+      .eq('id', IDS.cohort).single()).data
+    const original = await read()
+    await open(page, `/admin/cohorts/${IDS.cohort}`)
+    await page.getByText('Edit cohort').click()
+    await page.getByLabel('Name').fill('Suite Cohort (edited)')
+    await page.getByLabel('Description').fill('Edited by the suite')
+    await page.getByRole('button', { name: 'Save changes' }).click()
+    await expect(page.getByRole('status').filter({ hasText: 'Saved.' })).toBeVisible()
+    await expect.poll(read).toMatchObject({ cohort_name: 'Suite Cohort (edited)', description: 'Edited by the suite', is_active: true })
+    await db().from('global_cohorts').update({ cohort_name: original!.cohort_name, description: original!.description }).eq('id', IDS.cohort)
+  })
 })
 
 async function tempUser(role: 'student' | 'teacher') {

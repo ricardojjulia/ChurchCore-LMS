@@ -669,6 +669,26 @@
       "ctaButton": "Inscríbase ahora — Es gratis",
       "alreadyEnrolledError": "Ya está inscrito.",
       "ariaLabel": "Inscribirse en este curso"
+    },
+    "activities": {
+      "surveyIntroAnonymous": "Tus respuestas son anónimas: tu maestro ve los resultados sin nombres.",
+      "surveyIntroNamed": "Tu maestro verá tu nombre junto con tus respuestas.",
+      "scaleLow": "Totalmente en desacuerdo",
+      "scaleHigh": "Totalmente de acuerdo",
+      "submitSurvey": "Enviar respuestas",
+      "submitting": "Guardando…",
+      "surveyThanks": "Gracias. Tu respuesta ha sido registrada.",
+      "textAnswerLabel": "Tu respuesta",
+      "checklistProgress": "{done} de {total} completados",
+      "checklistComplete": "Todos los pasos requeridos están completos.",
+      "optionalTag": "opcional",
+      "flipCard": "Mostrar respuesta",
+      "flipBack": "Mostrar pregunta",
+      "cardOf": "Tarjeta {current} de {total}",
+      "previousCard": "Tarjeta anterior",
+      "nextCard": "Tarjeta siguiente",
+      "flashcardsDone": "Has repasado todas las tarjetas.",
+      "emptyActivity": "Esta actividad aún no tiene contenido."
     }
   },
   "feedback": {

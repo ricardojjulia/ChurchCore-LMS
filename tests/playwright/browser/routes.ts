@@ -101,6 +101,7 @@ export const ROUTES: RouteSpec[] = [
   { surface: covers('page:/courses/[id]/enroll'), path: `/courses/${COURSE.a}/enroll`, allow: STAFF },
   { surface: covers('page:/courses/[id]/gradebook'), path: `/courses/${COURSE.a}/gradebook`, allow: STAFF },
   { surface: covers('page:/courses/[id]/submissions'), path: `/courses/${COURSE.a}/submissions`, allow: STAFF },
+  { surface: covers('page:/courses/[id]/surveys/[blockId]'), path: `/courses/${COURSE.a}/surveys/${BLOCK.survey}`, allow: STAFF },
   { surface: covers('page:/courses/[id]/pages/[pageId]/edit'), path: `/courses/${COURSE.a}/pages/${IDS.contentPage}/edit`, allow: STAFF },
   { surface: covers('page:/admin/sections'), path: '/admin/sections', allow: STAFF },
   { surface: covers('page:/admin/sections/[id]'), path: `/admin/sections/${IDS.section}`, allow: STAFF },

@@ -61,7 +61,7 @@ export async function updateCohort(
     .update({ cohort_name: name, description, program_track_id: trackId || null, is_active: isActive })
     .eq('id', cohortId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save the cohort. Please try again.' }
 
   revalidatePath('/admin/cohorts')
   revalidatePath(`/admin/cohorts/${cohortId}`)

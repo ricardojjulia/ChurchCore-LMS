@@ -98,6 +98,27 @@ VALUES
    '{"description": "Drawn from the suite question bank.", "questions": [],
      "bank_draws": [{"bank_id": "00000000-0000-0000-00c0-000000000501", "count": 1}]}', '{}', '{}', true,
    '00000000-0000-0000-0010-000000000001'),
+  -- COUNCIL-2026-044 activity blocks.
+  ('00000000-0000-0000-00c0-000000000110', '00000000-0000-0000-0011-000000000001', '00000000-0000-0000-00c0-000000000101',
+   'survey', 'Suite Survey', 6.8,
+   '{"anonymous": true, "questions": [
+      {"id": "sq1", "text": "The lesson was helpful", "type": "scale"},
+      {"id": "sq2", "text": "Best format", "type": "choice", "options": ["Video", "Reading"]},
+      {"id": "sq3", "text": "Anything else?", "type": "text"}]}', '{}', '{}', true,
+   '00000000-0000-0000-0010-000000000001'),
+  ('00000000-0000-0000-00c0-000000000111', '00000000-0000-0000-0011-000000000001', '00000000-0000-0000-00c0-000000000101',
+   'checklist', 'Suite Checklist', 6.85,
+   '{"items": [
+      {"id": "ci1", "text": "Read Romans 1", "required": true},
+      {"id": "ci2", "text": "Meet a mentor", "required": true},
+      {"id": "ci3", "text": "Journal a prayer", "required": false}]}', '{}', '{}', true,
+   '00000000-0000-0000-0010-000000000001'),
+  ('00000000-0000-0000-00c0-000000000112', '00000000-0000-0000-0011-000000000001', '00000000-0000-0000-00c0-000000000101',
+   'flashcard_set', 'Suite Flashcards', 6.9,
+   '{"cards": [
+      {"id": "fc1", "front": "First book of the Bible", "back": "Genesis"},
+      {"id": "fc2", "front": "Last book of the Bible", "back": "Revelation"}]}', '{}', '{}', true,
+   '00000000-0000-0000-0010-000000000001'),
   -- Unpublished block: must never appear to students or on the public preview.
   ('00000000-0000-0000-00c0-000000000107', '00000000-0000-0000-0011-000000000001', '00000000-0000-0000-00c0-000000000101',
    'page', 'Suite Draft Block (hidden)', 7, '{"body": "<p>draft</p>"}', '{}', '{}', false,

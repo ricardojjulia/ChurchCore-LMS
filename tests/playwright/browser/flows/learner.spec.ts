@@ -24,7 +24,17 @@ test.beforeAll(async () => {
   // Start from a clean slate for this student's work on the suite blocks.
   await db().from('block_submissions').delete().eq('user_id', student)
     .in('block_id', [BLOCK.assignment, BLOCK.quiz, BLOCK.bankQuiz, BLOCK.video, BLOCK.attendance, BLOCK.discussion])
+  await db().from('survey_participation').delete().eq('block_id', BLOCK.survey)
+  await db().from('survey_responses').delete().eq('block_id', BLOCK.survey)
+  await db().from('checklist_progress').delete().eq('block_id', BLOCK.checklist)
 })
+
+// A learner's block_completion engagement event for a block (what progress counts).
+async function completed(blockId: string) {
+  const { data } = await db().from('engagement_events').select('id')
+    .eq('user_id', student).eq('source_id', blockId).eq('event_type', 'block_completion').maybeSingle()
+  return !!data
+}
 
 test('opens a lesson page and it counts as viewed', async ({ page }) => {
   covers('action:learning.markBlockViewed')
@@ -89,6 +99,59 @@ test('posts a discussion reply', async ({ page }) => {
   await page.getByRole('button', { name: 'Post reply' }).click()
   await expect(page.getByRole('list', { name: 'Discussion replies' }).getByText('My takeaway: belonging matters.')).toBeVisible()
   await expect.poll(async () => (await submissionFor(BLOCK.discussion))?.content).toMatchObject({ text: 'My takeaway: belonging matters.' })
+})
+
+test('works through a checklist; required items complete it', async ({ page }) => {
+  covers('action:activities.saveChecklistProgress', 'action:activities.getMyActivityState')
+  await open(page, LEARN)
+  await page.getByRole('button', { name: /Suite Checklist/ }).click()
+  await page.getByRole('checkbox', { name: 'Read Romans 1' }).check()
+  await expect.poll(async () => (await db().from('checklist_progress').select('checked')
+    .eq('block_id', BLOCK.checklist).eq('user_uid', student).maybeSingle()).data?.checked).toEqual(['ci1'])
+  await page.getByRole('checkbox', { name: 'Meet a mentor' }).check()
+  await expect(page.getByText('All required steps are done.')).toBeVisible()
+  await expect.poll(() => completed(BLOCK.checklist)).toBe(true)
+})
+
+test('reviews every flashcard to complete the set', async ({ page }) => {
+  await open(page, LEARN)
+  await page.getByRole('button', { name: /Suite Flashcards/ }).click()
+  await page.getByRole('button', { name: 'Show answer' }).click()
+  await expect(page.getByText('Genesis')).toBeVisible()
+  await page.getByRole('button', { name: 'Next card' }).click()
+  await page.getByRole('button', { name: 'Show answer' }).click()
+  await expect(page.getByText("You've reviewed every card.")).toBeVisible()
+  await expect.poll(() => completed(BLOCK.flashcards)).toBe(true)
+})
+
+test('answers the anonymous survey once; no name is stored', async ({ page }) => {
+  covers('action:activities.submitSurvey')
+  await open(page, LEARN)
+  await page.getByRole('button', { name: /Suite Survey/ }).click()
+  await page.getByRole('group', { name: /The lesson was helpful/ }).getByRole('radio', { name: '5' }).check()
+  await page.getByRole('radio', { name: 'Reading' }).check()
+  await page.getByLabel('Your answer: Anything else?').fill('More small groups, please.')
+  await page.getByRole('button', { name: 'Submit responses' }).click()
+  await expect(page.getByText('Thanks. Your response has been recorded.')).toBeVisible()
+  const { data: rows } = await db().from('survey_responses').select('answers, respondent_uid').eq('block_id', BLOCK.survey)
+  expect(rows).toEqual([{ answers: { sq1: 5, sq2: 'Reading', sq3: 'More small groups, please.' }, respondent_uid: null }])
+  await expect.poll(() => completed(BLOCK.survey)).toBe(true)
+
+  // Coming back shows the thank-you state, not the form.
+  await open(page, LEARN)
+  await page.getByRole('button', { name: /Suite Survey/ }).click()
+  await expect(page.getByText('Thanks. Your response has been recorded.')).toBeVisible()
+})
+
+test.describe('teacher reads the survey results', () => {
+  test.use(asActor('teacher'))
+  test('sees aggregates without names', async ({ page }) => {
+    covers('page:/courses/[id]/surveys/[blockId]')
+    await open(page, `/courses/${COURSE.a}/surveys/${BLOCK.survey}`)
+    await expect(page.getByText(/1 response · Anonymous/)).toBeVisible()
+    await expect(page.getByText('More small groups, please.')).toBeVisible()
+    await expect(page.getByText('Test Student A')).toHaveCount(0)
+  })
 })
 
 test.describe('teacher grades the discussion reply', () => {

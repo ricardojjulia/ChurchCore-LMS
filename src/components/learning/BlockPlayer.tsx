@@ -9,7 +9,10 @@ import DiscussionPlayer from './DiscussionPlayer'
 import LiveSessionPlayer from './LiveSessionPlayer'
 import TeacherPlugPlayer from './TeacherPlugPlayer'
 import AttendancePlayer from './AttendancePlayer'
-import type { CourseBlock, QuizQuestion } from '@/types/blocks'
+import SurveyPlayer from './SurveyPlayer'
+import ChecklistPlayer from './ChecklistPlayer'
+import FlashcardPlayer from './FlashcardPlayer'
+import type { ChecklistContent, CourseBlock, FlashcardContent, QuizQuestion, SurveyContent } from '@/types/blocks'
 
 interface Submission {
   status:    string
@@ -232,6 +235,17 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
         existingSub={submission as any}
       />
     )
+  }
+
+  // ── Survey / Checklist / Flashcards (COUNCIL-2026-044) ─────────────
+  if (block.block_type_id === 'survey') {
+    return <SurveyPlayer blockId={block.id} content={content as Partial<SurveyContent>} onComplete={onComplete} />
+  }
+  if (block.block_type_id === 'checklist') {
+    return <ChecklistPlayer blockId={block.id} content={content as Partial<ChecklistContent>} onComplete={onComplete} />
+  }
+  if (block.block_type_id === 'flashcard_set') {
+    return <FlashcardPlayer content={content as Partial<FlashcardContent>} onComplete={onComplete} />
   }
 
   return (

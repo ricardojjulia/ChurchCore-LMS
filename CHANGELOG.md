@@ -11,6 +11,29 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.37.0] — 2026-09-26
+
+Sprint 5, part 1: backlog close-out (COUNCIL-2026-044).
+
+### Added
+
+- **Survey blocks:** scale, multiple-choice and free-text questions, anonymous by default. Anonymity is structural: anonymous responses store no respondent id, participation is recorded separately, timestamps are truncated to the day, and the setting locks once anyone responds. Staff see aggregated results at `/courses/[id]/surveys/[blockId]`.
+- **Checklist blocks:** learners tick off steps; the block completes when every required item is done. Progress is saved per learner.
+- **Flashcard blocks:** front/back study cards; the block completes when every answer has been viewed.
+- **Cohort editing** on `/admin/cohorts/[id]` (name, description, program track, status).
+
+### Changed
+
+- Removed the unused `section` and `certificate` placeholder block types.
+- The builder's on/off toggles are now accessible switches (they had no name or state for screen readers).
+- The test-surface exemption list is empty: every page, route, action and function has a test.
+
+### Fixed
+
+- `updateCohort` no longer returns raw database errors.
+
+---
+
 ## [0.36.1] — 2026-09-25
 
 ### Fixed
