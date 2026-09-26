@@ -175,3 +175,19 @@ test.describe('middleware prefetch shortcut (COUNCIL-2026-033 D13)', () => {
     expect(await res.text()).not.toContain('@test.churchcore.dev')
   })
 })
+
+test.describe('pg_net is not reachable from the API (COUNCIL-2026-033 follow-up)', () => {
+  test('the net schema is not exposed to anon or signed-in callers', async () => {
+    covers('api:GET /api/health')
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    for (const fn of ['http_get', 'http_post']) {
+      const res = await fetch(`${url}/rest/v1/rpc/${fn}`, {
+        method: 'POST',
+        headers: { apikey: anonKey, 'Content-Profile': 'net', 'content-type': 'application/json' },
+        body: JSON.stringify({ url: 'https://example.com' }),
+      })
+      expect(res.status, fn).toBe(406)
+    }
+  })
+})

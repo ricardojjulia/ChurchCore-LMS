@@ -91,17 +91,14 @@ jobs:
           # meant fixes to any other function never reached production.
           supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF"
 
-      # Build and deploy this exact commit with the Vercel CLI. The deploy hook
-      # used before built whatever main was when it fired, so a release could
-      # ship a different commit than the one that passed CI and was approved
-      # (Copilot review #6). The project ids are not secrets.
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Build and deploy this commit to Vercel production
+      # Deploy this exact commit with the Vercel CLI. The deploy hook used
+      # before built whatever main was when it fired, so a release could ship a
+      # different commit than the one that passed CI and was approved (Copilot
+      # review #6). The checked-out files are uploaded and built by Vercel
+      # itself: a CI-side `vercel build` cannot see variables marked Sensitive
+      # (`vercel pull` returns a placeholder), which broke the first attempt.
+      # The project ids are not secrets.
+      - name: Deploy this commit to Vercel production
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: team_NeSmoYaK8Ipt4aIP6PAW42Mi
@@ -112,9 +109,7 @@ jobs:
             printf '::error::A newer main commit exists; refusing to deploy this stale release.\n'
             exit 1
           fi
-          npx --yes vercel@59.26.0 pull --yes --environment=production --token "$VERCEL_TOKEN"
-          npx --yes vercel@59.26.0 build --prod --token "$VERCEL_TOKEN"
-          url="$(npx --yes vercel@59.26.0 deploy --prebuilt --prod --token "$VERCEL_TOKEN" \
+          url="$(npx --yes vercel@59.26.0 deploy --prod --yes --token "$VERCEL_TOKEN" \
             --meta githubCommitSha="$GITHUB_SHA")"
           echo "Vercel production deployment of $GITHUB_SHA: $url" >> "$GITHUB_STEP_SUMMARY"
 

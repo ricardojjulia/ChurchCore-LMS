@@ -585,9 +585,9 @@ CI suite → production environment approval → production migrations/functions
 - Release runs are serialized. Production verifies its commit is still the latest
   `main`, and the project reference must match a reviewed workflow constant.
 - Vercel automatic deployment from `main` is disabled. After Supabase, the approved
-  production job builds the checked-out commit with the Vercel CLI and deploys it
-  prebuilt (`vercel build --prod` then `vercel deploy --prebuilt --prod`), so the
-  deployed code is exactly the commit that passed CI and was approved (COUNCIL-2026-033).
+  production job uploads the checked-out commit with `vercel deploy --prod`; Vercel
+  builds it with the project's (sensitive) environment variables, so the deployed
+  code is exactly the commit that passed CI and was approved (COUNCIL-2026-033).
 - Required production reviewers must be configured in GitHub. The environment name
   alone does not establish an approval gate.
 
