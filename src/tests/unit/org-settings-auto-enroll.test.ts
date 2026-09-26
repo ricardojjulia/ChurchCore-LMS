@@ -2,6 +2,9 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { getAutoEnrollCourses, addAutoEnrollCourse, removeAutoEnrollCourse } from '@/app/actions/org-settings'
+import { covers } from '../covers'
+
+covers('action:org-settings.getAutoEnrollCourses', 'action:org-settings.addAutoEnrollCourse', 'action:org-settings.removeAutoEnrollCourse')
 
 // COUNCIL-2026-026 Prompt D — org-settings.ts auto-enroll CRUD unit tests.
 //

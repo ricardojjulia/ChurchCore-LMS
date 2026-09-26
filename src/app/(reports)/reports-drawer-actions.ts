@@ -60,7 +60,7 @@ export async function clearCompletedReportArtifacts(): Promise<ClearReportsResul
     .returns<ArtifactCleanupRow[]>()
 
   if (selectError) {
-    return { success: false, deletedCount: 0, error: selectError.message }
+    return { success: false, deletedCount: 0, error: 'Could not clear reports. Please try again.' }
   }
 
   if (!artifacts || artifacts.length === 0) {
@@ -74,7 +74,7 @@ export async function clearCompletedReportArtifacts(): Promise<ClearReportsResul
   if (storagePaths.length > 0) {
     const { error: removeError } = await service.storage.from('reports').remove(storagePaths)
     if (removeError) {
-      return { success: false, deletedCount: 0, error: removeError.message }
+      return { success: false, deletedCount: 0, error: 'Could not clear reports. Please try again.' }
     }
   }
 
@@ -85,7 +85,7 @@ export async function clearCompletedReportArtifacts(): Promise<ClearReportsResul
     .in('id', ids)
 
   if (deleteError) {
-    return { success: false, deletedCount: 0, error: deleteError.message }
+    return { success: false, deletedCount: 0, error: 'Could not clear reports. Please try again.' }
   }
 
   await writeAuditLog({

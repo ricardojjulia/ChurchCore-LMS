@@ -17,7 +17,7 @@ BEGIN
   INSERT INTO public.organizations(id, name, slug) VALUES
     (v_org, 'Signed delivery test', 'signed-delivery-' || v_org),
     (v_other_org, 'Other delivery test', 'other-delivery-' || v_other_org);
-  INSERT INTO auth.users(id, email, raw_user_meta_data)
+  INSERT INTO auth.users(id, email, raw_app_meta_data)
     VALUES (v_auth, v_auth || '@example.invalid', jsonb_build_object('org_id', v_org, 'role', 'admin'));
 
   INSERT INTO public.oneroster_connections(

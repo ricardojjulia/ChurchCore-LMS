@@ -11,6 +11,102 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.36.1] — 2026-09-25
+
+### Fixed
+
+- **Guardian notification emails were never sent.** The every-5-minute `guardian-notify` job calls `net.http_post()`, but the `pg_net` extension was never enabled in production. All 27,756 runs since 2026-06-21 failed. Enabling it also unblocks the weekly-digest schedule.
+- **Release could not deploy the frontend.** The CI-side `vercel build` could not read the project's Sensitive variables. The release now uploads the approved commit and Vercel builds it.
+
+---
+
+## [0.36.0] — 2026-09-24
+
+Closes every known defect from COUNCIL-2026-031 (COUNCIL-2026-033).
+
+### Security
+
+- **XP could be awarded by anyone.** `award_xp` was callable without signing in, and engagement events trusted the caller's XP amount. XP is now derived server-side from real blocks, quiz scores and completions.
+- Anonymous visitors can no longer execute any `SECURITY DEFINER` function except the RLS helpers.
+- Demo tenants no longer share a hard-coded password. Demo sign-in uses a one-time magic link, and the password is never stored or shown.
+- `/api/digest` rejects requests when `CRON_SECRET` is unset instead of running unauthenticated.
+- Releases build and deploy the exact approved commit (Vercel CLI) instead of a deploy hook that built the current `main`.
+
+### Fixed
+
+- PDF certificates, student reports and gradebook exports (upgrade to React 19).
+- Large report exports no longer hang as "pending" forever.
+- Weekly progress emails: the digest now reaches its summary endpoint, and students can turn it off on their profile.
+- Certificate verification rejected every valid certificate.
+- Staff opening a guardian's student page get redirected instead of a 404.
+- Managers can post org-wide announcements.
+- Accessibility: all remaining WCAG contrast, labelling, landmark and nested-control issues. The platform billing page was unreadable.
+
+### Changed
+
+- React 19; `@tremor/react` removed; `lucide-react` 0.577.
+- Link prefetches no longer make an auth round trip in middleware.
+
+---
+
+## [0.35.0] — 2026-09-24
+
+Full application test suite and release test-surface gate (COUNCIL-2026-031).
+
+### Added
+
+- **Browser and API test suite** (Playwright): it sweeps all 85 pages as every role, checking
+  rendering, access denial, console errors and axe accessibility. It also runs API contract tests
+  for every route and Edge Function, and end-to-end flows for learners, authoring, admin,
+  the platform console, reports and messaging. It includes a mobile pass. `npm run test:suite:local`.
+- **Test-surface gate** (`npm run test:surface`, in `verify` and CI): every page, API route,
+  Server Action and Edge Function must be tagged by a test via `covers()`, or carry a dated exemption.
+- **Production synthetic checks** after each release, run as an isolated `is_synthetic` tenant
+  (`scripts/prod-synthetic-bootstrap.mjs`). Synthetic tenants cannot check out, and
+  reserved-domain addresses are never emailed.
+- `docs/testing.md` explains how to add tests for new features. PR template and council
+  template gain a **Test surfaces** section.
+
+### Fixed
+
+- Messaging never worked (RLS recursion). Non-members could post into a thread by id.
+- Learner progress was never saved. Assignment, quiz, video and discussion submissions failed.
+  Bank-only quizzes could not be played.
+- Many inserts failed without `org_id` (announcements, calendar, and others). `org_id` now
+  defaults to the caller's organization.
+- Attendance (self and teacher marking); cross-org `markStudentAttendance`.
+- Drafts could not be published. Badges could not be managed. Cohort members never listed.
+  Students could not add personal events. Content autosave could lose edits.
+- `/join/[slug]` crashed. `/verify` was blocked for anonymous visitors. `/hq` and course
+  analytics were not role-gated.
+- Guardian emails never sent; unsubscribe broken.
+- `content-images` and `reports` storage buckets created.
+- CSP blocked Supabase realtime; accessibility contrast and labelling fixes.
+
+### Security
+
+- Open redirect in `/callback` (`next` parameter).
+- Scheduled Edge Functions failed open without `CRON_SECRET`. `generate-embedding` and
+  `generate-certificate` accepted the public anon key.
+- Database error text is no longer returned to clients.
+- The release deploys every Edge Function (previously two).
+
+---
+
+## [0.34.3] — 2026-09-24
+
+Security hotfix (found while building the COUNCIL-2026-031 test suite).
+
+### Security
+
+- **Closed self-service privilege escalation and tenant hopping.** Any signed-in user could update their own `profiles.role` and `profiles.org_id` through the public API and become an admin of any organization. Users can now update only their personal profile fields (column-level grant).
+- **Sign-up metadata no longer grants a role or organization.** New profiles take role and org only from server-controlled `app_metadata`. All trusted creation paths (join links, invites, bulk invite, tenant creation, demo reset) set it; changes to `app_metadata` now sync to the profile.
+- **Admin user management is org-scoped.** Role and status changes, invites and deletions only affect users in the admin's own organization. Previously `deleteUser` could delete a user in any tenant, and invited users were created without an organization.
+
+### Fixed
+
+- Org admins can change user roles and status again. These silently did nothing, because RLS gave admins no way to update other users' profiles.
+
 ## [0.34.2] — 2026-09-23
 
 ### Fixed

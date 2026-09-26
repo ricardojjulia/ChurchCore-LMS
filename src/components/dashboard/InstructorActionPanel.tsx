@@ -100,7 +100,7 @@ export default async function InstructorActionPanel({
       <section className="mb-8">
         <h2 className="text-lg font-bold text-foreground mb-3">Action Required</h2>
         <div className="bg-white border border-emerald-200 rounded-xl px-5 py-4 flex items-center gap-3">
-          <span className="text-emerald-600 text-lg">✓</span>
+          <span className="text-emerald-700 text-lg">✓</span>
           <p className="text-sm text-emerald-700 font-medium">All caught up — nothing needs your attention right now.</p>
         </div>
       </section>
@@ -122,7 +122,7 @@ export default async function InstructorActionPanel({
     <section className="mb-8" aria-label="Action Required">
       <h2 className="text-lg font-bold text-foreground mb-3">
         Action Required
-        <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold">
+        <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-600 text-white text-[10px] font-bold">
           {actions.length}
         </span>
       </h2>

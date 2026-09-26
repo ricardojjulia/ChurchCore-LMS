@@ -132,7 +132,7 @@ export default function MessageThread({
           if (msg.is_deleted) {
             return (
               <div key={msg.id} className={cn('flex', isMe ? 'justify-end' : 'justify-start')}>
-                <span className="text-xs italic text-muted-foreground/60 px-3 py-1">
+                <span className="text-xs italic text-muted-foreground px-3 py-1">
                   {t('messages.thread.deletedPlaceholder')}
                 </span>
               </div>
@@ -173,7 +173,7 @@ export default function MessageThread({
                   {isMe && (
                     <button
                       onClick={() => handleDelete(msg.id)}
-                      className="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/40 hover:text-destructive text-xs"
+                      className="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive text-xs"
                       title={t('messages.thread.deleteAriaLabel')}
                     >
                       ✕
@@ -181,7 +181,7 @@ export default function MessageThread({
                   )}
                 </div>
                 <p className={cn(
-                  'text-[10px] text-muted-foreground/60 mt-0.5',
+                  'text-[10px] text-muted-foreground mt-0.5',
                   isMe ? 'text-right mr-1' : 'ml-1'
                 )}>
                   {timeLabel(msg.created_at)}
@@ -201,7 +201,7 @@ export default function MessageThread({
           </p>
         )}
         <form onSubmit={handleSend} className="flex items-end gap-3">
-          <textarea
+          <textarea aria-label={t('messages.thread.composerPlaceholder')}
             ref={textareaRef}
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -228,7 +228,7 @@ export default function MessageThread({
             </svg>
           </button>
         </form>
-        <p className="text-[10px] text-muted-foreground/50 mt-1.5 ml-1">{t('messages.thread.composerHint')}</p>
+        <p className="text-[10px] text-muted-foreground mt-1.5 ml-1">{t('messages.thread.composerHint')}</p>
       </div>
     </div>
   )

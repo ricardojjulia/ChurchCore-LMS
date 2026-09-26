@@ -43,6 +43,9 @@
 
 import { createClient as createRawClient, type SupabaseClient } from '@supabase/supabase-js'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { covers } from '../covers'
+
+covers('action:join/actions.verifyAndEnroll')
 
 const TEST_URL    = process.env.TEST_SUPABASE_URL              ?? ''
 const ANON_KEY    = process.env.TEST_SUPABASE_ANON_KEY         ?? ''

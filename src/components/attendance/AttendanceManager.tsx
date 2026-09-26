@@ -151,7 +151,7 @@ export default function AttendanceManager({
                     {b.points > 0 && (
                       <span className="text-muted-foreground font-normal">{b.points} pts</span>
                     )}
-                    <span className="text-[10px] font-normal capitalize text-muted-foreground/70">{b.trackingMode}</span>
+                    <span className="text-[10px] font-normal capitalize text-muted-foreground">{b.trackingMode}</span>
                   </div>
                 </th>
               ))}

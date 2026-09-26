@@ -13,7 +13,7 @@ const TRANSIT_LABEL: Record<TransitStatus, string> = {
 const TRANSIT_COLOR: Record<TransitStatus, string> = {
   not_started: 'text-slate-500',
   in_progress: 'text-sky-600',
-  completed:   'text-emerald-600',
+  completed:   'text-emerald-700',
   dropped:     'text-rose-500',
   paused:      'text-amber-600',
 }

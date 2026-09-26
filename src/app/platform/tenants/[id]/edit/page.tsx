@@ -21,7 +21,7 @@ export default async function EditTenantPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="max-w-xl">
-      <div className="flex items-center gap-2 text-sm text-slate-500">
+      <div className="flex items-center gap-2 text-sm text-slate-400">
         <a href="/platform" className="hover:text-slate-300">Tenants</a>
         <span className="text-slate-700">/</span>
         <a href={`/platform/tenants/${org.id}`} className="hover:text-slate-300">{org.name}</a>
@@ -36,8 +36,8 @@ export default async function EditTenantPage({ params }: { params: Promise<{ id:
         <Section title="Organization">
           <Field label="Name" name="name" defaultValue={org.name} required />
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Plan</label>
-            <select name="plan" defaultValue={org.plan} className={selectCls}>
+            <label htmlFor="tenant-plan" className="block text-sm font-medium text-slate-300 mb-1">Plan</label>
+            <select id="tenant-plan" name="plan" defaultValue={org.plan} className={selectCls}>
               <option value="free">Free / Trial</option>
               <option value="standard">Standard</option>
               <option value="premium">Premium</option>
@@ -54,15 +54,16 @@ export default async function EditTenantPage({ params }: { params: Promise<{ id:
             placeholder="https://cdn.example.com/logo.png"
           />
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Primary color</label>
+            <label htmlFor="tenant-primary-color" className="block text-sm font-medium text-slate-300 mb-1">Primary color</label>
             <div className="flex items-center gap-3">
               <input
+                id="tenant-primary-color"
                 type="color"
                 name="primary_color"
                 defaultValue={branding.primary_color ?? '#6366f1'}
                 className="h-9 w-16 cursor-pointer rounded border border-slate-700 bg-slate-800 p-1"
               />
-              <span className="text-xs text-slate-500">Used for buttons and accents</span>
+              <span className="text-xs text-slate-400">Used for buttons and accents</span>
             </div>
           </div>
           <Field
@@ -101,7 +102,7 @@ export default async function EditTenantPage({ params }: { params: Promise<{ id:
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-900 p-6 space-y-4">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">{title}</h2>
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400">{title}</h2>
       {children}
     </div>
   )

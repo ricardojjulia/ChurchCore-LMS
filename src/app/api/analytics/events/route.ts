@@ -13,7 +13,9 @@ const VALID_EVENT_TYPES = new Set<AnalyticsEventType>([
   'certificate_earned',
 ])
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+// Any canonical hex UUID (what Postgres accepts); course/module ids come from
+// the database, and the RFC version check rejected valid ids such as UUIDv7.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const RATE_LIMIT_MAX = 60
 const RATE_LIMIT_WINDOW_MS = 60_000
 const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>()

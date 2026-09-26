@@ -225,9 +225,9 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
           {questions.map((q, qi) => (
             <div key={q.id} className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 space-y-3">
               <div className="flex items-start gap-3">
-                <span className="text-xs font-bold text-slate-500 mt-2.5 w-4 shrink-0">{qi + 1}.</span>
+                <span className="text-xs font-bold text-slate-400 mt-2.5 w-4 shrink-0">{qi + 1}.</span>
                 <div className="flex-1 space-y-3">
-                  <input
+                  <input aria-label={`Question ${qi + 1} text`}
                     value={q.text}
                     onChange={(e) => updateQuestion(qi, { text: e.target.value })}
                     placeholder="Question text…"
@@ -236,7 +236,7 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
 
                   {/* Type selector + points */}
                   <div className="flex gap-3">
-                    <select
+                    <select aria-label={`Question ${qi + 1} type`}
                       value={q.type}
                       onChange={(e) => setQuestionType(qi, e.target.value as QuestionType)}
                       title="Question type"
@@ -247,7 +247,7 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
                       <option value="matching">Matching</option>
                       <option value="fill_blank">Fill in the Blank</option>
                     </select>
-                    <input
+                    <input aria-label={`Question ${qi + 1} points`}
                       type="number" min={1} max={100} value={q.points} title="Points for this question"
                       onChange={(e) => updateQuestion(qi, { points: Number(e.target.value) })}
                       className="input w-20" placeholder="pts"
@@ -268,7 +268,7 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
                             title={`Mark option ${oi + 1} as correct`}
                             className="shrink-0 accent-indigo-500"
                           />
-                          <input
+                          <input aria-label={`Question ${qi + 1} option ${oi + 1}`}
                             value={opt}
                             onChange={(e) => updateOption(qi, oi, e.target.value)}
                             placeholder={q.type === 'true_false' ? opt : `Option ${oi + 1}`}
@@ -277,7 +277,7 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
                           />
                         </div>
                       ))}
-                      <p className="text-xs text-slate-500 pl-5">Select the correct answer.</p>
+                      <p className="text-xs text-slate-400 pl-5">Select the correct answer.</p>
                     </div>
                   )}
 
@@ -289,15 +289,15 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
                       </p>
                       {(q.pairs ?? []).map((pair, pi) => (
                         <div key={pair.id} className="flex items-center gap-2">
-                          <input
+                          <input aria-label={`Question ${qi + 1} pair ${pi + 1} left`}
                             value={pair.left}
                             onChange={(e) => updatePair(qi, pi, 'left', e.target.value)}
                             placeholder={`Left ${pi + 1}`}
                             className="input flex-1"
                             required
                           />
-                          <span className="text-slate-500 shrink-0 text-xs">→</span>
-                          <input
+                          <span className="text-slate-400 shrink-0 text-xs">→</span>
+                          <input aria-label={`Question ${qi + 1} pair ${pi + 1} right`}
                             value={pair.right}
                             onChange={(e) => updatePair(qi, pi, 'right', e.target.value)}
                             placeholder={`Right ${pi + 1}`}
@@ -332,7 +332,7 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
                         <p className="text-xs text-slate-400 mb-1">
                           Template — use <code className="bg-slate-700 px-1 rounded">[blank]</code> for each blank.
                         </p>
-                        <textarea
+                        <textarea aria-label={`Question ${qi + 1} template`}
                           value={q.template ?? ''}
                           onChange={(e) => updateTemplate(qi, e.target.value)}
                           placeholder='The fruit of the Spirit is [blank], joy, and [blank].'
@@ -348,8 +348,8 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
                           </p>
                           {(q.blanks ?? []).map((blank, bi) => (
                             <div key={blank.id} className="flex items-center gap-2">
-                              <span className="text-xs text-slate-500 w-16 shrink-0">Blank {bi + 1}:</span>
-                              <input
+                              <span className="text-xs text-slate-400 w-16 shrink-0">Blank {bi + 1}:</span>
+                              <input aria-label={`Blank ${bi + 1} acceptable answers`}
                                 value={blank.acceptable_answers.join(', ')}
                                 onChange={(e) => updateBlankAnswers(qi, bi, e.target.value)}
                                 placeholder="love, charity"
@@ -359,7 +359,7 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-400">
                           Add <code className="bg-slate-700 px-1 rounded">[blank]</code> to the template to define blanks.
                         </p>
                       )}
@@ -415,7 +415,7 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
 
         {availableBanks.length > 0 ? (
           <div className="flex gap-2 items-center">
-            <select
+            <select aria-label="Question bank"
               value={selectedBankId}
               onChange={(e) => setSelectedBankId(e.target.value)}
               title="Select question bank"
@@ -426,7 +426,7 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
             </select>
-            <input
+            <input aria-label="Number of questions to draw"
               type="number" min={1} max={50} value={drawCount}
               title="Number of questions to draw"
               onChange={(e) => setDrawCount(Number(e.target.value))}
@@ -447,7 +447,7 @@ export default function QuizForm({ initial, onSave, onCancel }: Props) {
             </button>
           </div>
         ) : (
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             No question banks available.{' '}
             <a href="/admin/question-banks" target="_blank" rel="noopener noreferrer"
               className="text-indigo-400 hover:text-indigo-300 underline">

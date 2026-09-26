@@ -27,7 +27,7 @@ BEGIN
     VALUES
       (v_org, 'OneRoster identity test', 'oneroster-identity-' || v_org),
       (v_other_org, 'OneRoster other org', 'oneroster-identity-other-' || v_other_org);
-  INSERT INTO auth.users(id, email, raw_user_meta_data)
+  INSERT INTO auth.users(id, email, raw_app_meta_data)
     VALUES
       (v_admin_auth, v_admin_auth || '@example.invalid', jsonb_build_object('org_id', v_org, 'role', 'admin')),
       (v_student_auth, v_student_auth || '@example.invalid', jsonb_build_object('org_id', v_org, 'role', 'student')),

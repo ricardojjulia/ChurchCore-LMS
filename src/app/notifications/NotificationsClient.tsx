@@ -116,7 +116,7 @@ export default function NotificationsClient({
             >
               {f === 'all' ? t('notifications.filterAll') : t('notifications.filterUnread')}
               {f === 'unread' && unreadIds.length > 0 && (
-                <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-bold">
+                <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold">
                   {unreadIds.length}
                 </span>
               )}
@@ -175,7 +175,7 @@ export default function NotificationsClient({
                   {n.body && (
                     <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
                   )}
-                  <p className="text-xs text-muted-foreground/60 mt-1">{timeAgo(n.created_at)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{timeAgo(n.created_at)}</p>
                 </div>
               </div>
             )

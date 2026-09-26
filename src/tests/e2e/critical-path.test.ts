@@ -165,8 +165,13 @@ describe('Critical path: sign-in → XP → certificate', () => {
     expect(typeof baselineXP).toBe('number')
   })
 
-  it('STEP 4 — award 10 XP via RPC (student JWT, current_user_uid() = STUDENT_UID)', async () => {
-    const { data, error } = await student.rpc('award_xp', {
+  it('STEP 4a — students cannot award themselves XP (award_xp is service-role only)', async () => {
+    const { error } = await student.rpc('award_xp', { p_uid: STUDENT_UID, p_amount: 10 })
+    expect(error).not.toBeNull()
+  })
+
+  it('STEP 4 — award 10 XP via RPC (service role, as the server actions do)', async () => {
+    const { data, error } = await svc.rpc('award_xp', {
       p_uid:    STUDENT_UID,
       p_amount: 10,
     })

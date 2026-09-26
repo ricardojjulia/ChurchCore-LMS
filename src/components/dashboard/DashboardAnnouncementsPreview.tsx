@@ -76,7 +76,7 @@ export default async function DashboardAnnouncementsPreview({
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-bold text-foreground">Announcements</h2>
           {unreadCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold">
+            <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold">
               {unreadCount} new
             </span>
           )}

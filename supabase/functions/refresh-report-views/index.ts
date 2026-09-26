@@ -1,4 +1,5 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { rejectUnlessCron } from '../_shared/cron-auth.ts'
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -7,7 +8,10 @@ function json(body: unknown, status = 200) {
   })
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  // Deployed with verify_jwt = false; without this anyone could invoke it.
+  const denied = rejectUnlessCron(req)
+  if (denied) return denied
   const startedAt = performance.now()
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')

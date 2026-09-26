@@ -40,11 +40,13 @@ export async function POST(req: NextRequest) {
   const svc = createServiceClient()
   const { data: org } = await svc
     .from('organizations')
-    .select('id, name, stripe_customer_id')
+    .select('id, name, stripe_customer_id, is_synthetic')
     .eq('id', orgId)
     .single()
 
   if (!org) return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
+  // The post-release synthetic-QA tenant is never billed (COUNCIL-2026-031 D8).
+  if (org.is_synthetic) return NextResponse.json({ error: 'Billing is not available for this organization' }, { status: 400 })
 
   // Reuse the existing Stripe customer if one was already created for this org
   // (e.g. a prior checkout attempt was abandoned) — otherwise every retry

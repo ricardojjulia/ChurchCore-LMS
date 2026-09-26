@@ -3,9 +3,7 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { getGradebookSummary } from '@/lib/reporting/report-aggregates'
 import { writeAuditLog } from '@/lib/reporting/audit-logger'
-import { createReportArtifact } from '@/lib/reporting/report-queries'
 import {
-  estimateReportPages,
   generateGradebookPDF,
   generateGradebookXLSX,
 } from '@/lib/reporting/export-handlers'
@@ -101,45 +99,6 @@ export async function generateGradebookPDFExport(courseId: string): Promise<Repo
 
   try {
     const rows = await getGradebookSummary(profile.org_id, course.id)
-    const pageCount = estimateReportPages(rows.length)
-
-    if (pageCount > 10) {
-      const artifact = await createReportArtifact({
-        report_definition_id: null,
-        org_id: profile.org_id,
-        generated_by: profile.uid,
-        format: 'pdf',
-        storage_path: null,
-        archive_storage_path: null,
-        signed_url: null,
-        signed_url_expires: null,
-        row_count: rows.length,
-        generation_status: 'pending',
-        error_message: null,
-        expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-        archived_at: null,
-        retention_class: 'ferpa',
-      })
-
-      await supabase.functions.invoke('generate-gradebook-report', {
-        body: { artifactId: artifact.id, courseId: course.id, format: 'pdf' },
-      })
-      await writeAuditLog({
-        orgId: profile.org_id,
-        actorId: profile.uid,
-        actorRole: profile.role,
-        actorEmail: profile.email,
-        action: 'report_exported_pdf',
-        resourceType: 'report_artifact',
-        resourceId: artifact.id,
-        targetUserId: null,
-        targetCourseId: course.id,
-        metadata: { async: true, format: 'pdf' },
-        retentionClass: 'ferpa',
-      })
-      return { success: true, artifactId: artifact.id }
-    }
-
     const pdf = await generateGradebookPDF(toGradebookReportData(profile, course, rows))
     await writeAuditLog({
       orgId: profile.org_id,

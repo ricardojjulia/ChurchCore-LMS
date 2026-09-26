@@ -71,7 +71,7 @@ export default function QuestionBanksListClient({ initialBanks }: { initialBanks
               type="button"
               onClick={() => handleDelete(bank.id)}
               disabled={deleting === bank.id}
-              className="text-sm font-semibold text-rose-500 hover:text-rose-700 transition-colors disabled:opacity-50"
+              className="text-sm font-semibold text-rose-700 hover:text-rose-700 transition-colors disabled:opacity-50"
             >
               {deleting === bank.id ? 'Deleting…' : 'Delete'}
             </button>

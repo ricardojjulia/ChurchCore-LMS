@@ -7,7 +7,9 @@
     "factory.js",
     "lms-project-hq-elite.jsx",
     "scripts/factory.js",
-    "supabase/functions/**"
+    "supabase/functions/**",
+    "playwright-report/**",
+    "test-results/**"
   ],
   "rules": {
     "@typescript-eslint/no-explicit-any": "off",

@@ -129,7 +129,7 @@ export default function PathAdminClient({ path, addableCourses }: Props) {
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
-        {success && <p className="text-sm text-emerald-600">{success}</p>}
+        {success && <p className="text-sm text-emerald-700">{success}</p>}
 
         <div className="flex gap-3">
           <Button onClick={handleSave} disabled={isPending}>
@@ -153,6 +153,7 @@ export default function PathAdminClient({ path, addableCourses }: Props) {
         {addableCourses.length > 0 && (
           <div className="flex gap-2 items-center pt-2 border-t">
             <select
+              aria-label="Course to add"
               value={selectedCourseId}
               onChange={(e) => setSelectedCourseId(e.target.value)}
               className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"

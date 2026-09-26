@@ -78,7 +78,7 @@ export async function DELETE(request: Request) {
     .maybeSingle<{ id: string; org_id: string; generated_by: string | null }>()
 
   if (findError) {
-    return NextResponse.json({ error: findError.message }, { status: 500 })
+    return NextResponse.json({ error: 'Unable to load report artifact' }, { status: 500 })
   }
 
   if (!artifact) {

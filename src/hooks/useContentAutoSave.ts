@@ -13,9 +13,16 @@ export function useContentAutoSave(
   const pendingRef = useRef<object | null>(null)
   const savingRef  = useRef(false)
 
+  const flushRef   = useRef<() => Promise<void>>(async () => {})
+
+  // Saves the latest pending content. If a save is already in flight, the
+  // newer content is saved as soon as it finishes. (Previously a debounce that
+  // fired mid-save returned early, and the in-flight save then cleared the
+  // newer pending content — edits typed during a save were silently lost while
+  // the indicator still said "Saved".)
   const flush = useCallback(async () => {
-    if (!pendingRef.current || savingRef.current) return
     const content = pendingRef.current
+    if (!content || savingRef.current) return
     savingRef.current = true
     setSaveState('saving')
 
@@ -24,12 +31,18 @@ export function useContentAutoSave(
 
     if (result.error) {
       setSaveState('error')
-    } else {
+      return
+    }
+    if (pendingRef.current === content) {
+      pendingRef.current = null
       setSaveState('saved')
       setLastSaved(new Date())
-      pendingRef.current = null
+    } else if (pendingRef.current) {
+      // Newer edits arrived while saving — save them too.
+      void flushRef.current()
     }
   }, [saveAction])
+  flushRef.current = flush
 
   const scheduleSave = useCallback((content: object) => {
     pendingRef.current = content

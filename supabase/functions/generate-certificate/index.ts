@@ -3,6 +3,7 @@ import { renderToBuffer } from 'npm:@react-pdf/renderer@4.5.1'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 import CertificateTemplate from './CertificateTemplate.tsx'
+import { rejectUnlessServiceRole } from '../_shared/cron-auth.ts'
 
 type CertificatePayload = {
   enrollmentId?: string
@@ -20,6 +21,9 @@ function json(body: unknown, status = 200) {
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+  // Issues certificates with the service role: backend callers only.
+  const denied = rejectUnlessServiceRole(req)
+  if (denied) return denied
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')

@@ -113,7 +113,7 @@ function NavItem({
 
       {badgeCount > 0 && (
         <span className={cn(
-          'min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold',
+          'min-w-[16px] h-4 px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold',
           'flex items-center justify-center leading-none',
           collapsed ? 'absolute top-0.5 right-0.5' : 'ml-auto shrink-0',
         )}>
@@ -129,7 +129,7 @@ function SectionDivider({ label, collapsed }: { label: string; collapsed: boolea
     <div className={cn('pt-3 pb-1', collapsed ? 'px-2' : 'px-2')}>
       {collapsed
         ? <div className="border-t border-slate-800" />
-        : <p className="text-[10px] font-bold uppercase tracking-widest text-slate-600 px-0">{label}</p>
+        : <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-0">{label}</p>
       }
     </div>
   )

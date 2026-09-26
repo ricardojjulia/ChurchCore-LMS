@@ -74,7 +74,7 @@ export default function InviteUserForm() {
                   <label className="block text-sm font-semibold text-slate-700 mb-1">
                     Email address <span className="text-destructive">*</span>
                   </label>
-                  <input
+                  <input aria-label="Email address"
                     ref={emailRef}
                     type="email"
                     required

@@ -122,6 +122,17 @@ export default function ReportsDrawer() {
   const { artifacts, isLoading, isOpen, openDrawer, closeDrawer, refresh } = useReportsDrawer()
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
+
+  // The closed drawer stays mounted for its slide animation. `inert` keeps its
+  // controls out of the tab order while hidden; React 18 has no working
+  // boolean `inert` prop (it warns and drops it), so set the attribute directly.
+  useEffect(() => {
+    const el = overlayRef.current
+    if (!el) return
+    if (isOpen) el.removeAttribute('inert')
+    else el.setAttribute('inert', '')
+  }, [isOpen])
 
   const grouped = useMemo(() => {
     return artifacts.reduce<Record<'Today' | 'This Week' | 'Older', ReportArtifact[]>>(
@@ -180,6 +191,7 @@ export default function ReportsDrawer() {
       <div
         className={`fixed inset-0 z-50 transition ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
         aria-hidden={!isOpen}
+        ref={overlayRef}
       >
         <button
           type="button"

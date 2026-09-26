@@ -9,6 +9,9 @@ function getResend(): Resend {
   return _resend
 }
 
+export { isDeliverableAddress } from './email-deliverable'
+import { isDeliverableAddress } from './email-deliverable'
+
 export async function sendEmail({
   to,
   subject,
@@ -18,9 +21,11 @@ export async function sendEmail({
   subject: string
   react: React.ReactElement
 }) {
+  const recipients = (Array.isArray(to) ? to : [to]).filter(isDeliverableAddress)
+  if (recipients.length === 0) return
   const { error } = await getResend().emails.send({
     from:    env.emailFrom || 'ChurchCore LMS <noreply@churchcore.app>',
-    to:      Array.isArray(to) ? to : [to],
+    to:      recipients,
     subject,
     react,
     headers: { 'X-Entity-Ref-ID': String(Date.now()) },

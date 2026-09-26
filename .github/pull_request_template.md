@@ -42,6 +42,20 @@ Example:
   - [ ] teacher
   - [ ] admin
 
+## Test surfaces (COUNCIL-2026-031)
+
+<!-- `npm run test:surface -- --list` shows surface ids. CI fails if any is untested. -->
+
+- [ ] No new pages, API methods, Server Actions or Edge Functions
+- [ ] New surfaces listed below, each covered by a `covers('…')`-tagged test in this PR
+- [ ] New pages have a row in `tests/playwright/browser/routes.ts` (who may see it)
+- [ ] `npm run test:suite:local` passes (browser + API suite)
+- [ ] Production synthetic suite still valid (or updated) if this changes a core flow
+
+```
+surface id → test file
+```
+
 ## Changelog
 
 <!-- Add the user-visible change under [Unreleased] in CHANGELOG.md. Paste it here. -->

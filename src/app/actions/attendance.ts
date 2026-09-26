@@ -19,11 +19,21 @@ export async function markSelfAttendance(blockId: string): Promise<{ error?: str
   const trackingMode = (content.tracking_mode as string) ?? 'auto'
   if (!['auto', 'both'].includes(trackingMode)) return {}
 
+  // course_enrollments.user_id and block_submissions.user_id hold the domain
+  // profile uid, not the auth user id — using user.id here meant self
+  // attendance was never recorded ("Not enrolled").
+  const { data: me } = await supabase
+    .from('profile_roles')
+    .select('uid')
+    .eq('auth_id', user.id)
+    .single()
+  if (!me) return { error: 'Profile not found' }
+
   const { data: enrollment } = await supabase
     .from('course_enrollments')
     .select('id')
     .eq('course_id', block.course_id)
-    .eq('user_id', user.id)
+    .eq('user_id', me.uid)
     .maybeSingle()
   if (!enrollment) return { error: 'Not enrolled' }
 
@@ -40,7 +50,7 @@ export async function markSelfAttendance(blockId: string): Promise<{ error?: str
   const { error } = await supabase.from('block_submissions').insert({
     block_id:      blockId,
     enrollment_id: enrollment.id,
-    user_id:       user.id,
+    user_id:       me.uid,
     status:        'submitted',
     submitted_at:  new Date().toISOString(),
     content:       { attendance_status: 'present', tracking_mode: 'auto' },
@@ -48,7 +58,7 @@ export async function markSelfAttendance(blockId: string): Promise<{ error?: str
     max_score:     pointsPossible > 0 ? pointsPossible : null,
   })
 
-  return error ? { error: error.message } : {}
+  return error ? { error: 'Could not save attendance. Please try again.' } : {}
 }
 
 export async function markStudentAttendance(params: {
@@ -63,17 +73,21 @@ export async function markStudentAttendance(params: {
 
   const { data: pr } = await supabase
     .from('profile_roles')
-    .select('role')
+    .select('role, uid, org_id')
     .eq('auth_id', user.id)
     .single()
   if (!pr || !['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Forbidden' }
 
   const service = createServiceClient()
 
+  // The service client bypasses RLS, so tenant scope is enforced here: the
+  // block must belong to the caller's org (previously any staff member could
+  // write attendance/grades onto another org's block by id).
   const { data: block } = await service
     .from('course_blocks')
     .select('course_id, content')
     .eq('id', params.blockId)
+    .eq('org_id', pr.org_id)
     .single()
   if (!block) return { error: 'Block not found' }
 
@@ -108,7 +122,7 @@ export async function markStudentAttendance(params: {
     user_id:       params.targetAuthId,
     status:        'graded' as const,
     submitted_at:  new Date().toISOString(),
-    graded_by:     user.id,
+    graded_by:     pr.uid,  // profiles.uid (FK), not the auth user id
     graded_at:     new Date().toISOString(),
     score,
     max_score:     pointsPossible > 0 ? pointsPossible : null,
@@ -121,9 +135,9 @@ export async function markStudentAttendance(params: {
 
   if (existing) {
     const { error } = await service.from('block_submissions').update(payload).eq('id', existing.id)
-    return error ? { error: error.message } : {}
+    return error ? { error: 'Could not save attendance. Please try again.' } : {}
   }
 
   const { error } = await service.from('block_submissions').insert(payload)
-  return error ? { error: error.message } : {}
+  return error ? { error: 'Could not save attendance. Please try again.' } : {}
 }

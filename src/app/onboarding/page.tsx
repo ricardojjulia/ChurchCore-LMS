@@ -47,7 +47,7 @@ SELECT refresh_report_materialized_views();`}</pre>
       </div>
 
       <p className="mt-6 text-sm text-slate-500">
-        Or re-run <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">npm run demo:reset</code> to
+        Or re-run <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800">npm run demo:reset</code> to
         regenerate all demo data with organization links in place.
       </p>
     </main>

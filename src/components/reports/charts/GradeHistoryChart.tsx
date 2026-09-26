@@ -31,7 +31,7 @@ export default function GradeHistoryChart({ data }: { data: GradePoint[] }) {
   }, [data, t])
 
   return (
-    <div role="img" aria-label={t('reports.charts.gradeHistory.containerAriaLabelTemplate', { summary })}>
+    <div role="group" aria-label={t('reports.charts.gradeHistory.containerAriaLabelTemplate', { summary })}>
       <div className="mb-3 flex justify-end">
         <button
           type="button"

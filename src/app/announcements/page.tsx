@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { cn } from '@/lib/utils'
 import MarkReadButton from '@/components/dashboard/MarkReadButton'
 import { getTranslations } from 'next-intl/server'
+import PublishDraftButton from './PublishDraftButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -111,12 +112,7 @@ export default async function AnnouncementsPage() {
                     <p className="text-sm font-semibold text-foreground truncate">{d.title}</p>
                     <p className="text-xs text-muted-foreground">{t('announcements.draftMetaTemplate', { scope: d.scope })}</p>
                   </div>
-                  <Link
-                    href={`/announcements/new?edit=${d.id}`}
-                    className="text-xs text-primary font-medium shrink-0 hover:underline"
-                  >
-                    {t('announcements.publishAction')}
-                  </Link>
+                  <PublishDraftButton id={d.id} label={t('announcements.publishAction')} />
                 </div>
               ))}
             </div>

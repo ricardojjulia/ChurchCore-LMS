@@ -21,7 +21,7 @@ export default async function AdminHealthPage() {
   const initialChecks = await getHealthChecks(supabase)
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-extrabold text-foreground tracking-tight">System Health</h1>

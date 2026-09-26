@@ -153,7 +153,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
   return (
     <div className="bg-slate-50 border border-border rounded-xl p-4 space-y-3">
       <div className="flex gap-3">
-        <select
+        <select aria-label="Question type"
           value={draft.type}
           onChange={(e) => setType(e.target.value as QuestionType)}
           title="Question type"
@@ -163,7 +163,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
             <option key={t} value={t}>{TYPE_LABEL[t]}</option>
           ))}
         </select>
-        <input
+        <input aria-label="Points"
           type="number" min={1} max={100} value={draft.points}
           title="Points"
           onChange={(e) => setDraft((prev) => ({ ...prev, points: Number(e.target.value) }))}
@@ -172,7 +172,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
         />
       </div>
 
-      <textarea
+      <textarea aria-label="Question text"
         value={draft.text}
         onChange={(e) => setDraft((prev) => ({ ...prev, text: e.target.value }))}
         placeholder="Question text…"
@@ -194,7 +194,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
                 title={`Mark option ${oi + 1} as correct`}
                 className="shrink-0 accent-primary"
               />
-              <input
+              <input aria-label={draft.type === 'true_false' ? opt : `Option ${oi + 1}`}
                 value={opt}
                 onChange={(e) => setDraft((prev) => {
                   const options = [...prev.options]; options[oi] = e.target.value
@@ -215,14 +215,14 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
         <div className="space-y-2">
           {draft.pairs.map((pair, pi) => (
             <div key={pair.id} className="flex items-center gap-2">
-              <input
+              <input aria-label={`Left ${pi + 1}`}
                 value={pair.left}
                 onChange={(e) => updatePair(pi, 'left', e.target.value)}
                 placeholder={`Left ${pi + 1}`}
                 className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
               <span className="text-slate-400 text-xs shrink-0">→</span>
-              <input
+              <input aria-label={`Right ${pi + 1}`}
                 value={pair.right}
                 onChange={(e) => updatePair(pi, 'right', e.target.value)}
                 placeholder={`Right ${pi + 1}`}
@@ -232,7 +232,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
                 <button
                   type="button"
                   onClick={() => setDraft((prev) => ({ ...prev, pairs: prev.pairs.filter((_, j) => j !== pi) }))}
-                  className="text-rose-400 hover:text-rose-600 text-sm shrink-0"
+                  className="text-rose-700 hover:text-rose-800 text-sm shrink-0"
                 >
                   ✕
                 </button>
@@ -256,7 +256,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
             <p className="text-xs text-slate-500 mb-1">
               Use <code className="bg-slate-200 px-1 rounded">[blank]</code> for each blank.
             </p>
-            <textarea
+            <textarea aria-label="Template"
               value={draft.template}
               onChange={(e) => updateTemplate(e.target.value)}
               placeholder='The fruit of the Spirit is [blank] and [blank].'
@@ -267,7 +267,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
           {draft.blanks.map((blank, bi) => (
             <div key={blank.id} className="flex items-center gap-2">
               <span className="text-xs text-slate-500 w-16 shrink-0">Blank {bi + 1}:</span>
-              <input
+              <input aria-label={`Blank ${bi + 1} acceptable answers`}
                 value={blank.acceptable_answers.join(', ')}
                 onChange={(e) => updateBlankAnswers(bi, e.target.value)}
                 placeholder="love, charity"
@@ -374,9 +374,9 @@ export default function BankDetailClient({ bankId, initialBank, initialQuestions
         <form onSubmit={handleSaveBank} className="bg-white border border-border rounded-xl p-6 space-y-4">
           <div>
             <label className="block text-sm font-semibold text-foreground mb-1.5">
-              Bank Name <span className="text-rose-500">*</span>
+              Bank Name <span className="text-rose-700">*</span>
             </label>
-            <input
+            <input aria-label="Bank Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. New Testament Survey"
@@ -386,7 +386,7 @@ export default function BankDetailClient({ bankId, initialBank, initialQuestions
           </div>
           <div>
             <label className="block text-sm font-semibold text-foreground mb-1.5">Description</label>
-            <textarea
+            <textarea aria-label="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional description of this question pool."
@@ -402,7 +402,7 @@ export default function BankDetailClient({ bankId, initialBank, initialQuestions
             >
               {saving ? 'Saving…' : isNew ? 'Create Bank' : 'Save Changes'}
             </button>
-            {saved && <span className="text-sm text-emerald-600 font-medium">Saved ✓</span>}
+            {saved && <span className="text-sm text-emerald-700 font-medium">Saved ✓</span>}
           </div>
         </form>
       </div>
@@ -430,7 +430,7 @@ export default function BankDetailClient({ bankId, initialBank, initialQuestions
                   <button
                     type="button"
                     onClick={() => handleDeleteQuestion(q.id)}
-                    className="text-rose-400 hover:text-rose-600 text-sm transition-colors shrink-0"
+                    className="text-rose-700 hover:text-rose-800 text-sm transition-colors shrink-0"
                     aria-label="Remove question"
                     title="Remove question"
                   >

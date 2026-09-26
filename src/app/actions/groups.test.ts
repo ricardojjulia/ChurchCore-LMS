@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { addGroupMember, createGroup, createThread, deleteGroup, postToThread, removeGroupMember, softDeletePost } from './groups'
+import { covers } from '../../tests/covers'
+
+covers('action:groups.addGroupMember', 'action:groups.createGroup', 'action:groups.createThread', 'action:groups.deleteGroup', 'action:groups.postToThread', 'action:groups.removeGroupMember', 'action:groups.softDeletePost')
 
 type Result = { data: unknown; error: { code?: string; message: string } | null }
 function mockActor(role = 'student', overrides: Record<string, Result> = {}, signedIn = true) {

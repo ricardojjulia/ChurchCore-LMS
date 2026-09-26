@@ -90,7 +90,7 @@ export default function MobileBottomNav({ messageCount = 0, isStaff = false, isA
                 {icon(active)}
                 {count > 0 && (
                   <span
-                    className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center"
+                    className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center"
                     aria-hidden="true"
                   >
                     {count > 99 ? '99+' : count}

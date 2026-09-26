@@ -131,7 +131,7 @@ export default async function AiAnalyticsPage() {
   const maxCohort  = Math.max(...cohortRows.map(([, c]) => c), 1)
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-8">
 
         {/* Header */}

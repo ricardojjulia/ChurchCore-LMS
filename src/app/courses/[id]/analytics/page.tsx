@@ -67,6 +67,17 @@ export default async function CourseAnalyticsPage({
 
   if (!course) notFound()
 
+  // Same rule get_course_performance applies to its rows (owner, or org
+  // admin/manager). The RPC returns an empty set rather than an error for
+  // anyone else, so without this gate a student saw an empty analytics page.
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('uid, role')
+    .eq('auth_id', user.id)
+    .single()
+  const canView = !!pr && (['admin', 'manager'].includes(pr.role) || (pr.role === 'teacher' && course.owner_id === pr.uid))
+  if (!canView) redirect('/dashboard')
+
   // get_course_performance enforces ownership via SECURITY DEFINER
   const { data, error } = await supabase.rpc('get_course_performance', {
     p_course_id: courseId,

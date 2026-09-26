@@ -2,6 +2,9 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { setCoursePublicPreview } from '@/app/actions/org-settings'
+import { covers } from '../covers'
+
+covers('action:org-settings.setCoursePublicPreview')
 
 // COUNCIL-2026-027 Prompt D — setCoursePublicPreview unit tests.
 // Covers acceptance criteria: D3 (role restriction), D5 (no-content leak N/A here),

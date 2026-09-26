@@ -29,7 +29,7 @@ export default function CourseCompletionChart({ data }: { data: CourseCompletion
   }, [data])
 
   return (
-    <div role="img" aria-label={`Course completion rates: ${summary}`}>
+    <div role="group" aria-label={`Course completion rates: ${summary}`}>
       <div className="mb-3 flex justify-end">
         <button
           type="button"

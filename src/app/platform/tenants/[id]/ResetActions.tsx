@@ -51,7 +51,7 @@ export default function ResetActions({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-400">
         Both options preserve user accounts. Content deletions are permanent.
       </p>
       <div className="flex flex-col gap-2">

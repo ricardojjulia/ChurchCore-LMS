@@ -145,25 +145,33 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   // ── Quiz ───────────────────────────────────────────────────────────
   if (block.block_type_id === 'quiz') {
     const questions = (content.questions as QuizQuestion[] | undefined) ?? []
-    if (questions.length === 0) {
+    const bankDraws = (content.bank_draws as Array<{ bank_id: string; count: number }> | undefined) ?? []
+    // A quiz may be built entirely from question-bank draws (resolved by
+    // QuizPlayer on mount), so "empty" means no inline questions AND no draws.
+    if (questions.length === 0 && bankDraws.length === 0) {
       return <p className="text-muted-foreground italic">{t('learning.block.quizEmpty')}</p>
     }
     const desc = content.description as string | undefined
+    const drawnCount = bankDraws.reduce((s, d) => s + (d.count ?? 0), 0)
     const quizTotalPoints = questions.reduce((s, q) => s + q.points, 0)
     return (
       <div>
         {desc && <p className="text-sm text-muted-foreground mb-4">{desc}</p>}
         <div className="flex items-center gap-3 mb-4 text-xs text-muted-foreground">
-          <span>{t('learning.block.questionCountTemplate', { count: questions.length })}</span>
-          <span>·</span>
-          <span>{t('learning.block.pointsTotalTemplate', { n: quizTotalPoints })}</span>
+          <span>{t('learning.block.questionCountTemplate', { count: questions.length + drawnCount })}</span>
+          {bankDraws.length === 0 && (
+            <>
+              <span>·</span>
+              <span>{t('learning.block.pointsTotalTemplate', { n: quizTotalPoints })}</span>
+            </>
+          )}
         </div>
         <QuizPlayer
           blockId={block.id}
           questions={questions}
           blockXp={(block.gamification as any)?.base_xp_reward ?? 0}
           timeLimitMinutes={(content.time_limit_minutes as number | null | undefined) ?? null}
-          bankDraws={(content.bank_draws as Array<{ bank_id: string; count: number }> | undefined) ?? []}
+          bankDraws={bankDraws}
           attemptsAllowed={(content.attempts_allowed as number | undefined) ?? 0}
           attemptsUsed={(submission as any)?.attempt_number ?? (submission ? 1 : 0)}
           minimumGradePct={((content.requirements as Record<string, unknown> | undefined)?.minimum_grade_pct as number | undefined) ?? 0}

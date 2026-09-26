@@ -74,7 +74,7 @@ export default function AddCourseToTrackForm({
             htmlFor="ptc-course"
             className="block text-xs font-semibold text-foreground mb-1.5"
           >
-            Course <span className="text-rose-500">*</span>
+            Course <span className="text-rose-700">*</span>
           </label>
           <select
             id="ptc-course"

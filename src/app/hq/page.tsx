@@ -420,7 +420,7 @@ export default function HQPage() {
             <p>ChurchCore LMS · agent council · governance memory · release discipline</p>
           </div>
           <div className="topActions">
-            <input value={feature} onChange={(e) => setFeature(e.target.value)} placeholder="Propose a feature…" title="Feature to review" />
+            <input aria-label="Feature to review" value={feature} onChange={(e) => setFeature(e.target.value)} placeholder="Propose a feature…" title="Feature to review" />
             <button type="button" onClick={runCouncilReview}>Run Council Review</button>
           </div>
         </header>
@@ -520,7 +520,7 @@ export default function HQPage() {
                 <div ref={bottomRef} />
               </div>
               <div className="composer">
-                <textarea
+                <textarea aria-label="Message input"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
@@ -557,7 +557,7 @@ export default function HQPage() {
           <section className="workspace">
             <aside className="historyList">
               <div className="historyFilter">
-                <select
+                <select aria-label="Filter by agent"
                   value={historyFilter}
                   onChange={(e) => { setHistoryFilter(e.target.value); setSelectedSession(null) }}
                   title="Filter by agent"
@@ -638,7 +638,7 @@ export default function HQPage() {
             <div className="sectionHead">
               <h2>Task Engine <span className="taskCount">{tasks.filter(t => t.status !== 'done').length} active</span></h2>
               <div className="addTaskRow">
-                <input
+                <input aria-label="New task title"
                   value={newTaskTitle}
                   onChange={(e) => setNewTaskTitle(e.target.value)}
                   onKeyDown={(e) => {
@@ -675,7 +675,7 @@ export default function HQPage() {
                         )}
                       </div>
                       <div className="taskActions">
-                        <select
+                        <select aria-label="Change status"
                           value={t.status}
                           onChange={(e) => dbUpdateTaskStatus(t.id, e.target.value as HqTask['status'])}
                           title="Change status"
@@ -777,10 +777,10 @@ export default function HQPage() {
         .railFooter{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap}
         .main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
         .topbar{height:86px;border-bottom:1px solid #24242a;background:#0f0f14;display:flex;align-items:center;gap:20px;padding:16px 24px;flex-shrink:0}
-        .topbar h1{font-size:20px;margin:0}.topbar p{margin:4px 0 0;color:#71717a;font-size:12px}
+        .topbar h1{font-size:20px;margin:0}.topbar p{margin:4px 0 0;color:#a1a1aa;font-size:12px}
         .topActions{margin-left:auto;display:flex;gap:10px}
         .topActions input{width:430px;max-width:42vw;background:#18181f;border:1px solid #30303a;color:#e5e7eb;border-radius:10px;padding:10px 12px}
-        .topActions button,.sectionHead button,.composer button{background:#6366f1;color:white;border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
+        .topActions button,.sectionHead button,.composer button{background:#4f46e5;color:white;border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
         .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding:18px;overflow:auto}
         .panel{background:#111116;border:1px solid #262631;border-radius:18px;padding:20px;box-shadow:0 10px 35px #0005}
         .panel.full{margin:18px;overflow:auto;flex:1}.panel.wide{grid-column:span 2}
@@ -793,13 +793,13 @@ export default function HQPage() {
         .stat-sky{border-color:#38bdf833}.stat-sky .statValue{color:#38bdf8}
         .stat-lime{border-color:#a3e63533}.stat-lime .statValue{color:#a3e635}
         .stat-amber{border-color:#fbbf2433}.stat-amber .statValue{color:#fbbf24}
-        .statValue{font-size:28px;font-weight:900}.statLabel{color:#71717a;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+        .statValue{font-size:28px;font-weight:900}.statLabel{color:#a1a1aa;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
         .timeline{display:flex;gap:12px;align-items:flex-start;margin:14px 0;color:#cbd5e1}
         .timeline b{background:#18181f;color:#818cf8;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;flex-shrink:0}
         .agentGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
         .agentCard{background:#0b0b0f;border:1px solid transparent;border-radius:14px;padding:14px;text-align:left;color:#e5e7eb;cursor:pointer}
         .agentCard span{font-size:22px;display:block}.agentCardName{display:block;margin-top:8px}
-        .agentCard small,.agentButton small{display:block;color:#71717a;margin-top:3px}
+        .agentCard small,.agentButton small{display:block;color:#a1a1aa;margin-top:3px}
         .workspace{display:flex;flex:1;overflow:hidden;min-height:0}
         .agentList,.docList{width:260px;background:#0f0f14;border-right:1px solid #24242a;padding:14px;overflow-y:auto;flex-shrink:0}
         .agentList h4{font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:.12em;margin:14px 6px 6px}
@@ -818,7 +818,7 @@ export default function HQPage() {
         .message pre{background:#15151b;border:1px solid #282833;border-radius:14px;padding:18px}
         .message.user pre{background:#1e1b4b;border-color:#3730a3}
         .thinking{color:#52525b;animation:pulse 1.5s infinite}@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
-        .copyBtn{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:11px;font-weight:700;color:#6366f1;background:transparent;border:1px solid #30303a;border-radius:6px;cursor:pointer;padding:4px 10px;transition:all .15s}
+        .copyBtn{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:11px;font-weight:700;color:#818cf8;background:transparent;border:1px solid #30303a;border-radius:6px;cursor:pointer;padding:4px 10px;transition:all .15s}
         .copyBtn:hover{background:#18181f;border-color:#6366f1}.copyBtn.copied{color:#34d399;border-color:#34d399}
         .composer{display:flex;gap:10px;padding:14px;border-top:1px solid #24242a;background:#0f0f14;flex-shrink:0}
         .composer textarea{flex:1;resize:none;min-height:58px;background:#18181f;border:1px solid #30303a;color:#fff;border-radius:12px;padding:12px;font:inherit}
@@ -833,7 +833,7 @@ export default function HQPage() {
         .historyItem:hover{background:#13131a}.historyItem.selected{background:#18181f}
         .historyItemHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px;font-size:12px;font-weight:700}
         .historyItemHead time{font-size:10px;color:#52525b;font-weight:400;flex-shrink:0}
-        .historyPrompt{margin:0;font-size:11px;color:#71717a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+        .historyPrompt{margin:0;font-size:11px;color:#a1a1aa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
         .historyDetail{flex:1;display:flex;flex-direction:column;overflow:hidden}
         .historyDetailHead{padding:16px 20px;border-bottom:1px solid #262631;display:flex;gap:14px;align-items:center;flex-shrink:0;background:#111}
         .historyDetailEmoji{font-size:28px}.historyDetailName{display:block;font-size:15px;color:#fff}.historyDetailHead small{color:#9ca3af;font-size:11px}
@@ -855,7 +855,7 @@ export default function HQPage() {
         .taskInput{flex:1;background:#18181f;border:1px solid #30303a;color:#e5e7eb;border-radius:10px;padding:10px 12px;font:inherit;min-width:280px}
         .kanban{display:grid;grid-template-columns:repeat(6,minmax(160px,1fr));gap:12px;overflow-x:auto;flex:1;padding-bottom:8px}
         .lane{background:#0c0c10;border:1px solid #24242a;border-radius:14px;padding:12px;min-height:420px}
-        .lane h3{text-transform:uppercase;letter-spacing:.08em;color:#71717a;font-size:11px;margin-top:0}
+        .lane h3{text-transform:uppercase;letter-spacing:.08em;color:#a1a1aa;font-size:11px;margin-top:0}
         .task{background:#17171d;border:1px solid #292934;border-radius:12px;padding:12px;margin:10px 0}
         .task small{display:block;color:#8b8b94;margin:5px 0;font-size:11px}
         .taskMeta{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
@@ -874,7 +874,7 @@ export default function HQPage() {
         .row b{flex:1}.row span{color:#a1a1aa;flex-shrink:0}
         .rowSub{display:block;color:#52525b;font-size:11px;margin-top:2px;font-weight:400}
         .risk{display:grid;grid-template-columns:1fr 80px 160px 80px;gap:14px;align-items:center;border:1px solid #292934;background:#101016;border-radius:14px;padding:14px;margin:10px 0}
-        .risk p{margin:6px 0 0;color:#a1a1aa;font-size:12px}.riskScore{color:#fb7185;font-weight:900;font-size:14px}.risk small{color:#71717a;font-size:12px}
+        .risk p{margin:6px 0 0;color:#a1a1aa;font-size:12px}.riskScore{color:#fb7185;font-weight:900;font-size:14px}.risk small{color:#a1a1aa;font-size:12px}
         .riskToTask{background:#18181f;border:1px solid #34d39966;color:#34d399;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s}
         .riskToTask:hover{background:#022c22;border-color:#34d399}.riskToTask.saving{opacity:.5;cursor:not-allowed}
         .emptyMsg{margin-top:24px}

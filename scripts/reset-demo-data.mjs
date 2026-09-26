@@ -92,7 +92,8 @@ async function ensureAuthUser(email, displayName, role) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { display_name: displayName, role },
+    user_metadata: { display_name: displayName },
+    app_metadata:  { role },  // handle_new_user reads role/org only from app_metadata
   })
   if (error) throw new Error(`create auth user ${email}: ${error.message}`)
   return data.user
@@ -124,7 +125,8 @@ async function main() {
       email: retainEmail,
       password,
       email_confirm: true,
-      user_metadata: { display_name: 'Demo Owner', role: 'admin' },
+      user_metadata: { display_name: 'Demo Owner' },
+      app_metadata:  { role: 'admin' },
     })
     if (error) throw new Error(`create retained auth user: ${error.message}`)
     retained = data.user

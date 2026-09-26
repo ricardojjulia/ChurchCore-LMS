@@ -70,7 +70,7 @@ export default async function TutorPage({
   const hasPublishedPages = (pages ?? []).length > 0
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-50">
       {/* Breadcrumb */}
       <nav className="border-b border-border bg-white px-6 py-3 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/courses" className="hover:text-primary transition-colors">Courses</Link>

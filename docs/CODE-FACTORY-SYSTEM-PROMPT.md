@@ -97,6 +97,9 @@ There are two document types. Both live in `docs/decisions/`.
 ## Implementation Prompt
 [A complete, self-contained prompt that can be pasted into a new AI session to implement this decision. See Part 5 for the format.]
 
+## Test Surfaces
+[Required (COUNCIL-2026-031). Every page, API method, Server Action and Edge Function this decision adds or changes — by surface id (`npm run test:surface -- --list`) — and the spec file that will cover each: route-table row for pages, `tests/playwright/api/*` for routes, a `tests/playwright/browser/flows/*` journey or unit test for actions. The implementation is not done until `npm run test:surface` and the Browser & API job are green.]
+
 ## Definition of Done
 [Checkboxes. Every item must be green before the commit lands.]
 
@@ -581,10 +584,10 @@ CI suite → production environment approval → production migrations/functions
 - Production migrations run before Edge Functions; a failed migration stops the job.
 - Release runs are serialized. Production verifies its commit is still the latest
   `main`, and the project reference must match a reviewed workflow constant.
-- Vercel automatic deployment from `main` is disabled. The approved production
-  job triggers the project deploy hook after Supabase and verifies the resulting
-  exact-commit Vercel status (created after the hook) and its Vercel target URL
-  before reporting success. Deploy hooks do not create GitHub Deployment records.
+- Vercel automatic deployment from `main` is disabled. After Supabase, the approved
+  production job uploads the checked-out commit with `vercel deploy --prod`; Vercel
+  builds it with the project's (sensitive) environment variables, so the deployed
+  code is exactly the commit that passed CI and was approved (COUNCIL-2026-033).
 - Required production reviewers must be configured in GitHub. The environment name
   alone does not establish an approval gate.
 
@@ -596,7 +599,7 @@ Required settings for `main`:
 - Require pull request before merging
 - Require 1 approving review minimum
 - Dismiss stale reviews on new push
-- Require status checks: `Lint`, `Type Check`, `Unit Tests`, `Build`
+- Require status checks: `Lint`, `Type Check`, `Unit Tests`, `Build`, `Test Surface`, `E2E Tests`, `Browser & API`
 - Require branches to be up to date before merging
 - No force pushes
 - No deletions
@@ -616,7 +619,7 @@ Required settings for `main`:
 **`production` environment:**
 - Required reviewers: architects team
 - Deployment branches: `main` only
-- Secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` with access to production, `VERCEL_DEPLOY_HOOK_URL`; optional `DEPLOY_WEBHOOK_URL`
+- Secrets: `SUPABASE_PROJECT_REF`, `SUPABASE_ACCESS_TOKEN` with access to production, `VERCEL_TOKEN`; optional `DEPLOY_WEBHOOK_URL`
 
 This project runs without a staging environment ([ADR-2026-011](decisions/ADR-2026-011.md)). If one is added later, it must be a separate, fully isolated infrastructure instance: never share a database with production, and never use a schema prefix as a substitute for project isolation.
 
@@ -632,7 +635,7 @@ This project runs without a staging environment ([ADR-2026-011](decisions/ADR-20
 | `TEST_USER_PASSWORD` | Shared password for seed test users |
 | `SUPABASE_ACCESS_TOKEN` | Personal access token configured separately in each deployment environment with access to that environment's project |
 | `SUPABASE_PROJECT_REF` | Production Supabase project ref |
-| `VERCEL_DEPLOY_HOOK_URL` | Vercel `main` production deploy hook URL (production environment only) |
+| `VERCEL_TOKEN` | Vercel access token scoped to the ChurchCore team (production environment only) |
 | `DEPLOY_WEBHOOK_URL` | Slack/Discord webhook (optional, skipped if absent) |
 | `CRON_SECRET` | Bearer token for cron route authorization |
 | `OPENAI_API_KEY` | OpenAI API key (server-side only, AI features) |

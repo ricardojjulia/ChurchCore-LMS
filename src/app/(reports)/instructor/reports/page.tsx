@@ -132,7 +132,7 @@ export default async function InstructorReportsPage({
             </div>
             <p className="text-2xl font-bold text-slate-950">{completionRate}%</p>
           </div>
-          <TremorProgressBar value={completionRate} className="mt-4" />
+          <TremorProgressBar value={completionRate} className="mt-4" label="Course completion rate" />
         </section>
 
         <div className="mt-8 grid gap-8 xl:grid-cols-2">

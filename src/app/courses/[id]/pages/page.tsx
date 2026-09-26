@@ -66,14 +66,14 @@ export default async function CourseMaterialsPage({
 
   const EMBED_BADGE: Record<string, { label: string; className: string }> = {
     complete:   { label: 'AI Ready',  className: 'text-violet-700 bg-violet-50 border-violet-200' },
-    pending:    { label: 'Indexing',  className: 'text-slate-500 bg-slate-100 border-slate-200' },
-    processing: { label: 'Indexing',  className: 'text-slate-500 bg-slate-100 border-slate-200' },
-    stale:      { label: 'Stale',     className: 'text-slate-500 bg-slate-100 border-slate-200' },
+    pending:    { label: 'Indexing',  className: 'text-slate-700 bg-slate-100 border-slate-200' },
+    processing: { label: 'Indexing',  className: 'text-slate-700 bg-slate-100 border-slate-200' },
+    stale:      { label: 'Stale',     className: 'text-slate-700 bg-slate-100 border-slate-200' },
     failed:     { label: 'Index failed', className: 'text-rose-600 bg-rose-50 border-rose-200' },
   }
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">

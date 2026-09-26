@@ -38,7 +38,7 @@ export default function DemoLoginButton({
   if (loginUrl) {
     return (
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-slate-500 italic">Paste in a private/incognito window →</span>
+        <span className="text-xs text-slate-400 italic">Paste in a private/incognito window →</span>
         <button
           type="button"
           onClick={handleCopy}
@@ -49,7 +49,7 @@ export default function DemoLoginButton({
         <button
           type="button"
           onClick={() => setLoginUrl(null)}
-          className="text-xs text-slate-600 hover:text-slate-400"
+          className="text-xs text-slate-400 hover:text-slate-400"
           aria-label="Dismiss"
         >
           ✕

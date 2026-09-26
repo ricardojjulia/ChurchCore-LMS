@@ -19,6 +19,8 @@ export default defineConfig({
       '**/dist/**',
       'tests/e2e/**',
       'src/tests/e2e/**',
+      // Playwright browser/API suite — run with npm run test:browser / test:api
+      'tests/playwright/**',
     ],
 
     coverage: {

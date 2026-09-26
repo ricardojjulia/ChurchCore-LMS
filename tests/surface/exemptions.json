@@ -1,0 +1,8 @@
+[
+  {
+    "surface": "action:cohorts.updateCohort",
+    "reason": "Exported Server Action with no UI caller: the cohort detail page has no edit form. Add the edit UI with a flow test, or remove the export.",
+    "owner": "ricardojjulia",
+    "expires": "2026-11-20"
+  }
+]

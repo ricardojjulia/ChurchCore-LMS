@@ -17,7 +17,7 @@ export default function BlockRenderer({ block }: { block: CourseBlock }) {
       </div>
       <div className="flex items-center gap-2">
         {block.gamification?.base_xp_reward ? (
-          <span className="text-xs text-indigo-500 font-bold bg-indigo-50 px-2 py-1 rounded border border-indigo-100">
+          <span className="text-xs text-indigo-700 font-bold bg-indigo-50 px-2 py-1 rounded border border-indigo-100">
             +{block.gamification.base_xp_reward} XP
           </span>
         ) : null}

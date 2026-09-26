@@ -3,9 +3,10 @@ import { createServiceClient } from '@/utils/supabase/service'
 export default async function AuditLogPage({
   searchParams,
 }: {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string }>
 }) {
-  const page    = Math.max(1, Number(searchParams.page ?? 1))
+  const { page: pageParam } = await searchParams
+  const page    = Math.max(1, Number(pageParam ?? 1) || 1)
   const perPage = 50
   const from    = (page - 1) * perPage
 
@@ -33,12 +34,12 @@ export default async function AuditLogPage({
     <>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Audit Log</h1>
-        <span className="text-sm text-slate-500">{count ?? 0} entries</span>
+        <span className="text-sm text-slate-400">{count ?? 0} entries</span>
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-md border border-slate-800">
         <table className="w-full text-sm">
-          <thead className="bg-slate-900 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
+          <thead className="bg-slate-900 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
             <tr>
               {['Time', 'Actor', 'Action', 'Tenant', 'Payload'].map(h => (
                 <th key={h} className="px-4 py-3">{h}</th>
@@ -48,14 +49,14 @@ export default async function AuditLogPage({
           <tbody className="divide-y divide-slate-800 bg-slate-950">
             {(entries ?? []).length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-600">
+                <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
                   No audit entries yet.
                 </td>
               </tr>
             )}
             {(entries ?? []).map(e => (
               <tr key={e.id} className="hover:bg-slate-900 transition-colors">
-                <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">
+                <td className="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">
                   {new Date(e.created_at).toLocaleString()}
                 </td>
                 <td className="px-4 py-3 text-slate-300">
@@ -69,7 +70,7 @@ export default async function AuditLogPage({
                 </td>
                 <td className="px-4 py-3 max-w-xs">
                   {e.payload ? (
-                    <span className="block truncate font-mono text-xs text-slate-600">
+                    <span className="block truncate font-mono text-xs text-slate-400">
                       {JSON.stringify(e.payload)}
                     </span>
                   ) : '—'}
@@ -91,7 +92,7 @@ export default async function AuditLogPage({
               Previous
             </a>
           )}
-          <span className="text-sm text-slate-600">Page {page} of {totalPages}</span>
+          <span className="text-sm text-slate-400">Page {page} of {totalPages}</span>
           {page < totalPages && (
             <a
               href={`/platform/audit?page=${page + 1}`}

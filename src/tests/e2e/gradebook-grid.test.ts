@@ -55,6 +55,9 @@
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { covers } from '../covers'
+
+covers('action:learning.applyGradeSideEffects')
 
 // ── Env-var bootstrap ─────────────────────────────────────────────────────────
 

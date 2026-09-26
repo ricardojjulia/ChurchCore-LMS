@@ -8,6 +8,7 @@
 //   SUPABASE_SERVICE_ROLE_KEY — service role (writes embeddings table)
 
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { rejectUnlessServiceRole } from '../_shared/cron-auth.ts'
 
 const MODEL         = 'text-embedding-3-small'
 const MAX_CHUNK_CHARS = 1200
@@ -116,6 +117,10 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 })
   }
+
+  // Spends OpenAI credit with the service role: backend callers only.
+  const denied = rejectUnlessServiceRole(req)
+  if (denied) return denied
 
   // Parse payload BEFORE env-var checks so we can mark an existing job failed
   // if OPENAI_API_KEY is missing — prevents recovery jobs from hanging in 'pending'.

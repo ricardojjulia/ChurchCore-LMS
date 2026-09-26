@@ -28,6 +28,8 @@ const TEST_USERS = [
   'admin-b@test.churchcore.dev',
   'student-b@test.churchcore.dev',
   'guardian@test.churchcore.dev',
+  'manager@test.churchcore.dev',
+  'platform@test.churchcore.dev',
 ]
 
 const { data: listed, error: listError } = await supabase.auth.admin.listUsers({

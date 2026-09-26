@@ -37,7 +37,7 @@ export default async function GuardianPage() {
   const studentList = (students as StudentCard[] | null) ?? []
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t('guardian.list.heading')}</h1>
@@ -96,7 +96,7 @@ export default async function GuardianPage() {
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('guardian.list.coursesStat')}</p>
                   </div>
                   <div className="bg-slate-50 rounded-lg py-2">
-                    <p className="text-lg font-extrabold text-emerald-600">{s.completed_count}</p>
+                    <p className="text-lg font-extrabold text-emerald-700">{s.completed_count}</p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('guardian.list.doneStat')}</p>
                   </div>
                 </div>

@@ -1,6 +1,9 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { sendMessage, deleteMessage, markThreadRead, getOrCreateDirectThread } from './messages'
+import { covers } from '../../tests/covers'
+
+covers('action:messages.sendMessage', 'action:messages.deleteMessage', 'action:messages.markThreadRead', 'action:messages.getOrCreateDirectThread')
 
 // ── Service client mock (used by sendMessage and getOrCreateDirectThread) ─────
 vi.mock('@/utils/supabase/service', () => ({
@@ -116,7 +119,7 @@ describe('deleteMessage', () => {
     expect(result).toEqual({})
   })
 
-  it('surfaces DB error message on update failure', async () => {
+  it('returns a generic error (never the raw DB message) on update failure', async () => {
     vi.mocked(createClient).mockResolvedValueOnce(
       authClient({
         messages: { data: null, error: { message: 'not found or not owned' } },
@@ -124,7 +127,7 @@ describe('deleteMessage', () => {
     )
 
     const result = await deleteMessage('msg-1')
-    expect(result).toEqual({ error: 'not found or not owned' })
+    expect(result).toEqual({ error: 'Could not complete that. Please try again.' })
   })
 })
 

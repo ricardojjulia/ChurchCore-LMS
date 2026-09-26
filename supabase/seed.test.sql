@@ -53,6 +53,25 @@
 -- Delete in FK dependency order.
 -- Never touch auth.users — GoTrue users are managed outside this file.
 
+-- Rows the full suite (seed.suite.sql + Playwright flows) creates that
+-- reference profiles without ON DELETE CASCADE — clear them first so the
+-- profile deletes below can run on a re-seed.
+-- Throwaway users the Playwright flows create (suite-*@test.churchcore.dev);
+-- a crashed run can leave them behind, and they pin the test orgs.
+DELETE FROM public.profile_roles
+  WHERE auth_id IN (SELECT id FROM auth.users WHERE email LIKE 'suite-%@test.churchcore.dev');
+DELETE FROM public.profiles WHERE email LIKE 'suite-%@test.churchcore.dev';
+DELETE FROM auth.users WHERE email LIKE 'suite-%@test.churchcore.dev';
+DELETE FROM public.cohort_section_enrollments
+  WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
+DELETE FROM public.enrollment_jobs
+  WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
+DELETE FROM public.question_banks
+  WHERE org_id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');
+DELETE FROM public.user_audit_log
+  WHERE actor_uid::text LIKE '00000000-0000-0000-0002-%' OR target_uid::text LIKE '00000000-0000-0000-0002-%';
+DELETE FROM public.report_definitions
+  WHERE created_by::text LIKE '00000000-0000-0000-0002-%';
 DELETE FROM public.course_certificates
   WHERE user_id IN (
     '00000000-0000-0000-0002-000000000003',
@@ -89,13 +108,15 @@ DELETE FROM public.profile_roles
     SELECT id FROM auth.users
     WHERE email IN (
       'admin@test.churchcore.dev','teacher@test.churchcore.dev','student@test.churchcore.dev',
-      'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev'
+      'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev',
+      'manager@test.churchcore.dev','platform@test.churchcore.dev'
     )
   );
 DELETE FROM public.profiles
   WHERE email IN (
     'admin@test.churchcore.dev','teacher@test.churchcore.dev','student@test.churchcore.dev',
-    'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev'
+    'admin-b@test.churchcore.dev','student-b@test.churchcore.dev','guardian@test.churchcore.dev',
+    'manager@test.churchcore.dev','platform@test.churchcore.dev'
   );
 DELETE FROM public.organizations
   WHERE id IN ('00000000-0000-0000-0010-000000000001','00000000-0000-0000-0010-000000000002');

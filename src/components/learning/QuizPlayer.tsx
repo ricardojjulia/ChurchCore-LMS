@@ -490,7 +490,7 @@ export default function QuizPlayer({
                       {pair.left}
                     </span>
                     <span className="text-muted-foreground text-xs shrink-0">→</span>
-                    <select
+                    <select aria-label={t('learning.quiz.matchForTitle', { left: pair.left })}
                       value={selected}
                       onChange={(e) => setMatchedPair(q.id, pair.id, e.target.value)}
                       title={t('learning.quiz.matchForTitle', { left: pair.left })}

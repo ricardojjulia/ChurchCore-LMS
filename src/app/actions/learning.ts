@@ -4,55 +4,16 @@ import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { enrollCore } from '@/lib/enrollment-core'
 import { revalidatePath } from 'next/cache'
+import { isDeliverableAddress } from '@/lib/email-deliverable'
 
 // ── Helper: award XP via RPC ─────────────────────────────────────────────────
+// award_xp is service-role only (COUNCIL-2026-033); amounts are fixed here on
+// the server, never taken from the client.
 
-async function tryAwardXp(supabase: Awaited<ReturnType<typeof createClient>>, uid: string, amount: number) {
+async function tryAwardXp(uid: string, amount: number) {
   if (amount <= 0) return null
-  const { data } = await supabase.rpc('award_xp', { p_uid: uid, p_amount: amount })
+  const { data } = await createServiceClient().rpc('award_xp', { p_uid: uid, p_amount: amount })
   return data as { new_xp: number; new_level: number; leveled_up: boolean; prev_level: number } | null
-}
-
-// ── Record engagement event (log + streak + XP) ──────────────────────────────
-
-type EngagementResult = { error?: string; xpEarned?: number; leveledUp?: boolean; currentStreak?: number; newXp?: number }
-
-export async function recordEngagement({
-  eventType,
-  sourceType,
-  sourceId,
-  xpAmount = 0,
-}: {
-  eventType: 'block_completion' | 'quiz_pass' | 'discussion_post' | 'daily_login' | 'course_completion' | 'manual'
-  sourceType?: string
-  sourceId?: string
-  xpAmount?: number
-}): Promise<EngagementResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
-
-  const { data, error } = await supabase.rpc('record_engagement_event', {
-    p_event_type:  eventType,
-    p_source_type: sourceType ?? null,
-    p_source_id:   sourceId   ?? null,
-    p_xp:          xpAmount,
-    p_metadata:    {},
-  })
-
-  if (error) return { error: 'Engagement tracking unavailable' }
-
-  const result = data as {
-    inserted: boolean; xp_earned: number; new_xp: number
-    new_level: number; leveled_up: boolean; current_streak: number
-  } | null
-
-  return {
-    xpEarned:      result?.xp_earned       ?? 0,
-    leveledUp:     result?.leveled_up       ?? false,
-    currentStreak: result?.current_streak   ?? 0,
-    newXp:         result?.new_xp           ?? 0,
-  }
 }
 
 // ── Enroll self in a course ───────────────────────────────────────────────────
@@ -80,7 +41,7 @@ export async function enrollSelf(
   }
 
   // Enrollment confirmation email (optional — skipped if RESEND_API_KEY not set)
-  if (process.env.RESEND_API_KEY && profile.email) {
+  if (process.env.RESEND_API_KEY && isDeliverableAddress(profile.email)) {
     try {
       const { Resend } = await import('resend')
       const resend    = new Resend(process.env.RESEND_API_KEY)
@@ -115,11 +76,15 @@ export async function enrollSelf(
 // ── Mark a content block as viewed + update enrollment progress + award XP ───
 
 export async function markBlockViewed(
-  courseId:    string,
-  blockId:     string,
-  totalBlocks: number,
-  viewedCount: number,
-  blockXp:     number = 0,
+  courseId:     string,
+  blockId:      string,
+  // Kept for existing callers; progress is now derived server-side from
+  // recorded block views (sync_my_course_progress), not from client counts.
+  _totalBlocks: number,
+  _viewedCount: number,
+  // Ignored: XP is derived in the database (COUNCIL-2026-033). Kept so
+  // existing callers need no change.
+  _blockXp:     number = 0,
 ): Promise<{ justCompleted: boolean; xpAwarded: number }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -132,38 +97,13 @@ export async function markBlockViewed(
     .single()
   if (!profile) return { justCompleted: false, xpAwarded: 0 }
 
-  const newProgress = totalBlocks > 0 ? Math.round((viewedCount / totalBlocks) * 100) : 0
-
-  // Never decrease progress (student may navigate back to review earlier blocks)
-  const { data: existing } = await supabase
-    .from('enrollments')
-    .select('progress_percent, transit_status')
-    .eq('user_id',   profile.uid)
-    .eq('course_id', courseId)
-    .single()
-
-  const finalProgress  = Math.max(newProgress, Number(existing?.progress_percent ?? 0))
-  const justCompleted  = finalProgress >= 100 && existing?.transit_status !== 'completed'
-  const transitStatus  = finalProgress >= 100 ? 'completed' : 'in_progress'
-
-  await supabase
-    .from('enrollments')
-    .update({
-      last_accessed_at: new Date().toISOString(),
-      progress_percent: finalProgress,
-      transit_status:   transitStatus,
-      ...(justCompleted ? { completed_at: new Date().toISOString() } : {}),
-    })
-    .eq('user_id',   profile.uid)
-    .eq('course_id', courseId)
-
-  // Record engagement event — handles XP award + streak + deduplication atomically
+  // Record the view — handles XP award + streak + deduplication atomically.
+  // This event is what server-side progress is computed from.
   let xpAwarded = 0
   const engResult = await supabase.rpc('record_engagement_event', {
     p_event_type:  'block_completion',
     p_source_type: 'block',
     p_source_id:   blockId,
-    p_xp:          blockXp > 0 ? blockXp : 10,
     p_metadata:    {},
   })
   if (!engResult.error) {
@@ -171,16 +111,21 @@ export async function markBlockViewed(
     xpAwarded = eng?.xp_earned ?? 0
   }
 
+  // Students have no UPDATE policy on enrollments (deliberately), so progress
+  // is persisted by a SECURITY DEFINER function scoped to the caller's own row.
+  const { data: progressRows } = await supabase.rpc('sync_my_course_progress', { p_course_id: courseId })
+  const progress = (progressRows as Array<{ progress_percent: number; just_completed: boolean }> | null)?.[0]
+  const justCompleted = progress?.just_completed ?? false
+
   // On course completion: bonus 100 XP + issue certificate (only on first completion)
   if (justCompleted) {
-    await supabase.rpc('record_engagement_event', {
+    const completion = await supabase.rpc('record_engagement_event', {
       p_event_type:  'course_completion',
       p_source_type: 'course',
       p_source_id:   courseId,
-      p_xp:          100,
       p_metadata:    {},
     })
-    xpAwarded += 100
+    xpAwarded += (completion.data as { xp_earned?: number } | null)?.xp_earned ?? 0
 
     const { data: certData } = await supabase.rpc('issue_certificate', {
       p_uid:       profile.uid,
@@ -189,7 +134,7 @@ export async function markBlockViewed(
     const cert = certData as { certificate_no?: string; letter_grade?: string } | null
 
     // Certificate issued email (optional — skipped if RESEND_API_KEY not set)
-    if (process.env.RESEND_API_KEY && profile.email) {
+    if (process.env.RESEND_API_KEY && isDeliverableAddress(profile.email)) {
       try {
         const { data: courseRow } = await supabase
           .from('courses')
@@ -265,7 +210,7 @@ export async function markVideoWatched(blockId: string): Promise<{ error?: strin
     content:      { watched: true },
     submitted_at: new Date().toISOString(),
   })
-  return error ? { error: error.message } : {}
+  return error ? { error: 'Could not save your progress. Please try again.' } : {}
 }
 
 // ── Submit an assignment block ────────────────────────────────────────────────
@@ -335,10 +280,11 @@ export async function submitAssignment(
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save your submission. Please try again.' }
 
+  // First submission only: resubmitting must not farm XP.
   const XP_ASSIGNMENT_SUBMIT = 10
-  await tryAwardXp(supabase, profile.uid, XP_ASSIGNMENT_SUBMIT)
+  if (attemptNumber === 1) await tryAwardXp(profile.uid, XP_ASSIGNMENT_SUBMIT)
 
   // Mark enrollment as in_progress if still not_started
   const { data: block } = await supabase
@@ -383,7 +329,7 @@ export async function submitQuiz(
   answers:   QuizAnswer[],
   questions: QuizQuestion[],
   maxScore:  number,
-  blockXp:   number = 0,
+  _blockXp:  number = 0, // ignored: XP is derived in the database
 ): Promise<{ error?: string; gradePct?: number; earnedScore?: number; xpAwarded?: number }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -468,18 +414,15 @@ export async function submitQuiz(
       graded_at:      new Date().toISOString(),
     })
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save your submission. Please try again.' }
 
-  // Record quiz engagement event — handles XP award + streak + deduplication atomically
-  const quizXp = blockXp > 0
-    ? Math.max(Math.round(blockXp * (gradePct / 100)), Math.round(blockXp * 0.5))
-    : 25
+  // Record quiz engagement event — XP is derived in the database from the
+  // block's base_xp_reward and this submission's score (COUNCIL-2026-033).
   let xpAwarded = 0
   const quizEng = await supabase.rpc('record_engagement_event', {
     p_event_type:  'quiz_pass',
     p_source_type: 'quiz',
     p_source_id:   blockId,
-    p_xp:          quizXp,
     p_metadata:    { grade_pct: gradePct },
   })
   if (!quizEng.error) {
@@ -533,7 +476,7 @@ export async function applyGradeSideEffects(
         .eq('uid', sub.user_id)
         .single()
 
-      if (studentProfile?.email) {
+      if (isDeliverableAddress(studentProfile?.email)) {
         const { Resend } = await import('resend')
         const resend = new Resend(process.env.RESEND_API_KEY)
         const pct = sub.max_score ? Math.round((score / sub.max_score) * 100) : null
@@ -659,7 +602,7 @@ export async function gradeSubmission(
     })
     .eq('id', submissionId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: 'Could not save the grade. Please try again.' }
 
   await applyGradeSideEffects(sub, score, feedback)
 

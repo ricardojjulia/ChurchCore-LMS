@@ -42,7 +42,7 @@ export default async function PageEditorRoute({
     .single()
 
   return (
-    <main id="main-content" className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white">
       <div className="border-b border-border px-4 py-2 flex items-center gap-2 text-xs text-muted-foreground bg-slate-50">
         <span>{course?.title ?? 'Course'}</span>
         <span>/</span>

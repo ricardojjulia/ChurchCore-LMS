@@ -8,7 +8,9 @@ import type {
 } from '@/types/reporting'
 import { createServerClient } from '@/lib/supabase/server'
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+// Any canonical 8-4-4-4-12 hex UUID — what Postgres accepts. The RFC
+// version/variant check rejected valid IDs (e.g. UUIDv7, deterministic seeds).
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function assertUUID(value: string, label: string): void {
   if (!UUID_RE.test(value)) {

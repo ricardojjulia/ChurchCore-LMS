@@ -311,7 +311,7 @@ export function OneRosterImportClient() {
         <div className="rounded-lg border border-border bg-white p-4">
           <div className="flex items-center gap-2">
             {result.valid ? (
-              <CheckCircle2 className="h-5 w-5 text-emerald-600" aria-hidden="true" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-700" aria-hidden="true" />
             ) : (
               <AlertCircle className="h-5 w-5 text-rose-600" aria-hidden="true" />
             )}

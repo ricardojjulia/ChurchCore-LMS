@@ -1,5 +1,6 @@
 import { serve }         from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient }  from 'https://esm.sh/@supabase/supabase-js@2'
+import { rejectUnlessCron } from '../_shared/cron-auth.ts'
 
 // Authenticated via CRON_SECRET header — called nightly by Supabase CRON or external scheduler.
 // Hard-deletes orgs that have been soft-deleted for more than 30 days.
@@ -8,10 +9,8 @@ import { createClient }  from 'https://esm.sh/@supabase/supabase-js@2'
 const RETENTION_DAYS = 30
 
 serve(async (req: Request) => {
-  const cronSecret = Deno.env.get('CRON_SECRET')
-  if (cronSecret && req.headers.get('x-cron-secret') !== cronSecret) {
-    return new Response('Unauthorized', { status: 401 })
-  }
+  const denied = rejectUnlessCron(req)
+  if (denied) return denied
 
   const supabaseUrl    = Deno.env.get('SUPABASE_URL')!
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!

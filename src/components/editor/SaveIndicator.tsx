@@ -47,7 +47,7 @@ export default function SaveIndicator({
   }
 
   return (
-    <span className="text-xs text-emerald-600 font-medium" key={tick}>
+    <span className="text-xs text-emerald-700 font-medium" key={tick}>
       ✓ Saved {lastSaved ? timeAgo(lastSaved) : ''}
     </span>
   )

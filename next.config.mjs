@@ -5,11 +5,14 @@ import createNextIntlPlugin from 'next-intl/plugin'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
-const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-const SUPABASE_HOST = SUPABASE_URL ? new URL(SUPABASE_URL).hostname : '*.supabase.co'
-const SUPABASE_WS   = SUPABASE_URL
-  ? SUPABASE_URL.replace('https://', 'wss://')
-  : 'wss://*.supabase.co'
+const SUPABASE_URL    = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+const SUPABASE_HOST   = SUPABASE_URL ? new URL(SUPABASE_URL).hostname : '*.supabase.co'
+// Origin keeps the port (local stacks serve on :54321); the realtime socket
+// uses the matching ws/wss scheme. Replacing only 'https://' left an http://
+// origin in place of the websocket, so realtime was CSP-blocked on any
+// non-*.supabase.co Supabase URL.
+const SUPABASE_ORIGIN = SUPABASE_URL ? new URL(SUPABASE_URL).origin : 'https://*.supabase.co'
+const SUPABASE_WS     = SUPABASE_URL ? SUPABASE_ORIGIN.replace(/^http/, 'ws') : 'wss://*.supabase.co'
 
 const STRIPE_HOSTS = 'https://js.stripe.com https://checkout.stripe.com'
 const isDev = process.env.NODE_ENV === 'development'
@@ -20,7 +23,7 @@ const ContentSecurityPolicy = [
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://challenges.cloudflare.com ${STRIPE_HOSTS}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: https://${SUPABASE_HOST} https://*.supabase.co`,
-  `connect-src 'self' https://${SUPABASE_HOST} ${SUPABASE_WS} https://*.supabase.co wss://*.supabase.co https://api.openai.com https://challenges.cloudflare.com`,
+  `connect-src 'self' ${SUPABASE_ORIGIN} ${SUPABASE_WS} https://*.supabase.co wss://*.supabase.co https://api.openai.com https://challenges.cloudflare.com`,
   "frame-src youtube.com www.youtube.com player.vimeo.com https://challenges.cloudflare.com https://checkout.stripe.com",
   "font-src 'self'",
   "object-src 'none'",

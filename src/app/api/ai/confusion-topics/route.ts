@@ -174,6 +174,6 @@ confused about or asking questions on that this course content doesn't cover wel
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error'
-    return Response.json({ error: `Analysis failed: ${msg}` }, { status: 502 })
+    return Response.json({ error: 'Analysis failed' }, { status: 502 })
   }
 }

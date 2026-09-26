@@ -51,7 +51,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
   return (
     <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500 mb-6">
           <Link href="/courses" className="hover:text-indigo-600 transition-colors font-medium">Courses</Link>
           <span>/</span>
           <Link href={`/courses/${id}`} className="hover:text-indigo-600 transition-colors font-medium truncate">{course.title}</Link>

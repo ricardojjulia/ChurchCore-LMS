@@ -11,7 +11,7 @@ type Scope    = 'global' | 'course' | 'role'
 
 interface Course { id: string; title: string }
 
-interface Props { courses: Course[] }
+interface Props { courses: Course[]; canPostOrgWide: boolean }
 
 const PRIORITIES: { value: Priority; label: string; className: string }[] = [
   { value: 'low',    label: 'Low',    className: 'border-slate-200 text-slate-600 bg-slate-50' },
@@ -20,12 +20,13 @@ const PRIORITIES: { value: Priority; label: string; className: string }[] = [
   { value: 'urgent', label: 'Urgent', className: 'border-rose-200 text-rose-700 bg-rose-50' },
 ]
 
-export default function NewAnnouncementForm({ courses }: Props) {
+export default function NewAnnouncementForm({ courses, canPostOrgWide }: Props) {
   const router      = useRouter()
   const [title, setTitle]             = useState('')
   const [body, setBody]               = useState('')
   const [priority, setPriority]       = useState<Priority>('normal')
-  const [scope, setScope]             = useState<Scope>('global')
+  // Non-admins can only post to a course, so don't preselect an audience they can't use.
+  const [scope, setScope]             = useState<Scope>(canPostOrgWide ? 'global' : 'course')
   const [courseId, setCourseId]       = useState('')
   const [scheduled, setScheduled]     = useState(false)
   const [scheduledFor, setScheduledFor] = useState('')
@@ -64,7 +65,7 @@ export default function NewAnnouncementForm({ courses }: Props) {
             <label className="block text-sm font-semibold text-slate-700 mb-1">
               Title <span className="text-destructive">*</span>
             </label>
-            <input
+            <input aria-label="Title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -79,7 +80,7 @@ export default function NewAnnouncementForm({ courses }: Props) {
             <label className="block text-sm font-semibold text-slate-700 mb-1">
               Message <span className="text-destructive">*</span>
             </label>
-            <textarea
+            <textarea aria-label="Message"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={6}

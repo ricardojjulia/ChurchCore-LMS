@@ -99,7 +99,7 @@ export default function GroupsPanel({ sectionId, initialGroups, isAdmin }: Props
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-1" htmlFor="group_name">
-                  Name <span className="text-rose-500">*</span>
+                  Name <span className="text-rose-700">*</span>
                 </label>
                 <input id="group_name" name="group_name" required placeholder="e.g. Team Alpha" className="input w-full" />
               </div>
@@ -216,7 +216,7 @@ export default function GroupsPanel({ sectionId, initialGroups, isAdmin }: Props
                             <button
                               onClick={() => handleRemoveMember(g.id, m.user_id)}
                               disabled={pending}
-                              className="text-xs text-rose-500 hover:text-rose-700 font-semibold disabled:opacity-40"
+                              className="text-xs text-rose-700 hover:text-rose-700 font-semibold disabled:opacity-40"
                             >
                               Remove
                             </button>

@@ -121,7 +121,7 @@ export default async function CoursesPage({
   const groups = groupByTrack(filtered)
 
   return (
-    <main id="main-content" className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -206,7 +206,7 @@ export default async function CoursesPage({
                       <div className="flex flex-col gap-1 w-full">
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span className={
-                            enrollment.transit_status === 'completed' ? 'text-emerald-600 font-semibold'
+                            enrollment.transit_status === 'completed' ? 'text-emerald-700 font-semibold'
                             : enrollment.transit_status === 'in_progress' ? 'text-sky-600 font-semibold'
                             : 'text-slate-500'
                           }>

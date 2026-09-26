@@ -62,7 +62,7 @@ export default async function FeedbackPage({
     <>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Feedback Triage</h1>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-400">
           {openCount} open · {doneCount} done
         </p>
       </div>
@@ -93,7 +93,7 @@ export default async function FeedbackPage({
       {/* Feedback table + drawer */}
       <div className="mt-6">
         {rows.length === 0 ? (
-          <div className="rounded-md border border-slate-800 bg-slate-950 py-16 text-center text-slate-600">
+          <div className="rounded-md border border-slate-800 bg-slate-950 py-16 text-center text-slate-400">
             No feedback entries in this view.
           </div>
         ) : (

@@ -107,13 +107,13 @@ export default function CalendarView({
       <div className="flex-1 bg-white border border-border rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+          <button onClick={prevMonth} aria-label="Previous month" className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
             <ChevronLeft className="w-4 h-4 text-muted-foreground" />
           </button>
           <h2 className="font-bold text-foreground">
             {MONTHS[month]} {year}
           </h2>
-          <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+          <button onClick={nextMonth} aria-label="Next month" className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>

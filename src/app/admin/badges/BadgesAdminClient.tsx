@@ -133,7 +133,7 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1">Title</label>
-              <input
+              <input aria-label="Title"
                 value={form.title}
                 onChange={(e) => setForm((f) => f && { ...f, title: e.target.value })}
                 placeholder="e.g. First Steps"
@@ -144,7 +144,7 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
 
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1">Description</label>
-              <textarea
+              <textarea aria-label="Description"
                 value={form.description}
                 onChange={(e) => setForm((f) => f && { ...f, description: e.target.value })}
                 placeholder="What this badge represents…"
@@ -155,7 +155,7 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
 
             <div>
               <label className="block text-sm font-semibold text-foreground mb-1">Auto-award Trigger</label>
-              <select
+              <select aria-label="Auto-award Trigger"
                 value={form.triggerType}
                 onChange={(e) => setForm((f) => f && { ...f, triggerType: e.target.value as TriggerType, threshold: '' })}
                 className="input w-full"
@@ -172,7 +172,7 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
                 <label className="block text-sm font-semibold text-foreground mb-1">
                   Threshold ({TRIGGER_UNIT[form.triggerType]})
                 </label>
-                <input
+                <input aria-label="Threshold"
                   type="number"
                   min="1"
                   value={form.threshold}
@@ -246,7 +246,7 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
                     Edit
                   </button>
                   <button type="button" onClick={() => handleDelete(b.id)}
-                    className="text-xs font-semibold text-rose-400 hover:text-rose-600 transition-colors">
+                    className="text-xs font-semibold text-rose-700 hover:text-rose-800 transition-colors">
                     Delete
                   </button>
                 </div>
