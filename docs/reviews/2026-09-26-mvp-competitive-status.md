@@ -1,6 +1,6 @@
 # ChurchCore LMS — MVP and Competitive Status
 
-**Date:** 2026-09-26 · **Version in production:** 0.36.1 (release 36205642654) · **Previous assessment:** Council Review 3, 2026-09-19, v0.28 (MVP score 83/100)
+**Date:** 2026-09-26 · **Version in production:** 0.36.1 (release 36205642654) · **Previous assessment:** Council Review 3, 2026-09-19, v0.28.1 (MVP score 83/100)
 
 ## Summary
 
@@ -15,7 +15,7 @@ The larger change since the last review is **how much of the product is proven t
 - PDF certificates and reports
 - Certificate verification
 
-All of that is fixed, deployed and covered by 768 automated browser and API tests that now gate every release. The previous 83/100 score assumed those features worked; they did not.
+All of that is fixed, deployed and covered by an automated browser and API suite (768 test cases, as reported by the Playwright runner) that now gates every release. The previous 83/100 score assumed those features worked; they did not.
 
 The remaining gap is **commercial, not technical.** Production has two organizations, 2 users active in the last 30 days, no Stripe customers, and no feedback in the triage queue. No tenant can sign itself up. App-sent email is not configured in production yet.
 
@@ -51,9 +51,9 @@ The remaining gap is **commercial, not technical.** Production has two organizat
 
 This is now a real differentiator: few products in this category, church-focused ones especially, are held to it.
 
-- **Every release is gated** by unit tests (488), database tests (pgTAP), 768 browser/API/mobile tests, CodeQL, and a rule that every page, API route, action and function ships with a test.
+- **Every release is gated** by unit tests (488, Vitest runner count), database tests (pgTAP), 768 browser/API/mobile test cases (Playwright runner count, which expands each page across 8 roles), CodeQL, and a rule that every page, API route, action and function ships with a test.
 - **Zero tolerated accessibility violations** (WCAG 2 AA, serious and critical) on every page, for every role.
-- **Security issues closed in the last week:**
+- **Security issues closed since 2026-09-19** (plus five dependency advisories in 0.29.1):
   - Self-service privilege escalation to admin
   - An unauthenticated AI proxy
   - Anonymous XP awarding
@@ -83,11 +83,12 @@ The product is running, but it hasn't been used by a real congregation at any sc
 
 ---
 
-## 2. Changes since Council Review 3 (v0.28 → v0.36.1)
+## 2. Changes since Council Review 3 (v0.28.1 → v0.36.1)
 
 | Release | What changed |
 |---|---|
 | 0.29 | Guardian notification retry and dead-letter handling; `stripe_customer_id` was never written (billing portal broken for everyone), now fixed; broken `/auth/login` redirects in 35 files |
+| 0.29.1 | Security: pinned the transitive `fast-uri` dependency, closing 5 high-severity advisories (host confusion / SSRF via URI normalization) |
 | 0.30 | **Auto-enrollment on registration** (the review's #1 adoption blocker); `enrollSelf` had always failed on a database constraint |
 | 0.31 | **Public course catalog and preview**; fixed recursive org access checks that broke every anonymous org query |
 | 0.32 | **Public certificate verification** (broken by a query bug until 0.36.0) |
