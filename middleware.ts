@@ -73,6 +73,8 @@ export async function middleware(request: NextRequest) {
     // The auth code exchange runs before a session exists by definition.
     pathname !== '/callback' &&
     !pathname.startsWith('/join') &&
+    // Public self-serve signup (COUNCIL-2026-034).
+    pathname !== '/start' &&
     // Certificate verification links are shared with third parties
     // (COUNCIL-2026-028) and must open without an account.
     !pathname.startsWith('/verify/') &&

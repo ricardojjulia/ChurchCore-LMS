@@ -33,6 +33,10 @@ export const ROUTES: RouteSpec[] = [
   // ── Public ────────────────────────────────────────────────────────────────
   { surface: covers('page:/'), path: '/', allow: AUTHED, mobile: true },
   { surface: covers('page:/login'), path: '/login', allow: ['anon'], mobile: true },
+  // Self-serve signup (COUNCIL-2026-034): signed-in users are sent to /dashboard.
+  { surface: covers('page:/start'), path: '/start', allow: ['anon'], mobile: true },
+  // Renewal is only for members of a suspended org; everyone in an active org is redirected.
+  { surface: covers('page:/billing/renew'), path: '/billing/renew', allow: [] },
   // Offline fallback is served from the service-worker cache; online it sits behind auth.
   { surface: covers('page:/offline'), path: '/offline', allow: AUTHED },
   { surface: covers('page:/join/[slug]'), path: `/join/${ORG_A_SLUG}`, allow: EVERYONE, mobile: true },

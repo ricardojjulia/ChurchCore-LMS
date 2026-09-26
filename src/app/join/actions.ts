@@ -2,6 +2,7 @@
 
 import { createServiceClient } from '@/utils/supabase/service'
 import { enrollCore } from '@/lib/enrollment-core'
+import { verifyTurnstile } from '@/lib/turnstile'
 
 interface EnrollParams {
   orgId:          string
@@ -19,18 +20,7 @@ export async function verifyAndEnroll({
   turnstileToken,
 }: EnrollParams): Promise<{ error?: string }> {
   // Verify Turnstile token server-side before creating the account
-  const verifyRes = await fetch(
-    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-    {
-      method: 'POST',
-      body: new URLSearchParams({
-        secret:   process.env.TURNSTILE_SECRET_KEY ?? '',
-        response: turnstileToken,
-      }),
-    }
-  )
-  const { success } = (await verifyRes.json()) as { success: boolean }
-  if (!success) return { error: 'Security check failed. Please try again.' }
+  if (!(await verifyTurnstile(turnstileToken))) return { error: 'Security check failed. Please try again.' }
 
   const service = createServiceClient()
 

@@ -11,6 +11,25 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.38.0] — 2026-09-26
+
+Sprint 5, part 2: self-serve signup and trial (COUNCIL-2026-034).
+
+### Added
+
+- **Self-serve signup at `/start`** (English and Spanish): church name, web address, admin name and email, protected by Turnstile and rate limits, with a disposable-email blocklist. A verification email creates the church, a 14-day trial and the admin account only after the link is clicked. The admin is signed straight into onboarding. Ships behind `SELF_SERVE_SIGNUP_ENABLED` (off) until production email is configured.
+- **Trial banner** on the admin dashboard, and **`/billing/renew`**: when a trial ends, admins can still choose a plan and pay, and other members see a clear "paused" notice.
+- A "New church? Start a free trial" link on the sign-in page.
+
+### Security
+
+- **Checkout hardening.** An org admin could start a checkout for another organization (writing a Stripe customer onto it), send Stripe's return to any external URL, and pick any Stripe price. Now: own organization only, same-site return URLs, and only the plans we sell. Stripe failures return a clean 502.
+- Signup never reveals whether an email already has an account.
+
+### Fixed
+
+- **Paying didn't restore access, and failed payments didn't pause it.** Organization status changes now update every member's access automatically, whether they come from the Stripe webhook, trial expiry or the platform console.
+- Platform tenant creation and self-serve signup share one provisioning path.
 ## [0.37.0] — 2026-09-26
 
 Sprint 5, part 1: backlog close-out (COUNCIL-2026-044).

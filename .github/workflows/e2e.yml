@@ -141,6 +141,8 @@ jobs:
       OPENAI_API_KEY: sk-suite-invalid
       ANTHROPIC_API_KEY: suite-invalid
       CRON_SECRET: suite-cron-secret
+      SELF_SERVE_SIGNUP_ENABLED: 'true'
+      STRIPE_PRICE_STARTER: price_suite_starter
 
     steps:
       - uses: actions/checkout@v5

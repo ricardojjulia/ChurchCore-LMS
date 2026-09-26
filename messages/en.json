@@ -10,7 +10,9 @@
       "brandSubtitle": "ChurchCore LMS",
       "emailLabel": "Email",
       "submitLoading": "Signing in…",
-      "submitButton": "Sign in"
+      "submitButton": "Sign in",
+      "newChurch": "New church?",
+      "startTrial": "Start a free trial"
     }
   },
   "common": {
@@ -707,5 +709,50 @@
     "submitError": "Something went wrong — please try again.",
     "triggerAriaLabel": "Send feedback",
     "closeAriaLabel": "Close feedback dialog"
+  },
+  "signup": {
+    "title": "Start your church's free trial",
+    "subtitle": "14 days free. No credit card. Set up courses, invite your teachers, and enroll your people.",
+    "churchName": "Church or ministry name",
+    "slug": "Web address",
+    "slugHint": "Your members join at {url}",
+    "adminName": "Your name",
+    "email": "Your email",
+    "language": "Language",
+    "submit": "Create my church",
+    "submitting": "Sending…",
+    "sentTitle": "Check your email",
+    "sentBody": "We sent a confirmation link to {email}. Your church is created as soon as you click it. The link expires in 24 hours.",
+    "comingSoonTitle": "Self-serve signup is coming soon",
+    "comingSoonBody": "Want to try ChurchCore LMS now? Contact us and we'll set up your church.",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "errors": {
+      "slug_taken": "That web address is taken. Try another.",
+      "reserved": "That web address is reserved. Try another.",
+      "invalid": "Please check this field.",
+      "disposable": "Please use a permanent email address.",
+      "invalid_link": "That confirmation link is invalid or has expired. Please sign up again.",
+      "failed": "Something went wrong creating your church. Please try again.",
+      "generic": "Something went wrong. Please try again.",
+      "turnstile": "Please complete the security check."
+    }
+  },
+  "renew": {
+    "trialEndedTitle": "The free trial for {name} has ended",
+    "pausedTitle": "{name} is paused",
+    "adminBody": "Choose a plan to reactivate your church. Your courses, people and progress are all still here.",
+    "memberBody": "Your church's access is paused right now. Your progress is saved. Please contact your church administrator.",
+    "noPlans": "Plans aren't available right now. Please contact ChurchCore support.",
+    "choose": "Choose plan →",
+    "redirecting": "Redirecting…",
+    "checkoutError": "We couldn't start checkout. Please try again.",
+    "plan": {
+      "starter": "Starter",
+      "growth": "Growth",
+      "enterprise": "Enterprise"
+    },
+    "trialBanner": "Free trial: {days, plural, one {# day} other {# days}} left.",
+    "trialBannerCta": "Choose a plan"
   }
 }

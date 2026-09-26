@@ -10,7 +10,9 @@
       "brandSubtitle": "ChurchCore LMS",
       "emailLabel": "Correo electrónico",
       "submitLoading": "Iniciando sesión…",
-      "submitButton": "Iniciar sesión"
+      "submitButton": "Iniciar sesión",
+      "newChurch": "¿Iglesia nueva?",
+      "startTrial": "Comienza una prueba gratuita"
     }
   },
   "common": {
@@ -707,5 +709,50 @@
     "submitError": "Algo salió mal. Inténtelo de nuevo.",
     "triggerAriaLabel": "Enviar comentarios",
     "closeAriaLabel": "Cerrar diálogo de comentarios"
+  },
+  "signup": {
+    "title": "Comienza la prueba gratuita de tu iglesia",
+    "subtitle": "14 días gratis. Sin tarjeta. Crea cursos, invita a tus maestros e inscribe a tu gente.",
+    "churchName": "Nombre de la iglesia o ministerio",
+    "slug": "Dirección web",
+    "slugHint": "Tus miembros se unen en {url}",
+    "adminName": "Tu nombre",
+    "email": "Tu correo",
+    "language": "Idioma",
+    "submit": "Crear mi iglesia",
+    "submitting": "Enviando…",
+    "sentTitle": "Revisa tu correo",
+    "sentBody": "Enviamos un enlace de confirmación a {email}. Tu iglesia se crea en cuanto hagas clic. El enlace vence en 24 horas.",
+    "comingSoonTitle": "El registro directo llegará pronto",
+    "comingSoonBody": "¿Quieres probar ChurchCore LMS ahora? Contáctanos y crearemos tu iglesia.",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "signIn": "Iniciar sesión",
+    "errors": {
+      "slug_taken": "Esa dirección web ya existe. Prueba otra.",
+      "reserved": "Esa dirección web está reservada. Prueba otra.",
+      "invalid": "Revisa este campo.",
+      "disposable": "Usa un correo permanente.",
+      "invalid_link": "Ese enlace de confirmación no es válido o venció. Regístrate de nuevo.",
+      "failed": "Algo salió mal al crear tu iglesia. Inténtalo de nuevo.",
+      "generic": "Algo salió mal. Inténtalo de nuevo.",
+      "turnstile": "Completa la verificación de seguridad."
+    }
+  },
+  "renew": {
+    "trialEndedTitle": "La prueba gratuita de {name} terminó",
+    "pausedTitle": "{name} está en pausa",
+    "adminBody": "Elige un plan para reactivar tu iglesia. Tus cursos, personas y progreso siguen aquí.",
+    "memberBody": "El acceso de tu iglesia está en pausa. Tu progreso está guardado. Comunícate con el administrador de tu iglesia.",
+    "noPlans": "Los planes no están disponibles ahora. Comunícate con soporte de ChurchCore.",
+    "choose": "Elegir plan →",
+    "redirecting": "Redirigiendo…",
+    "checkoutError": "No pudimos iniciar el pago. Inténtalo de nuevo.",
+    "plan": {
+      "starter": "Inicial",
+      "growth": "Crecimiento",
+      "enterprise": "Empresarial"
+    },
+    "trialBanner": "Prueba gratuita: {days, plural, one {queda # día} other {quedan # días}}.",
+    "trialBannerCta": "Elegir un plan"
   }
 }
