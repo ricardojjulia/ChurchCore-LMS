@@ -128,7 +128,7 @@ test('answers the anonymous survey once; no name is stored', async ({ page }) =>
   covers('action:activities.submitSurvey')
   await open(page, LEARN)
   await page.getByRole('button', { name: /Suite Survey/ }).click()
-  await page.getByRole('radiogroup', { name: 'The lesson was helpful' }).getByRole('radio', { name: '5' }).check()
+  await page.getByRole('group', { name: /The lesson was helpful/ }).getByRole('radio', { name: '5' }).check()
   await page.getByRole('radio', { name: 'Reading' }).check()
   await page.getByLabel('Your answer: Anything else?').fill('More small groups, please.')
   await page.getByRole('button', { name: 'Submit responses' }).click()

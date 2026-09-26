@@ -50,7 +50,7 @@ export default function SurveyPlayer({
           <legend className="px-1 text-sm font-semibold text-foreground">{i + 1}. {q.text}</legend>
           {q.type === 'scale' && (
             <div className="mt-3">
-              <div className="flex gap-2" role="radiogroup" aria-label={q.text}>
+              <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <label key={n} className="flex flex-col items-center gap-1 text-xs text-slate-700">
                     <input

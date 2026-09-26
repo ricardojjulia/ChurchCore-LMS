@@ -37,7 +37,8 @@ export default async function SurveyResultsPage({
 
   const { questions = [], anonymous = true } = (block.content ?? {}) as Partial<SurveyContent>
   const [{ data: responses }, { count: participants }] = await Promise.all([
-    supabase.from('survey_responses').select('answers, respondent_uid, profiles(display_name)').eq('block_id', blockId),
+    // Anonymous surveys store no respondent, so only named surveys join profiles.
+    supabase.from('survey_responses').select(anonymous ? 'answers' : 'answers, respondent_uid, profiles(display_name)').eq('block_id', blockId),
     supabase.from('survey_participation').select('block_id', { count: 'exact', head: true }).eq('block_id', blockId),
   ])
   const rows = (responses ?? []) as unknown as Array<{

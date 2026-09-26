@@ -3,7 +3,7 @@
 -- Run with: supabase test db
 
 BEGIN;
-SELECT plan(12);
+SELECT plan(14);
 \ir helpers/fixtures.inc
 
 RESET ROLE;
@@ -32,6 +32,14 @@ SELECT lives_ok($$SELECT public.submit_survey(pg_temp.fixture_id('survey-named')
 SELECT lives_ok(
   $$INSERT INTO public.checklist_progress (block_id, checked) VALUES (pg_temp.fixture_id('checklist'), '["a"]')$$,
   'a learner saves their own checklist progress');
+
+-- Same org, not enrolled in the course: the enrollment gate must refuse.
+SELECT pg_temp.actor('nonmember');
+SELECT throws_ok($$SELECT public.submit_survey(pg_temp.fixture_id('survey-anon'), '{"q1": 2}')$$,
+  '42501', NULL, 'a same-org learner who is not enrolled cannot respond');
+SELECT throws_ok(
+  $$INSERT INTO public.checklist_progress (block_id, checked) VALUES (pg_temp.fixture_id('checklist'), '["a"]')$$,
+  '42501', NULL, 'a same-org learner who is not enrolled cannot save checklist progress');
 
 SELECT pg_temp.actor('student-b');
 SELECT throws_ok($$SELECT public.submit_survey(pg_temp.fixture_id('survey-anon'), '{"q1": 1}')$$,

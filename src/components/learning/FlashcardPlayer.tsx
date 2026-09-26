@@ -45,7 +45,7 @@ export default function FlashcardPlayer({
     <div className="space-y-4">
       <p className="text-sm text-slate-700" aria-live="polite">{t('cardOf', { current: index + 1, total: cards.length })}</p>
       <div className="flex min-h-48 items-center justify-center rounded-2xl border border-border bg-white p-8 text-center shadow-sm">
-        <p className="whitespace-pre-wrap text-lg font-semibold text-foreground">{showBack ? card.back : card.front}</p>
+        <p aria-live="polite" className="whitespace-pre-wrap text-lg font-semibold text-foreground">{showBack ? card.back : card.front}</p>
       </div>
       <div className="flex items-center justify-between gap-3">
         <button type="button" onClick={() => go(-1)} disabled={index === 0}
