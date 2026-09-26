@@ -45,12 +45,18 @@ for (const route of ROUTES) {
             expect(finalPath, `anonymous visit to ${route.path}`).toBe('/login')
             return
           }
-          const leftPage = decodeURI(finalPath) !== route.path
+          // A streamed page's server redirect() is followed client-side; on a
+          // slow runner it can land after networkidle, so give it time.
+          if (decodeURI(finalPath) === route.path && response?.status() !== 404) {
+            await page.waitForURL((u) => decodeURI(u.pathname) !== route.path, { timeout: 10_000 }).catch(() => {})
+          }
+          const settledPath = new URL(page.url()).pathname
+          const leftPage = decodeURI(settledPath) !== route.path
           const notFound = response?.status() === 404
           const deniedInPlace = !leftPage && DENIAL_TEXT.test(await page.locator('body').innerText())
           expect(
             leftPage || notFound || deniedInPlace,
-            `${actor} must not see ${route.path} (stayed at ${finalPath}, status ${response?.status()})`,
+            `${actor} must not see ${route.path} (stayed at ${settledPath}, status ${response?.status()})`,
           ).toBe(true)
         })
       })
