@@ -11,6 +11,22 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.40.0] — 2026-09-27
+
+Sprint 6, part 2: Google and Microsoft sign-in (COUNCIL-2026-037).
+
+### Added
+
+- **"Continue with Google" and "Continue with Microsoft"** on the sign-in and join pages. The buttons appear only for providers configured for the site (`NEXT_PUBLIC_SSO_PROVIDERS`; setup in `docs/github-setup.md`).
+- **Signing in never makes you a member.** Joining through Google or Microsoft goes through an explicit join step with the same checks as the password join. An account with no church lands on a welcome page instead of an empty dashboard.
+- **Church sign-in rules** in Admin → Settings → Sign-in: require Google or Microsoft for staff, limit sign-in to the church's email domains, or turn passwords off. Rules are checked on the server on every page; a session that breaks them is signed out with an explanation. Admins can't save a rule that would sign themselves out.
+
+### Security
+
+- The password join no longer shows the sign-in provider's raw error text.
+
+---
+
 ## [0.39.0] — 2026-09-27
 
 Sprint 6, part 1: teacher ↔ guardian messaging (COUNCIL-2026-035).

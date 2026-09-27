@@ -109,4 +109,19 @@ test.describe('organization sign-in policy', () => {
     await outsiderPage.context().close()
     await db().auth.admin.deleteUser(outsider.id)
   })
+
+  test('with passwords turned off, a password session is signed out', async ({ browser }) => {
+    const { data } = await db().from('organizations').select('settings').eq('id', ORG_A).single()
+    await db().from('organizations').update({
+      settings: { ...(data?.settings ?? {}), auth: { disable_password: true, require_sso_for_staff: false, allowed_domains: [] } },
+    }).eq('id', ORG_A)
+
+    const member = await createUser(`suite-${tag()}@test.churchcore.dev`, { org_id: ORG_A, role: 'student' })
+    const { data: u } = await db().auth.admin.getUserById(member.id)
+    const page = await signIn(browser, u.user!.email!, member.password)
+    await expect(page).toHaveURL(/\/login\?error=password_disabled/)
+    await expect(page.getByText('Your church has turned off password sign-in. Use Google or Microsoft.')).toBeVisible()
+    await page.context().close()
+    await db().auth.admin.deleteUser(member.id)
+  })
 })
