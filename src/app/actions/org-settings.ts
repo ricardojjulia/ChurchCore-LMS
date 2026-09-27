@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
+import { checkAuthPolicy, parseDomains, signInMethods } from '@/lib/auth-policy'
+import { configuredSsoProviders } from '@/lib/sso'
 
 async function assertOrgAdmin(orgId: string) {
   const supabase = await createClient()
@@ -192,4 +194,48 @@ export async function updateOrgBranding(orgId: string, formData: FormData) {
 
   revalidatePath('/admin/settings')
   revalidatePath('/', 'layout')
+}
+
+// ── Sign-in policy (COUNCIL-2026-037) ──────────────────────────────────────
+// Admin only. Refuses any policy that would end the admin's own current
+// session, so nobody can lock themselves out by saving it.
+export async function updateAuthPolicy(
+  orgId: string,
+  input: { require_sso_for_staff: boolean; disable_password: boolean; allowed_domains: string },
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not signed in.' }
+  const { data: profile } = await supabase.from('profiles').select('org_id, role').eq('auth_id', user.id).single()
+  // Stricter than assertOrgAdmin on purpose: sign-in policy can lock people
+  // out, so managers and platform admins can't change it (COUNCIL-2026-037).
+  if (!profile || profile.org_id !== orgId || profile.role !== 'admin') return { error: 'Only an admin can change sign-in settings.' }
+
+  const { domains, invalid } = parseDomains(input.allowed_domains ?? '')
+  if (invalid.length) return { error: `Not a valid domain: ${invalid.slice(0, 3).join(', ')}` }
+  const policy = {
+    require_sso_for_staff: input.require_sso_for_staff === true,
+    disable_password: input.disable_password === true,
+    allowed_domains: domains,
+  }
+  if ((policy.require_sso_for_staff || policy.disable_password) && configuredSsoProviders().length === 0) {
+    return { error: 'Single sign-on isn’t set up for this site yet, so these options would lock everyone out.' }
+  }
+
+  const { data: claims } = await supabase.auth.getClaims()
+  const violation = checkAuthPolicy(policy, {
+    role: profile.role, email: user.email ?? null, methods: signInMethods(claims?.claims?.amr),
+  })
+  if (violation === 'domain_not_allowed') return { error: 'Your own email domain must be in the allowed list.' }
+  if (violation) return { error: 'Sign in with Google or Microsoft first, so this setting won’t sign you out.' }
+
+  const service = createServiceClient()
+  const { data: existing } = await service.from('organizations').select('settings').eq('id', orgId).single()
+  const { error } = await service
+    .from('organizations')
+    .update({ settings: { ...(existing?.settings ?? {}), auth: policy } })
+    .eq('id', orgId)
+  if (error) return { error: 'Could not save the sign-in settings. Please try again.' }
+  revalidatePath('/admin/settings')
+  return {}
 }

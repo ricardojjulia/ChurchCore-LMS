@@ -5,14 +5,16 @@ import { useRouter } from 'next/navigation'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { createClient } from '@/utils/supabase/client'
 import { useTranslations } from 'next-intl'
+import SsoButtons from '@/components/auth/SsoButtons'
 
 interface Props {
   orgId:        string
   orgName:      string
+  orgSlug:      string
   primaryColor?: string
 }
 
-export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
+export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Props) {
   const router = useRouter()
   const t = useTranslations()
   const [displayName, setDisplayName]   = useState('')
@@ -72,6 +74,9 @@ export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
     : undefined
 
   return (
+    <>
+    {/* SSO join finishes at /join/[slug]/complete, which applies the same org checks. */}
+    <div className="mb-4"><SsoButtons next={`/join/${orgSlug}/complete`} /></div>
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="displayName" className="block text-sm font-medium mb-1">
@@ -146,5 +151,6 @@ export default function JoinForm({ orgId, orgName, primaryColor }: Props) {
         </a>
       </p>
     </form>
+    </>
   )
 }

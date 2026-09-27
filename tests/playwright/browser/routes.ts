@@ -37,6 +37,8 @@ export const ROUTES: RouteSpec[] = [
   { surface: covers('page:/start'), path: '/start', allow: ['anon'], mobile: true },
   // Renewal is only for members of a suspended org; everyone in an active org is redirected.
   { surface: covers('page:/billing/renew'), path: '/billing/renew', allow: [] },
+  // Only for signed-in accounts with no organization (COUNCIL-2026-037); every seeded actor has one.
+  { surface: covers('page:/welcome'), path: '/welcome', allow: [] },
   // Offline fallback is served from the service-worker cache; online it sits behind auth.
   { surface: covers('page:/offline'), path: '/offline', allow: AUTHED },
   { surface: covers('page:/join/[slug]'), path: `/join/${ORG_A_SLUG}`, allow: EVERYONE, mobile: true },

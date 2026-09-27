@@ -13,6 +13,19 @@
       "submitButton": "Sign in",
       "newChurch": "New church?",
       "startTrial": "Start a free trial"
+    },
+    "sso": {
+      "google": "Continue with Google",
+      "microsoft": "Continue with Microsoft",
+      "or": "or use your email",
+      "redirecting": "Redirecting…",
+      "error": "Could not start sign-in. Please try again.",
+      "errors": {
+        "sso_required": "Your church requires staff to sign in with Google or Microsoft.",
+        "domain_not_allowed": "Your church only allows sign-in with its own email addresses.",
+        "password_disabled": "Your church has turned off password sign-in. Use Google or Microsoft.",
+        "auth_callback_failed": "Sign-in didn't complete. Please try again."
+      }
     }
   },
   "common": {
@@ -764,5 +777,12 @@
     },
     "trialBanner": "Free trial: {days, plural, one {# day} other {# days}} left.",
     "trialBannerCta": "Choose a plan"
+  },
+  "welcome": {
+    "title": "Your account isn't connected to a church yet",
+    "body": "Ask your church for its join link, or start a free trial for your church.",
+    "join": "I have a join link",
+    "start": "Start a free trial",
+    "signOut": "Sign out"
   }
 }

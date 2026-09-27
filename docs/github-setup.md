@@ -122,6 +122,17 @@ After this setup, `release.yml` serializes releases and enforces: **CI → produ
 
 ---
 
+## Google and Microsoft sign-in (COUNCIL-2026-037)
+
+Sign-in providers are configured in Supabase Auth, not in GitHub. The buttons appear only for providers listed in `NEXT_PUBLIC_SSO_PROVIDERS`.
+
+1. **Google.** In Google Cloud Console → APIs & Services → Credentials, create an OAuth client ID of type *Web application*. Add the authorized redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`.
+2. **Microsoft.** In Microsoft Entra → App registrations → New registration, choose *Accounts in any organizational directory and personal Microsoft accounts*. Add the web redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`. Under *Token configuration*, add the optional claims **`email`** and **`xms_edov`**. Supabase then treats only Microsoft-verified emails as verified, so an unverified email never links to an existing account (Amendment 5). Create a client secret.
+3. **Supabase.** In Dashboard → Authentication → Sign In / Providers, enable Google and Azure and paste each client ID and secret. For Azure, use the tenant URL `https://login.microsoftonline.com/common/v2.0`.
+4. **Vercel.** Set `NEXT_PUBLIC_SSO_PROVIDERS=google,azure` (or only the providers you enabled) and redeploy.
+
+Each church admin then chooses its own rules in **Admin → Settings → Sign-in**: require Google/Microsoft for staff, allowed email domains, or passwords off. The settings screen refuses rules that would sign the admin out.
+
 ## CODEOWNERS
 
 `/.github/CODEOWNERS` requires architect review for:

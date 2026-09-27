@@ -3,6 +3,9 @@ import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { updateOrgBranding } from '@/app/actions/org-settings'
 import AutoEnrollSection from './AutoEnrollSection'
+import SignInPolicySection from './SignInPolicySection'
+import { readAuthPolicy } from '@/lib/auth-policy'
+import { configuredSsoProviders } from '@/lib/sso'
 
 export const dynamic = 'force-dynamic'
 
@@ -152,6 +155,14 @@ export default async function OrgSettingsPage() {
               ))}
             </div>
           </section>
+        )}
+
+        {profile.role === 'admin' && (
+          <SignInPolicySection
+            orgId={org.id}
+            policy={readAuthPolicy(org.settings)}
+            ssoAvailable={configuredSsoProviders().length > 0}
+          />
         )}
 
         <AutoEnrollSection

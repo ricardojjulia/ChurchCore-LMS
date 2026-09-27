@@ -44,6 +44,8 @@ export SUPABASE_JWT_SECRET="$JWT_SECRET"  # signs guardian unsubscribe tokens
 export OPENAI_API_KEY=sk-suite-invalid ANTHROPIC_API_KEY=suite-invalid CRON_SECRET=suite-cron-secret
 # Self-serve signup on, with a fake plan price (Stripe itself is not configured, so checkout returns 502).
 export SELF_SERVE_SIGNUP_ENABLED=true STRIPE_PRICE_STARTER=price_suite_starter
+# SSO buttons render; the providers themselves aren't configured locally (flows stub the redirect).
+export NEXT_PUBLIC_SSO_PROVIDERS=google,azure
 
 supabase migration up >/dev/null
 node scripts/ci-setup-test-env.mjs >/dev/null

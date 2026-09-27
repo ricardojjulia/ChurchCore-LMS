@@ -44,6 +44,7 @@ export default async function JoinPage({ params }: Props) {
         <JoinForm
           orgId={org.id}
           orgName={org.name}
+          orgSlug={slug}
           primaryColor={branding?.primary_color}
         />
       </div>

@@ -143,6 +143,7 @@ jobs:
       CRON_SECRET: suite-cron-secret
       SELF_SERVE_SIGNUP_ENABLED: 'true'
       STRIPE_PRICE_STARTER: price_suite_starter
+      NEXT_PUBLIC_SSO_PROVIDERS: google,azure
 
     steps:
       - uses: actions/checkout@v5
