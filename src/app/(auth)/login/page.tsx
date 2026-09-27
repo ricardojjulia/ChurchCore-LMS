@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -71,6 +72,10 @@ export default function LoginPage() {
             {loading ? t('auth.login.submitLoading') : t('auth.login.submitButton')}
           </button>
         </form>
+        <p className="mt-6 text-center text-sm text-slate-300">
+          {t('auth.login.newChurch')}{' '}
+          <Link href="/start" className="font-semibold text-indigo-300 underline hover:text-indigo-200">{t('auth.login.startTrial')}</Link>
+        </p>
       </div>
     </main>
   )

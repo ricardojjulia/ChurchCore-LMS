@@ -54,3 +54,8 @@ export async function checkLimit(
     remaining,
   }
 }
+
+// 5 req / 3600 s per client IP — public self-serve signup (COUNCIL-2026-034)
+export const signupIpLimiter = makeLimiter('signup-ip', 5, 3600)
+// 10 req / 3600 s per email domain — slows scripted signups from one domain
+export const signupDomainLimiter = makeLimiter('signup-domain', 10, 3600)
