@@ -23,8 +23,11 @@ async function requireAuth() {
 // double quotes, then wrap in quotes so commas and parentheses can't add or
 // change filter conditions (COUNCIL-2026-035 Amendment 6).
 function likeTerm(q: string): string {
-  const escaped = q.trim().slice(0, 100).replace(/[\\%_]/g, (c) => `\\${c}`).replace(/"/g, '\\"')
-  return `"%${escaped}%"`
+  // Layer 1: LIKE — make %, _ and \ literal. Layer 2: PostgREST's quoted
+  // value — escape \ and " so the quotes can't be closed early.
+  const like = q.trim().slice(0, 100).replace(/[\\%_]/g, (c) => `\\${c}`)
+  const quoted = like.replace(/[\\"]/g, (c) => `\\${c}`)
+  return `"%${quoted}%"`
 }
 
 function stripHtml(input: string): string {
