@@ -13,6 +13,19 @@
       "submitButton": "Iniciar sesión",
       "newChurch": "¿Iglesia nueva?",
       "startTrial": "Comienza una prueba gratuita"
+    },
+    "sso": {
+      "google": "Continuar con Google",
+      "microsoft": "Continuar con Microsoft",
+      "or": "o usa tu correo",
+      "redirecting": "Redirigiendo…",
+      "error": "No se pudo iniciar sesión. Inténtalo de nuevo.",
+      "errors": {
+        "sso_required": "Tu iglesia exige que el personal inicie sesión con Google o Microsoft.",
+        "domain_not_allowed": "Tu iglesia solo permite iniciar sesión con sus propios correos.",
+        "password_disabled": "Tu iglesia desactivó el inicio con contraseña. Usa Google o Microsoft.",
+        "auth_callback_failed": "No se completó el inicio de sesión. Inténtalo de nuevo."
+      }
     }
   },
   "common": {
@@ -764,5 +777,12 @@
     },
     "trialBanner": "Prueba gratuita: {days, plural, one {queda # día} other {quedan # días}}.",
     "trialBannerCta": "Elegir un plan"
+  },
+  "welcome": {
+    "title": "Tu cuenta aún no está conectada a una iglesia",
+    "body": "Pide a tu iglesia su enlace para unirte, o comienza una prueba gratuita para tu iglesia.",
+    "join": "Tengo un enlace",
+    "start": "Comenzar prueba gratuita",
+    "signOut": "Cerrar sesión"
   }
 }

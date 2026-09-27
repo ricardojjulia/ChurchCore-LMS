@@ -314,6 +314,23 @@ max_frequency = "5s"
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
 # `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
+# COUNCIL-2026-037: Google and Microsoft sign-in. Off locally (no client
+# credentials); in production they're enabled in the Supabase dashboard with
+# the owner's OAuth clients, and NEXT_PUBLIC_SSO_PROVIDERS lists them so the
+# buttons appear. Microsoft needs the `email` and `xms_edov` optional claims,
+# so only verified emails are linked to existing accounts.
+[auth.external.google]
+enabled = false
+client_id = ""
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+skip_nonce_check = false
+
+[auth.external.azure]
+enabled = false
+client_id = ""
+secret = "env(SUPABASE_AUTH_EXTERNAL_AZURE_SECRET)"
+url = "https://login.microsoftonline.com/common/v2.0"
+
 [auth.external.apple]
 enabled = false
 client_id = ""

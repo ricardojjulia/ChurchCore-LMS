@@ -9,6 +9,21 @@ import AdminDashboard      from '@/components/dashboard/AdminDashboard'
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
+  // An account with no organization (e.g. a first "Continue with Google"
+  // without a join link) gets the welcome page, not an empty dashboard.
+  // Platform admins may have no org and are left alone. COUNCIL-2026-037.
+  {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase.from('profiles').select('org_id').eq('auth_id', user.id).maybeSingle()
+      if (profile && !profile.org_id) {
+        const { data: isPlatformAdmin } = await supabase.rpc('is_platform_admin')
+        if (isPlatformAdmin !== true) redirect('/welcome')
+      }
+    }
+  }
+
   // Role resolved server-side from DB — no client role claims trusted
   // A suspended organization (e.g. an expired trial) has no data access, so
   // this runs before anything that reads through RLS (which would otherwise
