@@ -207,6 +207,8 @@ export async function updateAuthPolicy(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not signed in.' }
   const { data: profile } = await supabase.from('profiles').select('org_id, role').eq('auth_id', user.id).single()
+  // Stricter than assertOrgAdmin on purpose: sign-in policy can lock people
+  // out, so managers and platform admins can't change it (COUNCIL-2026-037).
   if (!profile || profile.org_id !== orgId || profile.role !== 'admin') return { error: 'Only an admin can change sign-in settings.' }
 
   const { domains, invalid } = parseDomains(input.allowed_domains ?? '')
