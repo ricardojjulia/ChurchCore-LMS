@@ -1,7 +1,9 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
+import { createServiceClient } from '@/utils/supabase/service'
 import { getTranslations } from 'next-intl/server'
+import MessageAboutStudent from '@/components/messages/MessageAboutStudent'
 
 export const dynamic = 'force-dynamic'
 
@@ -91,6 +93,20 @@ export default async function GuardianStudentPage({
   const overview = raw as Overview
   const student  = overview.profile
 
+  // Each course's teacher, for "Message teacher" (COUNCIL-2026-035). Guardians
+  // can't read staff profiles under RLS; the course ids come from the
+  // guardian-authorized overview RPC above, so only those courses' teacher
+  // names are looked up server-side. Sending is still checked by the database.
+  const courseIds = overview.enrollments.map((e) => e.course_id)
+  const { data: courseTeachers } = courseIds.length
+    ? await createServiceClient().from('courses').select('id, owner_id, profiles!courses_owner_id_fkey(display_name)').in('id', courseIds)
+    : { data: [] }
+  const teacherByCourse = new Map(
+    ((courseTeachers ?? []) as unknown as Array<{ id: string; owner_id: string | null; profiles: { display_name: string | null } | null }>)
+      .filter((c) => c.owner_id)
+      .map((c) => [c.id, { uid: c.owner_id as string, name: c.profiles?.display_name ?? '' }]),
+  )
+
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -149,7 +165,17 @@ export default async function GuardianStudentPage({
                   return (
                     <div key={e.course_id} className="bg-white border border-border rounded-xl p-4">
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <p className="text-sm font-semibold text-foreground leading-snug">{e.course_title}</p>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground leading-snug">{e.course_title}</p>
+                          {e.status !== 'dropped' && teacherByCourse.get(e.course_id) && (
+                            <MessageAboutStudent
+                              studentUid={student.uid}
+                              recipientUid={teacherByCourse.get(e.course_id)!.uid}
+                              recipientName={teacherByCourse.get(e.course_id)!.name}
+                              label={t('messages.aboutStudent.messageTeacher', { name: teacherByCourse.get(e.course_id)!.name })}
+                            />
+                          )}
+                        </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${st.className}`}>
                           {statusLabel}
                         </span>

@@ -80,3 +80,88 @@ test.describe('messaging', () => {
     await expect(page.getByText('Hello from the suite.').first()).toBeVisible()
   })
 })
+
+test.describe('teacher ↔ guardian messaging (COUNCIL-2026-035)', () => {
+  test.describe.configure({ mode: 'serial' })
+  const threadAbout = async () => (await db().from('message_threads').select('id, subject')
+    .eq('subject_student_uid', USERS.student.uid)).data ?? []
+
+  test.beforeAll(async () => {
+    const ids = (await threadAbout()).map((t) => t.id)
+    if (ids.length) await db().from('message_threads').delete().in('id', ids)
+    await db().from('guardian_notification_queue').delete().eq('student_uid', USERS.student.uid).eq('event_type', 'message_received')
+  })
+
+  test.describe('a guardian', () => {
+    test.use(asActor('guardian'))
+    test('messages their child\'s teacher from the guardian page', async ({ page }) => {
+      covers('action:messages.getOrCreateGuardianThread')
+      await open(page, `/guardian/${USERS.student.uid}`)
+      await page.getByRole('button', { name: /Message Test Teacher A/ }).first().click()
+      await page.getByLabel('Message to Test Teacher A').fill('How is she doing in class?')
+      await page.getByRole('button', { name: 'Send', exact: true }).click()
+      await expect(page).toHaveURL(/\/messages\/[0-9a-f-]{36}/)
+      await expect(page.getByText('How is she doing in class?')).toBeVisible()
+      const threads = await threadAbout()
+      expect(threads).toHaveLength(1)
+      expect(threads[0].subject).toBe('About Test Student A')
+    })
+  })
+
+  test.describe('the teacher', () => {
+    test.use(asActor('teacher'))
+    test('replies from the gradebook; the guardian email carries no message body', async ({ page }) => {
+      await open(page, `/courses/${COURSE.a}/gradebook`)
+      await page.getByRole('button', { name: 'Message guardian Test Guardian A' }).first().click()
+      await page.getByLabel('Message to Test Guardian A').fill('She is doing great.')
+      await page.getByRole('button', { name: 'Send', exact: true }).click()
+      await expect(page).toHaveURL(/\/messages\/[0-9a-f-]{36}/)
+      // Reuses the existing thread about the student rather than opening a new one.
+      expect(await threadAbout()).toHaveLength(1)
+      const { data: queued } = await db().from('guardian_notification_queue')
+        .select('payload').eq('student_uid', USERS.student.uid).eq('event_type', 'message_received')
+      expect(queued).toHaveLength(1)
+      expect(queued![0].payload).toMatchObject({ recipient_guardian_uid: USERS.guardian.uid })
+      expect(JSON.stringify(queued![0].payload)).not.toContain('She is doing great')
+    })
+  })
+
+  test('denied pairs: an unlinked guardian and an unrelated teacher get no way to message', async ({ browser }) => {
+    const { randomUUID } = await import('node:crypto')
+    const make = async (role: string) => {
+      const email = `suite-msg-${role}-${Date.now().toString(36)}@test.churchcore.dev`
+      const password = `P-${randomUUID()}`
+      const { data } = await db().auth.admin.createUser({
+        email, password, email_confirm: true, user_metadata: { display_name: `Suite ${role}` },
+        app_metadata: { org_id: USERS.teacher.org, role },
+      })
+      return { id: data.user!.id, email, password }
+    }
+    const signIn = async (email: string, password: string) => {
+      const ctx = await browser.newContext(asActor('anon'))
+      const page = await ctx.newPage()
+      await page.goto('/login')
+      await page.getByLabel('Email').fill(email)
+      await page.getByLabel('Password').fill(password)
+      await page.getByRole('button', { name: /Sign in/i }).click()
+      await page.waitForURL(/\/dashboard/)
+      return page
+    }
+
+    // A guardian who isn't linked to the student can't open the student's page.
+    const guardian = await make('guardian')
+    const gp = await signIn(guardian.email, guardian.password)
+    await gp.goto(`/guardian/${USERS.student.uid}`)
+    await expect(gp.getByRole('button', { name: /^Message / })).toHaveCount(0)
+    await gp.context().close()
+
+    // A teacher who doesn't teach the student can't reach the course gradebook.
+    const teacher = await make('teacher')
+    const tp = await signIn(teacher.email, teacher.password)
+    await tp.goto(`/courses/${COURSE.a}/gradebook`)
+    await expect(tp.getByRole('button', { name: /Message guardian/ })).toHaveCount(0)
+    await tp.context().close()
+
+    for (const u of [guardian, teacher]) await db().auth.admin.deleteUser(u.id)
+  })
+})

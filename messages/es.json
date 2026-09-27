@@ -241,6 +241,16 @@
       "composerPlaceholder": "Escriba un mensaje… (Ctrl+Enter para enviar)",
       "composerHint": "Ctrl+Enter para enviar",
       "deleteAriaLabel": "Eliminar mensaje"
+    },
+    "aboutStudent": {
+      "to": "Mensaje para {name}",
+      "send": "Enviar",
+      "sending": "Enviando…",
+      "cancel": "Cancelar",
+      "error": "No se pudo enviar el mensaje. Inténtalo de nuevo.",
+      "messageTeacher": "Escribir a {name}",
+      "messageGuardian": "Escribir al tutor {name}",
+      "threadAbout": "Sobre {name}"
     }
   },
   "calendar": {

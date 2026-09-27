@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { createServiceClient } from '@/utils/supabase/service'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getGradebookGrid } from '@/app/actions/gradebook'
@@ -29,7 +30,7 @@ export default async function GradebookPage({
 
   const { data: course } = await supabase
     .from('courses')
-    .select('id, title, owner_id')
+    .select('id, title, owner_id, org_id')
     .eq('id', courseId)
     .single()
 
@@ -47,6 +48,24 @@ export default async function GradebookPage({
     // DB error message in the DOM.
     console.error('[gradebook]', error)
     notFound()
+  }
+
+  // Linked guardians of this course's students, for "Message guardian"
+  // (COUNCIL-2026-035). Staff can't read guardian_links under RLS, and this
+  // page is already limited to the course's teacher and org admins, so the
+  // lookup runs server-side for these students only; sending is still
+  // checked by the database (can_message_about).
+  const studentUids = [...new Set((rows ?? []).map((r) => r.student_uid))]
+  const guardiansByStudent: Record<string, Array<{ uid: string; name: string }>> = {}
+  if (studentUids.length) {
+    const { data: links } = await createServiceClient()
+      .from('guardian_links')
+      .select('student_uid, guardian_uid, profiles!guardian_links_guardian_uid_fkey(display_name, org_id)')
+      .in('student_uid', studentUids)
+    for (const l of (links ?? []) as unknown as Array<{ student_uid: string; guardian_uid: string; profiles: { display_name: string | null; org_id: string | null } | null }>) {
+      if (l.profiles?.org_id !== course.org_id) continue
+      ;(guardiansByStudent[l.student_uid] ??= []).push({ uid: l.guardian_uid, name: l.profiles?.display_name ?? '' })
+    }
   }
 
   return (
@@ -69,6 +88,7 @@ export default async function GradebookPage({
           courseId={courseId}
           courseTitle={course.title}
           initialRows={rows ?? []}
+          guardiansByStudent={guardiansByStudent}
         />
       </div>
     </main>

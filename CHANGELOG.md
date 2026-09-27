@@ -11,6 +11,28 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.39.0] — 2026-09-27
+
+Sprint 6, part 1: teacher ↔ guardian messaging (COUNCIL-2026-035).
+
+### Added
+
+- **Guardians can message their child's teachers**, from each course on `/guardian/[studentId]`. **Teachers can message a student's guardians** from the gradebook grid. Conversations are about one student ("About {name}"); the pairs allowed are decided in the database: a linked guardian ↔ a teacher who actually teaches the child, or the org's admins and managers.
+- When a guardian link or the enrollment ends, the conversation becomes read-only; its history stays.
+- Guardians get an email for new messages, without the message text ("You have a new message about {first name}").
+
+### Security
+
+- **Private conversations could be joined.** Any org member could add themselves to any conversation in their org (given its id) and read it, or create one naming someone else as its creator. Users can no longer write thread or participant rows directly.
+- The people search in "New message" no longer lets input change its database filter.
+- Guardian emails escape student names, course titles and badge names.
+
+### Fixed
+
+- Reply notifications were never created (missing organization on the insert).
+
+---
+
 ## [0.38.0] — 2026-09-26
 
 Sprint 5, part 2: self-serve signup and trial (COUNCIL-2026-034).

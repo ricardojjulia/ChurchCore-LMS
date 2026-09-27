@@ -52,7 +52,7 @@ function CheckRow({ check }: { check: SystemHealthCheck }) {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-xs whitespace-nowrap">
-            {relativeTime(check.last_checked)}
+            <time dateTime={check.last_checked ?? undefined} suppressHydrationWarning>{relativeTime(check.last_checked)}</time>
           </span>
           {check.action_url && (
             <a
@@ -165,7 +165,7 @@ export default function SystemHealthPanel({ initialChecks = [] }: Props) {
           <span className={`w-3 h-3 rounded-full ${STATUS_DOT[overallStatus]}`} />
           <span className="text-sm font-semibold text-slate-700">{statusLabel}</span>
           {lastCheckedLabel && !isLoading && (
-            <span className="text-xs text-muted-foreground">{lastCheckedLabel}</span>
+            <span className="text-xs text-muted-foreground"><time suppressHydrationWarning>{lastCheckedLabel}</time></span>
           )}
         </div>
         <button

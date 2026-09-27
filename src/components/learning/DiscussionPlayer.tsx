@@ -287,7 +287,7 @@ export default function DiscussionPlayer({
                       {r.display_name ?? t('common.studentFallback')}
                       {r.is_own && <span className="ml-1 text-[10px] text-primary font-bold">({t('learning.discussion.youMarker')})</span>}
                     </span>
-                    <span className="text-xs text-muted-foreground shrink-0">{timeAgo(r.submitted_at)}</span>
+                    <time dateTime={r.submitted_at ?? undefined} suppressHydrationWarning className="text-xs text-muted-foreground shrink-0">{timeAgo(r.submitted_at)}</time>
                     {r.content?.edited_at && (
                       <span className="text-[10px] text-muted-foreground italic shrink-0">{t('learning.discussion.editedMarker')}</span>
                     )}
