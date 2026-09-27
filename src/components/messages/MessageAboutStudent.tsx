@@ -28,7 +28,7 @@ export default function MessageAboutStudent({
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)}
+      <button type="button" onClick={() => setOpen(true)} aria-expanded={false}
         className="text-xs font-semibold text-indigo-700 underline hover:text-indigo-900">
         {label}
       </button>

@@ -73,7 +73,8 @@ GRANT  EXECUTE ON FUNCTION public.can_message_about(uuid, uuid) TO authenticated
 -- May the caller post to this thread? Ordinary threads: yes (membership is
 -- checked by the messages policy). Threads about a student: only while the
 -- guardian ↔ staff pair is still allowed, so they become read-only when the
--- guardian link is removed or the enrollment ends.
+-- guardian link is removed or the enrollment is dropped. A completed course
+-- still counts: a guardian may ask about a course their child finished.
 CREATE OR REPLACE FUNCTION public.can_post_to_thread(p_thread_id uuid)
 RETURNS boolean
 LANGUAGE sql

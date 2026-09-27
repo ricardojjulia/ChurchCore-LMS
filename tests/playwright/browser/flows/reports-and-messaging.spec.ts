@@ -125,4 +125,43 @@ test.describe('teacher ↔ guardian messaging (COUNCIL-2026-035)', () => {
       expect(JSON.stringify(queued![0].payload)).not.toContain('She is doing great')
     })
   })
+
+  test('denied pairs: an unlinked guardian and an unrelated teacher get no way to message', async ({ browser }) => {
+    const { randomUUID } = await import('node:crypto')
+    const make = async (role: string) => {
+      const email = `suite-msg-${role}-${Date.now().toString(36)}@test.churchcore.dev`
+      const password = `P-${randomUUID()}`
+      const { data } = await db().auth.admin.createUser({
+        email, password, email_confirm: true, user_metadata: { display_name: `Suite ${role}` },
+        app_metadata: { org_id: USERS.teacher.org, role },
+      })
+      return { id: data.user!.id, email, password }
+    }
+    const signIn = async (email: string, password: string) => {
+      const ctx = await browser.newContext(asActor('anon'))
+      const page = await ctx.newPage()
+      await page.goto('/login')
+      await page.getByLabel('Email').fill(email)
+      await page.getByLabel('Password').fill(password)
+      await page.getByRole('button', { name: /Sign in/i }).click()
+      await page.waitForURL(/\/dashboard/)
+      return page
+    }
+
+    // A guardian who isn't linked to the student can't open the student's page.
+    const guardian = await make('guardian')
+    const gp = await signIn(guardian.email, guardian.password)
+    await gp.goto(`/guardian/${USERS.student.uid}`)
+    await expect(gp.getByRole('button', { name: /^Message / })).toHaveCount(0)
+    await gp.context().close()
+
+    // A teacher who doesn't teach the student can't reach the course gradebook.
+    const teacher = await make('teacher')
+    const tp = await signIn(teacher.email, teacher.password)
+    await tp.goto(`/courses/${COURSE.a}/gradebook`)
+    await expect(tp.getByRole('button', { name: /Message guardian/ })).toHaveCount(0)
+    await tp.context().close()
+
+    for (const u of [guardian, teacher]) await db().auth.admin.deleteUser(u.id)
+  })
 })
