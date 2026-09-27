@@ -19,6 +19,14 @@ async function requireAuth() {
   return { supabase, profile }
 }
 
+// Quote a search term for a PostgREST or() filter: escape LIKE wildcards and
+// double quotes, then wrap in quotes so commas and parentheses can't add or
+// change filter conditions (COUNCIL-2026-035 Amendment 6).
+function likeTerm(q: string): string {
+  const escaped = q.trim().slice(0, 100).replace(/[\\%_]/g, (c) => `\\${c}`).replace(/"/g, '\\"')
+  return `"%${escaped}%"`
+}
+
 function stripHtml(input: string): string {
   return input.replace(/<[^>]*>/g, '').trim()
 }
@@ -53,7 +61,7 @@ export async function searchUsers(q: string) {
     .from('profiles')
     .select('uid, display_name, email, role')
     .neq('uid', profile.uid)
-    .or(`display_name.ilike.%${q.trim()}%,email.ilike.%${q.trim()}%`)
+    .or(`display_name.ilike.${likeTerm(q)},email.ilike.${likeTerm(q)}`)
     .limit(10)
 
   return data ?? []
@@ -198,6 +206,9 @@ export async function sendMessage(
     .from('messages')
     .insert({ thread_id: threadId, sender_id: profile.uid, body: clean })
 
+  // 42501: the database refused — e.g. a guardian thread whose link or
+  // enrollment has ended is read-only (COUNCIL-2026-035).
+  if (error?.code === '42501') return { error: 'This conversation is closed.' }
   if (error) return { error: 'Could not complete that. Please try again.' }
 
   // Notify other participants
@@ -211,6 +222,9 @@ export async function sendMessage(
     .eq('is_muted', false)
 
   if (others && others.length > 0) {
+    // org_id must be explicit: the service role has no session, so the
+    // column default (the caller's org) is null and the insert used to fail
+    // silently — reply notifications were never created.
     await service.from('notifications').insert(
       others.map((p) => ({
         user_id:        p.user_id,
@@ -220,8 +234,10 @@ export async function sendMessage(
         link:           `/messages/${threadId}`,
         reference_type: 'message_thread',
         reference_id:   threadId,
+        org_id:         profile.org_id,
       }))
     )
+    await queueGuardianMessageEmails(service, threadId, others.map((p) => p.user_id))
   }
 
   revalidatePath(`/messages/${threadId}`)
@@ -254,4 +270,96 @@ export async function deleteMessage(messageId: string): Promise<{ error?: string
 
   if (error) return { error: 'Could not complete that. Please try again.' }
   return {}
+}
+
+// ── Teacher ↔ guardian threads (COUNCIL-2026-035) ──────────────────────
+// Email a guardian recipient (no message body — Amendment 4) when a thread is
+// about a student. Non-guardian recipients get only the in-app notification.
+async function queueGuardianMessageEmails(
+  service: ReturnType<typeof createServiceClient>,
+  threadId: string,
+  recipientUids: string[],
+) {
+  const { data: thread } = await service
+    .from('message_threads').select('subject_student_uid').eq('id', threadId).maybeSingle()
+  if (!thread?.subject_student_uid || recipientUids.length === 0) return
+  const { data: guardians } = await service
+    .from('profiles').select('uid').in('uid', recipientUids).eq('role', 'guardian')
+  if (!guardians?.length) return
+  await service.from('guardian_notification_queue').insert(
+    guardians.map((g) => ({
+      student_uid: thread.subject_student_uid,
+      event_type: 'message_received',
+      payload: { recipient_guardian_uid: g.uid, thread_id: threadId },
+    })),
+  )
+}
+
+export async function getOrCreateGuardianThread(
+  studentUid: string,
+  otherUid: string,
+  firstMessage: string,
+): Promise<{ threadId?: string; error?: string }> {
+  const { supabase, profile } = await requireAuth()
+  const body = stripHtml(firstMessage ?? '').slice(0, 10000)
+  if (!body) return { error: 'Message cannot be empty.' }
+
+  // Pair eligibility is decided by the database (can_message_about), as the
+  // caller: same org, a real guardian link, and a teacher who actually
+  // teaches the student (or an admin/manager).
+  const { data: allowed } = await supabase.rpc('can_message_about', { p_student_uid: studentUid, p_other_uid: otherUid })
+  if (allowed !== true) return { error: 'You can’t message this person about this student.' }
+
+  const ok = await checkRateLimit(supabase, profile.uid)
+  if (!ok) return { error: 'You are sending messages too quickly. Please wait a moment.' }
+
+  const service = createServiceClient()
+  const orgId = profile.org_id as string
+
+  // Reuse the existing thread between these two people about this student.
+  const { data: mine } = await service
+    .from('message_thread_participants').select('thread_id').eq('user_id', profile.uid).is('left_at', null)
+  const myIds = (mine ?? []).map((r) => r.thread_id)
+  let threadId: string | null = null
+  if (myIds.length) {
+    const { data: shared } = await service
+      .from('message_thread_participants')
+      .select('thread_id, message_threads!inner(subject_student_uid)')
+      .eq('user_id', otherUid).is('left_at', null).in('thread_id', myIds)
+      .eq('message_threads.subject_student_uid', studentUid)
+      .limit(1)
+    threadId = shared?.[0]?.thread_id ?? null
+  }
+
+  if (!threadId) {
+    const { data: student } = await service.from('profiles').select('display_name').eq('uid', studentUid).maybeSingle()
+    const { data: thread, error } = await service
+      .from('message_threads')
+      .insert({
+        thread_type: 'direct', created_by: profile.uid, org_id: orgId, subject_student_uid: studentUid,
+        subject: `About ${student?.display_name ?? 'a student'}`,
+      })
+      .select('id').single()
+    if (error || !thread) return { error: 'Could not start the conversation. Please try again.' }
+    const { error: partErr } = await service.from('message_thread_participants').insert([
+      { thread_id: thread.id, user_id: profile.uid, role: 'owner', can_reply: true, org_id: orgId },
+      { thread_id: thread.id, user_id: otherUid, role: 'member', can_reply: true, org_id: orgId },
+    ])
+    if (partErr) return { error: 'Could not start the conversation. Please try again.' }
+    threadId = thread.id as string
+  }
+
+  // Send as the caller, so the messages policy (including can_post_to_thread) applies.
+  const { error: msgErr } = await supabase.from('messages').insert({ thread_id: threadId, sender_id: profile.uid, body, org_id: orgId })
+  if (msgErr) return { error: 'Could not send the message. Please try again.' }
+
+  await service.from('notifications').insert({
+    user_id: otherUid, type: 'message_received', title: `New message from ${profile.display_name}`,
+    body: body.slice(0, 80), link: `/messages/${threadId}`, reference_type: 'message_thread',
+    reference_id: threadId, org_id: orgId,
+  })
+  await queueGuardianMessageEmails(service, threadId, [otherUid])
+
+  revalidatePath('/messages')
+  return { threadId }
 }

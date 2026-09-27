@@ -241,6 +241,16 @@
       "composerPlaceholder": "Write a message… (Ctrl+Enter to send)",
       "composerHint": "Ctrl+Enter to send",
       "deleteAriaLabel": "Delete message"
+    },
+    "aboutStudent": {
+      "to": "Message to {name}",
+      "send": "Send",
+      "sending": "Sending…",
+      "cancel": "Cancel",
+      "error": "Could not send the message. Please try again.",
+      "messageTeacher": "Message {name}",
+      "messageGuardian": "Message guardian {name}",
+      "threadAbout": "About {name}"
     }
   },
   "calendar": {
