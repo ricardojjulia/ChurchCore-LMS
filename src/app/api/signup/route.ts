@@ -3,7 +3,6 @@ import { createServiceClient } from '@/utils/supabase/service'
 import { verifyTurnstile } from '@/lib/turnstile'
 import { checkLimit, signupDomainLimiter, signupIpLimiter } from '@/lib/rate-limit'
 import { emailDomain, newSignupToken, signupEnabled, SIGNUP_TOKEN_TTL_MS, validateSignup } from '@/lib/signup'
-import { sendEmail } from '@/lib/email'
 import SignupVerifyEmail from '@/emails/SignupVerifyEmail'
 
 export const runtime = 'nodejs'
@@ -11,8 +10,20 @@ export const runtime = 'nodejs'
 // Public self-serve signup (COUNCIL-2026-034). Nothing is provisioned here:
 // this only stages a pending signup and emails a verification link. The
 // response is identical whether or not the email already has an account.
+// Links in emails come from configuration, never from the request: the Host
+// header is attacker-controlled, and a spoofed one would put the attacker's
+// domain in a genuine verification email (CodeQL, PR #36).
+function siteBaseUrl(): string | null {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL || process.env.APP_BASE_URL
+  if (configured) return configured.replace(/\/+$/, '')
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  return vercel ? `https://${vercel}` : null
+}
+
 export async function POST(req: NextRequest) {
   if (!signupEnabled()) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  const baseUrl = siteBaseUrl()
+  if (!baseUrl) return NextResponse.json({ error: 'Signup is not configured.' }, { status: 503 })
 
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   const ipLimit = await checkLimit(signupIpLimiter, ip)
@@ -46,13 +57,15 @@ export async function POST(req: NextRequest) {
   // "Slug taken" may be revealed (it's public on /join); account existence may not.
   if (takenOrg || takenPending) return NextResponse.json({ error: 'slug_taken', field: 'slug' }, { status: 409 })
 
-  const origin = req.nextUrl.origin
+  // Loaded here, not at module scope: @/lib/email reads required env vars,
+  // which breaks page-data collection during `next build`.
+  const { sendEmail } = await import('@/lib/email')
   try {
     if (existingUser) {
       await sendEmail({
         to: input.email,
         subject: input.locale === 'es' ? 'Ya tienes una cuenta' : 'You already have an account',
-        react: SignupVerifyEmail({ variant: 'existing', churchName: input.churchName, actionUrl: `${origin}/login`, locale: input.locale }),
+        react: SignupVerifyEmail({ variant: 'existing', churchName: input.churchName, actionUrl: `${baseUrl}/login`, locale: input.locale }),
       })
     } else {
       const { token, hash } = newSignupToken()
@@ -68,7 +81,7 @@ export async function POST(req: NextRequest) {
         await sendEmail({
           to: input.email,
           subject: input.locale === 'es' ? 'Confirma tu correo' : 'Confirm your email',
-          react: SignupVerifyEmail({ variant: 'verify', churchName: input.churchName, actionUrl: `${origin}/api/signup/verify?token=${token}`, locale: input.locale }),
+          react: SignupVerifyEmail({ variant: 'verify', churchName: input.churchName, actionUrl: `${baseUrl}/api/signup/verify?token=${token}`, locale: input.locale }),
         })
       } catch (err) {
         await service.from('pending_signups').delete().eq('token_hash', hash)

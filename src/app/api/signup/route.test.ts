@@ -57,6 +57,7 @@ const request = (data: unknown) =>
 
 beforeEach(() => {
   process.env.SELF_SERVE_SIGNUP_ENABLED = 'true'
+  process.env.APP_BASE_URL = 'https://lms.example.org'
   Object.assign(m, { existingUser: false, takenSlug: false, inserted: [], deleted: [], sent: [], sendFails: false })
 })
 
@@ -83,7 +84,7 @@ describe('POST /api/signup', () => {
     expect(res.status).toBe(202)
     expect(await res.json()).toEqual({ ok: true })
     expect(m.inserted).toHaveLength(0)
-    expect(m.sent[0]).toMatchObject({ variant: 'existing', actionUrl: 'http://localhost/login' })
+    expect(m.sent[0]).toMatchObject({ variant: 'existing', actionUrl: 'https://lms.example.org/login' })
   })
 
   it('removes the staged signup when the email cannot be sent', async () => {
@@ -91,6 +92,20 @@ describe('POST /api/signup', () => {
     const res = await POST(request(body()))
     expect(res.status).toBe(503)
     expect(m.deleted).toEqual([m.inserted[0].token_hash])
+  })
+
+  it('builds email links from configuration, never from the Host header', async () => {
+    const spoofed = new NextRequest('https://attacker.example/api/signup', {
+      method: 'POST', body: JSON.stringify(body()), headers: { 'content-type': 'application/json', host: 'attacker.example' },
+    })
+    expect((await POST(spoofed)).status).toBe(202)
+    expect(m.sent[0].actionUrl.startsWith('https://lms.example.org/api/signup/verify?token=')).toBe(true)
+  })
+
+  it('refuses to send links when no site URL is configured', async () => {
+    delete process.env.APP_BASE_URL
+    expect((await POST(request(body()))).status).toBe(503)
+    expect(m.sent).toHaveLength(0)
   })
 
   it('refuses a failed security check and a taken slug', async () => {
