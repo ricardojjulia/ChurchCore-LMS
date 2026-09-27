@@ -46,12 +46,8 @@ serve(async (req: Request) => {
       continue
     }
 
-    const { error: syncErr } = await supabase
-      .rpc('sync_org_status_to_profiles', { p_org_id: org.id })
-
-    if (syncErr) {
-      console.error(`expire-trials: sync failed for ${org.id}`, syncErr.message)
-    }
+    // Member access (profile_roles.tenant_active) follows automatically from the
+    // status change (trigger from COUNCIL-2026-034 Amendment 7).
 
     await supabase.from('platform_audit_log').insert({
       action:     'trial_expired',

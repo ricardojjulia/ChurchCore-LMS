@@ -46,7 +46,10 @@ export async function GET(req: NextRequest) {
     app_metadata: { org_id: org.id, role: 'admin' },
   })
   if (userError || !created.user) {
+    // Roll back fully, including the token claim, so the same link can be
+    // retried instead of being dead (PR #36 review).
     await service.from('organizations').delete().eq('id', org.id)
+    await service.from('pending_signups').update({ verified_at: null }).eq('id', pending.id)
     return redirectTo('/start?error=failed')
   }
   await service.from('profiles').update({ display_name: input.adminName }).eq('auth_id', created.user.id)

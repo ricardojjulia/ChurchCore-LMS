@@ -1,5 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 
+// SERVER-ONLY (imports node:crypto). Client code imports slugify from
+// './signup-slug' directly.
 // Self-serve signup helpers (COUNCIL-2026-034): input validation, the
 // verification token, and the feature flag. No I/O here, so it's unit-tested
 // directly.
@@ -39,8 +41,6 @@ export interface SignupInput {
 export type SignupValidation =
   | { ok: true; value: SignupInput }
   | { ok: false; field: keyof SignupInput | 'form'; code: string }
-
-export { slugify } from './signup-slug'
 
 export function emailDomain(email: string): string {
   return email.split('@')[1]?.toLowerCase() ?? ''

@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it } from 'vitest'
-import { hashSignupToken, newSignupToken, signupEnabled, slugify, validateSignup } from './signup'
+import { hashSignupToken, newSignupToken, signupEnabled, validateSignup } from './signup'
+import { slugify } from './signup-slug'
 
 const base = {
   churchName: 'Grace Church', slug: 'grace-church', adminName: 'Ana Pérez',
