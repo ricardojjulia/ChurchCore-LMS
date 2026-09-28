@@ -21,6 +21,8 @@ describe('auth throttle', () => {
   it('reads the client IP from the first forwarded address', () => {
     expect(clientIp(new Headers({ 'x-forwarded-for': '203.0.113.9, 10.0.0.1' }))).toBe('203.0.113.9')
     expect(clientIp(new Headers({ 'x-real-ip': '198.51.100.2' }))).toBe('198.51.100.2')
+    // The platform-set x-real-ip wins over a client-supplied forwarded chain.
+    expect(clientIp(new Headers({ 'x-real-ip': '198.51.100.2', 'x-forwarded-for': '6.6.6.6, 198.51.100.2' }))).toBe('198.51.100.2')
     expect(clientIp(new Headers())).toBe('unknown')
     // Next's headers() adapter is a Headers with a raw `headers` field too.
     const adapter = Object.assign(new Headers({ 'x-forwarded-for': '192.0.2.7' }), { headers: { 'x-forwarded-for': '192.0.2.7' } })

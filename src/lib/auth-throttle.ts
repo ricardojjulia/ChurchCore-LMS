@@ -29,7 +29,10 @@ export function clientIp(req: Pick<NextRequest, 'headers'> | Headers): string {
   // Test for a Headers object first: Next's headers() adapter also carries a
   // raw `headers` field (a plain object), so `'headers' in req` misleads.
   const headers = typeof (req as Headers).get === 'function' ? (req as Headers) : (req as Pick<NextRequest, 'headers'>).headers
-  return headers.get('x-forwarded-for')?.split(',')[0]?.trim() || headers.get('x-real-ip') || 'unknown'
+  // x-real-ip first: it's set by the platform (Vercel) and can't be supplied
+  // by the client. Vercel also overwrites x-forwarded-for, but other proxies
+  // append to it, so its first entry is only a fallback.
+  return headers.get('x-real-ip')?.trim() || headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
 }
 
 export interface ThrottleResult { allowed: boolean; retryAfter: number }
@@ -52,11 +55,12 @@ export async function clear(scope: string, key: string): Promise<void> {
 }
 
 export async function recordEvent(event: SecurityEvent, ids: { ip?: string; email?: string } = {}): Promise<void> {
-  await createServiceClient().from('auth_security_events').insert({
+  const { error } = await createServiceClient().from('auth_security_events').insert({
     event,
     ip_hash: ids.ip ? hashId('ip', ids.ip) : null,
     email_hash: ids.email ? hashId('email', ids.email) : null,
   })
+  if (error) console.warn('security event not recorded:', error.code ?? 'unknown')
 }
 
 export function minutes(seconds: number): number {

@@ -31,12 +31,15 @@ export async function updatePassword(input: { current?: string; password: string
       return { error: 'too_many' }
     }
     // Check the current password on a throwaway client that keeps no
-    // session, then end the session that check created.
+    // session, then end the session that check created. 'local' revokes just
+    // that session server-side; 'global' would sign the user out everywhere.
     const probe = createStatelessClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
       auth: { persistSession: false, autoRefreshToken: false },
     })
     const { error: wrong } = await probe.auth.signInWithPassword({ email: user.email, password: current })
     if (wrong) {
+      // Supabase Auth's own limit is a wait, not a wrong password.
+      if (wrong.status === 429) return { error: 'too_many' }
       await recordEvent('login_failed', { ip, email: user.email })
       return { error: 'wrong_current' }
     }

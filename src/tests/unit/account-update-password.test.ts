@@ -90,6 +90,13 @@ describe('updatePassword', () => {
     expect(m.events).toEqual(['login_failed'])
   })
 
+  it('reports Supabase Auth rate limiting as a wait, not a wrong password', async () => {
+    session()
+    m.probeSignIn.mockResolvedValueOnce({ error: { status: 429, message: 'rate limited' } })
+    expect(await updatePassword({ current: 'old password 1', password: 'new password 22' })).toEqual({ error: 'too_many' })
+    expect(m.events).toEqual([])
+  })
+
   it('is limited like sign-in, so it cannot be used to guess faster', async () => {
     session()
     m.limited = true

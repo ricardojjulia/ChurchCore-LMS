@@ -7,7 +7,8 @@ export const suiteEmail = () =>
   `suite-${runTag().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}@test.churchcore.dev`
 
 // A distinct client address per test, so per-IP limits don't couple tests
-// that all run from 127.0.0.1. Vercel overwrites this header in production.
+// that all run from 127.0.0.1. In production the app prefers the
+// platform-set x-real-ip, which clients can't supply.
 export const testIp = () => `198.18.${randomInt(0, 255)}.${randomInt(1, 254)}`
 
 export async function createMember(email = suiteEmail()) {
