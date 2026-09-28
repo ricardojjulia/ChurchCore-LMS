@@ -12,7 +12,15 @@
       "submitLoading": "Iniciando sesión…",
       "submitButton": "Iniciar sesión",
       "newChurch": "¿Iglesia nueva?",
-      "startTrial": "Comienza una prueba gratuita"
+      "startTrial": "Comienza una prueba gratuita",
+      "forgot": "¿Olvidaste tu contraseña?",
+      "errors": {
+        "invalid_credentials": "El correo o la contraseña son incorrectos.",
+        "too_many": "Demasiados intentos. Inténtalo de nuevo en {minutes} minutos.",
+        "captcha": "La verificación de seguridad falló. Inténtalo de nuevo.",
+        "invalid_input": "Escribe tu correo y tu contraseña.",
+        "generic": "No se pudo iniciar sesión. Inténtalo de nuevo."
+      }
     },
     "sso": {
       "google": "Continuar con Google",
@@ -26,6 +34,49 @@
         "password_disabled": "Tu iglesia desactivó el inicio con contraseña. Usa Google o Microsoft.",
         "auth_callback_failed": "No se completó el inicio de sesión. Inténtalo de nuevo."
       }
+    },
+    "forgot": {
+      "heading": "Restablece tu contraseña",
+      "intro": "Escribe el correo con el que inicias sesión. Si tiene una cuenta, te enviaremos un enlace para elegir una contraseña nueva.",
+      "submit": "Enviarme un enlace",
+      "submitting": "Enviando…",
+      "sent": "Si una cuenta usa ese correo, te enviamos un enlace para restablecer la contraseña. Revisa tu bandeja de entrada.",
+      "back": "Volver a iniciar sesión",
+      "errors": {
+        "unavailable": "Restablecer la contraseña por correo aún no está disponible en este sitio. Pide ayuda al administrador de tu iglesia.",
+        "too_many": "Demasiadas solicitudes. Inténtalo más tarde.",
+        "invalid_email": "Escribe un correo válido.",
+        "captcha": "La verificación de seguridad falló. Inténtalo de nuevo.",
+        "invalid_link": "Ese enlace no es válido o ya venció. Pide uno nuevo.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
+    },
+    "password": {
+      "heading": "Elige tu contraseña",
+      "changeHeading": "Cambia tu contraseña",
+      "resetIntro": "Elige una contraseña nueva para tu cuenta.",
+      "intro": "Usa al menos 8 caracteres. Evita contraseñas comunes.",
+      "current": "Contraseña actual",
+      "new": "Contraseña nueva",
+      "confirm": "Confirma la contraseña nueva",
+      "submit": "Guardar contraseña",
+      "saving": "Guardando…",
+      "saved": "Contraseña guardada. Se cerró la sesión en tus otros dispositivos.",
+      "mismatch": "Las contraseñas no coinciden.",
+      "errors": {
+        "too_short": "Usa al menos 8 caracteres.",
+        "too_long": "Usa como máximo 72 caracteres.",
+        "matches_email": "No uses tu correo como contraseña.",
+        "too_common": "Esa contraseña es demasiado común. Elige una más difícil de adivinar.",
+        "wrong_current": "Tu contraseña actual es incorrecta.",
+        "current_required": "Escribe tu contraseña actual.",
+        "not_signed_in": "Tu sesión terminó. Inicia sesión de nuevo.",
+        "same": "Elige una contraseña distinta de la actual.",
+        "generic": "No se pudo guardar la contraseña. Inténtalo de nuevo.",
+        "too_many": "Demasiados intentos. Inténtalo más tarde."
+      },
+      "welcomeIntro": "¡Bienvenido! Elige una contraseña para poder iniciar sesión más adelante. Usa al menos 8 caracteres.",
+      "continue": "Ir a tu panel"
     }
   },
   "common": {

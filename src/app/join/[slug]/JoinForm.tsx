@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Turnstile } from '@marsidev/react-turnstile'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { createClient } from '@/utils/supabase/client'
 import { useTranslations } from 'next-intl'
 import SsoButtons from '@/components/auth/SsoButtons'
@@ -23,6 +23,8 @@ export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Prop
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [error, setError]               = useState<string | null>(null)
   const [loading, setLoading]           = useState(false)
+  // Turnstile tokens are single-use; a failed attempt needs a fresh one.
+  const turnstile = useRef<TurnstileInstance | null>(null)
 
   const supabase = createClient()
 
@@ -49,6 +51,8 @@ export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Prop
 
       if (result.error) {
         setError(result.error)
+        setTurnstileToken(null)
+        turnstile.current?.reset()
         return
       }
 
@@ -77,7 +81,7 @@ export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Prop
     <>
     {/* SSO join finishes at /join/[slug]/complete, which applies the same org checks. */}
     <div className="mb-4"><SsoButtons next={`/join/${orgSlug}/complete`} /></div>
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} method="post" className="space-y-4">
       <div>
         <label htmlFor="displayName" className="block text-sm font-medium mb-1">
           {t('join.form.fullNameLabel')}
@@ -125,14 +129,16 @@ export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Prop
       </div>
 
       <Turnstile
+        ref={turnstile}
         siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''}
         onSuccess={setTurnstileToken}
         onError={() => setError(t('join.form.turnstileFailedError'))}
+        onExpire={() => setTurnstileToken(null)}
         className="mt-2"
       />
 
       {error && (
-        <p className="text-sm text-destructive">{error}</p>
+        <p role="alert" className="text-sm text-destructive">{error}</p>
       )}
 
       <button

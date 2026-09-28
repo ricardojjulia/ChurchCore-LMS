@@ -263,3 +263,7 @@ VALUES ('00000000-0000-0000-00c0-000000000d01', 'suite_badge', 'Suite Badge', 'S
 ON CONFLICT DO NOTHING;
 
 COMMIT;
+
+-- COUNCIL-2026-045: start every run with empty auth throttles, so repeated
+-- local runs (all from 127.0.0.1) don't trip the sign-in limits.
+TRUNCATE public.auth_throttle;

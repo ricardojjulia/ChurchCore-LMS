@@ -35,6 +35,9 @@ export const ROUTES: RouteSpec[] = [
   { surface: covers('page:/login'), path: '/login', allow: ['anon'], mobile: true },
   // Self-serve signup (COUNCIL-2026-034): signed-in users are sent to /dashboard.
   { surface: covers('page:/start'), path: '/start', allow: ['anon'], mobile: true },
+  // Password reset request and set/change password (COUNCIL-2026-045).
+  { surface: covers('page:/forgot-password'), path: '/forgot-password', allow: EVERYONE, mobile: true },
+  { surface: covers('page:/account/password'), path: '/account/password', allow: AUTHED, mobile: true },
   // Renewal is only for members of a suspended org; everyone in an active org is redirected.
   { surface: covers('page:/billing/renew'), path: '/billing/renew', allow: [] },
   // Only for signed-in accounts with no organization (COUNCIL-2026-037); every seeded actor has one.

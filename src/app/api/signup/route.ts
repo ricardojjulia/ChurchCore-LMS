@@ -4,21 +4,14 @@ import { verifyTurnstile } from '@/lib/turnstile'
 import { checkLimit, signupDomainLimiter, signupIpLimiter } from '@/lib/rate-limit'
 import { emailDomain, newSignupToken, signupEnabled, SIGNUP_TOKEN_TTL_MS, validateSignup } from '@/lib/signup'
 import SignupVerifyEmail from '@/emails/SignupVerifyEmail'
+import { siteBaseUrl } from '@/lib/site-url'
 
 export const runtime = 'nodejs'
 
 // Public self-serve signup (COUNCIL-2026-034). Nothing is provisioned here:
 // this only stages a pending signup and emails a verification link. The
 // response is identical whether or not the email already has an account.
-// Links in emails come from configuration, never from the request: the Host
-// header is attacker-controlled, and a spoofed one would put the attacker's
-// domain in a genuine verification email (CodeQL, PR #36).
-function siteBaseUrl(): string | null {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL || process.env.APP_BASE_URL
-  if (configured) return configured.replace(/\/+$/, '')
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  return vercel ? `https://${vercel}` : null
-}
+// Links in emails come from configuration (see siteBaseUrl).
 
 export async function POST(req: NextRequest) {
   if (!signupEnabled()) return NextResponse.json({ error: 'Not found' }, { status: 404 })

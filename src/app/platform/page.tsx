@@ -1,5 +1,6 @@
 import Link                from 'next/link'
 import { createServiceClient } from '@/utils/supabase/service'
+import { createClient }        from '@/utils/supabase/server'
 import TenantActions       from './TenantActions'
 
 function healthScore(userCount: number, courseCount: number) {
@@ -72,6 +73,20 @@ export default async function PlatformPage() {
     score:       healthScore(usersByOrg[o.id] ?? 0, coursesByOrg[o.id] ?? 0),
   }))
 
+  // Sign-in security, last 24 hours (COUNCIL-2026-045). Read through RLS:
+  // only platform admins can see these rows.
+  const since = new Date(Date.now() - 86_400_000).toISOString()
+  const { data: securityRows } = await (await createClient())
+    .from('auth_security_events').select('event').gte('created_at', since).limit(10000)
+  const securityCounts: Record<string, number> = {}
+  for (const r of securityRows ?? []) securityCounts[r.event] = (securityCounts[r.event] ?? 0) + 1
+  const security = [
+    { label: 'Failed sign-ins', value: securityCounts.login_failed ?? 0 },
+    { label: 'Sign-ins throttled', value: (securityCounts.login_throttled ?? 0) + (securityCounts.join_throttled ?? 0) + (securityCounts.reset_throttled ?? 0) },
+    { label: 'Bot checks failed', value: securityCounts.captcha_failed ?? 0 },
+    { label: 'Password resets', value: securityCounts.reset_requested ?? 0 },
+  ]
+
   const total     = tenants.length
   const active    = tenants.filter(t => t.status === 'active').length
   const trial     = tenants.filter(t => t.status === 'trial').length
@@ -106,6 +121,19 @@ export default async function PlatformPage() {
           </div>
         ))}
       </div>
+
+      {/* Sign-in security, last 24 hours */}
+      <section aria-labelledby="security-heading" className="mt-8">
+        <h2 id="security-heading" className="text-sm font-semibold uppercase tracking-wider text-slate-400">Sign-in security · last 24 hours</h2>
+        <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {security.map(({ label, value }) => (
+            <div key={label} className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+              <p className="text-2xl font-bold text-white">{value}</p>
+              <p className="mt-0.5 text-xs text-slate-400">{label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Tenant table */}
       <div className="mt-8 overflow-x-auto rounded-md border border-slate-800">

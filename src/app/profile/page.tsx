@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import ProfileForm from '@/components/profile/ProfileForm'
 import { getTranslations } from 'next-intl/server'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -60,6 +61,16 @@ export default async function ProfilePage() {
               initialEmailDigest={profile?.email_digest_enabled ?? true}
             />
           </div>
+        </div>
+
+        <div className="mt-6 bg-white border border-slate-200 rounded-2xl shadow-sm px-8 py-6 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">{t('auth.password.changeHeading')}</h2>
+            <p className="text-sm text-slate-600">{t('auth.password.intro')}</p>
+          </div>
+          <Link href="/account/password" className="shrink-0 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50">
+            {t('auth.password.submit')}
+          </Link>
         </div>
       </div>
     </main>
