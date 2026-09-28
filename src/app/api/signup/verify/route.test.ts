@@ -59,7 +59,7 @@ describe('GET /api/signup/verify', () => {
   it('completes and signs the admin in when everything succeeds', async () => {
     m.createUserFails = false
     const res = await GET(request())
-    expect(res.headers.get('location')).toBe('/onboarding')
+    expect(res.headers.get('location')).toBe('/account/password?welcome=1')
     expect(m.ops).not.toContain('delete organizations')
   })
 })

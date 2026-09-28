@@ -12,3 +12,11 @@ export async function verifyTurnstile(token: string | null | undefined, remoteIp
     return false
   }
 }
+
+// Whether this deployment has Turnstile keys. Sign-in and password reset skip
+// the check when it doesn't, so a missing key can never lock everyone out;
+// their rate limits still apply (COUNCIL-2026-045). Registration forms
+// (/join, /start) always require it.
+export function turnstileConfigured(): boolean {
+  return Boolean(process.env.TURNSTILE_SECRET_KEY && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
+}

@@ -11,6 +11,27 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.41.0] — 2026-09-28
+
+Password sign-in that works, and abuse protection (COUNCIL-2026-045). Google/Microsoft sign-in is tabled and stays off.
+
+### Fixed
+- **New members could not sign in after joining** in production: `/join` created unconfirmed accounts, and production requires confirmed email. Accounts are now created confirmed.
+- **Church admins from `/start` had no password**, so they were locked out once their first session ended. They now choose a password straight after verifying their email.
+
+### Added
+- **Forgot password** (`/forgot-password`): emails a one-time reset link (needs `RESEND_API_KEY`) that opens `/account/password`. The answer is the same whether or not the email has an account.
+- **Set or change password** at `/account/password`, linked from the profile page. Needs the current password unless you came from a reset link. Other devices are signed out afterwards.
+- **Server-side sign-in** (`POST /api/auth/login`): per-IP and per-account limits, a Cloudflare Turnstile bot check, and one generic message for every credential failure.
+- **Password rules:** at least 8 characters, not your email address, and not a common password. Applied on join, reset and change.
+- **Postgres-backed auth limits** (`auth_throttle`), which need no Upstash. `/join` is now limited per IP and per church.
+- **Sign-in security events** (`auth_security_events`, hashed identifiers only), with 24-hour counts on `/platform`.
+
+### Changed
+- Supabase Auth public sign-up is off (`enable_signup = false`). Every account is created server-side, so bots can't skip the checks on `/join` and `/start`. The minimum password length is now 8.
+
+---
+
 ## [0.40.0] — 2026-09-27
 
 Sprint 6, part 2: Google and Microsoft sign-in (COUNCIL-2026-037).

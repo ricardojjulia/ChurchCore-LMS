@@ -72,7 +72,7 @@ test.describe('GET /api/signup/verify', () => {
 
     const ok = await anon.get(`/api/signup/verify?token=${token}`, { maxRedirects: 0 })
     expect(ok.status()).toBe(307)
-    expect(ok.headers()['location']).toBe('/onboarding')
+    expect(ok.headers()['location']).toBe('/account/password?welcome=1')
     expect(ok.headers()['set-cookie'] ?? '').toContain('auth-token')
 
     const { data: org } = await db().from('organizations')

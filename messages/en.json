@@ -12,7 +12,15 @@
       "submitLoading": "Signing in…",
       "submitButton": "Sign in",
       "newChurch": "New church?",
-      "startTrial": "Start a free trial"
+      "startTrial": "Start a free trial",
+      "forgot": "Forgot password?",
+      "errors": {
+        "invalid_credentials": "Email or password is incorrect.",
+        "too_many": "Too many sign-in attempts. Try again in {minutes} minutes.",
+        "captcha": "Security check failed. Please try again.",
+        "invalid_input": "Enter your email and password.",
+        "generic": "Sign-in failed. Please try again."
+      }
     },
     "sso": {
       "google": "Continue with Google",
@@ -26,6 +34,49 @@
         "password_disabled": "Your church has turned off password sign-in. Use Google or Microsoft.",
         "auth_callback_failed": "Sign-in didn't complete. Please try again."
       }
+    },
+    "forgot": {
+      "heading": "Reset your password",
+      "intro": "Enter the email you sign in with. If it has an account, we’ll email you a link to choose a new password.",
+      "submit": "Email me a reset link",
+      "submitting": "Sending…",
+      "sent": "If an account uses that email, we’ve sent a link to reset the password. Check your inbox.",
+      "back": "Back to sign in",
+      "errors": {
+        "unavailable": "Password reset by email isn’t available on this site yet. Ask your church administrator for help.",
+        "too_many": "Too many requests. Please try again later.",
+        "invalid_email": "Enter a valid email address.",
+        "captcha": "Security check failed. Please try again.",
+        "invalid_link": "That reset link is invalid or has expired. Request a new one.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "password": {
+      "heading": "Set your password",
+      "changeHeading": "Change your password",
+      "resetIntro": "Choose a new password for your account.",
+      "intro": "Use at least 8 characters. Avoid common passwords.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Save password",
+      "saving": "Saving…",
+      "saved": "Password saved. Other devices have been signed out.",
+      "mismatch": "The passwords don’t match.",
+      "errors": {
+        "too_short": "Use at least 8 characters.",
+        "too_long": "Use at most 72 characters.",
+        "matches_email": "Don’t use your email address as your password.",
+        "too_common": "That password is too common. Choose something harder to guess.",
+        "wrong_current": "Your current password is incorrect.",
+        "current_required": "Enter your current password.",
+        "not_signed_in": "Your session has ended. Sign in again.",
+        "same": "Choose a password different from your current one.",
+        "generic": "Could not save your password. Please try again.",
+        "too_many": "Too many attempts. Please try again later."
+      },
+      "welcomeIntro": "Welcome! Choose a password so you can sign in again later. Use at least 8 characters.",
+      "continue": "Continue to your dashboard"
     }
   },
   "common": {

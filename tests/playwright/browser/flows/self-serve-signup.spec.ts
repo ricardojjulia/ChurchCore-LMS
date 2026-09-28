@@ -2,6 +2,7 @@
 // the trial ends its admin can still reach checkout (Amendments 7 and 8).
 import { createHash, randomBytes } from 'node:crypto'
 import { test, expect, asActor, open } from '../../fixtures/test'
+import { testIp } from '../../fixtures/credentials'
 import { covers } from '../../fixtures/covers'
 import { db, runTag } from '../../fixtures/db'
 
@@ -18,7 +19,7 @@ test('the signup form renders with every field labelled', async ({ page }) => {
   await expect(page.getByLabel('Web address')).toHaveValue('grace-community-church')
 })
 
-test('verify → onboarding → trial banner → trial ends → renewal page offers plans', async ({ page }) => {
+test('verify → set password → trial banner → trial ends → renewal page offers plans', async ({ page }) => {
   covers('page:/billing/renew')
   const tag = runTag().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
   const slug = `f-${tag}`.slice(0, 40).replace(/-+$/, '')
@@ -31,7 +32,26 @@ test('verify → onboarding → trial banner → trial ends → renewal page off
   })
 
   await page.goto(`/api/signup/verify?token=${token}`)
-  await expect(page).toHaveURL(/\/onboarding/)
+  // New admins have no password yet: they choose one first, with no
+  // "current password" asked (COUNCIL-2026-045).
+  await expect(page).toHaveURL(/\/account\/password\?welcome=1/)
+  await expect(page.getByLabel('Current password')).toHaveCount(0)
+  await page.getByLabel('New password', { exact: true }).fill('Suite admin pass 1')
+  await page.getByLabel('Confirm new password').fill('Suite admin pass 1')
+  await page.getByRole('button', { name: 'Save password' }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'Password saved.' })).toBeVisible()
+  await page.getByRole('link', { name: 'Continue to your dashboard' }).click()
+  await page.waitForURL(/\/dashboard/)
+
+  // …and can sign in with it on another device.
+  const other = await (await page.context().browser()!.newContext({ storageState: { cookies: [], origins: [] }, extraHTTPHeaders: { 'x-forwarded-for': testIp() } })).newPage()
+  await other.goto('/login')
+  await expect(other.getByRole('button', { name: 'Sign in' })).toBeEnabled()
+  await other.getByLabel('Email').fill(email)
+  await other.getByLabel('Password').fill('Suite admin pass 1')
+  await other.getByRole('button', { name: 'Sign in' }).click()
+  await other.waitForURL(/\/dashboard/)
+  await other.context().close()
 
   await open(page, '/dashboard')
   await expect(page.getByText(/Free trial: 14 days left/)).toBeVisible()

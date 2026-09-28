@@ -55,7 +55,9 @@ export async function GET(req: NextRequest) {
   await service.from('profiles').update({ display_name: input.adminName }).eq('auth_id', created.user.id)
   await service.from('pending_signups').delete().eq('id', pending.id)
 
-  const response = redirectTo('/onboarding')
+  // Straight to choosing a password: this one-time-link session is the only
+  // way in until they have one (COUNCIL-2026-045).
+  const response = redirectTo('/account/password?welcome=1')
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
