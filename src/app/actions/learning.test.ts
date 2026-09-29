@@ -1,10 +1,15 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
-import { enrollSelf, gradeSubmission, recordEngagement } from './learning'
+import { enrollSelf, gradeSubmission, recordEngagement, reorderCourseBlocks } from './learning'
 import { covers } from '../../tests/covers'
 
-covers('action:learning.enrollSelf', 'action:learning.gradeSubmission', 'action:learning.recordEngagement')
+covers(
+  'action:learning.enrollSelf',
+  'action:learning.gradeSubmission',
+  'action:learning.recordEngagement',
+  'action:learning.reorderCourseBlocks',
+)
 
 // ── Service client mock (used for XP award and notifications in gradeSubmission) ──
 vi.mock('@/utils/supabase/service', () => ({
@@ -659,3 +664,71 @@ describe('recordEngagement (COUNCIL-2026-006)', () => {
     expect(res).toEqual({ error: 'Not authenticated' })
   })
 })
+
+describe('reorderCourseBlocks (COUNCIL-2026-009)', () => {
+  it('returns { error: "Not authenticated" } when user is not signed in', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(noAuthClient() as any)
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-1', 'b-2'] })
+    expect(result).toEqual({ error: 'Not authenticated' })
+  })
+
+  it('returns { error: "Unauthorized" } when user is not staff', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profile_roles: { data: { uid: 'p-001', role: 'student', org_id: 'org-1' }, error: null },
+      }) as any,
+    )
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-1', 'b-2'] })
+    expect(result).toEqual({ error: 'Unauthorized' })
+  })
+
+  it('returns { error: "Not found" } when course belongs to a different org', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profile_roles: { data: { uid: 'p-001', role: 'teacher', org_id: 'org-1' }, error: null },
+        courses: { data: { org_id: 'org-other' }, error: null },
+      }) as any,
+    )
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-1', 'b-2'] })
+    expect(result).toEqual({ error: 'Not found' })
+  })
+
+  it('returns { error: "Invalid block IDs" } when not all block IDs belong to the course', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profile_roles: { data: { uid: 'p-001', role: 'teacher', org_id: 'org-1' }, error: null },
+        courses: { data: { org_id: 'org-1' }, error: null },
+        course_blocks: { data: [{ id: 'b-1' }], error: null }, // Only 1 out of 2 found
+      }) as any,
+    )
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-1', 'b-2'] })
+    expect(result).toEqual({ error: 'Invalid block IDs' })
+  })
+
+  it('happy path — updates sort_order for all reordered blocks and returns {}', async () => {
+    const mockUpdate = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
+    vi.mocked(createServiceClient).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue({
+        update: mockUpdate,
+      }),
+    } as any)
+
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profile_roles: { data: { uid: 'p-001', role: 'teacher', org_id: 'org-1' }, error: null },
+        courses: { data: { org_id: 'org-1' }, error: null },
+        course_blocks: { data: [{ id: 'b-2' }, { id: 'b-1' }], error: null },
+      }) as any,
+    )
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-2', 'b-1'] })
+    expect(result).toEqual({})
+    expect(mockUpdate).toHaveBeenCalledWith({ sort_order: 1 })
+    expect(mockUpdate).toHaveBeenCalledWith({ sort_order: 2 })
+  })
+})
+
