@@ -1,12 +1,13 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
-import { enrollSelf, gradeSubmission, recordEngagement, reorderCourseBlocks, submitQuiz } from './learning'
+import { enrollSelf, gradeSubmission, loadQuizQuestions, recordEngagement, reorderCourseBlocks, submitQuiz } from './learning'
 import { covers } from '../../tests/covers'
 
 covers(
   'action:learning.enrollSelf',
   'action:learning.gradeSubmission',
+  'action:learning.loadQuizQuestions',
   'action:learning.recordEngagement',
   'action:learning.reorderCourseBlocks',
   'action:learning.submitQuiz',
@@ -812,5 +813,57 @@ describe('submitQuiz (COUNCIL-2026-010 Extended Types)', () => {
     })
   })
 })
+
+describe('loadQuizQuestions (COUNCIL-2026-011 Question Banks)', () => {
+  it('returns static questions when no bank draws configured', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        course_blocks: {
+          data: {
+            content: {
+              questions: [{ id: 'q1', prompt: 'Static question 1' }],
+            },
+          },
+          error: null,
+        },
+      }) as any,
+    )
+
+    const res = await loadQuizQuestions({ blockId: 'b-quiz-1' })
+    expect(res.questions).toHaveLength(1)
+    expect(res.questions[0].id).toBe('q1')
+  })
+
+  it('draws questions from bank via draw_from_bank RPC and merges them', async () => {
+    const mockRpc = vi.fn().mockResolvedValue({
+      data: [{ id: 'bank-q1', prompt: 'Question drawn from bank' }],
+      error: null,
+    })
+
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }) },
+      from: vi.fn().mockReturnValue(
+        resolvesWith({
+          data: {
+            content: {
+              questions: [{ id: 'q1', prompt: 'Static Q' }],
+              bank_draws: [{ bank_id: 'bank-1', count: 1 }],
+            },
+          },
+          error: null,
+        }),
+      ),
+      rpc: mockRpc,
+    } as any)
+
+    const res = await loadQuizQuestions({ blockId: 'b-quiz-2' })
+    expect(mockRpc).toHaveBeenCalledWith('draw_from_bank', {
+      p_bank_id: 'bank-1',
+      p_count: 1,
+    })
+    expect(res.questions).toHaveLength(2)
+  })
+})
+
 
 
