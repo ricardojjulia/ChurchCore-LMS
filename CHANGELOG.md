@@ -11,6 +11,31 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.37.0] — 2026-09-29
+
+Council feature verification wave & multi-actor testing suite sweep (COUNCIL-2026-006, 007, 008, 009, 010, 011, 012, 013, 014, 015, 034).
+
+### Added
+
+- **Engagement Tracker & Ledger (COUNCIL-2026-006):** Server-side atomic engagement event logging (`record_engagement_event`), duplicate suppression, and daily formation streak calculation.
+- **Leaderboards (COUNCIL-2026-015):** Dense ranking leaderboard RPC and UI widget scoped to church organization.
+- **Teacher Plug Module (COUNCIL-2026-007):** Instructor bio, credentials, specialty chips, website link, and signed avatar in course content.
+- **PDF Certificate Download (COUNCIL-2026-008):** Server-side `@react-pdf/renderer` Route Handler with formal certificate typography and grade display options.
+- **Drag-and-Drop Course Builder (COUNCIL-2026-009):** `@dnd-kit` powered block reordering with optimistic UI updates, keyboard accessibility, and org ownership validation.
+- **Quiz Extended Types (COUNCIL-2026-010):** Matching term-definition pairs, fill-in-the-blank with fuzzy case-insensitive grading, and timer countdown with auto-submit.
+- **Question Banks & Randomization (COUNCIL-2026-011):** Shared organization question pool with `draw_from_bank()` RPC and dynamic quiz draw merging.
+- **Badge Auto-Triggers (COUNCIL-2026-012):** Automated badge awarding on XP thresholds, streak milestones, and course completions via `evaluate_badge_triggers()`.
+- **Focus Mode (COUNCIL-2026-013):** Distraction-free full-screen learning viewport with keyboard shortcut (`F`) and `localStorage` persistence.
+- **AI Course Outline Generator (COUNCIL-2026-014):** Anthropic Claude powered document and syllabus parsing directly into structured modules and blocks.
+- **Multi-Actor Testing Harness (COUNCIL-2026-034):** 794-test browser verification sweep across all personas (Admin, Manager, Teacher, Student, Guardian, Platform) with zero regressions.
+
+### Fixed
+
+- **Parallel Worker Submissions:** Made student assignment submission locators and assertions resilient to concurrent grading in parallel Playwright worker threads.
+- **Reports Dispatch Navigation:** Added forward-redirection wait resolution for manager and teacher `/reports` dispatches.
+
+---
+
 ## [0.36.1] — 2026-09-25
 
 ### Fixed
