@@ -888,5 +888,72 @@ export async function loadQuizQuestions({
   return { questions: combined }
 }
 
+// ── Record an engagement event (atomic insert + XP + streak calculation) ─────
+// COUNCIL-2026-006
+
+export async function recordEngagement({
+  eventType,
+  sourceType,
+  sourceId,
+  xpAmount = 0,
+  metadata = {},
+}: {
+  eventType: 'block_completion' | 'quiz_pass' | 'discussion_post' | 'daily_login' | 'course_completion' | 'manual'
+  sourceType?: 'block' | 'quiz' | 'discussion' | 'session' | 'course'
+  sourceId?: string
+  xpAmount?: number
+  metadata?: Record<string, unknown>
+}): Promise<{
+  error?: string
+  inserted?: boolean
+  xpEarned?: number
+  newXp?: number
+  newLevel?: number
+  leveledUp?: boolean
+  currentStreak?: number
+  longestStreak?: number
+}> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data, error } = await supabase.rpc('record_engagement_event', {
+    p_event_type:  eventType,
+    p_source_type: sourceType ?? null,
+    p_source_id:   sourceId ?? null,
+    p_xp:          xpAmount,
+    p_metadata:    metadata,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  const res = (data ?? {}) as {
+    error?: string
+    inserted?: boolean
+    xp_earned?: number
+    new_xp?: number
+    new_level?: number
+    leveled_up?: boolean
+    current_streak?: number
+    longest_streak?: number
+  }
+
+  if (res.error) {
+    return { error: res.error }
+  }
+
+  return {
+    inserted:      res.inserted ?? false,
+    xpEarned:      res.xp_earned ?? 0,
+    newXp:         res.new_xp ?? 0,
+    newLevel:      res.new_level ?? 1,
+    leveledUp:     res.leveled_up ?? false,
+    currentStreak: res.current_streak ?? 0,
+    longestStreak: res.longest_streak ?? 0,
+  }
+}
+
 // Exported so QuizPlayer can type-check against it
 export type QuizQuestionPublic = import('@/types/blocks').QuizQuestion

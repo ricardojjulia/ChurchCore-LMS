@@ -1,10 +1,10 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
-import { enrollSelf, gradeSubmission } from './learning'
+import { enrollSelf, gradeSubmission, recordEngagement } from './learning'
 import { covers } from '../../tests/covers'
 
-covers('action:learning.enrollSelf', 'action:learning.gradeSubmission')
+covers('action:learning.enrollSelf', 'action:learning.gradeSubmission', 'action:learning.recordEngagement')
 
 // ── Service client mock (used for XP award and notifications in gradeSubmission) ──
 vi.mock('@/utils/supabase/service', () => ({
@@ -562,5 +562,100 @@ describe('gradeSubmission', () => {
     const result = await gradeSubmission('sub-1', 85, 'feedback')
     expect(result).toEqual({ error: 'Could not save the grade. Please try again.' })
     expect(JSON.stringify(result)).not.toContain('constraint violation')
+  })
+})
+
+describe('recordEngagement (COUNCIL-2026-006)', () => {
+  it('records an engagement event and returns XP and streak results', async () => {
+    const mockRpc = vi.fn().mockResolvedValue({
+      data: {
+        inserted: true,
+        xp_earned: 10,
+        new_xp: 150,
+        new_level: 2,
+        leveled_up: false,
+        current_streak: 3,
+        longest_streak: 5,
+      },
+      error: null,
+    })
+
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'auth-u-001' } }, error: null }),
+      },
+      rpc: mockRpc,
+    } as any)
+
+    const res = await recordEngagement({
+      eventType: 'block_completion',
+      sourceType: 'block',
+      sourceId: '00000000-0000-0000-00c0-000000000102',
+      xpAmount: 10,
+    })
+
+    expect(res).toEqual({
+      inserted: true,
+      xpEarned: 10,
+      newXp: 150,
+      newLevel: 2,
+      leveledUp: false,
+      currentStreak: 3,
+      longestStreak: 5,
+    })
+
+    expect(mockRpc).toHaveBeenCalledWith('record_engagement_event', {
+      p_event_type: 'block_completion',
+      p_source_type: 'block',
+      p_source_id: '00000000-0000-0000-00c0-000000000102',
+      p_xp: 10,
+      p_metadata: {},
+    })
+  })
+
+  it('handles duplicate events gracefully with zero additional XP', async () => {
+    const mockRpc = vi.fn().mockResolvedValue({
+      data: {
+        inserted: false,
+        xp_earned: 0,
+        new_xp: 150,
+        new_level: 2,
+        leveled_up: false,
+        current_streak: 3,
+        longest_streak: 5,
+      },
+      error: null,
+    })
+
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'auth-u-001' } }, error: null }),
+      },
+      rpc: mockRpc,
+    } as any)
+
+    const res = await recordEngagement({
+      eventType: 'block_completion',
+      sourceType: 'block',
+      sourceId: '00000000-0000-0000-00c0-000000000102',
+      xpAmount: 10,
+    })
+
+    expect(res.inserted).toBe(false)
+    expect(res.xpEarned).toBe(0)
+  })
+
+  it('rejects unauthenticated requests', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      },
+    } as any)
+
+    const res = await recordEngagement({
+      eventType: 'daily_login',
+    })
+
+    expect(res).toEqual({ error: 'Not authenticated' })
   })
 })
