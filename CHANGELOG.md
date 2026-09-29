@@ -11,6 +11,22 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.38.0] — 2026-09-29
+
+Council feature delivery & validation wave: Self-Serve Tenant Onboarding, Teacher-Guardian Messaging, and Assignment Rubrics (COUNCIL-2026-035, COUNCIL-2026-036, COUNCIL-2026-037).
+
+### Added
+
+- **Self-Serve Tenant Signup & Trial Provisioning (COUNCIL-2026-035):** Self-service church onboarding with Cloudflare Turnstile anti-bot verification, automatic slug collision handling, 14-day trial organization provisioning, admin auth user creation, default academic term, starter course template, and welcome announcements.
+- **Teacher ↔ Guardian Direct Messaging (COUNCIL-2026-036):** Direct messaging channel between guardians and course instructors with verified student enrollment routing, guardian relation authorization, email notification dispatches, and responsive UI modal on the Guardian student detail view.
+- **Assignment Rubrics & Multi-Criterion Assessment (COUNCIL-2026-037):** Configurable multi-criterion scoring rubrics on assignments, pre-built templates (e.g., Essay/Theological Reflection, Ministry Project), teacher grading matrix with criterion-level feedback, and student/guardian rubric breakdown views.
+
+### Fixed
+
+- **Playwright Test Runner Resiliency:** Enhanced quiz submission selectors and streaming landmark attachment assertions for concurrent multi-worker browser test executions.
+
+---
+
 ## [0.37.0] — 2026-09-29
 
 Council feature verification wave & multi-actor testing suite sweep (COUNCIL-2026-006, 007, 008, 009, 010, 011, 012, 013, 014, 015, 034).
