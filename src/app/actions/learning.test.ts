@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
-import { enrollSelf, gradeSubmission, recordEngagement, reorderCourseBlocks } from './learning'
+import { enrollSelf, gradeSubmission, recordEngagement, reorderCourseBlocks, submitQuiz } from './learning'
 import { covers } from '../../tests/covers'
 
 covers(
@@ -9,6 +9,7 @@ covers(
   'action:learning.gradeSubmission',
   'action:learning.recordEngagement',
   'action:learning.reorderCourseBlocks',
+  'action:learning.submitQuiz',
 )
 
 // ── Service client mock (used for XP award and notifications in gradeSubmission) ──
@@ -731,4 +732,85 @@ describe('reorderCourseBlocks (COUNCIL-2026-009)', () => {
     expect(mockUpdate).toHaveBeenCalledWith({ sort_order: 2 })
   })
 })
+
+describe('submitQuiz (COUNCIL-2026-010 Extended Types)', () => {
+  it('correctly grades matching questions', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profiles: { data: { uid: 'p-001' }, error: null },
+        course_blocks: { data: { content: {} }, error: null },
+        block_submissions: { data: null, error: null },
+      }) as any,
+    )
+
+    const questions = [
+      {
+        id: 'q-match-1',
+        points: 20,
+        correct_index: -1,
+        type: 'matching' as const,
+        pairs: [
+          { id: '1', left: 'Grace', right: 'Unmerited favor' },
+          { id: '2', left: 'Mercy', right: 'Withheld punishment' },
+        ],
+      },
+    ]
+
+    const answers = [
+      {
+        questionId: 'q-match-1',
+        matchedPairs: {
+          '1': 'Unmerited favor',
+          '2': 'Withheld punishment',
+        },
+      },
+    ]
+
+    const res = await submitQuiz('block-quiz-1', answers, questions, 20)
+    expect(res).toMatchObject({
+      earnedScore: 20,
+      gradePct: 100,
+    })
+  })
+
+  it('correctly grades fill_blank questions case-insensitively with fuzzy acceptable_answers', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profiles: { data: { uid: 'p-001' }, error: null },
+        course_blocks: { data: { content: {} }, error: null },
+        block_submissions: { data: null, error: null },
+      }) as any,
+    )
+
+    const questions = [
+      {
+        id: 'q-fill-1',
+        points: 10,
+        correct_index: -1,
+        type: 'fill_blank' as const,
+        blanks: [
+          { id: 'b1', acceptable_answers: ['love', 'charity'] },
+          { id: 'b2', acceptable_answers: ['peace'] },
+        ],
+      },
+    ]
+
+    const answers = [
+      {
+        questionId: 'q-fill-1',
+        blankAnswers: {
+          '0': '   LOVE  ', // case and whitespace tolerant
+          '1': 'Peace',
+        },
+      },
+    ]
+
+    const res = await submitQuiz('block-quiz-2', answers, questions, 10)
+    expect(res).toMatchObject({
+      earnedScore: 10,
+      gradePct: 100,
+    })
+  })
+})
+
 
