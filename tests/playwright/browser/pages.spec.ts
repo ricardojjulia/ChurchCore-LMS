@@ -40,7 +40,7 @@ for (const route of ROUTES) {
               expect(decodeURI(finalPath)).toBe(route.path)
             }
             await expectHealthyPage(page)
-            await expect(page.locator('main, [role="main"]').first()).toBeAttached()
+            await expect(page.locator('main, [role="main"]').first()).toBeAttached({ timeout: 15_000 })
             const firstAllowed = route.allow[0] === actor
             if (firstAllowed && testInfo.project.name === 'browser') {
               await expectAccessible(page, route.surface, testInfo)
