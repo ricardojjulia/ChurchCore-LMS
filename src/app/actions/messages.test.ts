@@ -1,27 +1,45 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
-import { sendMessage, deleteMessage, markThreadRead, getOrCreateDirectThread } from './messages'
+import {
+  sendMessage,
+  deleteMessage,
+  markThreadRead,
+  getOrCreateDirectThread,
+  sendGuardianTeacherMessage,
+  searchUsers,
+} from './messages'
 import { covers } from '../../tests/covers'
 
-covers('action:messages.sendMessage', 'action:messages.deleteMessage', 'action:messages.markThreadRead', 'action:messages.getOrCreateDirectThread')
+covers(
+  'action:messages.sendMessage',
+  'action:messages.deleteMessage',
+  'action:messages.markThreadRead',
+  'action:messages.getOrCreateDirectThread',
+  'action:messages.sendGuardianTeacherMessage',
+  'action:messages.searchUsers',
+)
 
 // ── Service client mock (used by sendMessage and getOrCreateDirectThread) ─────
 vi.mock('@/utils/supabase/service', () => ({
-  createServiceClient: vi.fn(() => ({
-    from: vi.fn().mockReturnValue({
-      select:  vi.fn().mockReturnThis(),
-      insert:  vi.fn().mockResolvedValue({ data: null, error: null }),
-      update:  vi.fn().mockReturnThis(),
-      eq:      vi.fn().mockReturnThis(),
-      neq:     vi.fn().mockReturnThis(),
-      is:      vi.fn().mockReturnThis(),
-      in:      vi.fn().mockReturnThis(),
-      order:   vi.fn().mockReturnThis(),
-      limit:   vi.fn().mockReturnThis(),
-      single:  vi.fn().mockResolvedValue({ data: null, error: null }),
-    }),
-    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-  })),
+  createServiceClient: vi.fn(() => {
+    const query: any = {
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockImplementation(() => query),
+      update: vi.fn().mockReturnThis(),
+      eq:     vi.fn().mockReturnThis(),
+      neq:    vi.fn().mockReturnThis(),
+      is:     vi.fn().mockReturnThis(),
+      in:     vi.fn().mockReturnThis(),
+      order:  vi.fn().mockReturnThis(),
+      limit:  vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: { id: 'thread-123' }, error: null }),
+      then:   (resolve: (v: unknown) => void) => Promise.resolve({ data: null, error: null }).then(resolve),
+    }
+    return {
+      from: vi.fn().mockReturnValue(query),
+      rpc:  vi.fn().mockResolvedValue({ data: null, error: null }),
+    }
+  }),
 }))
 
 // ── Proxy: any query chain awaitable with a fixed resolved value ───────────────
@@ -175,5 +193,104 @@ describe('getOrCreateDirectThread', () => {
 
     const result = await getOrCreateDirectThread('other-uid', '   ')
     expect(result).toEqual({ error: 'Message cannot be empty.' })
+  })
+})
+
+// ── searchUsers ─────────────────────────────────────────────────────────────
+
+describe('searchUsers', () => {
+  it('returns empty array if query is too short', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(authClient() as any)
+    const result = await searchUsers('a')
+    expect(result).toEqual([])
+  })
+
+  it('searches users when query length >= 2', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      authClient({
+        profiles: { data: [{ uid: 'p-002', display_name: 'Jane Doe', role: 'teacher' }], error: null },
+      }) as any,
+    )
+    const result = await searchUsers('Jane')
+    expect(result).toHaveLength(1)
+    expect(result[0].display_name).toBe('Jane Doe')
+  })
+})
+
+// ── sendGuardianTeacherMessage ───────────────────────────────────────────────
+
+describe('sendGuardianTeacherMessage', () => {
+  it('throws when unauthenticated', async () => {
+    await expect(sendGuardianTeacherMessage({
+      studentUid: 'student-1',
+      courseId:   'course-1',
+      message:    'hello',
+    })).rejects.toThrow()
+  })
+
+  it('rejects if caller is not a guardian', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      authClient({
+        profiles: { data: { uid: 'p-001', display_name: 'Test', role: 'student' }, error: null },
+      }) as any,
+    )
+
+    const result = await sendGuardianTeacherMessage({
+      studentUid: 'student-1',
+      courseId:   'course-1',
+      message:    'hello',
+    })
+    expect(result.error).toContain('Only guardians can initiate student inquiries')
+  })
+
+  it('rejects if guardian is not linked to the student', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      authClient({
+        profiles: { data: { uid: 'g-001', display_name: 'Guardian User', role: 'guardian' }, error: null },
+        guardian_links: { data: null, error: null },
+      }) as any,
+    )
+
+    const result = await sendGuardianTeacherMessage({
+      studentUid: 'student-1',
+      courseId:   'course-1',
+      message:    'hello',
+    })
+    expect(result.error).toContain('not authorized as a guardian')
+  })
+
+  it('rejects if student is not enrolled in the course', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      authClient({
+        profiles: { data: { uid: 'g-001', display_name: 'Guardian User', role: 'guardian' }, error: null },
+        guardian_links: { data: { student_uid: 'student-1' }, error: null },
+        enrollments: { data: null, error: null },
+      }) as any,
+    )
+
+    const result = await sendGuardianTeacherMessage({
+      studentUid: 'student-1',
+      courseId:   'course-1',
+      message:    'hello',
+    })
+    expect(result.error).toContain('Student is not enrolled in this course')
+  })
+
+  it('successfully creates thread with course instructor', async () => {
+    vi.mocked(createClient).mockReturnValue(
+      Promise.resolve(authClient({
+        profiles: { data: { uid: 'g-001', display_name: 'Guardian User', role: 'guardian', org_id: 'org-1' }, error: null },
+        guardian_links: { data: { student_uid: 'student-1' }, error: null },
+        enrollments: { data: { course_id: 'course-1' }, error: null },
+        courses: { data: { id: 'course-1', title: 'OT Survey', owner_id: 'teacher-1' }, error: null },
+      })) as any,
+    )
+
+    const result = await sendGuardianTeacherMessage({
+      studentUid: 'student-1',
+      courseId:   'course-1',
+      message:    'How is my student doing on quizzes?',
+    })
+    expect(result.error).toBeUndefined()
   })
 })
