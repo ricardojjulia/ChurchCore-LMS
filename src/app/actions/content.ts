@@ -131,18 +131,62 @@ export async function unpublishPage(
   return {}
 }
 
-export async function deletePage(
+export async function createPageWithContent(
+  courseId: string,
+  title:    string,
+  body:     object
+): Promise<{ id?: string; error?: string }> {
+  const { supabase, profile } = await requireStaff()
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('org_id')
+    .eq('id', courseId)
+    .single()
+  if (!course?.org_id) return { error: 'Course not found.' }
+
+  const { data, error } = await supabase
+    .from('content_pages')
+    .insert({
+      course_id:  courseId,
+      org_id:     course.org_id,
+      title:      title.trim() || 'Untitled Page',
+      body,
+      created_by: profile.uid,
+    })
+    .select('id')
+    .single()
+
+  if (error) {
+    console.error('[createPageWithContent] insert failed:', error.message)
+    return { error: error.message }
+  }
+
+  revalidatePath(`/courses/${courseId}/pages`)
+  return { id: data.id }
+}
+
+export async function archivePage(
   pageId:   string,
   courseId: string
-): Promise<void> {
+): Promise<{ error?: string }> {
   const { supabase } = await requireStaff()
 
-  await supabase
+  const { error } = await supabase
     .from('content_pages')
     .update({ status: 'archived' })
     .eq('id', pageId)
 
+  if (error) return { error: error.message }
   revalidatePath(`/courses/${courseId}/pages`)
+  return {}
+}
+
+export async function deletePage(
+  pageId:   string,
+  courseId: string
+): Promise<void> {
+  await archivePage(pageId, courseId)
   redirect(`/courses/${courseId}/pages`)
 }
 
@@ -150,3 +194,4 @@ export async function createPageAndRedirect(courseId: string): Promise<void> {
   const result = await createPage(courseId)
   if (result.id) redirect(`/courses/${courseId}/pages/${result.id}/edit`)
 }
+
