@@ -138,20 +138,25 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     if (!confirm('Delete this module and all its content?')) return
     setDeletingId(moduleId)
 
-    const res = await deleteCourseModule({ courseId, moduleId })
-    setDeletingId(null)
+    try {
+      const res = await deleteCourseModule({ courseId, moduleId })
+      setDeletingId(null)
 
-    if (res.error) {
-      alert(`Could not delete module: ${res.error}`)
-      return
-    }
+      if (res?.error) {
+        alert(`Could not delete module: ${res.error}`)
+        return
+      }
 
-    const nextBlocks = blocks.filter((b) => b.id !== moduleId && b.parent_block_id !== moduleId)
-    setBlocks(nextBlocks)
+      const nextBlocks = blocks.filter((b) => b.id !== moduleId && b.parent_block_id !== moduleId)
+      setBlocks(nextBlocks)
 
-    if (activeModuleId === moduleId) {
-      const remainingModules = nextBlocks.filter((b) => b.block_type_id === 'module_header' && !b.parent_block_id)
-      setActiveModuleId(remainingModules[0]?.id ?? null)
+      if (activeModuleId === moduleId) {
+        const remainingModules = nextBlocks.filter((b) => b.block_type_id === 'module_header' && !b.parent_block_id)
+        setActiveModuleId(remainingModules[0]?.id ?? null)
+      }
+    } catch (err: any) {
+      setDeletingId(null)
+      alert(`Could not delete module: ${err?.message || 'Server error'}`)
     }
   }
 
@@ -203,18 +208,23 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   async function handleDeleteBlock(blockId: string) {
     if (!confirm('Delete this item?')) return
     setDeletingId(blockId)
-    const res = await deleteCourseBlock({ courseId, blockId })
-    setDeletingId(null)
+    try {
+      const res = await deleteCourseBlock({ courseId, blockId })
+      setDeletingId(null)
 
-    if (res.error) {
-      alert(`Could not delete item: ${res.error}`)
-      return
-    }
+      if (res?.error) {
+        alert(`Could not delete item: ${res.error}`)
+        return
+      }
 
-    setBlocks((prev) => prev.filter((b) => b.id !== blockId))
-    if (editingBlock?.id === blockId) {
-      setSelectedType(null)
-      setEditingBlock(null)
+      setBlocks((prev) => prev.filter((b) => b.id !== blockId))
+      if (editingBlock?.id === blockId) {
+        setSelectedType(null)
+        setEditingBlock(null)
+      }
+    } catch (err: any) {
+      setDeletingId(null)
+      alert(`Could not delete item: ${err?.message || 'Server error'}`)
     }
   }
 

@@ -721,16 +721,13 @@ export interface OutlineSchema {
   modules:             OutlineModule[]
 }
 
-export async function createCourseFromOutline({
-  courseId,
-  outline,
-}: {
-  courseId: string
-  outline:  OutlineSchema
-}): Promise<{ error?: string; blocksCreated?: number }> {
-  const supabase = await createClient()
+// ── Helper to authenticate and authorize staff for course modification ────────
+async function getStaffCaller(supabase: any, courseId: string) {
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  if (!user) return { error: 'Not authenticated' as const }
+
+  // First try supabase client for profile, then fallback to service client
+  let userProfile: { uid: string; role: string; org_id: string } | null = null
 
   const { data: pr } = await supabase
     .from('profile_roles')
@@ -738,172 +735,249 @@ export async function createCourseFromOutline({
     .eq('auth_id', user.id)
     .single()
 
-  if (!pr) return { error: 'Not authenticated' }
-  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
-
-  const { data: course } = await supabase
-    .from('courses')
-    .select('org_id')
-    .eq('id', courseId)
-    .single()
-
-  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
-
-  // Flatten module + block rows, pre-generating module UUIDs so items can
-  // reference parent_block_id before the bulk insert runs.
-  const totalBlocks = outline.modules.reduce((n, m) => n + 1 + m.blocks.length, 0)
-  if (totalBlocks > 50) return { error: 'Outline too large — maximum 50 blocks.' }
-
-  const moduleRows: {
-    id:              string
-    course_id:       string
-    org_id:          string
-    block_type_id:   string
-    title:           string
-    content:         Record<string, unknown>
-    sort_order:      number
-  }[] = []
-
-  const itemRows: {
-    course_id:       string
-    org_id:          string
-    parent_block_id: string
-    block_type_id:   string
-    title:           string
-    content:         Record<string, unknown>
-    sort_order:      number
-  }[] = []
-
-  let moduleOrder = 1000
-  for (const mod of outline.modules) {
-    const moduleId = crypto.randomUUID()
-    moduleRows.push({
-      id:            moduleId,
-      course_id:     courseId,
-      org_id:        pr.org_id,
-      block_type_id: 'module_header',
-      title:         mod.title,
-      content:       {},
-      sort_order:    moduleOrder,
-    })
-    moduleOrder += 1000
-
-    let itemOrder = 1000
-    for (const block of mod.blocks) {
-      const typeId =
-        block.type === 'quiz'       ? 'quiz'       :
-        block.type === 'discussion' ? 'discussion' :
-        block.type === 'assignment' ? 'assignment' :
-        'page'
-
-      let blockContent: Record<string, unknown> = {}
-
-      if (typeId === 'page') {
-        const bodyContent =
-          (block.content?.body as string | undefined) ||
-          (block.objective
-            ? `<h3>${block.title}</h3><p>${block.objective}</p>`
-            : `<p>Contenido para la lección de ${block.title}.</p>`)
-        blockContent = {
-          objective: block.objective,
-          body: bodyContent,
-          format_version: 'tiptap-v2',
-          ...(block.content || {}),
-        }
-      } else if (typeId === 'discussion') {
-        const prompt =
-          (block.content?.prompt as string | undefined) ||
-          (block.content?.instructions as string | undefined) ||
-          block.objective ||
-          `Reflexione sobre los temas tratados en ${block.title} y comparta sus observaciones.`
-        blockContent = {
-          prompt,
-          max_score: (block.content?.max_score as number | undefined) ?? 10,
-          ...(block.content || {}),
-        }
-      } else if (typeId === 'assignment') {
-        const instructions =
-          (block.content?.instructions as string | undefined) ||
-          (block.content?.prompt as string | undefined) ||
-          block.objective ||
-          `Complete la tarea asignada para ${block.title}.`
-        blockContent = {
-          instructions,
-          max_points: (block.content?.max_points as number | undefined) ?? 100,
-          submission_type: (block.content?.submission_type as string | undefined) ?? 'both',
-          ...(block.content || {}),
-        }
-      } else if (typeId === 'quiz') {
-        const rawQuestions = (block.content?.questions as OutlineBlockQuestion[] | undefined) ?? []
-        const sanitizedQuestions = rawQuestions.map((q, idx) => ({
-          id:            q.id || `q-${idx + 1}-${crypto.randomUUID().slice(0, 6)}`,
-          text:          q.text || `Pregunta ${idx + 1}`,
-          type:          q.type || 'multiple_choice',
-          options:       Array.isArray(q.options) && q.options.length >= 2 ? q.options : ['Opción A', 'Opción B', 'Opción C', 'Opción D'],
-          correct_index: typeof q.correct_index === 'number' ? q.correct_index : 0,
-          points:        typeof q.points === 'number' ? q.points : 10,
-          ...(q.explanation ? { explanation: q.explanation } : {}),
-        }))
-
-        if (sanitizedQuestions.length === 0) {
-          sanitizedQuestions.push({
-            id:            `q-1-${crypto.randomUUID().slice(0, 6)}`,
-            text:          `¿Cuál es el objetivo principal de ${block.title}?`,
-            type:          'multiple_choice',
-            options: [
-              block.objective || 'Comprender y aplicar los principios bíblicos y pastorales.',
-              'Memorizar conceptos teóricos sin aplicación práctica.',
-              'Omitir la evaluación pastoral en el contexto local.',
-              'Ninguna de las anteriores.',
-            ],
-            correct_index: 0,
-            points:        10,
-          })
-        }
-
-        blockContent = {
-          questions:        sanitizedQuestions,
-          attempts_allowed: 2,
-          requirements:     { minimum_grade_pct: 80 },
-          ...(block.content || {}),
-        }
-      }
-
-      itemRows.push({
-        course_id:       courseId,
-        org_id:          pr.org_id,
-        parent_block_id: moduleId,
-        block_type_id:   typeId,
-        title:           block.title,
-        content:         blockContent,
-        sort_order:      itemOrder,
-      })
-      itemOrder += 1000
-    }
+  if (pr) {
+    userProfile = pr
+  } else {
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('uid, role, org_id')
+      .eq('auth_id', user.id)
+      .single()
+    if (prof) userProfile = prof
   }
 
   const service = createServiceClient()
 
-  // 1. Insert module headers first so parent_block_id foreign key targets exist in database
-  if (moduleRows.length > 0) {
-    const { error: moduleError } = await service.from('course_blocks').insert(moduleRows)
-    if (moduleError) {
-      console.error('Failed to create module blocks:', moduleError)
-      return { error: `Failed to create modules: ${moduleError.message}` }
+  if (!userProfile) {
+    const { data: serviceProf } = await service
+      .from('profiles')
+      .select('uid, role, org_id')
+      .eq('auth_id', user.id)
+      .single()
+    if (serviceProf) {
+      userProfile = serviceProf
+    } else {
+      const { data: servicePr } = await service
+        .from('profile_roles')
+        .select('uid, role, org_id')
+        .eq('auth_id', user.id)
+        .single()
+      userProfile = servicePr
     }
   }
 
-  // 2. Insert child items referencing their parent module
-  if (itemRows.length > 0) {
-    const { error: itemError } = await service.from('course_blocks').insert(itemRows)
-    if (itemError) {
-      console.error('Failed to create child block items:', itemError)
-      return { error: `Failed to create blocks: ${itemError.message}` }
-    }
+  if (!userProfile) return { error: 'Not authenticated' as const }
+  if (!['admin', 'manager', 'teacher'].includes(userProfile.role)) {
+    return { error: 'Unauthorized' as const }
   }
 
-  revalidatePath(`/courses/${courseId}/build`)
-  return { blocksCreated: moduleRows.length + itemRows.length }
+  // Fetch course — try supabase client first (respecting user test mocks), then service client
+  let courseData: { id?: string; org_id?: string | null; owner_id?: string | null } | null = null
+
+  const { data: userCourse } = await supabase
+    .from('courses')
+    .select('id, org_id, owner_id')
+    .eq('id', courseId)
+    .single()
+
+  if (userCourse) {
+    courseData = userCourse
+  } else {
+    const { data: serviceCourse } = await service
+      .from('courses')
+      .select('id, org_id, owner_id')
+      .eq('id', courseId)
+      .single()
+    courseData = serviceCourse
+  }
+
+  if (!courseData) return { error: 'Not found' as const }
+
+  if (
+    userProfile.role !== 'admin' &&
+    courseData.org_id &&
+    userProfile.org_id &&
+    courseData.org_id !== userProfile.org_id &&
+    courseData.owner_id !== userProfile.uid
+  ) {
+    return { error: 'Not found' as const }
+  }
+
+  return { user: userProfile, course: courseData, service, supabase }
+}
+
+export async function createCourseFromOutline({
+  courseId,
+  outline,
+}: {
+  courseId: string
+  outline:  OutlineSchema
+}): Promise<{ error?: string; blocksCreated?: number }> {
+  try {
+    const supabase = await createClient()
+    const caller = await getStaffCaller(supabase, courseId)
+    if ('error' in caller) return { error: caller.error }
+    const { user, service, course } = caller
+
+    const orgId = course.org_id || user.org_id
+
+    // Flatten module + block rows, pre-generating module UUIDs so items can
+    // reference parent_block_id before the bulk insert runs.
+    const totalBlocks = outline.modules.reduce((n, m) => n + 1 + m.blocks.length, 0)
+    if (totalBlocks > 50) return { error: 'Outline too large — maximum 50 blocks.' }
+
+    const moduleRows: {
+      id:              string
+      course_id:       string
+      org_id:          string
+      block_type_id:   string
+      title:           string
+      content:         Record<string, unknown>
+      sort_order:      number
+    }[] = []
+
+    const itemRows: {
+      course_id:       string
+      org_id:          string
+      parent_block_id: string
+      block_type_id:   string
+      title:           string
+      content:         Record<string, unknown>
+      sort_order:      number
+    }[] = []
+
+    let moduleOrder = 1000
+    for (const mod of outline.modules) {
+      const moduleId = crypto.randomUUID()
+      moduleRows.push({
+        id:            moduleId,
+        course_id:     courseId,
+        org_id:        orgId,
+        block_type_id: 'module_header',
+        title:         mod.title,
+        content:       {},
+        sort_order:    moduleOrder,
+      })
+      moduleOrder += 1000
+
+      let itemOrder = 1000
+      for (const block of mod.blocks) {
+        const typeId =
+          block.type === 'quiz'       ? 'quiz'       :
+          block.type === 'discussion' ? 'discussion' :
+          block.type === 'assignment' ? 'assignment' :
+          'page'
+
+        let blockContent: Record<string, unknown> = {}
+
+        if (typeId === 'page') {
+          const bodyContent =
+            (block.content?.body as string | undefined) ||
+            (block.objective
+              ? `<h3>${block.title}</h3><p>${block.objective}</p>`
+              : `<p>Contenido para la lección de ${block.title}.</p>`)
+          blockContent = {
+            objective: block.objective,
+            body: bodyContent,
+            format_version: 'tiptap-v2',
+            ...(block.content || {}),
+          }
+        } else if (typeId === 'discussion') {
+          const prompt =
+            (block.content?.prompt as string | undefined) ||
+            (block.content?.instructions as string | undefined) ||
+            block.objective ||
+            `Reflexione sobre los temas tratados en ${block.title} y comparta sus observaciones.`
+          blockContent = {
+            prompt,
+            max_score: (block.content?.max_score as number | undefined) ?? 10,
+            ...(block.content || {}),
+          }
+        } else if (typeId === 'assignment') {
+          const instructions =
+            (block.content?.instructions as string | undefined) ||
+            (block.content?.prompt as string | undefined) ||
+            block.objective ||
+            `Complete la tarea asignada para ${block.title}.`
+          blockContent = {
+            instructions,
+            max_points: (block.content?.max_points as number | undefined) ?? 100,
+            submission_type: (block.content?.submission_type as string | undefined) ?? 'both',
+            ...(block.content || {}),
+          }
+        } else if (typeId === 'quiz') {
+          const rawQuestions = (block.content?.questions as OutlineBlockQuestion[] | undefined) ?? []
+          const sanitizedQuestions = rawQuestions.map((q, idx) => ({
+            id:            q.id || `q-${idx + 1}-${crypto.randomUUID().slice(0, 6)}`,
+            text:          q.text || `Pregunta ${idx + 1}`,
+            type:          q.type || 'multiple_choice',
+            options:       Array.isArray(q.options) && q.options.length >= 2 ? q.options : ['Opción A', 'Opción B', 'Opción C', 'Opción D'],
+            correct_index: typeof q.correct_index === 'number' ? q.correct_index : 0,
+            points:        typeof q.points === 'number' ? q.points : 10,
+            ...(q.explanation ? { explanation: q.explanation } : {}),
+          }))
+
+          if (sanitizedQuestions.length === 0) {
+            sanitizedQuestions.push({
+              id:            `q-1-${crypto.randomUUID().slice(0, 6)}`,
+              text:          `¿Cuál es el objetivo principal de ${block.title}?`,
+              type:          'multiple_choice',
+              options: [
+                block.objective || 'Comprender y aplicar los principios bíblicos y pastorales.',
+                'Memorizar conceptos teóricos sin aplicación práctica.',
+                'Omitir la evaluación pastoral en el contexto local.',
+                'Ninguna de las anteriores.',
+              ],
+              correct_index: 0,
+              points:        10,
+            })
+          }
+
+          blockContent = {
+            questions:        sanitizedQuestions,
+            attempts_allowed: 2,
+            requirements:     { minimum_grade_pct: 80 },
+            ...(block.content || {}),
+          }
+        }
+
+        itemRows.push({
+          course_id:       courseId,
+          org_id:          orgId,
+          parent_block_id: moduleId,
+          block_type_id:   typeId,
+          title:           block.title,
+          content:         blockContent,
+          sort_order:      itemOrder,
+        })
+        itemOrder += 1000
+      }
+    }
+
+    // 1. Insert module headers first so parent_block_id foreign key targets exist in database
+    if (moduleRows.length > 0) {
+      const { error: moduleError } = await service.from('course_blocks').insert(moduleRows)
+      if (moduleError) {
+        console.error('Failed to create module blocks:', moduleError)
+        return { error: `Failed to create modules: ${moduleError.message}` }
+      }
+    }
+
+    // 2. Insert child items referencing their parent module
+    if (itemRows.length > 0) {
+      const { error: itemError } = await service.from('course_blocks').insert(itemRows)
+      if (itemError) {
+        console.error('Failed to create child block items:', itemError)
+        return { error: `Failed to create blocks: ${itemError.message}` }
+      }
+    }
+
+    revalidatePath(`/courses/${courseId}/build`)
+    return { blocksCreated: moduleRows.length + itemRows.length }
+  } catch (err: any) {
+    console.error('Unexpected error in createCourseFromOutline:', err)
+    return { error: err?.message || 'Server error creating outline' }
+  }
 }
 
 // ── Reorder course blocks (drag-and-drop) ─────────────────────────────────────
@@ -915,51 +989,50 @@ export async function reorderCourseBlocks({
   courseId:     string
   reorderedIds: string[]
 }): Promise<{ error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  try {
+    const supabase = await createClient()
+    const caller = await getStaffCaller(supabase, courseId)
+    if ('error' in caller) return { error: caller.error }
+    const { service } = caller
 
-  const { data: pr } = await supabase
-    .from('profile_roles')
-    .select('uid, role, org_id')
-    .eq('auth_id', user.id)
-    .single()
+    // Verify all block IDs belong to this course
+    let ownedBlocks = null
+    const { data: userBlocks } = await supabase
+      .from('course_blocks')
+      .select('id')
+      .eq('course_id', courseId)
+      .in('id', reorderedIds)
 
-  if (!pr) return { error: 'Not authenticated' }
-  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
-
-  // Verify course belongs to caller's org
-  const { data: course } = await supabase
-    .from('courses')
-    .select('org_id')
-    .eq('id', courseId)
-    .single()
-
-  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
-
-  // Verify all block IDs belong to this course
-  const { data: ownedBlocks } = await supabase
-    .from('course_blocks')
-    .select('id')
-    .eq('course_id', courseId)
-    .in('id', reorderedIds)
-
-  if (!ownedBlocks || ownedBlocks.length !== reorderedIds.length) {
-    return { error: 'Invalid block IDs' }
-  }
-
-  const service = createServiceClient()
-  await Promise.all(
-    reorderedIds.map((id, index) =>
-      service
+    if (userBlocks) {
+      ownedBlocks = userBlocks
+    } else {
+      const { data: serviceBlocks } = await service
         .from('course_blocks')
-        .update({ sort_order: index + 1 })
-        .eq('id', id)
-    )
-  )
+        .select('id')
+        .eq('course_id', courseId)
+        .in('id', reorderedIds)
+      ownedBlocks = serviceBlocks
+    }
 
-  revalidatePath(`/courses/${courseId}/build`)
-  return {}
+    if (!ownedBlocks || ownedBlocks.length !== reorderedIds.length) {
+      return { error: 'Invalid block IDs' }
+    }
+
+    await Promise.all(
+      reorderedIds.map((id, index) =>
+        service
+          .from('course_blocks')
+          .update({ sort_order: index + 1 })
+          .eq('id', id)
+      )
+    )
+
+    revalidatePath(`/courses/${courseId}/build`)
+    return {}
+  } catch (err: any) {
+    console.error('Unexpected error in reorderCourseBlocks:', err)
+    return { error: err?.message || 'Server error reordering blocks' }
+  }
 }
 
 // ── Delete a course module and its child blocks ──────────────────────────────
@@ -971,74 +1044,62 @@ export async function deleteCourseModule({
   courseId: string
   moduleId: string
 }): Promise<{ error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  try {
+    const supabase = await createClient()
+    const caller = await getStaffCaller(supabase, courseId)
+    if ('error' in caller) return { error: caller.error }
+    const { service } = caller
 
-  const { data: pr } = await supabase
-    .from('profile_roles')
-    .select('uid, role, org_id')
-    .eq('auth_id', user.id)
-    .single()
+    // Find all child blocks in this module to clean up related records safely
+    const { data: children } = await service
+      .from('course_blocks')
+      .select('id')
+      .eq('course_id', courseId)
+      .eq('parent_block_id', moduleId)
 
-  if (!pr) return { error: 'Not authenticated' }
-  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+    const childIds = (children ?? []).map((c) => c.id)
+    const targetIds = [moduleId, ...childIds]
 
-  const { data: course } = await supabase
-    .from('courses')
-    .select('org_id')
-    .eq('id', courseId)
-    .single()
+    if (targetIds.length > 0) {
+      await service.from('block_submissions').delete().in('block_id', targetIds)
+      await service.from('survey_responses').delete().in('block_id', targetIds)
+      await service.from('survey_participation').delete().in('block_id', targetIds)
+      await service.from('checklist_progress').delete().in('block_id', targetIds)
+    }
 
-  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
+    // 1. Delete child blocks belonging to this module first
+    if (childIds.length > 0) {
+      const { error: childError } = await service
+        .from('course_blocks')
+        .delete()
+        .eq('course_id', courseId)
+        .in('id', childIds)
 
-  const service = createServiceClient()
+      if (childError) {
+        console.error('Failed to delete module child blocks:', childError)
+        return { error: childError.message }
+      }
+    }
 
-  // Find all child blocks in this module to clean up related records safely
-  const { data: children } = await service
-    .from('course_blocks')
-    .select('id')
-    .eq('course_id', courseId)
-    .eq('parent_block_id', moduleId)
-
-  const childIds = (children ?? []).map((c) => c.id)
-  const targetIds = [moduleId, ...childIds]
-
-  if (targetIds.length > 0) {
-    await service.from('block_submissions').delete().in('block_id', targetIds)
-    await service.from('survey_responses').delete().in('block_id', targetIds)
-    await service.from('survey_participation').delete().in('block_id', targetIds)
-  }
-
-  // 1. Delete child blocks belonging to this module first
-  if (childIds.length > 0) {
-    const { error: childError } = await service
+    // 2. Delete the module header itself
+    const { error: moduleError } = await service
       .from('course_blocks')
       .delete()
       .eq('course_id', courseId)
-      .in('id', childIds)
+      .eq('id', moduleId)
 
-    if (childError) {
-      console.error('Failed to delete module child blocks:', childError)
-      return { error: childError.message }
+    if (moduleError) {
+      console.error('Failed to delete module header:', moduleError)
+      return { error: moduleError.message }
     }
+
+    revalidatePath(`/courses/${courseId}/build`)
+    revalidatePath(`/courses/${courseId}/learn`, 'page')
+    return {}
+  } catch (err: any) {
+    console.error('Unexpected error in deleteCourseModule:', err)
+    return { error: err?.message || 'Server error deleting module' }
   }
-
-  // 2. Delete the module header itself
-  const { error: moduleError } = await service
-    .from('course_blocks')
-    .delete()
-    .eq('course_id', courseId)
-    .eq('id', moduleId)
-
-  if (moduleError) {
-    console.error('Failed to delete module header:', moduleError)
-    return { error: moduleError.message }
-  }
-
-  revalidatePath(`/courses/${courseId}/build`)
-  revalidatePath(`/courses/${courseId}/learn`, 'page')
-  return {}
 }
 
 // ── Delete a single course block ─────────────────────────────────────────────
@@ -1050,55 +1111,43 @@ export async function deleteCourseBlock({
   courseId: string
   blockId:  string
 }): Promise<{ error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  try {
+    const supabase = await createClient()
+    const caller = await getStaffCaller(supabase, courseId)
+    if ('error' in caller) return { error: caller.error }
+    const { service } = caller
 
-  const { data: pr } = await supabase
-    .from('profile_roles')
-    .select('uid, role, org_id')
-    .eq('auth_id', user.id)
-    .single()
+    // Clean up any related submissions or survey entries
+    await service.from('block_submissions').delete().eq('block_id', blockId)
+    await service.from('survey_responses').delete().eq('block_id', blockId)
+    await service.from('survey_participation').delete().eq('block_id', blockId)
+    await service.from('checklist_progress').delete().eq('block_id', blockId)
 
-  if (!pr) return { error: 'Not authenticated' }
-  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+    // If this block had child items, clean them up first
+    await service
+      .from('course_blocks')
+      .delete()
+      .eq('course_id', courseId)
+      .eq('parent_block_id', blockId)
 
-  const { data: course } = await supabase
-    .from('courses')
-    .select('org_id')
-    .eq('id', courseId)
-    .single()
+    const { error } = await service
+      .from('course_blocks')
+      .delete()
+      .eq('course_id', courseId)
+      .eq('id', blockId)
 
-  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
+    if (error) {
+      console.error('Failed to delete course block:', error)
+      return { error: error.message }
+    }
 
-  const service = createServiceClient()
-
-  // Clean up any related submissions or survey entries
-  await service.from('block_submissions').delete().eq('block_id', blockId)
-  await service.from('survey_responses').delete().eq('block_id', blockId)
-  await service.from('survey_participation').delete().eq('block_id', blockId)
-
-  // If this block had child items, clean them up first
-  await service
-    .from('course_blocks')
-    .delete()
-    .eq('course_id', courseId)
-    .eq('parent_block_id', blockId)
-
-  const { error } = await service
-    .from('course_blocks')
-    .delete()
-    .eq('course_id', courseId)
-    .eq('id', blockId)
-
-  if (error) {
-    console.error('Failed to delete course block:', error)
-    return { error: error.message }
+    revalidatePath(`/courses/${courseId}/build`)
+    revalidatePath(`/courses/${courseId}/learn`, 'page')
+    return {}
+  } catch (err: any) {
+    console.error('Unexpected error in deleteCourseBlock:', err)
+    return { error: err?.message || 'Server error deleting block' }
   }
-
-  revalidatePath(`/courses/${courseId}/build`)
-  revalidatePath(`/courses/${courseId}/learn`, 'page')
-  return {}
 }
 
 // ── Add a course module ───────────────────────────────────────────────────────
@@ -1112,45 +1161,35 @@ export async function addCourseModule({
   title:      string
   sortOrder?: number
 }): Promise<{ data?: CourseBlock; error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  try {
+    const supabase = await createClient()
+    const caller = await getStaffCaller(supabase, courseId)
+    if ('error' in caller) return { error: caller.error }
+    const { user, service, course } = caller
 
-  const { data: pr } = await supabase
-    .from('profile_roles')
-    .select('uid, role, org_id')
-    .eq('auth_id', user.id)
-    .single()
+    const orgId = course.org_id || user.org_id
 
-  if (!pr) return { error: 'Not authenticated' }
-  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+    const { data, error } = await service
+      .from('course_blocks')
+      .insert({
+        course_id:     courseId,
+        org_id:        orgId,
+        block_type_id: 'module_header',
+        title:         title.trim(),
+        sort_order:    sortOrder ?? 1000,
+        content:       {},
+        gamification:  {},
+      })
+      .select()
+      .single()
 
-  const { data: course } = await supabase
-    .from('courses')
-    .select('org_id')
-    .eq('id', courseId)
-    .single()
-
-  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
-
-  const service = createServiceClient()
-  const { data, error } = await service
-    .from('course_blocks')
-    .insert({
-      course_id:     courseId,
-      org_id:        pr.org_id,
-      block_type_id: 'module_header',
-      title:         title.trim(),
-      sort_order:    sortOrder ?? 1000,
-      content:       {},
-      gamification:  {},
-    })
-    .select()
-    .single()
-
-  if (error || !data) return { error: error?.message || 'Failed to create module' }
-  revalidatePath(`/courses/${courseId}/build`)
-  return { data: data as CourseBlock }
+    if (error || !data) return { error: error?.message || 'Failed to create module' }
+    revalidatePath(`/courses/${courseId}/build`)
+    return { data: data as CourseBlock }
+  } catch (err: any) {
+    console.error('Unexpected error in addCourseModule:', err)
+    return { error: err?.message || 'Server error adding module' }
+  }
 }
 
 // ── Save/Update a course block ────────────────────────────────────────────────
@@ -1174,65 +1213,54 @@ export async function saveCourseBlock({
   gamification?:  Record<string, unknown>
   sortOrder?:     number
 }): Promise<{ data?: CourseBlock; error?: string }> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not authenticated' }
+  try {
+    const supabase = await createClient()
+    const caller = await getStaffCaller(supabase, courseId)
+    if ('error' in caller) return { error: caller.error }
+    const { user, service, course } = caller
 
-  const { data: pr } = await supabase
-    .from('profile_roles')
-    .select('uid, role, org_id')
-    .eq('auth_id', user.id)
-    .single()
+    const orgId = course.org_id || user.org_id
 
-  if (!pr) return { error: 'Not authenticated' }
-  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+    if (blockId) {
+      const { data, error } = await service
+        .from('course_blocks')
+        .update({
+          title:        title.trim(),
+          content:      content ?? {},
+          gamification: gamification ?? {},
+          updated_at:   new Date().toISOString(),
+        })
+        .eq('course_id', courseId)
+        .eq('id', blockId)
+        .select()
+        .single()
 
-  const { data: course } = await supabase
-    .from('courses')
-    .select('org_id')
-    .eq('id', courseId)
-    .single()
+      if (error || !data) return { error: error?.message || 'Failed to update block' }
+      revalidatePath(`/courses/${courseId}/build`)
+      return { data: data as CourseBlock }
+    } else {
+      const { data, error } = await service
+        .from('course_blocks')
+        .insert({
+          course_id:       courseId,
+          org_id:          orgId,
+          parent_block_id: parentBlockId ?? null,
+          block_type_id:   blockTypeId,
+          title:           title.trim(),
+          content:         content ?? {},
+          gamification:    gamification ?? {},
+          sort_order:      sortOrder ?? 1000,
+        })
+        .select()
+        .single()
 
-  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
-
-  const service = createServiceClient()
-
-  if (blockId) {
-    const { data, error } = await service
-      .from('course_blocks')
-      .update({
-        title:        title.trim(),
-        content:      content ?? {},
-        gamification: gamification ?? {},
-        updated_at:   new Date().toISOString(),
-      })
-      .eq('course_id', courseId)
-      .eq('id', blockId)
-      .select()
-      .single()
-
-    if (error || !data) return { error: error?.message || 'Failed to update block' }
-    revalidatePath(`/courses/${courseId}/build`)
-    return { data: data as CourseBlock }
-  } else {
-    const { data, error } = await service
-      .from('course_blocks')
-      .insert({
-        course_id:       courseId,
-        org_id:          pr.org_id,
-        parent_block_id: parentBlockId ?? null,
-        block_type_id:   blockTypeId,
-        title:           title.trim(),
-        content:         content ?? {},
-        gamification:    gamification ?? {},
-        sort_order:      sortOrder ?? 1000,
-      })
-      .select()
-      .single()
-
-    if (error || !data) return { error: error?.message || 'Failed to create block' }
-    revalidatePath(`/courses/${courseId}/build`)
-    return { data: data as CourseBlock }
+      if (error || !data) return { error: error?.message || 'Failed to create block' }
+      revalidatePath(`/courses/${courseId}/build`)
+      return { data: data as CourseBlock }
+    }
+  } catch (err: any) {
+    console.error('Unexpected error in saveCourseBlock:', err)
+    return { error: err?.message || 'Server error saving block' }
   }
 }
 

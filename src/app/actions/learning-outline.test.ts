@@ -37,7 +37,7 @@ vi.mock('@/utils/supabase/server', () => ({
 
 vi.mock('@/utils/supabase/service', () => ({
   createServiceClient: () => ({
-    from: () => {
+    from: (table: string) => {
       const q: any = {
         insert: (rows: Array<Record<string, unknown>> | Record<string, unknown>) => {
           if (Array.isArray(rows)) m.inserted.push(...rows)
@@ -55,8 +55,19 @@ vi.mock('@/utils/supabase/service', () => ({
         eq: () => q,
         in: () => q,
         select: () => q,
-        single: async () => ({ data: { id: 'b-new-1', ...m.inserted[m.inserted.length - 1] }, error: null }),
-        then: (resolve: (v: any) => void) => Promise.resolve({ error: null }).then(resolve),
+        single: async () => {
+          if (table === 'profiles' || table === 'profile_roles') {
+            return { data: { uid: 'u-1', role: m.role, org_id: m.callerOrg }, error: null }
+          }
+          if (table === 'courses') {
+            return { data: m.courseOrg ? { id: 'c-1', org_id: m.courseOrg, owner_id: 'u-1' } : null, error: null }
+          }
+          return { data: { id: 'b-new-1', ...m.inserted[m.inserted.length - 1] }, error: null }
+        },
+        then: (resolve: (v: any) => void) => Promise.resolve({
+          data: table === 'course_blocks' ? [{ id: 'child-1' }] : null,
+          error: null,
+        }).then(resolve),
       }
       return q
     },
