@@ -1,26 +1,15 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { createCourseFromOutline } from '@/app/actions/learning'
+import { createCourseFromOutline, type OutlineSchema } from '@/app/actions/learning'
 
-interface OutlineBlock {
-  title:     string
-  type:      'text' | 'quiz' | 'discussion'
-  objective: string
+const TYPE_ICON: Record<string, string> = {
+  text:       '📄',
+  page:       '📄',
+  quiz:       '🧠',
+  discussion: '💬',
+  assignment: '📝',
 }
-
-interface OutlineModule {
-  title:  string
-  blocks: OutlineBlock[]
-}
-
-interface OutlineSchema {
-  course_title:       string
-  course_description: string
-  modules:            OutlineModule[]
-}
-
-const TYPE_ICON: Record<string, string> = { text: '📄', quiz: '🧠', discussion: '💬' }
 
 interface Props {
   courseId:          string
@@ -239,14 +228,41 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
                     <div className="divide-y divide-border">
                       {mod.blocks.map((block, bi) => (
                         <div key={bi} className="px-4 py-2.5 flex items-start gap-3">
-                          <span className="text-base shrink-0" aria-hidden="true">
+                          <span className="text-base shrink-0 mt-0.5" aria-hidden="true">
                             {TYPE_ICON[block.type] ?? '📄'}
                           </span>
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-foreground">{block.title}</p>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm font-semibold text-foreground">{block.title}</p>
+                              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-muted-foreground shrink-0">
+                                {block.type}
+                              </span>
+                            </div>
                             {block.objective && (
                               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                                 {block.objective}
+                              </p>
+                            )}
+                            {Boolean(block.content?.body) && (
+                              <div className="mt-1.5 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-md p-2 line-clamp-2 italic">
+                                {typeof block.content?.body === 'string'
+                                  ? block.content.body.replace(/<[^>]*>/g, ' ').trim().slice(0, 140) + '…'
+                                  : 'Rich text lesson content ready'}
+                              </div>
+                            )}
+                            {Boolean(block.content?.prompt) && (
+                              <p className="mt-1.5 text-xs text-rose-700 bg-rose-50/80 border border-rose-100 rounded-md p-1.5 line-clamp-2">
+                                💬 <strong>Prompt:</strong> {String(block.content?.prompt)}
+                              </p>
+                            )}
+                            {Boolean(block.content?.instructions) && (
+                              <p className="mt-1.5 text-xs text-emerald-800 bg-emerald-50/80 border border-emerald-100 rounded-md p-1.5 line-clamp-2">
+                                📝 <strong>Instructions:</strong> {String(block.content?.instructions)}
+                              </p>
+                            )}
+                            {Array.isArray(block.content?.questions) && block.content.questions.length > 0 && (
+                              <p className="mt-1.5 text-xs text-violet-700 bg-violet-50/80 border border-violet-100 rounded-md px-2 py-1 inline-flex items-center gap-1.5 font-medium">
+                                🧠 {block.content.questions.length} quiz questions generated
                               </p>
                             )}
                           </div>

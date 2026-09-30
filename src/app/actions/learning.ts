@@ -681,21 +681,43 @@ export async function gradeDiscussionSubmission({
 
 // ── Create course blocks from AI outline ──────────────────────────────────────
 
-interface OutlineBlock {
-  title:     string
-  type:      'text' | 'quiz' | 'discussion'
-  objective: string
+export interface OutlineBlockQuestion {
+  id?:            string
+  text:           string
+  type?:          'multiple_choice' | 'true_false' | 'matching' | 'fill_blank'
+  options?:       string[]
+  correct_index?: number
+  points?:        number
+  explanation?:   string
 }
 
-interface OutlineModule {
+export interface OutlineBlockContent {
+  body?:            string
+  prompt?:          string
+  instructions?:    string
+  max_score?:       number
+  max_points?:      number
+  submission_type?: 'text' | 'file' | 'both'
+  questions?:       OutlineBlockQuestion[]
+  [key: string]:    unknown
+}
+
+export interface OutlineBlock {
+  title:      string
+  type:       'text' | 'page' | 'quiz' | 'discussion' | 'assignment'
+  objective?: string
+  content?:   OutlineBlockContent | Record<string, unknown>
+}
+
+export interface OutlineModule {
   title:  string
   blocks: OutlineBlock[]
 }
 
-interface OutlineSchema {
-  course_title:       string
-  course_description: string
-  modules:            OutlineModule[]
+export interface OutlineSchema {
+  course_title:        string
+  course_description?: string
+  modules:             OutlineModule[]
 }
 
 export async function createCourseFromOutline({
@@ -770,7 +792,81 @@ export async function createCourseFromOutline({
       const typeId =
         block.type === 'quiz'       ? 'quiz'       :
         block.type === 'discussion' ? 'discussion' :
+        block.type === 'assignment' ? 'assignment' :
         'page'
+
+      let blockContent: Record<string, unknown> = {}
+
+      if (typeId === 'page') {
+        const bodyContent =
+          (block.content?.body as string | undefined) ||
+          (block.objective
+            ? `<h3>${block.title}</h3><p>${block.objective}</p>`
+            : `<p>Contenido para la lección de ${block.title}.</p>`)
+        blockContent = {
+          objective: block.objective,
+          body: bodyContent,
+          format_version: 'tiptap-v2',
+          ...(block.content || {}),
+        }
+      } else if (typeId === 'discussion') {
+        const prompt =
+          (block.content?.prompt as string | undefined) ||
+          (block.content?.instructions as string | undefined) ||
+          block.objective ||
+          `Reflexione sobre los temas tratados en ${block.title} y comparta sus observaciones.`
+        blockContent = {
+          prompt,
+          max_score: (block.content?.max_score as number | undefined) ?? 10,
+          ...(block.content || {}),
+        }
+      } else if (typeId === 'assignment') {
+        const instructions =
+          (block.content?.instructions as string | undefined) ||
+          (block.content?.prompt as string | undefined) ||
+          block.objective ||
+          `Complete la tarea asignada para ${block.title}.`
+        blockContent = {
+          instructions,
+          max_points: (block.content?.max_points as number | undefined) ?? 100,
+          submission_type: (block.content?.submission_type as string | undefined) ?? 'both',
+          ...(block.content || {}),
+        }
+      } else if (typeId === 'quiz') {
+        const rawQuestions = (block.content?.questions as OutlineBlockQuestion[] | undefined) ?? []
+        const sanitizedQuestions = rawQuestions.map((q, idx) => ({
+          id:            q.id || `q-${idx + 1}-${crypto.randomUUID().slice(0, 6)}`,
+          text:          q.text || `Pregunta ${idx + 1}`,
+          type:          q.type || 'multiple_choice',
+          options:       Array.isArray(q.options) && q.options.length >= 2 ? q.options : ['Opción A', 'Opción B', 'Opción C', 'Opción D'],
+          correct_index: typeof q.correct_index === 'number' ? q.correct_index : 0,
+          points:        typeof q.points === 'number' ? q.points : 10,
+          ...(q.explanation ? { explanation: q.explanation } : {}),
+        }))
+
+        if (sanitizedQuestions.length === 0) {
+          sanitizedQuestions.push({
+            id:            `q-1-${crypto.randomUUID().slice(0, 6)}`,
+            text:          `¿Cuál es el objetivo principal de ${block.title}?`,
+            type:          'multiple_choice',
+            options: [
+              block.objective || 'Comprender y aplicar los principios bíblicos y pastorales.',
+              'Memorizar conceptos teóricos sin aplicación práctica.',
+              'Omitir la evaluación pastoral en el contexto local.',
+              'Ninguna de las anteriores.',
+            ],
+            correct_index: 0,
+            points:        10,
+          })
+        }
+
+        blockContent = {
+          questions:        sanitizedQuestions,
+          attempts_allowed: 2,
+          requirements:     { minimum_grade_pct: 80 },
+          ...(block.content || {}),
+        }
+      }
 
       itemRows.push({
         course_id:       courseId,
@@ -778,7 +874,7 @@ export async function createCourseFromOutline({
         parent_block_id: moduleId,
         block_type_id:   typeId,
         title:           block.title,
-        content:         { objective: block.objective },
+        content:         blockContent,
         sort_order:      itemOrder,
       })
       itemOrder += 1000

@@ -177,7 +177,7 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload: () 
 // ── Editor ─────────────────────────────────────────────────────────────────
 
 interface Props {
-  content?:     object | null
+  content?:     object | string | null
   onChange?:    (json: object) => void
   placeholder?: string
   editable?:    boolean

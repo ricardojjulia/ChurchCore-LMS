@@ -17,10 +17,9 @@ interface Props {
 
 export default function PageForm({ initial, onSave, onCancel }: Props) {
   const [title, setTitle] = useState(initial?.title ?? '')
-  const [body,  setBody]  = useState<object>(() => {
-    // Accept legacy string or Tiptap JSON object
+  const [body,  setBody]  = useState<object | string>(() => {
+    // Accept string HTML or Tiptap JSON object
     if (!initial?.body) return { type: 'doc', content: [] }
-    if (typeof initial.body === 'string') return { type: 'doc', content: [] }
     return initial.body
   })
   const [xp, setXp] = useState(initial?.gamification?.base_xp_reward ?? 10)
