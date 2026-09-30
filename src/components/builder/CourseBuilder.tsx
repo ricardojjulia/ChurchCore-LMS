@@ -55,12 +55,12 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   const [addingModule,   setAddingModule]   = useState(false)
   const [newModuleTitle, setNewModuleTitle] = useState('')
   const [saving,         setSaving]         = useState(false)
-  const [deletingId,     setDeletingId]     = useState<string | null>(null)
-  const [moduleToDelete, setModuleToDelete] = useState<{ id: string; title: string } | null>(null)
-  const [blockToDelete,  setBlockToDelete]  = useState<{ id: string; title: string } | null>(null)
-  const [reorderState,   setReorderState]   = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [showOutline,    setShowOutline]    = useState(false)
-  const [actionError,    setActionError]    = useState<string | null>(null)
+  const [deletingId,         setDeletingId]         = useState<string | null>(null)
+  const [confirmingModuleId, setConfirmingModuleId] = useState<string | null>(null)
+  const [confirmingBlockId,  setConfirmingBlockId]  = useState<string | null>(null)
+  const [reorderState,       setReorderState]       = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [showOutline,        setShowOutline]        = useState(false)
+  const [actionError,        setActionError]        = useState<string | null>(null)
 
   // Sync state if initialBlocks changes from server revalidation
   useEffect(() => {
@@ -140,12 +140,6 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     setAddingModule(false)
   }
 
-  function handleDeleteModule(moduleId: string) {
-    const mod = blocks.find((b) => b.id === moduleId)
-    setActionError(null)
-    setModuleToDelete({ id: moduleId, title: mod?.title || 'Module' })
-  }
-
   async function confirmDeleteModule(moduleId: string) {
     setDeletingId(moduleId)
     setActionError(null)
@@ -163,7 +157,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     try {
       const res = await deleteCourseModule({ courseId, moduleId })
       setDeletingId(null)
-      setModuleToDelete(null)
+      setConfirmingModuleId(null)
 
       if (res?.error) {
         setBlocks(prevBlocks)
@@ -174,7 +168,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
       router.refresh()
     } catch (err: any) {
       setDeletingId(null)
-      setModuleToDelete(null)
+      setConfirmingModuleId(null)
       setBlocks(prevBlocks)
       setActionError(`Could not delete module: ${err?.message || 'Server error'}`)
     }
@@ -227,12 +221,6 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     setShowLibrary(false)
   }
 
-  function handleDeleteBlock(blockId: string) {
-    const item = blocks.find((b) => b.id === blockId)
-    setActionError(null)
-    setBlockToDelete({ id: blockId, title: item?.title || 'Item' })
-  }
-
   async function confirmDeleteBlock(blockId: string) {
     setDeletingId(blockId)
     setActionError(null)
@@ -247,7 +235,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     try {
       const res = await deleteCourseBlock({ courseId, blockId })
       setDeletingId(null)
-      setBlockToDelete(null)
+      setConfirmingBlockId(null)
 
       if (res?.error) {
         setBlocks(prevBlocks)
@@ -258,7 +246,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
       router.refresh()
     } catch (err: any) {
       setDeletingId(null)
-      setBlockToDelete(null)
+      setConfirmingBlockId(null)
       setBlocks(prevBlocks)
       setActionError(`Could not delete item: ${err?.message || 'Server error'}`)
     }
@@ -316,36 +304,67 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
         </div>
 
         <div className="flex-1 overflow-y-auto py-2">
-          {moduleHeaders.map((m) => (
-            <div
-              key={m.id}
-              className={`group flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors ${
-                activeModuleId === m.id
-                  ? 'bg-indigo-900/40 text-white'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-              }`}
-              onClick={() => {
-                setActiveModuleId(m.id)
-                setSelectedType(null)
-                setEditingBlock(null)
-              }}
-            >
-              <span className="text-sm font-medium truncate">{m.title}</span>
-              <button
-                type="button"
-                disabled={deletingId === m.id}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleDeleteModule(m.id)
+          {moduleHeaders.map((m) => {
+            const isConfirming = confirmingModuleId === m.id
+            const isDeleting = deletingId === m.id
+
+            return (
+              <div
+                key={m.id}
+                className={`group flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors ${
+                  activeModuleId === m.id
+                    ? 'bg-indigo-900/40 text-white'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
+                onClick={() => {
+                  if (!isConfirming) {
+                    setActiveModuleId(m.id)
+                    setSelectedType(null)
+                    setEditingBlock(null)
+                  }
                 }}
-                className="opacity-70 group-hover:opacity-100 text-slate-500 hover:text-rose-400 p-1 rounded hover:bg-rose-500/10 transition-all text-xs ml-2 disabled:opacity-50"
-                title={`Delete ${m.title}`}
-                aria-label={`Delete module ${m.title}`}
               >
-                {deletingId === m.id ? '…' : '✕'}
-              </button>
-            </div>
-          ))}
+                <span className="text-sm font-medium truncate flex-1 mr-2">{m.title}</span>
+
+                {isConfirming ? (
+                  <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      disabled={isDeleting}
+                      onClick={() => confirmDeleteModule(m.id)}
+                      className="px-2 py-0.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded transition-colors disabled:opacity-50"
+                      title="Confirm delete"
+                    >
+                      {isDeleting ? '…' : 'Delete'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isDeleting}
+                      onClick={() => setConfirmingModuleId(null)}
+                      className="px-2 py-0.5 text-xs text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 rounded transition-colors"
+                      title="Cancel"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setConfirmingModuleId(m.id)
+                    }}
+                    className="opacity-70 group-hover:opacity-100 text-slate-500 hover:text-rose-400 p-1 rounded hover:bg-rose-500/10 transition-all text-xs ml-2 disabled:opacity-50"
+                    title={`Delete ${m.title}`}
+                    aria-label={`Delete module ${m.title}`}
+                  >
+                    {isDeleting ? '…' : '✕'}
+                  </button>
+                )}
+              </div>
+            )
+          })}
 
           {addingModule && (
             <form onSubmit={handleAddModule} className="px-4 py-3">
@@ -389,106 +408,144 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
             </button>
           </div>
         )}
+
         <div className="flex-1 flex overflow-hidden">
           {/* Items list */}
           <div className={`flex flex-col overflow-hidden transition-all ${showForm ? 'w-1/2' : 'flex-1'}`}>
-          {activeModuleId ? (
-            <>
-              <div className="px-8 py-5 border-b border-slate-800 flex items-center justify-between shrink-0">
-                <div>
-                  <h2 className="text-white font-bold text-lg">
-                    {moduleHeaders.find((m) => m.id === activeModuleId)?.title}
-                  </h2>
-                  <p className="text-slate-400 text-xs mt-0.5">
-                    {activeModuleItems.length} item{activeModuleItems.length !== 1 ? 's' : ''}
-                  </p>
+            {activeModuleId ? (
+              <>
+                <div className="px-8 py-5 border-b border-slate-800 flex items-center justify-between shrink-0">
+                  <div>
+                    <h2 className="text-white font-bold text-lg">
+                      {moduleHeaders.find((m) => m.id === activeModuleId)?.title}
+                    </h2>
+                    <p className="text-slate-400 text-xs mt-0.5">
+                      {activeModuleItems.length} item{activeModuleItems.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {reorderState === 'saving' && (
+                      <span className="text-xs text-slate-400 animate-pulse">Saving…</span>
+                    )}
+                    {reorderState === 'saved' && (
+                      <span className="text-xs text-emerald-400">Saved ✓</span>
+                    )}
+                    {reorderState === 'error' && (
+                      <span className="text-xs text-rose-400">Save failed — reverted</span>
+                    )}
+
+                    {confirmingModuleId === activeModuleId ? (
+                      <div className="flex items-center gap-2 bg-rose-950/60 border border-rose-800 px-3 py-1.5 rounded-xl">
+                        <span className="text-xs text-rose-200 font-medium">Delete this module?</span>
+                        <button
+                          type="button"
+                          disabled={deletingId === activeModuleId}
+                          onClick={() => confirmDeleteModule(activeModuleId)}
+                          className="px-3 py-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          {deletingId === activeModuleId ? 'Deleting…' : 'Yes, Delete'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={deletingId === activeModuleId}
+                          onClick={() => setConfirmingModuleId(null)}
+                          className="px-2 py-1 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingModuleId(activeModuleId)}
+                        className="px-3 py-2 text-xs font-semibold text-rose-400 hover:text-rose-300 border border-rose-900/60 hover:border-rose-700 rounded-xl transition-colors"
+                        title="Delete active module"
+                      >
+                        🗑️ Delete Module
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => { setShowLibrary(true); setSelectedType(null); setEditingBlock(null) }}
+                      className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-500 transition-colors"
+                    >
+                      + Add Content
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  {reorderState === 'saving' && (
-                    <span className="text-xs text-slate-400 animate-pulse">Saving…</span>
+
+                <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3">
+                  {activeModuleItems.length === 0 ? (
+                    <div className="text-center py-20">
+                      <p className="text-slate-600 text-sm mb-4">No content yet.</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowLibrary(true)}
+                        className="px-5 py-2.5 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-sm font-semibold rounded-xl transition-colors"
+                      >
+                        + Add your first item
+                      </button>
+                    </div>
+                  ) : (
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={activeModuleItems.map((b) => b.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        {activeModuleItems.map((block, idx) => (
+                          <SortableBlockRow
+                            key={block.id}
+                            block={block}
+                            idx={idx}
+                            total={activeModuleItems.length}
+                            isEditing={editingBlock?.id === block.id}
+                            isConfirmingDelete={confirmingBlockId === block.id}
+                            isDeleting={deletingId === block.id}
+                            onEdit={() => handleEditBlock(block)}
+                            onRequestDelete={() => setConfirmingBlockId(block.id)}
+                            onCancelDelete={() => setConfirmingBlockId(null)}
+                            onConfirmDelete={() => confirmDeleteBlock(block.id)}
+                            onMove={(dir) => handleMoveBlock(block.id, dir)}
+                          />
+                        ))}
+                      </SortableContext>
+                    </DndContext>
                   )}
-                  {reorderState === 'saved' && (
-                    <span className="text-xs text-emerald-400">Saved ✓</span>
-                  )}
-                  {reorderState === 'error' && (
-                    <span className="text-xs text-rose-400">Save failed — reverted</span>
-                  )}
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-slate-600 text-sm mb-3">No module selected.</p>
                   <button
                     type="button"
-                    onClick={() => { setShowLibrary(true); setSelectedType(null); setEditingBlock(null) }}
-                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-500 transition-colors"
+                    onClick={() => setAddingModule(true)}
+                    className="text-sm text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
                   >
-                    + Add Content
+                    + Add your first module
                   </button>
                 </div>
               </div>
+            )}
+          </div>
 
-              <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3">
-                {activeModuleItems.length === 0 ? (
-                  <div className="text-center py-20">
-                    <p className="text-slate-600 text-sm mb-4">No content yet.</p>
-                    <button
-                      type="button"
-                      onClick={() => setShowLibrary(true)}
-                      className="px-5 py-2.5 border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 text-sm font-semibold rounded-xl transition-colors"
-                    >
-                      + Add your first item
-                    </button>
-                  </div>
-                ) : (
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <SortableContext
-                      items={activeModuleItems.map((b) => b.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {activeModuleItems.map((block, idx) => (
-                        <SortableBlockRow
-                          key={block.id}
-                          block={block}
-                          idx={idx}
-                          total={activeModuleItems.length}
-                          isEditing={editingBlock?.id === block.id}
-                          onEdit={() => handleEditBlock(block)}
-                          onDelete={() => handleDeleteBlock(block.id)}
-                          onMove={(dir) => handleMoveBlock(block.id, dir)}
-                        />
-                      ))}
-                    </SortableContext>
-                  </DndContext>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-slate-600 text-sm mb-3">No module selected.</p>
-                <button
-                  type="button"
-                  onClick={() => setAddingModule(true)}
-                  className="text-sm text-indigo-400 hover:text-indigo-300 font-semibold transition-colors"
-                >
-                  + Add your first module
-                </button>
-              </div>
+          {/* Node form panel */}
+          {showForm && selectedType && (
+            <div className="w-1/2 border-l border-slate-800 bg-slate-900 flex flex-col overflow-hidden">
+              <NodeForm
+                blockTypeId={selectedType}
+                initial={editingBlock ?? undefined}
+                onSave={handleSaveBlock}
+                onCancel={() => { setSelectedType(null); setEditingBlock(null) }}
+              />
             </div>
           )}
         </div>
-
-        {/* Node form panel */}
-        {showForm && selectedType && (
-          <div className="w-1/2 border-l border-slate-800 bg-slate-900 flex flex-col overflow-hidden">
-            <NodeForm
-              blockTypeId={selectedType}
-              initial={editingBlock ?? undefined}
-              onSave={handleSaveBlock}
-              onCancel={() => { setSelectedType(null); setEditingBlock(null) }}
-            />
-          </div>
-        )}
       </div>
 
       {/* Asset library modal */}
@@ -511,80 +568,24 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
           }}
         />
       )}
-
-      {/* Module delete confirmation modal */}
-      {moduleToDelete && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <h3 className="text-lg font-bold text-white mb-2">Delete Module</h3>
-            <p className="text-sm text-slate-300 mb-6">
-              Are you sure you want to delete <span className="font-semibold text-white">"{moduleToDelete.title}"</span> and all of its content? This action cannot be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                disabled={deletingId === moduleToDelete.id}
-                onClick={() => setModuleToDelete(null)}
-                className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={deletingId === moduleToDelete.id}
-                onClick={() => confirmDeleteModule(moduleToDelete.id)}
-                className="px-4 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {deletingId === moduleToDelete.id ? 'Deleting…' : 'Delete Module'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Block delete confirmation modal */}
-      {blockToDelete && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <h3 className="text-lg font-bold text-white mb-2">Delete Item</h3>
-            <p className="text-sm text-slate-300 mb-6">
-              Are you sure you want to delete <span className="font-semibold text-white">"{blockToDelete.title}"</span>? This action cannot be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                disabled={deletingId === blockToDelete.id}
-                onClick={() => setBlockToDelete(null)}
-                className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={deletingId === blockToDelete.id}
-                onClick={() => confirmDeleteBlock(blockToDelete.id)}
-                className="px-4 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {deletingId === blockToDelete.id ? 'Deleting…' : 'Delete Item'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
 
 function SortableBlockRow({
-  block, idx, total, isEditing, onEdit, onDelete, onMove,
+  block, idx, total, isEditing, isConfirmingDelete, isDeleting, onEdit, onRequestDelete, onCancelDelete, onConfirmDelete, onMove,
 }: {
-  block:     CourseBlock
-  idx:       number
-  total:     number
-  isEditing: boolean
-  onEdit:    () => void
-  onDelete:  () => void
-  onMove:    (dir: 'up' | 'down') => void
+  block:              CourseBlock
+  idx:                number
+  total:              number
+  isEditing:          boolean
+  isConfirmingDelete: boolean
+  isDeleting:         boolean
+  onEdit:             () => void
+  onRequestDelete:    () => void
+  onCancelDelete:     () => void
+  onConfirmDelete:    () => void
+  onMove:             (dir: 'up' | 'down') => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id })
   const meta = BLOCK_TYPE_META[block.block_type_id]
@@ -622,19 +623,42 @@ function SortableBlockRow({
           ) : null}
         </div>
       </div>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-        <button type="button" onClick={() => onMove('up')} disabled={idx === 0}
-          title="Move up"
-          className="p-1.5 text-slate-400 hover:text-white disabled:opacity-20 transition-colors text-xs">▲</button>
-        <button type="button" onClick={() => onMove('down')} disabled={idx === total - 1}
-          title="Move down"
-          className="p-1.5 text-slate-400 hover:text-white disabled:opacity-20 transition-colors text-xs">▼</button>
-        <button type="button" onClick={onEdit}
-          className="p-1.5 text-slate-400 hover:text-indigo-400 transition-colors text-xs font-bold">Edit</button>
-        <button type="button" onClick={onDelete}
-          title="Delete"
-          className="p-1.5 text-slate-400 hover:text-rose-400 transition-colors text-xs">✕</button>
-      </div>
+
+      {isConfirmingDelete ? (
+        <div className="flex items-center gap-2 shrink-0 bg-rose-950/60 border border-rose-800 px-3 py-1.5 rounded-lg">
+          <span className="text-xs text-rose-200">Delete item?</span>
+          <button
+            type="button"
+            disabled={isDeleting}
+            onClick={onConfirmDelete}
+            className="px-2.5 py-0.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded transition-colors disabled:opacity-50"
+          >
+            {isDeleting ? '…' : 'Delete'}
+          </button>
+          <button
+            type="button"
+            disabled={isDeleting}
+            onClick={onCancelDelete}
+            className="px-2 py-0.5 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          <button type="button" onClick={() => onMove('up')} disabled={idx === 0}
+            title="Move up"
+            className="p-1.5 text-slate-400 hover:text-white disabled:opacity-20 transition-colors text-xs">▲</button>
+          <button type="button" onClick={() => onMove('down')} disabled={idx === total - 1}
+            title="Move down"
+            className="p-1.5 text-slate-400 hover:text-white disabled:opacity-20 transition-colors text-xs">▼</button>
+          <button type="button" onClick={onEdit}
+            className="p-1.5 text-slate-400 hover:text-indigo-400 transition-colors text-xs font-bold">Edit</button>
+          <button type="button" onClick={onRequestDelete}
+            title="Delete"
+            className="p-1.5 text-slate-400 hover:text-rose-400 transition-colors text-xs">✕</button>
+        </div>
+      )}
     </div>
   )
 }
