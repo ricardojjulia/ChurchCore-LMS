@@ -1,7 +1,13 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { createServiceClient } from '@/utils/supabase/service'
-import { enrollCore } from '@/lib/enrollment-core'
+import { verifyTurnstile } from '@/lib/turnstile'
+import { autoEnrollNewJoiner } from '@/lib/join'
+import { LIMITS, clientIp, hashId, hit, recordEvent } from '@/lib/auth-throttle'
+import { checkPassword, PASSWORD_MESSAGES } from '@/lib/password-policy'
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 interface EnrollParams {
   orgId:          string
@@ -18,19 +24,25 @@ export async function verifyAndEnroll({
   displayName,
   turnstileToken,
 }: EnrollParams): Promise<{ error?: string }> {
-  // Verify Turnstile token server-side before creating the account
-  const verifyRes = await fetch(
-    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-    {
-      method: 'POST',
-      body: new URLSearchParams({
-        secret:   process.env.TURNSTILE_SECRET_KEY ?? '',
-        response: turnstileToken,
-      }),
-    }
-  )
-  const { success } = (await verifyRes.json()) as { success: boolean }
-  if (!success) return { error: 'Security check failed. Please try again.' }
+  // Limits per IP and per church, then the bot check (COUNCIL-2026-045).
+  const ip = clientIp(await headers())
+  const ipLimit = await hit('join', hashId('ip', ip), LIMITS.joinIp)
+  const orgLimit = ipLimit.allowed ? await hit('join', hashId('org', String(orgId)), LIMITS.joinOrg) : ipLimit
+  if (!ipLimit.allowed || !orgLimit.allowed) {
+    await recordEvent('join_throttled', { ip })
+    return { error: 'Too many registrations right now. Please try again later.' }
+  }
+  if (!(await verifyTurnstile(turnstileToken, ip))) {
+    await recordEvent('captcha_failed', { ip })
+    return { error: 'Security check failed. Please try again.' }
+  }
+
+  const cleanEmail = typeof email === 'string' ? email.trim() : ''
+  if (!EMAIL_RE.test(cleanEmail) || cleanEmail.length > 254) return { error: 'Enter a valid email address.' }
+  const name = typeof displayName === 'string' ? displayName.trim() : ''
+  if (!name || name.length > 100) return { error: 'Enter your name.' }
+  const problem = checkPassword(typeof password === 'string' ? password : '', cleanEmail)
+  if (problem) return { error: PASSWORD_MESSAGES[problem] }
 
   const service = createServiceClient()
 
@@ -46,63 +58,28 @@ export async function verifyAndEnroll({
 
   // Create the auth user. handle_new_user() takes org and role only from
   // app_metadata (server-controlled); user_metadata carries the display name.
+  // Created confirmed: production requires confirmed emails to sign in and
+  // this flow sends no confirmation email, so unconfirmed joiners were locked
+  // out. The address owner can always take the account back with a password
+  // reset (COUNCIL-2026-045 Decision 5).
   const { data, error: signUpError } = await service.auth.admin.createUser({
-    email,
+    email: cleanEmail,
     password,
-    email_confirm: false,
-    user_metadata: { display_name: displayName },
+    email_confirm: true,
+    user_metadata: { display_name: name },
     app_metadata:  { org_id: orgId, role: 'student' },
   })
 
   if (signUpError || !data.user) {
-    const msg = signUpError?.message ?? 'Registration failed.'
-    // Surface duplicate email in a user-friendly way
+    const msg = signUpError?.message ?? ''
+    // Surface duplicate email in a user-friendly way; never return provider text.
     if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists')) {
       return { error: 'An account with that email already exists. Try signing in instead.' }
     }
-    return { error: msg }
+    return { error: 'Registration failed. Please try again.' }
   }
 
-  // Auto-enroll into any courses this org has configured for new joiners
-  // (organizations.settings.auto_enroll_courses, COUNCIL-2026-026 D3). Runs
-  // through the same enrollCore() gate as any other enrollment, so an
-  // invite-only/cohort-gated/prerequisite-gated course is silently skipped
-  // rather than failing. Best-effort — a failure here must never block
-  // account creation, which has already succeeded at this point.
-  const autoEnrollCourseIds = Array.isArray(
-    (org.settings as { auto_enroll_courses?: unknown } | null)?.auto_enroll_courses
-  )
-    ? ((org.settings as { auto_enroll_courses: string[] }).auto_enroll_courses).slice(0, 10)
-    : []
-
-  for (const courseId of autoEnrollCourseIds) {
-    try {
-      // Defense-in-depth re-check: addAutoEnrollCourse() already validates a
-      // course belongs to the org before it can be added, but this list is
-      // read here independently at registration time (possibly long after
-      // it was configured), so re-confirm both org ownership and published
-      // status rather than trusting the stored JSONB entry as-is — a course
-      // can be unpublished for revision after being opted into auto-enroll.
-      const { data: courseCheck } = await service
-        .from('courses')
-        .select('id')
-        .eq('id', courseId)
-        .eq('org_id', orgId)
-        .eq('status', 'published')
-        .maybeSingle()
-
-      if (!courseCheck) continue
-
-      await enrollCore({
-        supabase: service,
-        authId:   data.user.id,
-        courseId,
-        requireVerifiableAge: true,
-      })
-    } catch {
-      // Auto-enrollment failure must never block registration
-    }
-  }
+  await autoEnrollNewJoiner(service, org, data.user.id)
 
   return {}
 }

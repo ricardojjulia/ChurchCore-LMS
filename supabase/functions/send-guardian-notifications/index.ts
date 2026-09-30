@@ -25,7 +25,7 @@ const APP_URL         = Deno.env.get('NEXT_PUBLIC_APP_URL') ?? ''
 interface QueueRow {
   id:             string
   student_uid:    string
-  event_type:     'course_completed' | 'badge_awarded'
+  event_type:     'course_completed' | 'badge_awarded' | 'assignment_graded' | 'message_received'
   payload:        Record<string, string>
   debounce_until: string
   created_at:     string
@@ -119,6 +119,37 @@ function buildCourseCompletedEmail(
 </div>
 `
   return { subject, html }
+}
+
+// COUNCIL-2026-035: no message body in email — only who it's about and a link.
+function buildMessageReceivedEmail(
+  studentFirstName: string,
+  threadUrl: string,
+  unsubscribeUrl: string,
+): { subject: string; html: string } {
+  const subject = `You have a new message about ${studentFirstName}`
+  const html = `
+<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:40px 24px;color:#1e293b">
+  <h1 style="font-size:22px;font-weight:700;margin-bottom:16px">New message about ${studentFirstName}</h1>
+  <p style="font-size:15px;line-height:1.7;margin-bottom:24px">
+    A teacher or leader sent you a message about ${studentFirstName}. Sign in to read and reply.
+  </p>
+  <a href="${threadUrl}"
+     style="display:inline-block;background:#4f46e5;color:#fff;font-weight:600;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:15px">
+    Read the message
+  </a>
+  <p style="color:#94a3b8;font-size:12px;margin-top:32px">
+    You are receiving this email because you are listed as a guardian in ChurchCore LMS.
+    <a href="${unsubscribeUrl}" style="color:#94a3b8">Unsubscribe</a>
+  </p>
+</div>
+`
+  return { subject, html }
+}
+
+// Names come from user-editable profiles and course titles: escape for HTML.
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]!))
 }
 
 function buildBadgeAwardedEmail(
@@ -223,7 +254,8 @@ Deno.serve(async (req: Request) => {
       .eq('uid', row.student_uid)
       .single()
 
-    const studentName: string = studentRow?.display_name ?? 'Your student'
+    const studentName: string = escapeHtml(studentRow?.display_name ?? 'Your student')
+    const studentFirstName: string = studentName.split(' ')[0] || studentName
 
     // ── Fetch course title for course_completed events ─────────────────────
     let courseTitle = ''
@@ -233,10 +265,10 @@ Deno.serve(async (req: Request) => {
         .select('title')
         .eq('id', row.payload.course_id)
         .single()
-      courseTitle = courseRow?.title ?? 'a course'
+      courseTitle = escapeHtml(courseRow?.title ?? 'a course')
     }
 
-    const badgeName: string = row.payload.badge_name ?? 'a badge'
+    const badgeName: string = escapeHtml(row.payload.badge_name ?? 'a badge')
 
     // ── Send to each guardian ──────────────────────────────────────────────
     const portalUrl      = `${APP_URL}/guardian`
@@ -247,7 +279,12 @@ Deno.serve(async (req: Request) => {
     let rowHadFailure = false
     let lastErrorMessage = ''
 
-    for (const link of links as GuardianLink[]) {
+    // A message goes only to the guardian it was sent to, not every guardian
+    // linked to the student (COUNCIL-2026-035).
+    const recipients = (links as GuardianLink[]).filter((l) =>
+      row.event_type !== 'message_received' || l.guardian_uid === row.payload.recipient_guardian_uid)
+
+    for (const link of recipients) {
       const guardianUid = link.guardian_uid
 
       // Fetch guardian profile — need email and notification preferences.
@@ -284,7 +321,13 @@ Deno.serve(async (req: Request) => {
       let subject: string
       let html: string
 
-      if (row.event_type === 'course_completed') {
+      if (row.event_type === 'message_received') {
+        ;({ subject, html } = buildMessageReceivedEmail(
+          studentFirstName,
+          `${APP_URL}/messages/${encodeURIComponent(row.payload.thread_id ?? '')}`,
+          unsubscribeUrl,
+        ))
+      } else if (row.event_type === 'course_completed') {
         ;({ subject, html } = buildCourseCompletedEmail(
           studentName,
           courseTitle,

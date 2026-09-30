@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useTransition, useMemo, useRef } from 'react'
+import { useTranslations } from 'next-intl'
+import MessageAboutStudent from '@/components/messages/MessageAboutStudent'
 import { setGradeCell } from '@/app/actions/gradebook'
 import ExportCsvButton from '@/app/courses/[id]/analytics/ExportCsvButton'
 import type { GradebookGridRow } from '@/types/reporting'
@@ -40,11 +42,13 @@ interface Props {
   courseId:    string
   courseTitle: string
   initialRows: GradebookGridRow[]
+  guardiansByStudent?: Record<string, Array<{ uid: string; name: string }>>
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function GradebookGrid({ courseId, courseTitle, initialRows }: Props) {
+export default function GradebookGrid({ courseId, courseTitle, initialRows, guardiansByStudent = {} }: Props) {
+  const tMsg = useTranslations('messages.aboutStudent')
 
   // ── Derive unique students and blocks from the flat rows ──────────────────
   const { students, blocks } = useMemo(() => {
@@ -314,6 +318,15 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows }: Pr
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {avg.pct != null ? `${avg.pct.toFixed(1)}% · ${avg.letter}` : 'No grades yet'}
                       </p>
+                      {(guardiansByStudent[student.uid] ?? []).map((g) => (
+                        <MessageAboutStudent
+                          key={g.uid}
+                          studentUid={student.uid}
+                          recipientUid={g.uid}
+                          recipientName={g.name}
+                          label={tMsg('messageGuardian', { name: g.name })}
+                        />
+                      ))}
                     </td>
 
                     {blocks.map((block) => {

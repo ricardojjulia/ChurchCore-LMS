@@ -1,6 +1,8 @@
 # ChurchCore LMS — Sprint 2–4 Implementation Plan
 ## Version 0.23.0 → 0.26.0 · June 2026
 
+> **Status (2026-09-26): complete.** Sprints 2A–3 shipped in v0.23–0.25. Sprint 4 was never defined; it became Council Review 3. Superseded by [`implementation-plan-2026-q4.md`](implementation-plan-2026-q4.md).
+
 ---
 
 ## Wildcard Pre-Review of the Priority List

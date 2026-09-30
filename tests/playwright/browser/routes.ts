@@ -33,6 +33,15 @@ export const ROUTES: RouteSpec[] = [
   // ── Public ────────────────────────────────────────────────────────────────
   { surface: covers('page:/'), path: '/', allow: AUTHED, mobile: true },
   { surface: covers('page:/login'), path: '/login', allow: ['anon'], mobile: true },
+  // Self-serve signup (COUNCIL-2026-034): signed-in users are sent to /dashboard.
+  { surface: covers('page:/start'), path: '/start', allow: ['anon'], mobile: true },
+  // Password reset request and set/change password (COUNCIL-2026-045).
+  { surface: covers('page:/forgot-password'), path: '/forgot-password', allow: EVERYONE, mobile: true },
+  { surface: covers('page:/account/password'), path: '/account/password', allow: AUTHED, mobile: true },
+  // Renewal is only for members of a suspended org; everyone in an active org is redirected.
+  { surface: covers('page:/billing/renew'), path: '/billing/renew', allow: [] },
+  // Only for signed-in accounts with no organization (COUNCIL-2026-037); every seeded actor has one.
+  { surface: covers('page:/welcome'), path: '/welcome', allow: [] },
   // Offline fallback is served from the service-worker cache; online it sits behind auth.
   { surface: covers('page:/offline'), path: '/offline', allow: AUTHED },
   { surface: covers('page:/join/[slug]'), path: `/join/${ORG_A_SLUG}`, allow: EVERYONE, mobile: true },
@@ -101,6 +110,7 @@ export const ROUTES: RouteSpec[] = [
   { surface: covers('page:/courses/[id]/enroll'), path: `/courses/${COURSE.a}/enroll`, allow: STAFF },
   { surface: covers('page:/courses/[id]/gradebook'), path: `/courses/${COURSE.a}/gradebook`, allow: STAFF },
   { surface: covers('page:/courses/[id]/submissions'), path: `/courses/${COURSE.a}/submissions`, allow: STAFF },
+  { surface: covers('page:/courses/[id]/surveys/[blockId]'), path: `/courses/${COURSE.a}/surveys/${BLOCK.survey}`, allow: STAFF },
   { surface: covers('page:/courses/[id]/pages/[pageId]/edit'), path: `/courses/${COURSE.a}/pages/${IDS.contentPage}/edit`, allow: STAFF },
   { surface: covers('page:/admin/sections'), path: '/admin/sections', allow: STAFF },
   { surface: covers('page:/admin/sections/[id]'), path: `/admin/sections/${IDS.section}`, allow: STAFF },

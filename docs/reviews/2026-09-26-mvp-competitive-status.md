@@ -135,7 +135,7 @@ ChurchCore competes in three overlapping markets. Competitor capabilities below 
 | Native mobile app / push notifications | ❌ (PWA only) | ✅ | ✅ | ✅ |
 | Hosted video (upload, streaming) | ❌ (YouTube/Vimeo embeds) | ⚠️ | ✅ | ✅ |
 | Ready-made content library | ❌ | ❌ | ❌ | ✅ (core offer) |
-| ChMS integration (e.g. Planning Center) | ❌ | ❌ | ❌ | ✅ often |
+| ChMS integration (ChurchCore, per ADR-2026-012) | ❌ (planned: COUNCIL-2026-038) | ❌ | ❌ | ✅ often |
 | Teacher ↔ guardian messaging | ❌ | ✅ (K-12) | ❌ | ❌ |
 
 ### Where ChurchCore wins
@@ -149,7 +149,7 @@ ChurchCore competes in three overlapping markets. Competitor capabilities below 
 
 1. **No self-serve start.** A church can't sign up and start a trial; every tenant is created by a platform admin. Every course platform and most church tools have this.
 2. **No content.** Church buyers often choose a platform for its library. ChurchCore has AI outline generation but no ready-to-run courses.
-3. **No ChMS link.** Churches keep people in a church management system; without a sync, admins retype people.
+3. **No ChMS link.** Churches keep people in a church management system; without a sync, admins retype people. Planned as ChurchCore Connect with the family's own ChMS (ADR-2026-012, COUNCIL-2026-038).
 4. **Mobile experience.** A PWA without push notifications competes against native church apps.
 5. **Enterprise checkboxes.** SSO, rubrics and SCORM matter for schools and denominations.
 
@@ -199,6 +199,8 @@ Nothing on the product side blocks a closed beta.
 4. **Treat content as a business-development question.** Partnering with a curriculum publisher, or seeding a starter library built with the outline generator, would close the church-market gap faster than any feature.
 
 ---
+
+> **Follow-up (2026-09-26):** every ❌ capability above now has a draft council document, sequenced in [`docs/implementation-plan-2026-q4.md`](../implementation-plan-2026-q4.md).
 
 ## Sources
 

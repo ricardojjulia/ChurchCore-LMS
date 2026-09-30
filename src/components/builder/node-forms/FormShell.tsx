@@ -107,6 +107,9 @@ export function Toggle({ label, hint, value, onChange }: {
       </div>
       <button
         type="button"
+        role="switch"
+        aria-checked={value}
+        aria-label={label}
         onClick={() => onChange(!value)}
         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${value ? 'bg-indigo-600' : 'bg-slate-600'}`}
       >

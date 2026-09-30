@@ -42,8 +42,12 @@
  */
 
 import { createClient as createRawClient, type SupabaseClient } from '@supabase/supabase-js'
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { covers } from '../covers'
+
+// verifyAndEnroll reads the client IP from the request headers, which don't
+// exist outside a request; give it a fixed test address.
+vi.mock('next/headers', () => ({ headers: async () => new Headers({ 'x-forwarded-for': '192.0.2.45' }) }))
 
 covers('action:join/actions.verifyAndEnroll')
 

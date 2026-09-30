@@ -10,7 +10,73 @@
       "brandSubtitle": "ChurchCore LMS",
       "emailLabel": "Correo electrónico",
       "submitLoading": "Iniciando sesión…",
-      "submitButton": "Iniciar sesión"
+      "submitButton": "Iniciar sesión",
+      "newChurch": "¿Iglesia nueva?",
+      "startTrial": "Comienza una prueba gratuita",
+      "forgot": "¿Olvidaste tu contraseña?",
+      "errors": {
+        "invalid_credentials": "El correo o la contraseña son incorrectos.",
+        "too_many": "Demasiados intentos. Inténtalo de nuevo en {minutes} minutos.",
+        "captcha": "La verificación de seguridad falló. Inténtalo de nuevo.",
+        "invalid_input": "Escribe tu correo y tu contraseña.",
+        "generic": "No se pudo iniciar sesión. Inténtalo de nuevo."
+      }
+    },
+    "sso": {
+      "google": "Continuar con Google",
+      "microsoft": "Continuar con Microsoft",
+      "or": "o usa tu correo",
+      "redirecting": "Redirigiendo…",
+      "error": "No se pudo iniciar sesión. Inténtalo de nuevo.",
+      "errors": {
+        "sso_required": "Tu iglesia exige que el personal inicie sesión con Google o Microsoft.",
+        "domain_not_allowed": "Tu iglesia solo permite iniciar sesión con sus propios correos.",
+        "password_disabled": "Tu iglesia desactivó el inicio con contraseña. Usa Google o Microsoft.",
+        "auth_callback_failed": "No se completó el inicio de sesión. Inténtalo de nuevo."
+      }
+    },
+    "forgot": {
+      "heading": "Restablece tu contraseña",
+      "intro": "Escribe el correo con el que inicias sesión. Si tiene una cuenta, te enviaremos un enlace para elegir una contraseña nueva.",
+      "submit": "Enviarme un enlace",
+      "submitting": "Enviando…",
+      "sent": "Si una cuenta usa ese correo, te enviamos un enlace para restablecer la contraseña. Revisa tu bandeja de entrada.",
+      "back": "Volver a iniciar sesión",
+      "errors": {
+        "unavailable": "Restablecer la contraseña por correo aún no está disponible en este sitio. Pide ayuda al administrador de tu iglesia.",
+        "too_many": "Demasiadas solicitudes. Inténtalo más tarde.",
+        "invalid_email": "Escribe un correo válido.",
+        "captcha": "La verificación de seguridad falló. Inténtalo de nuevo.",
+        "invalid_link": "Ese enlace no es válido o ya venció. Pide uno nuevo.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
+    },
+    "password": {
+      "heading": "Elige tu contraseña",
+      "changeHeading": "Cambia tu contraseña",
+      "resetIntro": "Elige una contraseña nueva para tu cuenta.",
+      "intro": "Usa al menos 8 caracteres. Evita contraseñas comunes.",
+      "current": "Contraseña actual",
+      "new": "Contraseña nueva",
+      "confirm": "Confirma la contraseña nueva",
+      "submit": "Guardar contraseña",
+      "saving": "Guardando…",
+      "saved": "Contraseña guardada. Se cerró la sesión en tus otros dispositivos.",
+      "mismatch": "Las contraseñas no coinciden.",
+      "errors": {
+        "too_short": "Usa al menos 8 caracteres.",
+        "too_long": "Usa como máximo 72 caracteres.",
+        "matches_email": "No uses tu correo como contraseña.",
+        "too_common": "Esa contraseña es demasiado común. Elige una más difícil de adivinar.",
+        "wrong_current": "Tu contraseña actual es incorrecta.",
+        "current_required": "Escribe tu contraseña actual.",
+        "not_signed_in": "Tu sesión terminó. Inicia sesión de nuevo.",
+        "same": "Elige una contraseña distinta de la actual.",
+        "generic": "No se pudo guardar la contraseña. Inténtalo de nuevo.",
+        "too_many": "Demasiados intentos. Inténtalo más tarde."
+      },
+      "welcomeIntro": "¡Bienvenido! Elige una contraseña para poder iniciar sesión más adelante. Usa al menos 8 caracteres.",
+      "continue": "Ir a tu panel"
     }
   },
   "common": {
@@ -239,6 +305,16 @@
       "composerPlaceholder": "Escriba un mensaje… (Ctrl+Enter para enviar)",
       "composerHint": "Ctrl+Enter para enviar",
       "deleteAriaLabel": "Eliminar mensaje"
+    },
+    "aboutStudent": {
+      "to": "Mensaje para {name}",
+      "send": "Enviar",
+      "sending": "Enviando…",
+      "cancel": "Cancelar",
+      "error": "No se pudo enviar el mensaje. Inténtalo de nuevo.",
+      "messageTeacher": "Escribir a {name}",
+      "messageGuardian": "Escribir al tutor {name}",
+      "threadAbout": "Sobre {name}"
     }
   },
   "calendar": {
@@ -669,6 +745,26 @@
       "ctaButton": "Inscríbase ahora — Es gratis",
       "alreadyEnrolledError": "Ya está inscrito.",
       "ariaLabel": "Inscribirse en este curso"
+    },
+    "activities": {
+      "surveyIntroAnonymous": "Tus respuestas son anónimas: tu maestro ve los resultados sin nombres.",
+      "surveyIntroNamed": "Tu maestro verá tu nombre junto con tus respuestas.",
+      "scaleLow": "Totalmente en desacuerdo",
+      "scaleHigh": "Totalmente de acuerdo",
+      "submitSurvey": "Enviar respuestas",
+      "submitting": "Guardando…",
+      "surveyThanks": "Gracias. Tu respuesta ha sido registrada.",
+      "textAnswerLabel": "Tu respuesta",
+      "checklistProgress": "{done} de {total} completados",
+      "checklistComplete": "Todos los pasos requeridos están completos.",
+      "optionalTag": "opcional",
+      "flipCard": "Mostrar respuesta",
+      "flipBack": "Mostrar pregunta",
+      "cardOf": "Tarjeta {current} de {total}",
+      "previousCard": "Tarjeta anterior",
+      "nextCard": "Tarjeta siguiente",
+      "flashcardsDone": "Has repasado todas las tarjetas.",
+      "emptyActivity": "Esta actividad aún no tiene contenido."
     }
   },
   "feedback": {
@@ -687,5 +783,57 @@
     "submitError": "Algo salió mal. Inténtelo de nuevo.",
     "triggerAriaLabel": "Enviar comentarios",
     "closeAriaLabel": "Cerrar diálogo de comentarios"
+  },
+  "signup": {
+    "title": "Comienza la prueba gratuita de tu iglesia",
+    "subtitle": "14 días gratis. Sin tarjeta. Crea cursos, invita a tus maestros e inscribe a tu gente.",
+    "churchName": "Nombre de la iglesia o ministerio",
+    "slug": "Dirección web",
+    "slugHint": "Tus miembros se unen en {url}",
+    "adminName": "Tu nombre",
+    "email": "Tu correo",
+    "language": "Idioma",
+    "submit": "Crear mi iglesia",
+    "submitting": "Enviando…",
+    "sentTitle": "Revisa tu correo",
+    "sentBody": "Enviamos un enlace de confirmación a {email}. Tu iglesia se crea en cuanto hagas clic. El enlace vence en 24 horas.",
+    "comingSoonTitle": "El registro directo llegará pronto",
+    "comingSoonBody": "¿Quieres probar ChurchCore LMS ahora? Contáctanos y crearemos tu iglesia.",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "signIn": "Iniciar sesión",
+    "errors": {
+      "slug_taken": "Esa dirección web ya existe. Prueba otra.",
+      "reserved": "Esa dirección web está reservada. Prueba otra.",
+      "invalid": "Revisa este campo.",
+      "disposable": "Usa un correo permanente.",
+      "invalid_link": "Ese enlace de confirmación no es válido o venció. Regístrate de nuevo.",
+      "failed": "Algo salió mal al crear tu iglesia. Inténtalo de nuevo.",
+      "generic": "Algo salió mal. Inténtalo de nuevo.",
+      "turnstile": "Completa la verificación de seguridad."
+    }
+  },
+  "renew": {
+    "trialEndedTitle": "La prueba gratuita de {name} terminó",
+    "pausedTitle": "{name} está en pausa",
+    "adminBody": "Elige un plan para reactivar tu iglesia. Tus cursos, personas y progreso siguen aquí.",
+    "memberBody": "El acceso de tu iglesia está en pausa. Tu progreso está guardado. Comunícate con el administrador de tu iglesia.",
+    "noPlans": "Los planes no están disponibles ahora. Comunícate con soporte de ChurchCore.",
+    "choose": "Elegir plan →",
+    "redirecting": "Redirigiendo…",
+    "checkoutError": "No pudimos iniciar el pago. Inténtalo de nuevo.",
+    "plan": {
+      "starter": "Inicial",
+      "growth": "Crecimiento",
+      "enterprise": "Empresarial"
+    },
+    "trialBanner": "Prueba gratuita: {days, plural, one {queda # día} other {quedan # días}}.",
+    "trialBannerCta": "Elegir un plan"
+  },
+  "welcome": {
+    "title": "Tu cuenta aún no está conectada a una iglesia",
+    "body": "Pide a tu iglesia su enlace para unirte, o comienza una prueba gratuita para tu iglesia.",
+    "join": "Tengo un enlace",
+    "start": "Comenzar prueba gratuita",
+    "signOut": "Cerrar sesión"
   }
 }

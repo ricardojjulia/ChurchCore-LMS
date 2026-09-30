@@ -68,7 +68,7 @@ export default function SubmissionCard({ row }: { row: SubmissionRow }) {
             {row.student_name ?? 'Unknown student'}
           </p>
           <p className="text-xs text-muted-foreground truncate">
-            {row.block_title} · submitted {timeAgo(row.submitted_at)}
+            {row.block_title} · submitted <time dateTime={row.submitted_at ?? undefined} suppressHydrationWarning>{timeAgo(row.submitted_at)}</time>
           </p>
         </div>
 

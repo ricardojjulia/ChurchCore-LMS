@@ -11,14 +11,12 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [0.38.0] — 2026-09-29
+## [0.42.0] — 2026-09-30
 
-Council feature delivery & validation wave: Self-Serve Tenant Onboarding, Teacher-Guardian Messaging, and Assignment Rubrics (COUNCIL-2026-035, COUNCIL-2026-036, COUNCIL-2026-037).
+Council feature delivery & validation wave: Assignment Rubrics, Multi-Criterion Assessment, and Suite Stabilization.
 
 ### Added
 
-- **Self-Serve Tenant Signup & Trial Provisioning (COUNCIL-2026-035):** Self-service church onboarding with Cloudflare Turnstile anti-bot verification, automatic slug collision handling, 14-day trial organization provisioning, admin auth user creation, default academic term, starter course template, and welcome announcements.
-- **Teacher ↔ Guardian Direct Messaging (COUNCIL-2026-036):** Direct messaging channel between guardians and course instructors with verified student enrollment routing, guardian relation authorization, email notification dispatches, and responsive UI modal on the Guardian student detail view.
 - **Assignment Rubrics & Multi-Criterion Assessment (COUNCIL-2026-037):** Configurable multi-criterion scoring rubrics on assignments, pre-built templates (e.g., Essay/Theological Reflection, Ministry Project), teacher grading matrix with criterion-level feedback, and student/guardian rubric breakdown views.
 
 ### Fixed
@@ -27,28 +25,105 @@ Council feature delivery & validation wave: Self-Serve Tenant Onboarding, Teache
 
 ---
 
-## [0.37.0] — 2026-09-29
+## [0.41.0] — 2026-09-28
 
-Council feature verification wave & multi-actor testing suite sweep (COUNCIL-2026-006, 007, 008, 009, 010, 011, 012, 013, 014, 015, 034).
+Password sign-in that works, and abuse protection (COUNCIL-2026-045). Google/Microsoft sign-in is tabled and stays off.
+
+### Fixed
+- **New members could not sign in after joining** in production: `/join` created unconfirmed accounts, and production requires confirmed email. Accounts are now created confirmed.
+- **Church admins from `/start` had no password**, so they were locked out once their first session ended. They now choose a password straight after verifying their email.
+
+### Added
+- **Forgot password** (`/forgot-password`): emails a one-time reset link (needs `RESEND_API_KEY`) that opens `/account/password`. The answer is the same whether or not the email has an account.
+- **Set or change password** at `/account/password`, linked from the profile page. Needs the current password unless you came from a reset link. Other devices are signed out afterwards.
+- **Server-side sign-in** (`POST /api/auth/login`): per-IP and per-account limits, a Cloudflare Turnstile bot check, and one generic message for every credential failure.
+- **Password rules:** at least 8 characters, not your email address, and not a common password. Applied on join, reset and change.
+- **Postgres-backed auth limits** (`auth_throttle`), which need no Upstash. `/join` is now limited per IP and per church.
+- **Sign-in security events** (`auth_security_events`, hashed identifiers only), with 24-hour counts on `/platform`.
+
+### Changed
+- Supabase Auth public sign-up is off (`enable_signup = false`). Every account is created server-side, so bots can't skip the checks on `/join` and `/start`. The minimum password length is now 8.
+
+---
+
+## [0.40.0] — 2026-09-27
+
+Sprint 6, part 2: Google and Microsoft sign-in (COUNCIL-2026-037).
 
 ### Added
 
-- **Engagement Tracker & Ledger (COUNCIL-2026-006):** Server-side atomic engagement event logging (`record_engagement_event`), duplicate suppression, and daily formation streak calculation.
-- **Leaderboards (COUNCIL-2026-015):** Dense ranking leaderboard RPC and UI widget scoped to church organization.
-- **Teacher Plug Module (COUNCIL-2026-007):** Instructor bio, credentials, specialty chips, website link, and signed avatar in course content.
-- **PDF Certificate Download (COUNCIL-2026-008):** Server-side `@react-pdf/renderer` Route Handler with formal certificate typography and grade display options.
-- **Drag-and-Drop Course Builder (COUNCIL-2026-009):** `@dnd-kit` powered block reordering with optimistic UI updates, keyboard accessibility, and org ownership validation.
-- **Quiz Extended Types (COUNCIL-2026-010):** Matching term-definition pairs, fill-in-the-blank with fuzzy case-insensitive grading, and timer countdown with auto-submit.
-- **Question Banks & Randomization (COUNCIL-2026-011):** Shared organization question pool with `draw_from_bank()` RPC and dynamic quiz draw merging.
-- **Badge Auto-Triggers (COUNCIL-2026-012):** Automated badge awarding on XP thresholds, streak milestones, and course completions via `evaluate_badge_triggers()`.
-- **Focus Mode (COUNCIL-2026-013):** Distraction-free full-screen learning viewport with keyboard shortcut (`F`) and `localStorage` persistence.
-- **AI Course Outline Generator (COUNCIL-2026-014):** Anthropic Claude powered document and syllabus parsing directly into structured modules and blocks.
-- **Multi-Actor Testing Harness (COUNCIL-2026-034):** 794-test browser verification sweep across all personas (Admin, Manager, Teacher, Student, Guardian, Platform) with zero regressions.
+- **"Continue with Google" and "Continue with Microsoft"** on the sign-in and join pages. The buttons appear only for providers configured for the site (`NEXT_PUBLIC_SSO_PROVIDERS`; setup in `docs/github-setup.md`).
+- **Signing in never makes you a member.** Joining through Google or Microsoft goes through an explicit join step with the same checks as the password join. An account with no church lands on a welcome page instead of an empty dashboard.
+- **Church sign-in rules** in Admin → Settings → Sign-in: require Google or Microsoft for staff, limit sign-in to the church's email domains, or turn passwords off. Rules are checked on the server on every page; a session that breaks them is signed out with an explanation. Admins can't save a rule that would sign themselves out.
+
+### Security
+
+- The password join no longer shows the sign-in provider's raw error text.
+
+---
+
+## [0.39.0] — 2026-09-27
+
+Sprint 6, part 1: teacher ↔ guardian messaging (COUNCIL-2026-035).
+
+### Added
+
+- **Guardians can message their child's teachers**, from each course on `/guardian/[studentId]`. **Teachers can message a student's guardians** from the gradebook grid. Conversations are about one student ("About {name}"); the pairs allowed are decided in the database: a linked guardian ↔ a teacher who actually teaches the child, or the org's admins and managers.
+- When a guardian link or the enrollment ends, the conversation becomes read-only; its history stays.
+- Guardians get an email for new messages, without the message text ("You have a new message about {first name}").
+
+### Security
+
+- **Private conversations could be joined.** Any org member could add themselves to any conversation in their org (given its id) and read it, or create one naming someone else as its creator. Users can no longer write thread or participant rows directly.
+- The people search in "New message" no longer lets input change its database filter.
+- Guardian emails escape student names, course titles and badge names.
 
 ### Fixed
 
-- **Parallel Worker Submissions:** Made student assignment submission locators and assertions resilient to concurrent grading in parallel Playwright worker threads.
-- **Reports Dispatch Navigation:** Added forward-redirection wait resolution for manager and teacher `/reports` dispatches.
+- Reply notifications were never created (missing organization on the insert).
+
+---
+
+## [0.38.0] — 2026-09-26
+
+Sprint 5, part 2: self-serve signup and trial (COUNCIL-2026-034).
+
+### Added
+
+- **Self-serve signup at `/start`** (English and Spanish): church name, web address, admin name and email, protected by Turnstile and rate limits, with a disposable-email blocklist. A verification email creates the church, a 14-day trial and the admin account only after the link is clicked. The admin is signed straight into onboarding. Ships behind `SELF_SERVE_SIGNUP_ENABLED` (off) until production email is configured.
+- **Trial banner** on the admin dashboard, and **`/billing/renew`**: when a trial ends, admins can still choose a plan and pay, and other members see a clear "paused" notice.
+- A "New church? Start a free trial" link on the sign-in page.
+
+### Security
+
+- **Checkout hardening.** An org admin could start a checkout for another organization (writing a Stripe customer onto it), send Stripe's return to any external URL, and pick any Stripe price. Now: own organization only, same-site return URLs, and only the plans we sell. Stripe failures return a clean 502.
+- Signup never reveals whether an email already has an account.
+
+### Fixed
+
+- **Paying didn't restore access, and failed payments didn't pause it.** Organization status changes now update every member's access automatically, whether they come from the Stripe webhook, trial expiry or the platform console.
+- Platform tenant creation and self-serve signup share one provisioning path.
+## [0.37.0] — 2026-09-26
+
+Sprint 5, part 1: backlog close-out (COUNCIL-2026-044).
+
+### Added
+
+- **Survey blocks:** scale, multiple-choice and free-text questions, anonymous by default. Anonymity is structural: anonymous responses store no respondent id, participation is recorded separately, timestamps are truncated to the day, and the setting locks once anyone responds. Staff see aggregated results at `/courses/[id]/surveys/[blockId]`.
+- **Checklist blocks:** learners tick off steps; the block completes when every required item is done. Progress is saved per learner.
+- **Flashcard blocks:** front/back study cards; the block completes when every answer has been viewed.
+- **Cohort editing** on `/admin/cohorts/[id]` (name, description, program track, status).
+
+### Changed
+
+- Removed the unused `section` and `certificate` placeholder block types.
+- The builder's on/off toggles are now accessible switches (they had no name or state for screen readers).
+- The test-surface exemption list is empty: every page, route, action and function has a test.
+
+### Fixed
+
+- `updateCohort` no longer returns raw database errors.
+>>>>>>> origin/main
 
 ---
 

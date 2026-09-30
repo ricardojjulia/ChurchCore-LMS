@@ -57,6 +57,40 @@ test('reorders course blocks in the builder', async ({ page }) => {
   void order
 })
 
+test('builds survey, checklist and flashcard blocks in the builder', async ({ page }) => {
+  // COUNCIL-2026-044: the three new block types are authorable end to end.
+  const tag = runTag()
+  const made = async (type: string) => (await db().from('course_blocks').select('id, content')
+    .eq('course_id', COURSE.a).eq('block_type_id', type).like('title', `${tag}%`).maybeSingle()).data
+
+  async function addBlock(label: RegExp) {
+    await open(page, `/courses/${COURSE.a}/build`)
+    await page.getByRole('button', { name: '+ Add Content' }).first().click()
+    await page.getByRole('button', { name: label }).click()
+  }
+
+  await addBlock(/^✅\s*Checklist/)
+  await page.getByLabel('Title').fill(`${tag} Checklist`)
+  await page.getByLabel('Item 1', { exact: true }).fill('Read Psalm 23')
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect.poll(async () => (await made('checklist'))?.content).toMatchObject({ items: [{ text: 'Read Psalm 23', required: true }] })
+
+  await addBlock(/^🗂️\s*Flashcards/)
+  await page.getByLabel('Title').fill(`${tag} Flashcards`)
+  await page.getByLabel('Card 1 front').fill('Love is')
+  await page.getByLabel('Card 1 back').fill('patient')
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect.poll(async () => (await made('flashcard_set'))?.content).toMatchObject({ cards: [{ front: 'Love is', back: 'patient' }] })
+
+  await addBlock(/^📊\s*Survey/)
+  await page.getByLabel('Title').fill(`${tag} Survey`)
+  await page.getByLabel('Question 1 text').fill('How was the class?')
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect.poll(async () => (await made('survey'))?.content).toMatchObject({ anonymous: true, questions: [{ text: 'How was the class?', type: 'scale' }] })
+
+  await db().from('course_blocks').delete().eq('course_id', COURSE.a).like('title', `${tag}%`)
+})
+
 test('writes, publishes, unpublishes and archives a content page', async ({ page }) => {
   covers(
     'action:content.createPageAndRedirect', 'action:content.createPage', 'action:content.updatePageTitle',

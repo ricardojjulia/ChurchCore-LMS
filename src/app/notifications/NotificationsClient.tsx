@@ -175,7 +175,7 @@ export default function NotificationsClient({
                   {n.body && (
                     <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-1">{timeAgo(n.created_at)}</p>
+                  <p className="text-xs text-muted-foreground mt-1"><time dateTime={n.created_at} suppressHydrationWarning>{timeAgo(n.created_at)}</time></p>
                 </div>
               </div>
             )

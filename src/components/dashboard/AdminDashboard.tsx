@@ -8,6 +8,7 @@ import DashboardAnnouncementsPreview from './DashboardAnnouncementsPreview'
 import DashboardUpcomingEvents from './DashboardUpcomingEvents'
 import InstructorActionPanel from './InstructorActionPanel'
 import OnboardingChecklist from './OnboardingChecklist'
+import TrialBanner from './TrialBanner'
 import type { DashboardContext } from '@/lib/dashboard/context'
 import type { SystemHealthCheck } from '@/types/health'
 import { cn } from '@/lib/utils'
@@ -81,8 +82,10 @@ export default function AdminDashboard({
   ctx,
   healthChecks = [],
   onboarding,
+  trialEndsAt = null,
 }: {
   ctx:           DashboardContext
+  trialEndsAt?:  string | null
   healthChecks?: SystemHealthCheck[]
   onboarding?:   { logo_uploaded: boolean; first_teacher_invited: boolean; first_course_created: boolean; first_announcement_published: boolean } | null
 }) {
@@ -91,6 +94,7 @@ export default function AdminDashboard({
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
+        {trialEndsAt && <TrialBanner trialEndsAt={trialEndsAt} />}
         <SmartSummaryCard ctx={ctx} />
 
         {/* Onboarding checklist — auto-hides when 100% complete */}

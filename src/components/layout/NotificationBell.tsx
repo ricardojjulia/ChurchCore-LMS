@@ -204,7 +204,7 @@ export default function NotificationBell({ userId, sidebar = false, collapsed = 
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
-                          {timeAgo(n.created_at)}
+                          <time dateTime={n.created_at} suppressHydrationWarning>{timeAgo(n.created_at)}</time>
                         </p>
                       </div>
                     </div>

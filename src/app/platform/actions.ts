@@ -7,6 +7,7 @@ import { headers }               from 'next/headers'
 import { createServerClient }    from '@/lib/supabase/server'
 import { createServiceClient }   from '@/utils/supabase/service'
 import { assignMembership } from '@/lib/membership'
+import { provisionTenant } from '@/lib/tenancy/provision'
 
 async function assertPlatformAdmin() {
   const supabase = await createServerClient()
@@ -51,31 +52,10 @@ export async function createTenant(formData: FormData) {
     reporting:       formData.get('feat_reporting') === 'on',
   }
 
-  const { data: org, error: orgErr } = await service
-    .from('organizations')
-    .insert({
-      name,
-      slug,
-      plan,
-      status: plan === 'free' ? 'trial' : 'active',
-      trial_ends_at: plan === 'free'
-        ? new Date(Date.now() + trialDays * 86_400_000).toISOString()
-        : null,
-      settings: {
-        branding: {},
-        features,
-        onboarding: {
-          logo_uploaded:                false,
-          first_teacher_invited:        false,
-          first_course_created:         false,
-          first_announcement_published: false,
-        },
-      },
-    })
-    .select()
-    .single()
-
-  if (orgErr) throw new Error(orgErr.message)
+  const { org, error: provisionError } = await provisionTenant(service, {
+    name, slug, plan, trialDays, features, source: 'admin',
+  })
+  if (!org) throw new Error(provisionError === 'slug_taken' ? 'That slug is already taken.' : 'Could not create the tenant.')
 
   if (adminEmail) {
     const { data: invited, error: inviteErr } = await service.auth.admin.inviteUserByEmail(adminEmail)

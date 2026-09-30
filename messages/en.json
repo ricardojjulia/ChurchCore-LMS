@@ -10,7 +10,73 @@
       "brandSubtitle": "ChurchCore LMS",
       "emailLabel": "Email",
       "submitLoading": "Signing in…",
-      "submitButton": "Sign in"
+      "submitButton": "Sign in",
+      "newChurch": "New church?",
+      "startTrial": "Start a free trial",
+      "forgot": "Forgot password?",
+      "errors": {
+        "invalid_credentials": "Email or password is incorrect.",
+        "too_many": "Too many sign-in attempts. Try again in {minutes} minutes.",
+        "captcha": "Security check failed. Please try again.",
+        "invalid_input": "Enter your email and password.",
+        "generic": "Sign-in failed. Please try again."
+      }
+    },
+    "sso": {
+      "google": "Continue with Google",
+      "microsoft": "Continue with Microsoft",
+      "or": "or use your email",
+      "redirecting": "Redirecting…",
+      "error": "Could not start sign-in. Please try again.",
+      "errors": {
+        "sso_required": "Your church requires staff to sign in with Google or Microsoft.",
+        "domain_not_allowed": "Your church only allows sign-in with its own email addresses.",
+        "password_disabled": "Your church has turned off password sign-in. Use Google or Microsoft.",
+        "auth_callback_failed": "Sign-in didn't complete. Please try again."
+      }
+    },
+    "forgot": {
+      "heading": "Reset your password",
+      "intro": "Enter the email you sign in with. If it has an account, we’ll email you a link to choose a new password.",
+      "submit": "Email me a reset link",
+      "submitting": "Sending…",
+      "sent": "If an account uses that email, we’ve sent a link to reset the password. Check your inbox.",
+      "back": "Back to sign in",
+      "errors": {
+        "unavailable": "Password reset by email isn’t available on this site yet. Ask your church administrator for help.",
+        "too_many": "Too many requests. Please try again later.",
+        "invalid_email": "Enter a valid email address.",
+        "captcha": "Security check failed. Please try again.",
+        "invalid_link": "That reset link is invalid or has expired. Request a new one.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "password": {
+      "heading": "Set your password",
+      "changeHeading": "Change your password",
+      "resetIntro": "Choose a new password for your account.",
+      "intro": "Use at least 8 characters. Avoid common passwords.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Save password",
+      "saving": "Saving…",
+      "saved": "Password saved. Other devices have been signed out.",
+      "mismatch": "The passwords don’t match.",
+      "errors": {
+        "too_short": "Use at least 8 characters.",
+        "too_long": "Use at most 72 characters.",
+        "matches_email": "Don’t use your email address as your password.",
+        "too_common": "That password is too common. Choose something harder to guess.",
+        "wrong_current": "Your current password is incorrect.",
+        "current_required": "Enter your current password.",
+        "not_signed_in": "Your session has ended. Sign in again.",
+        "same": "Choose a password different from your current one.",
+        "generic": "Could not save your password. Please try again.",
+        "too_many": "Too many attempts. Please try again later."
+      },
+      "welcomeIntro": "Welcome! Choose a password so you can sign in again later. Use at least 8 characters.",
+      "continue": "Continue to your dashboard"
     }
   },
   "common": {
@@ -239,6 +305,16 @@
       "composerPlaceholder": "Write a message… (Ctrl+Enter to send)",
       "composerHint": "Ctrl+Enter to send",
       "deleteAriaLabel": "Delete message"
+    },
+    "aboutStudent": {
+      "to": "Message to {name}",
+      "send": "Send",
+      "sending": "Sending…",
+      "cancel": "Cancel",
+      "error": "Could not send the message. Please try again.",
+      "messageTeacher": "Message {name}",
+      "messageGuardian": "Message guardian {name}",
+      "threadAbout": "About {name}"
     }
   },
   "calendar": {
@@ -669,6 +745,26 @@
       "ctaButton": "Enroll Now — It's Free",
       "alreadyEnrolledError": "You are already enrolled.",
       "ariaLabel": "Enroll in this course"
+    },
+    "activities": {
+      "surveyIntroAnonymous": "Your answers are anonymous: your teacher sees results without names.",
+      "surveyIntroNamed": "Your teacher will see your name with your answers.",
+      "scaleLow": "Strongly disagree",
+      "scaleHigh": "Strongly agree",
+      "submitSurvey": "Submit responses",
+      "submitting": "Saving…",
+      "surveyThanks": "Thanks. Your response has been recorded.",
+      "textAnswerLabel": "Your answer",
+      "checklistProgress": "{done} of {total} done",
+      "checklistComplete": "All required steps are done.",
+      "optionalTag": "optional",
+      "flipCard": "Show answer",
+      "flipBack": "Show question",
+      "cardOf": "Card {current} of {total}",
+      "previousCard": "Previous card",
+      "nextCard": "Next card",
+      "flashcardsDone": "You've reviewed every card.",
+      "emptyActivity": "This activity has no content yet."
     }
   },
   "feedback": {
@@ -687,5 +783,57 @@
     "submitError": "Something went wrong — please try again.",
     "triggerAriaLabel": "Send feedback",
     "closeAriaLabel": "Close feedback dialog"
+  },
+  "signup": {
+    "title": "Start your church's free trial",
+    "subtitle": "14 days free. No credit card. Set up courses, invite your teachers, and enroll your people.",
+    "churchName": "Church or ministry name",
+    "slug": "Web address",
+    "slugHint": "Your members join at {url}",
+    "adminName": "Your name",
+    "email": "Your email",
+    "language": "Language",
+    "submit": "Create my church",
+    "submitting": "Sending…",
+    "sentTitle": "Check your email",
+    "sentBody": "We sent a confirmation link to {email}. Your church is created as soon as you click it. The link expires in 24 hours.",
+    "comingSoonTitle": "Self-serve signup is coming soon",
+    "comingSoonBody": "Want to try ChurchCore LMS now? Contact us and we'll set up your church.",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "errors": {
+      "slug_taken": "That web address is taken. Try another.",
+      "reserved": "That web address is reserved. Try another.",
+      "invalid": "Please check this field.",
+      "disposable": "Please use a permanent email address.",
+      "invalid_link": "That confirmation link is invalid or has expired. Please sign up again.",
+      "failed": "Something went wrong creating your church. Please try again.",
+      "generic": "Something went wrong. Please try again.",
+      "turnstile": "Please complete the security check."
+    }
+  },
+  "renew": {
+    "trialEndedTitle": "The free trial for {name} has ended",
+    "pausedTitle": "{name} is paused",
+    "adminBody": "Choose a plan to reactivate your church. Your courses, people and progress are all still here.",
+    "memberBody": "Your church's access is paused right now. Your progress is saved. Please contact your church administrator.",
+    "noPlans": "Plans aren't available right now. Please contact ChurchCore support.",
+    "choose": "Choose plan →",
+    "redirecting": "Redirecting…",
+    "checkoutError": "We couldn't start checkout. Please try again.",
+    "plan": {
+      "starter": "Starter",
+      "growth": "Growth",
+      "enterprise": "Enterprise"
+    },
+    "trialBanner": "Free trial: {days, plural, one {# day} other {# days}} left.",
+    "trialBannerCta": "Choose a plan"
+  },
+  "welcome": {
+    "title": "Your account isn't connected to a church yet",
+    "body": "Ask your church for its join link, or start a free trial for your church.",
+    "join": "I have a join link",
+    "start": "Start a free trial",
+    "signOut": "Sign out"
   }
 }

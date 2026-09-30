@@ -5,9 +5,11 @@ import {
   deleteMessage,
   markThreadRead,
   getOrCreateDirectThread,
+  getOrCreateGuardianThread,
   sendGuardianTeacherMessage,
   searchUsers,
 } from './messages'
+import { createServiceClient } from '@/utils/supabase/service'
 import { covers } from '../../tests/covers'
 
 covers(
@@ -15,6 +17,7 @@ covers(
   'action:messages.deleteMessage',
   'action:messages.markThreadRead',
   'action:messages.getOrCreateDirectThread',
+  'action:messages.getOrCreateGuardianThread',
   'action:messages.sendGuardianTeacherMessage',
   'action:messages.searchUsers',
 )
@@ -196,27 +199,6 @@ describe('getOrCreateDirectThread', () => {
   })
 })
 
-// ── searchUsers ─────────────────────────────────────────────────────────────
-
-describe('searchUsers', () => {
-  it('returns empty array if query is too short', async () => {
-    vi.mocked(createClient).mockResolvedValueOnce(authClient() as any)
-    const result = await searchUsers('a')
-    expect(result).toEqual([])
-  })
-
-  it('searches users when query length >= 2', async () => {
-    vi.mocked(createClient).mockResolvedValueOnce(
-      authClient({
-        profiles: { data: [{ uid: 'p-002', display_name: 'Jane Doe', role: 'teacher' }], error: null },
-      }) as any,
-    )
-    const result = await searchUsers('Jane')
-    expect(result).toHaveLength(1)
-    expect(result[0].display_name).toBe('Jane Doe')
-  })
-})
-
 // ── sendGuardianTeacherMessage ───────────────────────────────────────────────
 
 describe('sendGuardianTeacherMessage', () => {
@@ -292,5 +274,104 @@ describe('sendGuardianTeacherMessage', () => {
       message:    'How is my student doing on quizzes?',
     })
     expect(result.error).toBeUndefined()
+  })
+})
+
+// ── getOrCreateGuardianThread (COUNCIL-2026-035) ─────────────────────────────
+
+// A service client whose every query chain resolves to a per-table value, and
+// which records inserts.
+function serviceWith(results: Record<string, Record<string, unknown>>, inserts: Array<{ table: string; rows: unknown }>) {
+  return {
+    from: vi.fn().mockImplementation((table: string) => {
+      const chain = resolvesWith(results[table] ?? { data: null, error: null }) as Record<string, unknown>
+      return new Proxy(chain, {
+        get(target, prop) {
+          if (prop === 'insert') {
+            return (rows: unknown) => { inserts.push({ table, rows }); return resolvesWith(results[`${table}:insert`] ?? { data: null, error: null }) }
+          }
+          return Reflect.get(target, prop)
+        },
+      })
+    }),
+  }
+}
+
+describe('getOrCreateGuardianThread', () => {
+  const guardian = { data: { uid: 'g-1', display_name: 'Grace Guardian', role: 'guardian', org_id: 'org-a' }, error: null }
+
+  it('refuses a pair the database does not allow', async () => {
+    const client = authClient({ profiles: guardian })
+    client.rpc = vi.fn().mockResolvedValue({ data: false, error: null })
+    vi.mocked(createClient).mockResolvedValueOnce(client as any)
+    const res = await getOrCreateGuardianThread('student-1', 'teacher-9', 'Hello')
+    expect(res.error).toMatch(/can’t message/)
+    expect(client.rpc).toHaveBeenCalledWith('can_message_about', { p_student_uid: 'student-1', p_other_uid: 'teacher-9' })
+  })
+
+  it('rejects an empty message before any lookup', async () => {
+    const client = authClient({ profiles: guardian })
+    vi.mocked(createClient).mockResolvedValueOnce(client as any)
+    expect(await getOrCreateGuardianThread('student-1', 'teacher-1', '  <b></b> ')).toEqual({ error: 'Message cannot be empty.' })
+    expect(client.rpc).not.toHaveBeenCalled()
+  })
+
+  it('opens a thread about the student, sends as the caller and queues no message text for email', async () => {
+    const client = authClient({ profiles: guardian, messages: { count: 0, data: null, error: null } })
+    client.rpc = vi.fn().mockResolvedValue({ data: true, error: null })
+    vi.mocked(createClient).mockResolvedValueOnce(client as any)
+    const inserts: Array<{ table: string; rows: unknown }> = []
+    vi.mocked(createServiceClient).mockReturnValueOnce(serviceWith({
+      message_thread_participants: { data: [], error: null },
+      'message_threads:insert': { data: { id: 'thread-1' }, error: null },
+      message_threads: { data: { subject_student_uid: 'student-1' }, error: null },
+      profiles: { data: [], error: null },
+    }, inserts) as any)
+
+    const res = await getOrCreateGuardianThread('student-1', 'teacher-1', 'How is she doing?')
+    expect(res).toEqual({ threadId: 'thread-1' })
+    const thread = inserts.find((i) => i.table === 'message_threads')?.rows as Record<string, unknown>
+    expect(thread).toMatchObject({ subject_student_uid: 'student-1', created_by: 'g-1', org_id: 'org-a' })
+    const people = inserts.find((i) => i.table === 'message_thread_participants')?.rows as Array<{ user_id: string }>
+    expect(people.map((p) => p.user_id)).toEqual(['g-1', 'teacher-1'])
+    // The message itself is inserted by the caller's client (RLS applies), not the service role.
+    expect(inserts.some((i) => i.table === 'messages')).toBe(false)
+    expect(client.from).toHaveBeenCalledWith('messages')
+  })
+})
+
+describe('searchUsers', () => {
+  it('quotes the search term so it cannot add filter conditions', async () => {
+    const orArgs: string[] = []
+    const client = authClient()
+    client.from = vi.fn().mockImplementation((table: string) => {
+      if (table !== 'profiles') return resolvesWith({ data: null, error: null })
+      const chain: Record<string, unknown> = {}
+      for (const k of ['select', 'eq', 'neq', 'limit']) chain[k] = () => chain
+      chain.single = async () => ({ data: { uid: 'p-001', display_name: 'Me', role: 'teacher', org_id: 'org-a' }, error: null })
+      chain.or = (arg: string) => { orArgs.push(arg); return chain }
+      chain.then = (res: (v: unknown) => void) => res({ data: [], error: null })
+      return chain
+    })
+    vi.mocked(createClient).mockResolvedValueOnce(client as any)
+    await searchUsers('a,b)or(role.eq.admin')
+    expect(orArgs).toEqual(['display_name.ilike."%a,b)or(role.eq.admin%",email.ilike."%a,b)or(role.eq.admin%"'])
+  })
+
+  it('escapes LIKE wildcards and quote characters in two layers', async () => {
+    const orArgs: string[] = []
+    const client = authClient()
+    client.from = vi.fn().mockImplementation(() => {
+      const chain: Record<string, unknown> = {}
+      for (const k of ['select', 'eq', 'neq', 'limit']) chain[k] = () => chain
+      chain.single = async () => ({ data: { uid: 'p-001', display_name: 'Me', role: 'teacher', org_id: 'org-a' }, error: null })
+      chain.or = (arg: string) => { orArgs.push(arg); return chain }
+      chain.then = (res: (v: unknown) => void) => res({ data: [], error: null })
+      return chain
+    })
+    vi.mocked(createClient).mockResolvedValueOnce(client as any)
+    await searchUsers('50%_"x')
+    // % → \% (LIKE), then every backslash and quote escaped again for PostgREST.
+    expect(orArgs[0]).toBe('display_name.ilike."%50\\\\%\\\\_\\"x%",email.ilike."%50\\\\%\\\\_\\"x%"')
   })
 })

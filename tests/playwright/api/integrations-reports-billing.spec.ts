@@ -1,7 +1,8 @@
 // COUNCIL-2026-031 D4.2 — OneRoster, report artifacts, Stripe billing.
 import { test, expect } from '@playwright/test'
 import { covers } from '../fixtures/covers'
-import { MISSING_ID, ORG_A } from '../fixtures/data'
+import { MISSING_ID, ORG_A, ORG_B } from '../fixtures/data'
+import { db } from '../fixtures/db'
 import { actorClients, DB_LEAK } from './client'
 
 const clients = actorClients(['anon', 'student', 'teacher', 'admin', 'manager', 'admin-b', 'platform'])
@@ -120,6 +121,23 @@ test.describe('Stripe', () => {
     expect((await clients.get('teacher').post('/api/stripe/create-checkout', { data: body })).status()).toBe(403)
     expect((await clients.get('manager').post('/api/stripe/create-checkout', { data: body })).status()).toBe(403)
     expect((await clients.get('admin').post('/api/stripe/create-checkout', { data: { orgId: ORG_A } })).status()).toBe(400)
+  })
+
+  test('checkout hardening (COUNCIL-2026-034 Amendment 6)', async () => {
+    const plan = 'price_suite_starter' // the suite's configured STRIPE_PRICE_STARTER
+    // Only our plans: an arbitrary price is refused before anything touches Stripe.
+    expect((await clients.get('admin').post('/api/stripe/create-checkout', { data: { priceId: 'price_attacker' } })).status()).toBe(400)
+    // An org admin cannot target another organization.
+    const other = await clients.get('admin').post('/api/stripe/create-checkout', { data: { orgId: ORG_B, priceId: plan } })
+    expect(other.status()).toBe(404)
+    const orgB = (await db().from('organizations').select('stripe_customer_id').eq('id', ORG_B).single()).data
+    expect(orgB?.stripe_customer_id ?? null).toBeNull()
+    // Own org, valid plan: reaches Stripe (not configured in the suite) and fails cleanly.
+    const own = await clients.get('admin').post('/api/stripe/create-checkout', {
+      data: { priceId: plan, successUrl: 'https://evil.example/phish', cancelUrl: '/admin/billing' },
+    })
+    expect(own.status()).toBe(502)
+    expect(await own.text()).not.toMatch(DB_LEAK)
   })
 
   test('portal: org admin only; no subscription is a clean 400', async () => {
