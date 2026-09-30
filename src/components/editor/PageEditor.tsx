@@ -7,6 +7,9 @@ import RichTextEditor from './RichTextEditor'
 import SaveIndicator from './SaveIndicator'
 import { useContentAutoSave } from '@/hooks/useContentAutoSave'
 import { updatePageContent, updatePageTitle, publishPage, unpublishPage, deletePage } from '@/app/actions/content'
+import AiMaterialModal from '@/components/materials/AiMaterialModal'
+import DocumentUploadButton from '@/components/materials/DocumentUploadButton'
+import type { ParsedDocument } from '@/lib/document-parser'
 
 interface Props {
   pageId:    string
@@ -16,12 +19,17 @@ interface Props {
   status:    'draft' | 'published' | 'archived'
 }
 
-export default function PageEditor({ pageId, courseId, title: initialTitle, body, status: initialStatus }: Props) {
-  const [title,          setTitle]         = useState(initialTitle)
-  const [status,         setStatus]        = useState(initialStatus)
-  const [titleErr,       setTitleErr]      = useState<string | null>(null)
-  const [embeddingNote,  setEmbeddingNote] = useState<string | null>(null)
-  const [pubPending,     startPub]         = useTransition()
+export default function PageEditor({ pageId, courseId, title: initialTitle, body: initialBody, status: initialStatus }: Props) {
+  const [title,          setTitle]          = useState(initialTitle)
+  const [editorBody,     setEditorBody]     = useState(initialBody)
+  const [editorKey,      setEditorKey]      = useState(0) // increment to reset editor on import/AI
+  const [status,         setStatus]         = useState(initialStatus)
+  const [titleErr,       setTitleErr]       = useState<string | null>(null)
+  const [embeddingNote,  setEmbeddingNote]  = useState<string | null>(null)
+  const [actionError,    setActionError]    = useState<string | null>(null)
+  const [confirmArchive, setConfirmArchive] = useState(false)
+  const [showAiModal,    setShowAiModal]    = useState(false)
+  const [pubPending,     startPub]          = useTransition()
   const router = useRouter()
 
   const saveContent = useCallback(
@@ -42,36 +50,84 @@ export default function PageEditor({ pageId, courseId, title: initialTitle, body
 
   function handlePublish() {
     setEmbeddingNote(null)
+    setActionError(null)
     startPub(async () => {
       const res = await publishPage(pageId, courseId)
-      if (!res.error) {
-        setStatus('published')
-        if (res.embeddingStatus === 'complete') {
-          setEmbeddingNote('Indexed for AI search.')
-        } else if (res.embeddingStatus === 'skipped') {
-          setEmbeddingNote('AI index skipped (no content or API key not configured).')
-        } else if (res.embeddingStatus === 'failed') {
-          setEmbeddingNote('Published. AI indexing failed — will retry automatically.')
-        }
-        router.refresh()
+      if (res.error) {
+        setActionError(`Failed to publish: ${res.error}`)
+        return
       }
+      setStatus('published')
+      if (res.embeddingStatus === 'complete') {
+        setEmbeddingNote('Indexed for AI search.')
+      } else if (res.embeddingStatus === 'skipped') {
+        setEmbeddingNote('AI index skipped (no content or API key not configured).')
+      } else if (res.embeddingStatus === 'failed') {
+        setEmbeddingNote('Published. AI indexing failed — will retry automatically.')
+      }
+      router.refresh()
     })
   }
 
   function handleUnpublish() {
+    setActionError(null)
     startPub(async () => {
       const res = await unpublishPage(pageId, courseId)
-      if (!res.error) setStatus('draft')
+      if (res.error) {
+        setActionError(`Failed to unpublish: ${res.error}`)
+      } else {
+        setStatus('draft')
+      }
     })
   }
 
-  function handleDelete() {
-    if (!confirm('Archive this page? It will no longer be visible to students.')) return
-    startPub(() => deletePage(pageId, courseId))
+  function handleArchive() {
+    setActionError(null)
+    startPub(async () => {
+      try {
+        await deletePage(pageId, courseId)
+      } catch (err: any) {
+        if (!err?.message?.includes('NEXT_REDIRECT')) {
+          setActionError(`Failed to archive: ${err?.message || 'Server error'}`)
+          setConfirmArchive(false)
+        }
+      }
+    })
+  }
+
+  function handleAiGenerated(data: { title: string; text: string; tiptapContent: object }) {
+    setShowAiModal(false)
+    if (data.title && title === 'Untitled Page') {
+      setTitle(data.title)
+      updatePageTitle(pageId, data.title)
+    }
+    setEditorBody(data.tiptapContent)
+    setEditorKey((k) => k + 1)
+    scheduleSave(data.tiptapContent)
+  }
+
+  function handleDocumentImported(doc: ParsedDocument) {
+    if (doc.title && title === 'Untitled Page') {
+      setTitle(doc.title)
+      updatePageTitle(pageId, doc.title)
+    }
+    setEditorBody(doc.tiptapContent)
+    setEditorKey((k) => k + 1)
+    scheduleSave(doc.tiptapContent)
   }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Action Error Banner */}
+      {actionError && (
+        <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs px-4 py-3 rounded-xl flex items-center justify-between shadow-sm animate-in fade-in">
+          <span>{actionError}</span>
+          <button type="button" onClick={() => setActionError(null)} className="font-bold text-rose-600 hover:text-rose-900 ml-2">
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <button
@@ -82,8 +138,26 @@ export default function PageEditor({ pageId, courseId, title: initialTitle, body
           ← All materials
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <SaveIndicator state={saveState} lastSaved={lastSaved} />
+
+          {/* AI & File Import buttons */}
+          <button
+            type="button"
+            onClick={() => setShowAiModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition-colors shadow-sm"
+            title="Generate content using AI prompt"
+          >
+            <span>✨</span>
+            <span>AI Assistant</span>
+          </button>
+
+          <DocumentUploadButton
+            courseId={courseId}
+            onDocumentParsed={handleDocumentImported}
+            buttonText="Import File"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors shadow-sm"
+          />
 
           <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
             status === 'published'
@@ -113,14 +187,37 @@ export default function PageEditor({ pageId, courseId, title: initialTitle, body
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={pubPending}
-            className="text-sm font-semibold text-rose-600 hover:text-rose-800 transition-colors disabled:opacity-50"
-          >
-            Archive
-          </button>
+          {/* Inline 2-step Archive Confirmation */}
+          {confirmArchive ? (
+            <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-lg">
+              <span className="text-xs text-rose-800 font-medium">Archive?</span>
+              <button
+                type="button"
+                disabled={pubPending}
+                onClick={handleArchive}
+                className="px-2 py-0.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded transition-colors disabled:opacity-50"
+              >
+                {pubPending ? '…' : 'Yes'}
+              </button>
+              <button
+                type="button"
+                disabled={pubPending}
+                onClick={() => setConfirmArchive(false)}
+                className="px-2 py-0.5 text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmArchive(true)}
+              disabled={pubPending}
+              className="text-sm font-semibold text-rose-600 hover:text-rose-800 transition-colors disabled:opacity-50"
+            >
+              Archive
+            </button>
+          )}
         </div>
       </div>
 
@@ -170,15 +267,25 @@ export default function PageEditor({ pageId, courseId, title: initialTitle, body
 
       {/* Editor */}
       <RichTextEditor
-        content={body}
+        key={editorKey}
+        content={editorBody}
         onChange={scheduleSave}
-        placeholder="Start writing your page content…"
+        placeholder="Start writing your page content, use the AI Assistant, or import a document…"
         minHeight="480px"
       />
 
       <p className="text-xs text-muted-foreground mt-3 text-center">
         Content saves automatically as you type.
       </p>
+
+      {/* AI Assistant Modal */}
+      {showAiModal && (
+        <AiMaterialModal
+          initialPrompt={title && title !== 'Untitled Page' ? `Write comprehensive curriculum material for: ${title}` : ''}
+          onGenerated={handleAiGenerated}
+          onClose={() => setShowAiModal(false)}
+        />
+      )}
     </div>
   )
 }
