@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { getTranslations } from 'next-intl/server'
+import ContactTeacherModal from '@/components/guardian/ContactTeacherModal'
 import MessageAboutStudent from '@/components/messages/MessageAboutStudent'
 
 export const dynamic = 'force-dynamic'
@@ -180,7 +181,7 @@ export default async function GuardianStudentPage({
                           {statusLabel}
                         </span>
                       </div>
-                      <div>
+                      <div className="mb-3">
                         <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                           <span>{t('guardian.detail.progressBarLabel')}</span>
                           <span>{e.progress_percent}%</span>
@@ -191,6 +192,14 @@ export default async function GuardianStudentPage({
                             style={{ width: `${e.progress_percent}%` }}
                           />
                         </div>
+                      </div>
+                      <div className="flex justify-end pt-1 border-t border-slate-100 dark:border-slate-800">
+                        <ContactTeacherModal
+                          studentUid={student.uid}
+                          studentName={student.display_name ?? 'Student'}
+                          courseId={e.course_id}
+                          courseTitle={e.course_title}
+                        />
                       </div>
                     </div>
                   )

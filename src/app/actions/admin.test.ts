@@ -19,8 +19,26 @@ const m = vi.hoisted(() => ({
 function sessionClient() {
   return {
     auth: { getUser: async () => ({ data: { user: { id: 'admin-auth' } } }) },
-    from: () => {
-      const q = { select: () => q, eq: () => q, single: async () => ({ data: m.caller }) }
+    from: (table?: string) => {
+      const q: any = {
+        select: () => q,
+        eq: () => q,
+        insert: (payload: any) => ({
+          select: () => ({
+            single: async () => ({ data: { id: 'new-badge-id', ...payload }, error: null }),
+          }),
+        }),
+        update: () => ({
+          eq: async () => ({ error: null }),
+        }),
+        delete: () => ({
+          eq: async () => ({ error: null }),
+        }),
+        single: async () => ({
+          data: table === 'badges' ? { id: 'b-1', org_id: m.caller?.org_id ?? ORG_A } : m.caller,
+          error: null,
+        }),
+      }
       return q
     },
   }
@@ -62,7 +80,7 @@ vi.mock('@/utils/supabase/server', () => ({ createClient: async () => sessionCli
 vi.mock('@/utils/supabase/service', () => ({ createServiceClient: () => serviceClient() }))
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
 
-import { deleteUser, inviteUser, updateUserRole, updateUserStatus } from './admin'
+import { deleteBadge, deleteUser, inviteUser, updateUserRole, updateUserStatus, upsertBadge } from './admin'
 
 beforeEach(() => {
   m.caller = { uid: 'admin-uid', role: 'admin', org_id: ORG_A }
@@ -124,3 +142,41 @@ describe('inviteUser', () => {
     expect(m.updates.at(-1)).toMatchObject({ values: { org_id: ORG_A, role: 'teacher' } })
   })
 })
+
+describe('upsertBadge & deleteBadge (COUNCIL-2026-012)', () => {
+  it('allows admin to create a new badge with auto-award trigger condition', async () => {
+    const res = await upsertBadge({
+      title: 'Devoted Learner',
+      description: 'Awarded for 5-day streak',
+      triggerCondition: { type: 'streak', days: 5 },
+    })
+    expect(res).toEqual({ id: 'new-badge-id' })
+  })
+
+  it('allows admin to update an existing badge', async () => {
+    const res = await upsertBadge({
+      id: 'b-1',
+      title: 'Devoted Learner Updated',
+      description: 'Awarded for 7-day streak',
+      triggerCondition: { type: 'streak', days: 7 },
+    })
+    expect(res).toEqual({ id: 'b-1' })
+  })
+
+  it('rejects unauthorized users from upserting badges', async () => {
+    m.caller = { uid: 's-1', role: 'student', org_id: ORG_A }
+    const res = await upsertBadge({
+      title: 'Unauthorized Badge',
+      description: 'Should fail',
+      triggerCondition: null,
+    })
+    expect(res).toEqual({ error: 'Unauthorized' })
+  })
+
+  it('allows admin to delete a badge', async () => {
+    m.caller = { uid: 'admin-uid', role: 'admin', org_id: ORG_A }
+    const res = await deleteBadge('b-1')
+    expect(res).toEqual({})
+  })
+})
+

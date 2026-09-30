@@ -11,6 +11,20 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.42.0] — 2026-09-30
+
+Council feature delivery & validation wave: Assignment Rubrics, Multi-Criterion Assessment, and Suite Stabilization.
+
+### Added
+
+- **Assignment Rubrics & Multi-Criterion Assessment (COUNCIL-2026-037):** Configurable multi-criterion scoring rubrics on assignments, pre-built templates (e.g., Essay/Theological Reflection, Ministry Project), teacher grading matrix with criterion-level feedback, and student/guardian rubric breakdown views.
+
+### Fixed
+
+- **Playwright Test Runner Resiliency:** Enhanced quiz submission selectors and streaming landmark attachment assertions for concurrent multi-worker browser test executions.
+
+---
+
 ## [0.41.0] — 2026-09-28
 
 Password sign-in that works, and abuse protection (COUNCIL-2026-045). Google/Microsoft sign-in is tabled and stays off.
@@ -109,6 +123,7 @@ Sprint 5, part 1: backlog close-out (COUNCIL-2026-044).
 ### Fixed
 
 - `updateCohort` no longer returns raw database errors.
+>>>>>>> origin/main
 
 ---
 

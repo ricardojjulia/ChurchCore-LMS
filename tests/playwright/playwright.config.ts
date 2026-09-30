@@ -21,8 +21,17 @@ export default defineConfig({
   timeout: 45_000,
   expect: { timeout: 10_000 },
   reporter: isCI
-    ? [['list'], ['html', { outputFolder: '../../playwright-report', open: 'never' }], ['github']]
-    : [['list'], ['html', { outputFolder: '../../playwright-report', open: 'never' }]],
+    ? [
+        ['list'],
+        ['html', { outputFolder: '../../playwright-report', open: 'never' }],
+        ['github'],
+        ['./reporting/council-reporter.ts'],
+      ]
+    : [
+        ['list'],
+        ['html', { outputFolder: '../../playwright-report', open: 'never' }],
+        ['./reporting/council-reporter.ts'],
+      ],
   use: {
     baseURL,
     trace: 'retain-on-failure',

@@ -275,6 +275,76 @@ export async function deleteMessage(messageId: string): Promise<{ error?: string
   return {}
 }
 
+// ── Guardian to Teacher Direct Inquiry ───────────────────────────────
+export interface SendGuardianTeacherMessageParams {
+  studentUid: string
+  courseId:   string
+  message:    string
+}
+
+export async function sendGuardianTeacherMessage({
+  studentUid,
+  courseId,
+  message,
+}: SendGuardianTeacherMessageParams): Promise<{ threadId?: string; error?: string }> {
+  const { supabase, profile } = await requireAuth()
+
+  if (profile.role !== 'guardian') {
+    return { error: 'Only guardians can initiate student inquiries.' }
+  }
+
+  const cleanBody = stripHtml(message ?? '').slice(0, 10000)
+  if (!cleanBody) return { error: 'Message cannot be empty.' }
+
+  // 1. Verify guardian is authorized for this student
+  const { data: link, error: linkErr } = await supabase
+    .from('guardian_links')
+    .select('student_uid')
+    .eq('guardian_uid', profile.uid)
+    .eq('student_uid', studentUid)
+    .maybeSingle()
+
+  if (linkErr || !link) {
+    return { error: 'You are not authorized as a guardian for this student.' }
+  }
+
+  // 2. Verify student enrollment in course
+  const { data: enrollment, error: enrollErr } = await supabase
+    .from('enrollments')
+    .select('course_id')
+    .eq('user_id', studentUid)
+    .eq('course_id', courseId)
+    .maybeSingle()
+
+  if (enrollErr || !enrollment) {
+    return { error: 'Student is not enrolled in this course.' }
+  }
+
+  // 3. Resolve student and course details + instructor owner_id
+  const { data: student } = await supabase
+    .from('profiles')
+    .select('display_name')
+    .eq('uid', studentUid)
+    .single()
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('id, title, owner_id')
+    .eq('id', courseId)
+    .eq('org_id', profile.org_id)
+    .single()
+
+  if (!course?.owner_id) {
+    return { error: 'No instructor is assigned to this course.' }
+  }
+
+  const studentName = student?.display_name ?? 'Student'
+  const contextualMessage = `[Guardian Inquiry regarding ${studentName} in "${course.title}"]\n\n${cleanBody}`
+
+  // 4. Create or reuse direct thread with teacher
+  return getOrCreateDirectThread(course.owner_id, contextualMessage)
+}
+
 // ── Teacher ↔ guardian threads (COUNCIL-2026-035) ──────────────────────
 // Email a guardian recipient (no message body — Amendment 4) when a thread is
 // about a student. Non-guardian recipients get only the in-app notification.

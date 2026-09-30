@@ -6,11 +6,12 @@ import { getTranslations } from 'next-intl/server'
 export const dynamic = 'force-dynamic'
 
 interface LeaderEntry {
-  uid:           string
-  display_name:  string | null
-  role:          string
-  xp_points:     number
-  current_level: number
+  rank:            number
+  uid:             string
+  display_name:    string
+  xp_points:       number
+  current_level:   number
+  is_current_user: boolean
 }
 
 const RANK_STYLES = [
@@ -36,23 +37,9 @@ export default async function LeaderboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: me } = await supabase
-    .from('profiles')
-    .select('uid, xp_points, current_level')
-    .eq('auth_id', user.id)
-    .single()
-
-  // Top 50 by XP — students only (staff don't earn XP)
-  const { data: leaders } = await supabase
-    .from('profiles')
-    .select('uid, display_name, role, xp_points, current_level')
-    .eq('role', 'student')
-    .order('xp_points', { ascending: false })
-    .order('current_level', { ascending: false })
-    .limit(50)
-
-  const rows = (leaders ?? []) as LeaderEntry[]
-  const myRank = me ? rows.findIndex((r) => r.uid === me.uid) + 1 : 0
+  const { data: rpcData, error } = await supabase.rpc('get_leaderboard', { p_limit: 50 })
+  const rows = (rpcData ?? []) as LeaderEntry[]
+  const me = rows.find((r) => r.is_current_user)
 
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -65,11 +52,11 @@ export default async function LeaderboardPage() {
         </div>
 
         {/* My rank card */}
-        {me && me.xp_points > 0 && (
+        {me && (
           <div className="bg-white border border-primary/30 rounded-2xl px-5 py-4 mb-6 flex items-center gap-4 shadow-sm">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
               <span className="text-base font-extrabold text-primary">
-                {myRank > 0 ? `#${myRank}` : '—'}
+                {me.rank > 0 ? `#${me.rank}` : '—'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
@@ -138,8 +125,8 @@ export default async function LeaderboardPage() {
           <div className="bg-white border border-border rounded-xl overflow-hidden">
             <ul className="divide-y divide-border">
               {rows.map((entry, idx) => {
-                const rank    = idx + 1
-                const isMe    = entry.uid === me?.uid
+                const rank    = entry.rank
+                const isMe    = entry.is_current_user
                 const { pct } = levelProgress(entry.xp_points, entry.current_level)
 
                 return (

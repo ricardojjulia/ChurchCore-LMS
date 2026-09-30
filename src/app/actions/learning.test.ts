@@ -1,10 +1,17 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
-import { enrollSelf, gradeSubmission } from './learning'
+import { enrollSelf, gradeSubmission, loadQuizQuestions, recordEngagement, reorderCourseBlocks, submitQuiz } from './learning'
 import { covers } from '../../tests/covers'
 
-covers('action:learning.enrollSelf', 'action:learning.gradeSubmission')
+covers(
+  'action:learning.enrollSelf',
+  'action:learning.gradeSubmission',
+  'action:learning.loadQuizQuestions',
+  'action:learning.recordEngagement',
+  'action:learning.reorderCourseBlocks',
+  'action:learning.submitQuiz',
+)
 
 // ── Service client mock (used for XP award and notifications in gradeSubmission) ──
 vi.mock('@/utils/supabase/service', () => ({
@@ -564,3 +571,299 @@ describe('gradeSubmission', () => {
     expect(JSON.stringify(result)).not.toContain('constraint violation')
   })
 })
+
+describe('recordEngagement (COUNCIL-2026-006)', () => {
+  it('records an engagement event and returns XP and streak results', async () => {
+    const mockRpc = vi.fn().mockResolvedValue({
+      data: {
+        inserted: true,
+        xp_earned: 10,
+        new_xp: 150,
+        new_level: 2,
+        leveled_up: false,
+        current_streak: 3,
+        longest_streak: 5,
+      },
+      error: null,
+    })
+
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'auth-u-001' } }, error: null }),
+      },
+      rpc: mockRpc,
+    } as any)
+
+    const res = await recordEngagement({
+      eventType: 'block_completion',
+      sourceType: 'block',
+      sourceId: '00000000-0000-0000-00c0-000000000102',
+      xpAmount: 10,
+    })
+
+    expect(res).toEqual({
+      inserted: true,
+      xpEarned: 10,
+      newXp: 150,
+      newLevel: 2,
+      leveledUp: false,
+      currentStreak: 3,
+      longestStreak: 5,
+    })
+
+    expect(mockRpc).toHaveBeenCalledWith('record_engagement_event', {
+      p_event_type: 'block_completion',
+      p_source_type: 'block',
+      p_source_id: '00000000-0000-0000-00c0-000000000102',
+      p_xp: 10,
+      p_metadata: {},
+    })
+  })
+
+  it('handles duplicate events gracefully with zero additional XP', async () => {
+    const mockRpc = vi.fn().mockResolvedValue({
+      data: {
+        inserted: false,
+        xp_earned: 0,
+        new_xp: 150,
+        new_level: 2,
+        leveled_up: false,
+        current_streak: 3,
+        longest_streak: 5,
+      },
+      error: null,
+    })
+
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'auth-u-001' } }, error: null }),
+      },
+      rpc: mockRpc,
+    } as any)
+
+    const res = await recordEngagement({
+      eventType: 'block_completion',
+      sourceType: 'block',
+      sourceId: '00000000-0000-0000-00c0-000000000102',
+      xpAmount: 10,
+    })
+
+    expect(res.inserted).toBe(false)
+    expect(res.xpEarned).toBe(0)
+  })
+
+  it('rejects unauthenticated requests', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
+      },
+    } as any)
+
+    const res = await recordEngagement({
+      eventType: 'daily_login',
+    })
+
+    expect(res).toEqual({ error: 'Not authenticated' })
+  })
+})
+
+describe('reorderCourseBlocks (COUNCIL-2026-009)', () => {
+  it('returns { error: "Not authenticated" } when user is not signed in', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(noAuthClient() as any)
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-1', 'b-2'] })
+    expect(result).toEqual({ error: 'Not authenticated' })
+  })
+
+  it('returns { error: "Unauthorized" } when user is not staff', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profile_roles: { data: { uid: 'p-001', role: 'student', org_id: 'org-1' }, error: null },
+      }) as any,
+    )
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-1', 'b-2'] })
+    expect(result).toEqual({ error: 'Unauthorized' })
+  })
+
+  it('returns { error: "Not found" } when course belongs to a different org', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profile_roles: { data: { uid: 'p-001', role: 'teacher', org_id: 'org-1' }, error: null },
+        courses: { data: { org_id: 'org-other' }, error: null },
+      }) as any,
+    )
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-1', 'b-2'] })
+    expect(result).toEqual({ error: 'Not found' })
+  })
+
+  it('returns { error: "Invalid block IDs" } when not all block IDs belong to the course', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profile_roles: { data: { uid: 'p-001', role: 'teacher', org_id: 'org-1' }, error: null },
+        courses: { data: { org_id: 'org-1' }, error: null },
+        course_blocks: { data: [{ id: 'b-1' }], error: null }, // Only 1 out of 2 found
+      }) as any,
+    )
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-1', 'b-2'] })
+    expect(result).toEqual({ error: 'Invalid block IDs' })
+  })
+
+  it('happy path — updates sort_order for all reordered blocks and returns {}', async () => {
+    const mockUpdate = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
+    vi.mocked(createServiceClient).mockReturnValueOnce({
+      from: vi.fn().mockReturnValue({
+        update: mockUpdate,
+      }),
+    } as any)
+
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profile_roles: { data: { uid: 'p-001', role: 'teacher', org_id: 'org-1' }, error: null },
+        courses: { data: { org_id: 'org-1' }, error: null },
+        course_blocks: { data: [{ id: 'b-2' }, { id: 'b-1' }], error: null },
+      }) as any,
+    )
+
+    const result = await reorderCourseBlocks({ courseId: 'c-1', reorderedIds: ['b-2', 'b-1'] })
+    expect(result).toEqual({})
+    expect(mockUpdate).toHaveBeenCalledWith({ sort_order: 1 })
+    expect(mockUpdate).toHaveBeenCalledWith({ sort_order: 2 })
+  })
+})
+
+describe('submitQuiz (COUNCIL-2026-010 Extended Types)', () => {
+  it('correctly grades matching questions', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profiles: { data: { uid: 'p-001' }, error: null },
+        course_blocks: { data: { content: {} }, error: null },
+        block_submissions: { data: null, error: null },
+      }) as any,
+    )
+
+    const questions = [
+      {
+        id: 'q-match-1',
+        points: 20,
+        correct_index: -1,
+        type: 'matching' as const,
+        pairs: [
+          { id: '1', left: 'Grace', right: 'Unmerited favor' },
+          { id: '2', left: 'Mercy', right: 'Withheld punishment' },
+        ],
+      },
+    ]
+
+    const answers = [
+      {
+        questionId: 'q-match-1',
+        matchedPairs: {
+          '1': 'Unmerited favor',
+          '2': 'Withheld punishment',
+        },
+      },
+    ]
+
+    const res = await submitQuiz('block-quiz-1', answers, questions, 20)
+    expect(res).toMatchObject({
+      earnedScore: 20,
+      gradePct: 100,
+    })
+  })
+
+  it('correctly grades fill_blank questions case-insensitively with fuzzy acceptable_answers', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        profiles: { data: { uid: 'p-001' }, error: null },
+        course_blocks: { data: { content: {} }, error: null },
+        block_submissions: { data: null, error: null },
+      }) as any,
+    )
+
+    const questions = [
+      {
+        id: 'q-fill-1',
+        points: 10,
+        correct_index: -1,
+        type: 'fill_blank' as const,
+        blanks: [
+          { id: 'b1', acceptable_answers: ['love', 'charity'] },
+          { id: 'b2', acceptable_answers: ['peace'] },
+        ],
+      },
+    ]
+
+    const answers = [
+      {
+        questionId: 'q-fill-1',
+        blankAnswers: {
+          '0': '   LOVE  ', // case and whitespace tolerant
+          '1': 'Peace',
+        },
+      },
+    ]
+
+    const res = await submitQuiz('block-quiz-2', answers, questions, 10)
+    expect(res).toMatchObject({
+      earnedScore: 10,
+      gradePct: 100,
+    })
+  })
+})
+
+describe('loadQuizQuestions (COUNCIL-2026-011 Question Banks)', () => {
+  it('returns static questions when no bank draws configured', async () => {
+    vi.mocked(createClient).mockResolvedValueOnce(
+      userClient({
+        course_blocks: {
+          data: {
+            content: {
+              questions: [{ id: 'q1', prompt: 'Static question 1' }],
+            },
+          },
+          error: null,
+        },
+      }) as any,
+    )
+
+    const res = await loadQuizQuestions({ blockId: 'b-quiz-1' })
+    expect(res.questions).toHaveLength(1)
+    expect(res.questions[0].id).toBe('q1')
+  })
+
+  it('draws questions from bank via draw_from_bank RPC and merges them', async () => {
+    const mockRpc = vi.fn().mockResolvedValue({
+      data: [{ id: 'bank-q1', prompt: 'Question drawn from bank' }],
+      error: null,
+    })
+
+    vi.mocked(createClient).mockResolvedValueOnce({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'u1' } }, error: null }) },
+      from: vi.fn().mockReturnValue(
+        resolvesWith({
+          data: {
+            content: {
+              questions: [{ id: 'q1', prompt: 'Static Q' }],
+              bank_draws: [{ bank_id: 'bank-1', count: 1 }],
+            },
+          },
+          error: null,
+        }),
+      ),
+      rpc: mockRpc,
+    } as any)
+
+    const res = await loadQuizQuestions({ blockId: 'b-quiz-2' })
+    expect(mockRpc).toHaveBeenCalledWith('draw_from_bank', {
+      p_bank_id: 'bank-1',
+      p_count: 1,
+    })
+    expect(res.questions).toHaveLength(2)
+  })
+})
+
+
+

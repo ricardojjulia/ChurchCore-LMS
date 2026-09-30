@@ -11,7 +11,7 @@ const BENIGN_CONSOLE = [
   /Download the React DevTools/,                       // dev-only banner
   /\[Fast Refresh\]/,                                  // dev-only HMR logs
   /Failed to load resource: .*favicon/,                // browsers probe favicons
-  /Failed to load resource: the server responded with a status of 40[13]/, // expected on deliberate forbidden checks
+  /Failed to load resource: the server responded with a status of 40[134]/, // expected on deliberate forbidden or not-found checks
   /Sentry Logger/,                                     // Sentry SDK debug line when DSN unset
 ]
 
