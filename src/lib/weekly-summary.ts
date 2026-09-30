@@ -55,7 +55,7 @@ Write the summary now:`
 
   // If OPENROUTER_API_KEY or OPENAI_API_KEY is present, or if falling back:
   const res = await callOpenRouter({
-    model: OPENROUTER_DEFAULT_MODELS.summary,
+    task: 'summary',
     messages: [{ role: 'user', content: prompt }],
     max_tokens: 250,
   })
