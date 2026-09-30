@@ -54,15 +54,71 @@ beforeEach(() => {
 })
 
 describe('createCourseFromOutline', () => {
-  it('creates module headers and child blocks in the caller’s org', async () => {
-    const res = await createCourseFromOutline({ courseId: 'c-1', outline: outline as never })
-    expect(res).toEqual({ blocksCreated: 5 })
+  it('creates module headers and child blocks in the caller’s org with populated content', async () => {
+    const richOutline = {
+      modules: [
+        {
+          title: 'Week 1',
+          blocks: [
+            {
+              title: 'Intro',
+              type: 'page',
+              objective: 'Welcome',
+              content: { body: '<p>Complete lesson content</p>' },
+            },
+            {
+              title: 'Check',
+              type: 'quiz',
+              objective: 'Recall',
+              content: {
+                questions: [
+                  { text: 'Question 1', options: ['A', 'B'], correct_index: 0, points: 10 },
+                ],
+              },
+            },
+            {
+              title: 'Activity',
+              type: 'assignment',
+              objective: 'Deliver essay',
+              content: { instructions: 'Submit a 500 word paper', max_points: 100 },
+            },
+          ],
+        },
+        {
+          title: 'Week 2',
+          blocks: [
+            {
+              title: 'Talk',
+              type: 'discussion',
+              objective: 'Share',
+              content: { prompt: 'What is your testimony?' },
+            },
+          ],
+        },
+      ],
+    }
+
+    const res = await createCourseFromOutline({ courseId: 'c-1', outline: richOutline as never })
+    expect(res).toEqual({ blocksCreated: 6 })
     const modules = m.inserted.filter((r) => r.block_type_id === 'module_header')
     expect(modules.map((r) => r.title)).toEqual(['Week 1', 'Week 2'])
     const children = m.inserted.filter((r) => r.block_type_id !== 'module_header')
-    expect(children.map((r) => r.block_type_id)).toEqual(['page', 'quiz', 'discussion'])
+    expect(children.map((r) => r.block_type_id)).toEqual(['page', 'quiz', 'assignment', 'discussion'])
     expect(children.every((r) => modules.some((mod) => mod.id === r.parent_block_id))).toBe(true)
     expect(m.inserted.every((r) => r.org_id === 'org-a' && r.course_id === 'c-1')).toBe(true)
+
+    // Verify rich content is populated
+    const pageBlock = children.find((c) => c.block_type_id === 'page')
+    expect((pageBlock?.content as any)?.body).toBe('<p>Complete lesson content</p>')
+
+    const quizBlock = children.find((c) => c.block_type_id === 'quiz')
+    expect((quizBlock?.content as any)?.questions).toHaveLength(1)
+
+    const assignBlock = children.find((c) => c.block_type_id === 'assignment')
+    expect((assignBlock?.content as any)?.instructions).toBe('Submit a 500 word paper')
+
+    const discBlock = children.find((c) => c.block_type_id === 'discussion')
+    expect((discBlock?.content as any)?.prompt).toBe('What is your testimony?')
   })
 
   it('refuses a course in another org', async () => {

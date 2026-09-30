@@ -4,17 +4,49 @@ import { outlineLimiter, checkLimit } from '@/lib/rate-limit'
 import { callOpenRouter, OPENROUTER_DEFAULT_MODELS, getOpenRouterApiKey } from '@/lib/openrouter'
 
 export const runtime     = 'nodejs'
-export const maxDuration = 30
+export const maxDuration = 60
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024 // 5 MB
 const MAX_TEXT_CHARS = 50_000
 
 const SYSTEM_PROMPT =
-  'You are a curriculum design assistant for religious education. Given the provided content, ' +
-  'structure it as a course outline. Respond with ONLY a valid JSON object matching exactly: ' +
-  '{ "course_title": string, "course_description": string, "modules": [{ "title": string, ' +
-  '"blocks": [{ "title": string, "type": "text" | "quiz" | "discussion", "objective": string }] }] }. ' +
-  'Generate 3-8 modules with 2-6 blocks each. Do not include any text outside the JSON object.'
+  'You are an expert instructional designer and curriculum specialist for Christian and religious education. ' +
+  'Your task is to transform provided curriculum notes, syllabus materials, sermon series, or course topics ' +
+  'into a fully-realized course structure with COMPLETE, HIGH-QUALITY, SUBSTANTIVE content for every module and block.\n\n' +
+  'CRITICAL INSTRUCTIONS:\n' +
+  '1. Generate 3-6 cohesive modules with 2-5 carefully sequenced blocks each (page, quiz, discussion, or assignment).\n' +
+  '2. Maintain the theological perspective (Evangelical/Biblical Christian worldview, pastoral ministry) and regional/cultural context (e.g., Latin American context if mentioned).\n' +
+  '3. MATCH THE LANGUAGE of the user input (e.g. if provided in Spanish, write everything in Spanish; if in English, write in English).\n' +
+  '4. POPULATE COMPLETE CONTENT for every block (no empty placeholders):\n' +
+  '   - For "page" (or "text") blocks: write rich HTML lesson content in "content.body" (use <h3>, <p>, <blockquote> for Bible scriptures with book/chapter/verse references, <ul>/<li> for practical applications, <strong> for key concepts). Provide 2-4 comprehensive paragraphs of deep theological and practical instruction.\n' +
+  '   - For "discussion" blocks: write an open-ended reflection prompt in "content.prompt" and set "content.max_score": 10.\n' +
+  '   - For "assignment" blocks: write actionable deliverables, guidelines, and reflection requirements in "content.instructions", set "content.max_points": 100, and "content.submission_type": "both".\n' +
+  '   - For "quiz" blocks: provide 2-4 multiple-choice questions in "content.questions", each with "id", "text", "type": "multiple_choice", "options" (array of 4 choices), "correct_index" (0-3), "points": 10, and "explanation".\n\n' +
+  'OUTPUT FORMAT:\n' +
+  'Respond with ONLY a valid JSON object matching this schema:\n' +
+  '{\n' +
+  '  "course_title": string,\n' +
+  '  "course_description": string,\n' +
+  '  "modules": [\n' +
+  '    {\n' +
+  '      "title": string,\n' +
+  '      "blocks": [\n' +
+  '        {\n' +
+  '          "title": string,\n' +
+  '          "type": "page" | "quiz" | "discussion" | "assignment",\n' +
+  '          "objective": string,\n' +
+  '          "content": {\n' +
+  '            "body": string,\n' +
+  '            "prompt": string,\n' +
+  '            "instructions": string,\n' +
+  '            "questions": [{ "id": string, "text": string, "type": "multiple_choice", "options": [string, string, string, string], "correct_index": number, "points": number, "explanation": string }]\n' +
+  '          }\n' +
+  '        }\n' +
+  '      ]\n' +
+  '    }\n' +
+  '  ]\n' +
+  '}\n' +
+  'Do not include any text outside the JSON object.'
 
 export async function POST(req: NextRequest) {
   // Auth
@@ -101,10 +133,11 @@ export async function POST(req: NextRequest) {
     task: 'outline',
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: `Please generate a course outline from this curriculum content:\n\n${promptContent}` },
+      { role: 'user', content: `Please generate a comprehensive, fully-written course curriculum from this source material:\n\n${promptContent}` },
     ],
     temperature: 0.3,
-    max_tokens: 3000,
+    max_tokens: 6000,
+    response_format: { type: 'json_object' },
   })
 
   if (!result.ok || !result.text) {
