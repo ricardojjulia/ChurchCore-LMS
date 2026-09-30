@@ -61,6 +61,16 @@ export default async function BuildCoursePage({ params }: { params: Promise<{ id
           <span className="text-white font-bold text-sm">Course Builder</span>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href={`/courses/${id}/learn`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-200 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 rounded-lg transition-colors shadow-sm"
+            title="Preview course as a learner in a new tab"
+          >
+            <span>👁️</span>
+            <span>Preview Course</span>
+          </Link>
           <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
             course.status === 'published'
               ? 'bg-emerald-900 text-emerald-300'
