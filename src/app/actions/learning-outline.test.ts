@@ -1,18 +1,22 @@
 // @vitest-environment node
-// createCourseFromOutline turns an AI-generated outline into course blocks.
-// The AI step itself cannot run in the suite (no provider key), so the action
-// is tested directly: staff-only, same-org course only, size-capped, and it
-// writes module headers with child blocks linked by parent_block_id.
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { covers } from '../../tests/covers'
 
-covers('action:learning.createCourseFromOutline')
+covers(
+  'action:learning.createCourseFromOutline',
+  'action:learning.deleteCourseModule',
+  'action:learning.deleteCourseBlock',
+  'action:learning.addCourseModule',
+  'action:learning.saveCourseBlock',
+)
 
 const m = vi.hoisted(() => ({
   role: 'teacher',
   callerOrg: 'org-a',
   courseOrg: 'org-a' as string | null,
   inserted: [] as Array<Record<string, unknown>>,
+  deleted: [] as Array<Record<string, unknown>>,
+  updated: [] as Array<Record<string, unknown>>,
 }))
 
 vi.mock('@/utils/supabase/server', () => ({
@@ -30,14 +34,42 @@ vi.mock('@/utils/supabase/server', () => ({
     },
   }),
 }))
+
 vi.mock('@/utils/supabase/service', () => ({
   createServiceClient: () => ({
-    from: () => ({ insert: async (rows: Array<Record<string, unknown>>) => { m.inserted.push(...rows); return { error: null } } }),
+    from: () => {
+      const q: any = {
+        insert: (rows: Array<Record<string, unknown>> | Record<string, unknown>) => {
+          if (Array.isArray(rows)) m.inserted.push(...rows)
+          else m.inserted.push(rows)
+          return q
+        },
+        delete: () => {
+          m.deleted.push({ time: Date.now() })
+          return q
+        },
+        update: (payload: Record<string, unknown>) => {
+          m.updated.push(payload)
+          return q
+        },
+        eq: () => q,
+        select: () => q,
+        single: async () => ({ data: { id: 'b-new-1', ...m.inserted[m.inserted.length - 1] }, error: null }),
+        then: (resolve: (v: any) => void) => Promise.resolve({ error: null }).then(resolve),
+      }
+      return q
+    },
   }),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
 
-import { createCourseFromOutline } from './learning'
+import {
+  createCourseFromOutline,
+  deleteCourseModule,
+  deleteCourseBlock,
+  addCourseModule,
+  saveCourseBlock,
+} from './learning'
 
 const outline = {
   modules: [
@@ -50,7 +82,8 @@ const outline = {
 }
 
 beforeEach(() => {
-  m.role = 'teacher'; m.callerOrg = 'org-a'; m.courseOrg = 'org-a'; m.inserted = []
+  m.role = 'teacher'; m.callerOrg = 'org-a'; m.courseOrg = 'org-a'
+  m.inserted = []; m.deleted = []; m.updated = []
 })
 
 describe('createCourseFromOutline', () => {
@@ -135,5 +168,44 @@ describe('createCourseFromOutline', () => {
   it('caps outlines at 50 blocks', async () => {
     const big = { modules: [{ title: 'M', blocks: Array.from({ length: 50 }, (_, i) => ({ title: `b${i}`, type: 'page', objective: '' })) }] }
     expect(await createCourseFromOutline({ courseId: 'c-1', outline: big as never })).toEqual({ error: 'Outline too large — maximum 50 blocks.' })
+  })
+})
+
+describe('deleteCourseModule & deleteCourseBlock', () => {
+  it('deletes a course module and cascaded children via service client', async () => {
+    const res = await deleteCourseModule({ courseId: 'c-1', moduleId: 'mod-1' })
+    expect(res).toEqual({})
+    expect(m.deleted.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('deletes a single course block', async () => {
+    const res = await deleteCourseBlock({ courseId: 'c-1', blockId: 'b-1' })
+    expect(res).toEqual({})
+    expect(m.deleted.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('refuses module deletion for unauthorized roles', async () => {
+    m.role = 'student'
+    const res = await deleteCourseModule({ courseId: 'c-1', moduleId: 'mod-1' })
+    expect(res).toEqual({ error: 'Unauthorized' })
+  })
+})
+
+describe('addCourseModule & saveCourseBlock', () => {
+  it('adds a course module', async () => {
+    const res = await addCourseModule({ courseId: 'c-1', title: 'New Module', sortOrder: 1000 })
+    expect(res.data).toBeDefined()
+    expect(res.error).toBeUndefined()
+  })
+
+  it('saves and updates a course block', async () => {
+    const res = await saveCourseBlock({
+      courseId: 'c-1',
+      blockTypeId: 'page',
+      title: 'New Page',
+      content: { body: '<p>Content</p>' },
+    })
+    expect(res.data).toBeDefined()
+    expect(res.error).toBeUndefined()
   })
 })

@@ -5,6 +5,7 @@ import { createServiceClient } from '@/utils/supabase/service'
 import { enrollCore } from '@/lib/enrollment-core'
 import { revalidatePath } from 'next/cache'
 import { isDeliverableAddress } from '@/lib/email-deliverable'
+import type { CourseBlock, BlockTypeId } from '@/types/blocks'
 
 // ── Helper: award XP via RPC ─────────────────────────────────────────────────
 // award_xp is service-role only (COUNCIL-2026-033); amounts are fixed here on
@@ -959,6 +960,257 @@ export async function reorderCourseBlocks({
 
   revalidatePath(`/courses/${courseId}/build`)
   return {}
+}
+
+// ── Delete a course module and its child blocks ──────────────────────────────
+
+export async function deleteCourseModule({
+  courseId,
+  moduleId,
+}: {
+  courseId: string
+  moduleId: string
+}): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('uid, role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr) return { error: 'Not authenticated' }
+  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('org_id')
+    .eq('id', courseId)
+    .single()
+
+  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
+
+  const service = createServiceClient()
+
+  // 1. Delete child blocks belonging to this module first
+  const { error: childError } = await service
+    .from('course_blocks')
+    .delete()
+    .eq('course_id', courseId)
+    .eq('parent_block_id', moduleId)
+
+  if (childError) {
+    console.error('Failed to delete module child blocks:', childError)
+    return { error: childError.message }
+  }
+
+  // 2. Delete the module header itself
+  const { error: moduleError } = await service
+    .from('course_blocks')
+    .delete()
+    .eq('course_id', courseId)
+    .eq('id', moduleId)
+
+  if (moduleError) {
+    console.error('Failed to delete module header:', moduleError)
+    return { error: moduleError.message }
+  }
+
+  revalidatePath(`/courses/${courseId}/build`)
+  revalidatePath(`/courses/${courseId}/learn`, 'page')
+  return {}
+}
+
+// ── Delete a single course block ─────────────────────────────────────────────
+
+export async function deleteCourseBlock({
+  courseId,
+  blockId,
+}: {
+  courseId: string
+  blockId:  string
+}): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('uid, role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr) return { error: 'Not authenticated' }
+  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('org_id')
+    .eq('id', courseId)
+    .single()
+
+  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
+
+  const service = createServiceClient()
+
+  // If this block had child items, clean them up first
+  await service
+    .from('course_blocks')
+    .delete()
+    .eq('course_id', courseId)
+    .eq('parent_block_id', blockId)
+
+  const { error } = await service
+    .from('course_blocks')
+    .delete()
+    .eq('course_id', courseId)
+    .eq('id', blockId)
+
+  if (error) {
+    console.error('Failed to delete course block:', error)
+    return { error: error.message }
+  }
+
+  revalidatePath(`/courses/${courseId}/build`)
+  revalidatePath(`/courses/${courseId}/learn`, 'page')
+  return {}
+}
+
+// ── Add a course module ───────────────────────────────────────────────────────
+
+export async function addCourseModule({
+  courseId,
+  title,
+  sortOrder,
+}: {
+  courseId:   string
+  title:      string
+  sortOrder?: number
+}): Promise<{ data?: CourseBlock; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('uid, role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr) return { error: 'Not authenticated' }
+  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('org_id')
+    .eq('id', courseId)
+    .single()
+
+  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
+
+  const service = createServiceClient()
+  const { data, error } = await service
+    .from('course_blocks')
+    .insert({
+      course_id:     courseId,
+      org_id:        pr.org_id,
+      block_type_id: 'module_header',
+      title:         title.trim(),
+      sort_order:    sortOrder ?? 1000,
+      content:       {},
+      gamification:  {},
+    })
+    .select()
+    .single()
+
+  if (error || !data) return { error: error?.message || 'Failed to create module' }
+  revalidatePath(`/courses/${courseId}/build`)
+  return { data: data as CourseBlock }
+}
+
+// ── Save/Update a course block ────────────────────────────────────────────────
+
+export async function saveCourseBlock({
+  courseId,
+  blockId,
+  parentBlockId,
+  blockTypeId,
+  title,
+  content,
+  gamification,
+  sortOrder,
+}: {
+  courseId:       string
+  blockId?:       string
+  parentBlockId?: string | null
+  blockTypeId:    BlockTypeId
+  title:          string
+  content:        Record<string, unknown>
+  gamification?:  Record<string, unknown>
+  sortOrder?:     number
+}): Promise<{ data?: CourseBlock; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('uid, role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+
+  if (!pr) return { error: 'Not authenticated' }
+  if (!['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Unauthorized' }
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('org_id')
+    .eq('id', courseId)
+    .single()
+
+  if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
+
+  const service = createServiceClient()
+
+  if (blockId) {
+    const { data, error } = await service
+      .from('course_blocks')
+      .update({
+        title:        title.trim(),
+        content:      content ?? {},
+        gamification: gamification ?? {},
+        updated_at:   new Date().toISOString(),
+      })
+      .eq('course_id', courseId)
+      .eq('id', blockId)
+      .select()
+      .single()
+
+    if (error || !data) return { error: error?.message || 'Failed to update block' }
+    revalidatePath(`/courses/${courseId}/build`)
+    return { data: data as CourseBlock }
+  } else {
+    const { data, error } = await service
+      .from('course_blocks')
+      .insert({
+        course_id:       courseId,
+        org_id:          pr.org_id,
+        parent_block_id: parentBlockId ?? null,
+        block_type_id:   blockTypeId,
+        title:           title.trim(),
+        content:         content ?? {},
+        gamification:    gamification ?? {},
+        sort_order:      sortOrder ?? 1000,
+      })
+      .select()
+      .single()
+
+    if (error || !data) return { error: error?.message || 'Failed to create block' }
+    revalidatePath(`/courses/${courseId}/build`)
+    return { data: data as CourseBlock }
+  }
 }
 
 // ── Load quiz questions (resolves bank draws server-side) ─────────────────────
