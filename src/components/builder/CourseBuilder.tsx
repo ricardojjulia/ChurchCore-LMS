@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { CourseBlock, BlockTypeId, BlockFormData } from '@/types/blocks'
 import { BLOCK_TYPE_META } from '@/types/blocks'
@@ -43,6 +44,7 @@ function nextSortOrder(items: CourseBlock[]): number {
 }
 
 export default function CourseBuilder({ courseId, initialBlocks }: Props) {
+  const router = useRouter()
   const [blocks, setBlocks] = useState<CourseBlock[]>(initialBlocks)
   const [activeModuleId, setActiveModuleId] = useState<string | null>(
     initialBlocks.find((b) => b.block_type_id === 'module_header')?.id ?? null
@@ -54,6 +56,8 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   const [newModuleTitle, setNewModuleTitle] = useState('')
   const [saving,         setSaving]         = useState(false)
   const [deletingId,     setDeletingId]     = useState<string | null>(null)
+  const [moduleToDelete, setModuleToDelete] = useState<{ id: string; title: string } | null>(null)
+  const [blockToDelete,  setBlockToDelete]  = useState<{ id: string; title: string } | null>(null)
   const [reorderState,   setReorderState]   = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [showOutline,    setShowOutline]    = useState(false)
 
@@ -134,28 +138,40 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     setAddingModule(false)
   }
 
-  async function handleDeleteModule(moduleId: string) {
-    if (!confirm('Delete this module and all its content?')) return
+  function handleDeleteModule(moduleId: string) {
+    const mod = blocks.find((b) => b.id === moduleId)
+    setModuleToDelete({ id: moduleId, title: mod?.title || 'Module' })
+  }
+
+  async function confirmDeleteModule(moduleId: string) {
     setDeletingId(moduleId)
+
+    // Optimistically update UI immediately
+    const prevBlocks = blocks
+    const nextBlocks = blocks.filter((b) => b.id !== moduleId && b.parent_block_id !== moduleId)
+    setBlocks(nextBlocks)
+
+    if (activeModuleId === moduleId) {
+      const remainingModules = nextBlocks.filter((b) => b.block_type_id === 'module_header' && !b.parent_block_id)
+      setActiveModuleId(remainingModules[0]?.id ?? null)
+    }
 
     try {
       const res = await deleteCourseModule({ courseId, moduleId })
       setDeletingId(null)
+      setModuleToDelete(null)
 
       if (res?.error) {
+        setBlocks(prevBlocks)
         alert(`Could not delete module: ${res.error}`)
         return
       }
 
-      const nextBlocks = blocks.filter((b) => b.id !== moduleId && b.parent_block_id !== moduleId)
-      setBlocks(nextBlocks)
-
-      if (activeModuleId === moduleId) {
-        const remainingModules = nextBlocks.filter((b) => b.block_type_id === 'module_header' && !b.parent_block_id)
-        setActiveModuleId(remainingModules[0]?.id ?? null)
-      }
+      router.refresh()
     } catch (err: any) {
       setDeletingId(null)
+      setModuleToDelete(null)
+      setBlocks(prevBlocks)
       alert(`Could not delete module: ${err?.message || 'Server error'}`)
     }
   }
@@ -197,6 +213,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
 
     setSelectedType(null)
     setEditingBlock(null)
+    router.refresh()
   }
 
   function handleEditBlock(block: CourseBlock) {
@@ -205,25 +222,37 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     setShowLibrary(false)
   }
 
-  async function handleDeleteBlock(blockId: string) {
-    if (!confirm('Delete this item?')) return
+  function handleDeleteBlock(blockId: string) {
+    const item = blocks.find((b) => b.id === blockId)
+    setBlockToDelete({ id: blockId, title: item?.title || 'Item' })
+  }
+
+  async function confirmDeleteBlock(blockId: string) {
     setDeletingId(blockId)
+
+    const prevBlocks = blocks
+    setBlocks((prev) => prev.filter((b) => b.id !== blockId))
+    if (editingBlock?.id === blockId) {
+      setSelectedType(null)
+      setEditingBlock(null)
+    }
+
     try {
       const res = await deleteCourseBlock({ courseId, blockId })
       setDeletingId(null)
+      setBlockToDelete(null)
 
       if (res?.error) {
+        setBlocks(prevBlocks)
         alert(`Could not delete item: ${res.error}`)
         return
       }
 
-      setBlocks((prev) => prev.filter((b) => b.id !== blockId))
-      if (editingBlock?.id === blockId) {
-        setSelectedType(null)
-        setEditingBlock(null)
-      }
+      router.refresh()
     } catch (err: any) {
       setDeletingId(null)
+      setBlockToDelete(null)
+      setBlocks(prevBlocks)
       alert(`Could not delete item: ${err?.message || 'Server error'}`)
     }
   }
@@ -298,9 +327,13 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
               <button
                 type="button"
                 disabled={deletingId === m.id}
-                onClick={(e) => { e.stopPropagation(); handleDeleteModule(m.id) }}
-                className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all text-xs ml-2 disabled:opacity-50"
-                title="Delete module"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteModule(m.id)
+                }}
+                className="opacity-70 group-hover:opacity-100 text-slate-500 hover:text-rose-400 p-1 rounded hover:bg-rose-500/10 transition-all text-xs ml-2 disabled:opacity-50"
+                title={`Delete ${m.title}`}
+                aria-label={`Delete module ${m.title}`}
               >
                 {deletingId === m.id ? '…' : '✕'}
               </button>
@@ -454,6 +487,66 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
             window.location.reload()
           }}
         />
+      )}
+
+      {/* Module delete confirmation modal */}
+      {moduleToDelete && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <h3 className="text-lg font-bold text-white mb-2">Delete Module</h3>
+            <p className="text-sm text-slate-300 mb-6">
+              Are you sure you want to delete <span className="font-semibold text-white">"{moduleToDelete.title}"</span> and all of its content? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={deletingId === moduleToDelete.id}
+                onClick={() => setModuleToDelete(null)}
+                className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingId === moduleToDelete.id}
+                onClick={() => confirmDeleteModule(moduleToDelete.id)}
+                className="px-4 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {deletingId === moduleToDelete.id ? 'Deleting…' : 'Delete Module'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block delete confirmation modal */}
+      {blockToDelete && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <h3 className="text-lg font-bold text-white mb-2">Delete Item</h3>
+            <p className="text-sm text-slate-300 mb-6">
+              Are you sure you want to delete <span className="font-semibold text-white">"{blockToDelete.title}"</span>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={deletingId === blockToDelete.id}
+                onClick={() => setBlockToDelete(null)}
+                className="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingId === blockToDelete.id}
+                onClick={() => confirmDeleteBlock(blockToDelete.id)}
+                className="px-4 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {deletingId === blockToDelete.id ? 'Deleting…' : 'Delete Item'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
