@@ -64,7 +64,7 @@ function LeaderboardRow({ entry }: { entry: LeaderboardEntry }) {
   )
 }
 
-export default async function Leaderboard() {
+export default async function Leaderboard({ className = 'mb-8' }: { className?: string } = {}) {
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('get_leaderboard', { p_limit: 10 })
 
@@ -84,7 +84,7 @@ export default async function Leaderboard() {
   const currentUserRank = entries.find((e) => e.is_current_user)?.rank
 
   return (
-    <section className="mb-8" aria-label="Community Leaderboard">
+    <section className={className} aria-label="Community Leaderboard">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-bold text-foreground">🏆 Community Leaderboard</h2>
         {currentUserRank === 1 && (
