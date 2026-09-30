@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import type { CourseBlock, BlockTypeId, BlockFormData } from '@/types/blocks'
 import { BLOCK_TYPE_META } from '@/types/blocks'
@@ -465,6 +466,17 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
                       </button>
                     )}
 
+                    <Link
+                      href={`/courses/${courseId}/learn${activeModuleItems[0] ? `?block=${activeModuleItems[0].id}` : ''}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors flex items-center gap-1.5"
+                      title="Preview this module in learner view (new tab)"
+                    >
+                      <span>👁️</span>
+                      <span>Preview Module</span>
+                    </Link>
+
                     <button
                       type="button"
                       onClick={() => { setShowLibrary(true); setSelectedType(null); setEditingBlock(null) }}
@@ -500,6 +512,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
                         {activeModuleItems.map((block, idx) => (
                           <SortableBlockRow
                             key={block.id}
+                            courseId={courseId}
                             block={block}
                             idx={idx}
                             total={activeModuleItems.length}
@@ -573,8 +586,9 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
 }
 
 function SortableBlockRow({
-  block, idx, total, isEditing, isConfirmingDelete, isDeleting, onEdit, onRequestDelete, onCancelDelete, onConfirmDelete, onMove,
+  courseId, block, idx, total, isEditing, isConfirmingDelete, isDeleting, onEdit, onRequestDelete, onCancelDelete, onConfirmDelete, onMove,
 }: {
+  courseId:           string
   block:              CourseBlock
   idx:                number
   total:              number
@@ -646,6 +660,15 @@ function SortableBlockRow({
         </div>
       ) : (
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          <Link
+            href={`/courses/${courseId}/learn?block=${block.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Preview item in learner view (new tab)"
+            className="p-1.5 text-slate-400 hover:text-indigo-300 transition-colors text-xs flex items-center"
+          >
+            👁️
+          </Link>
           <button type="button" onClick={() => onMove('up')} disabled={idx === 0}
             title="Move up"
             className="p-1.5 text-slate-400 hover:text-white disabled:opacity-20 transition-colors text-xs">▲</button>

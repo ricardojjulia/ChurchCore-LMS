@@ -286,6 +286,25 @@ export default function LearningShell({
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto bg-slate-50">
+        {/* Staff Preview Bar */}
+        {isStaff && (
+          <div className="bg-slate-900 text-slate-200 border-b border-slate-800 px-6 py-2.5 flex items-center justify-between text-xs sticky top-0 z-20 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 font-bold px-2 py-0.5 rounded text-[10px] uppercase tracking-wider">
+                👁️ Instructor Preview
+              </span>
+              <span className="text-slate-300 font-medium">Viewing course in learner mode (Staff bypass enabled)</span>
+            </div>
+            <Link
+              href={`/courses/${courseId}/build`}
+              className="flex items-center gap-1.5 font-semibold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded-lg transition-colors shadow-sm text-xs"
+            >
+              <span>🛠️</span>
+              <span>Back to Course Builder</span>
+            </Link>
+          </div>
+        )}
+
         {/* Content page viewer */}
         {currentContentPage && (() => {
           const page = contentPages.find((p) => p.id === currentContentPage)
