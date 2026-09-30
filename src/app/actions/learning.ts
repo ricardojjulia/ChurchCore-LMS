@@ -994,16 +994,34 @@ export async function deleteCourseModule({
 
   const service = createServiceClient()
 
-  // 1. Delete child blocks belonging to this module first
-  const { error: childError } = await service
+  // Find all child blocks in this module to clean up related records safely
+  const { data: children } = await service
     .from('course_blocks')
-    .delete()
+    .select('id')
     .eq('course_id', courseId)
     .eq('parent_block_id', moduleId)
 
-  if (childError) {
-    console.error('Failed to delete module child blocks:', childError)
-    return { error: childError.message }
+  const childIds = (children ?? []).map((c) => c.id)
+  const targetIds = [moduleId, ...childIds]
+
+  if (targetIds.length > 0) {
+    await service.from('block_submissions').delete().in('block_id', targetIds)
+    await service.from('survey_responses').delete().in('block_id', targetIds)
+    await service.from('survey_participation').delete().in('block_id', targetIds)
+  }
+
+  // 1. Delete child blocks belonging to this module first
+  if (childIds.length > 0) {
+    const { error: childError } = await service
+      .from('course_blocks')
+      .delete()
+      .eq('course_id', courseId)
+      .in('id', childIds)
+
+    if (childError) {
+      console.error('Failed to delete module child blocks:', childError)
+      return { error: childError.message }
+    }
   }
 
   // 2. Delete the module header itself
@@ -1054,6 +1072,11 @@ export async function deleteCourseBlock({
   if (!course || course.org_id !== pr.org_id) return { error: 'Not found' }
 
   const service = createServiceClient()
+
+  // Clean up any related submissions or survey entries
+  await service.from('block_submissions').delete().eq('block_id', blockId)
+  await service.from('survey_responses').delete().eq('block_id', blockId)
+  await service.from('survey_participation').delete().eq('block_id', blockId)
 
   // If this block had child items, clean them up first
   await service
