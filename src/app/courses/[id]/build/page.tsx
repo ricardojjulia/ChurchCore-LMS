@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
+import { createServiceClient } from '@/utils/supabase/service'
 import CourseBuilder from '@/components/builder/CourseBuilder'
 import type { CourseBlock } from '@/types/blocks'
 
@@ -15,21 +16,23 @@ export default async function BuildCoursePage({ params }: { params: Promise<{ id
 
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const service = createServiceClient()
+
+  const { data: profile } = await service
     .from('profiles')
-    .select('uid, role')
+    .select('uid, role, org_id')
     .eq('auth_id', user.id)
     .single()
 
   if (profile?.role !== 'teacher' && profile?.role !== 'admin') redirect('/dashboard')
 
   const [courseResult, blocksResult] = await Promise.all([
-    supabase
+    service
       .from('courses')
-      .select('id, title, owner_id, status')
+      .select('id, title, owner_id, org_id, status')
       .eq('id', id)
       .single(),
-    supabase
+    service
       .from('course_blocks')
       .select('*')
       .eq('course_id', id)
@@ -38,7 +41,9 @@ export default async function BuildCoursePage({ params }: { params: Promise<{ id
 
   const course = courseResult.data
   if (!course) notFound()
-  if (course.owner_id !== profile?.uid && profile?.role !== 'admin') redirect('/courses')
+  if (course.owner_id !== profile?.uid && profile?.role !== 'admin' && course.org_id !== profile?.org_id) {
+    redirect('/courses')
+  }
 
   const initialBlocks = (blocksResult.data ?? []) as CourseBlock[]
 

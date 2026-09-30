@@ -1094,6 +1094,7 @@ export async function deleteCourseModule({
     }
 
     revalidatePath(`/courses/${courseId}/build`)
+    revalidatePath(`/courses/${courseId}`)
     revalidatePath(`/courses/${courseId}/learn`, 'page')
     return {}
   } catch (err: any) {
@@ -1142,6 +1143,7 @@ export async function deleteCourseBlock({
     }
 
     revalidatePath(`/courses/${courseId}/build`)
+    revalidatePath(`/courses/${courseId}`)
     revalidatePath(`/courses/${courseId}/learn`, 'page')
     return {}
   } catch (err: any) {
