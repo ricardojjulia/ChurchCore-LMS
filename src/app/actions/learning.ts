@@ -731,11 +731,20 @@ export async function createCourseFromOutline({
   const totalBlocks = outline.modules.reduce((n, m) => n + 1 + m.blocks.length, 0)
   if (totalBlocks > 50) return { error: 'Outline too large — maximum 50 blocks.' }
 
-  const rows: {
-    id?:             string
+  const moduleRows: {
+    id:              string
     course_id:       string
     org_id:          string
-    parent_block_id?: string
+    block_type_id:   string
+    title:           string
+    content:         Record<string, unknown>
+    sort_order:      number
+  }[] = []
+
+  const itemRows: {
+    course_id:       string
+    org_id:          string
+    parent_block_id: string
     block_type_id:   string
     title:           string
     content:         Record<string, unknown>
@@ -745,7 +754,7 @@ export async function createCourseFromOutline({
   let moduleOrder = 1000
   for (const mod of outline.modules) {
     const moduleId = crypto.randomUUID()
-    rows.push({
+    moduleRows.push({
       id:            moduleId,
       course_id:     courseId,
       org_id:        pr.org_id,
@@ -763,7 +772,7 @@ export async function createCourseFromOutline({
         block.type === 'discussion' ? 'discussion' :
         'page'
 
-      rows.push({
+      itemRows.push({
         course_id:       courseId,
         org_id:          pr.org_id,
         parent_block_id: moduleId,
@@ -777,11 +786,27 @@ export async function createCourseFromOutline({
   }
 
   const service = createServiceClient()
-  const { error } = await service.from('course_blocks').insert(rows)
-  if (error) return { error: 'Failed to create blocks' }
+
+  // 1. Insert module headers first so parent_block_id foreign key targets exist in database
+  if (moduleRows.length > 0) {
+    const { error: moduleError } = await service.from('course_blocks').insert(moduleRows)
+    if (moduleError) {
+      console.error('Failed to create module blocks:', moduleError)
+      return { error: `Failed to create modules: ${moduleError.message}` }
+    }
+  }
+
+  // 2. Insert child items referencing their parent module
+  if (itemRows.length > 0) {
+    const { error: itemError } = await service.from('course_blocks').insert(itemRows)
+    if (itemError) {
+      console.error('Failed to create child block items:', itemError)
+      return { error: `Failed to create blocks: ${itemError.message}` }
+    }
+  }
 
   revalidatePath(`/courses/${courseId}/build`)
-  return { blocksCreated: rows.length }
+  return { blocksCreated: moduleRows.length + itemRows.length }
 }
 
 // ── Reorder course blocks (drag-and-drop) ─────────────────────────────────────
