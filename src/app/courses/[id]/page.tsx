@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
+import { createServiceClient } from '@/utils/supabase/service'
 import { BLOCK_TYPE_META } from '@/types/blocks'
 import EnrollButton from '@/components/learning/EnrollButton'
 import type { CourseBlock } from '@/types/blocks'
@@ -39,23 +40,46 @@ export default async function CoursePage({
   const { id: courseId } = await params
   const t = await getTranslations()
   const supabase = await createClient()
+  const service = createServiceClient()
 
   const { data: { user } } = await supabase.auth.getUser()
 
   let profile: { uid: string; role: string; current_level: number } | null = null
   if (user) {
-    const { data } = await supabase
+    const { data: pr } = await supabase
       .from('profiles')
       .select('uid, role, current_level')
       .eq('auth_id', user.id)
       .single()
-    profile = data
+
+    if (pr) {
+      profile = pr
+    } else {
+      const { data: serviceProf } = await service
+        .from('profiles')
+        .select('uid, role, current_level')
+        .eq('auth_id', user.id)
+        .single()
+      if (serviceProf) {
+        profile = serviceProf
+      } else {
+        const { data: roleData } = await service
+          .from('profile_roles')
+          .select('uid, role')
+          .eq('auth_id', user.id)
+          .single()
+        if (roleData) {
+          profile = { uid: roleData.uid, role: roleData.role, current_level: 1 }
+        }
+      }
+    }
   }
 
   const isStaff = ['admin', 'manager', 'teacher'].includes(profile?.role ?? '')
+  const queryClient = isStaff ? service : supabase
 
   const [courseResult, blocksResult, materialsResult] = await Promise.all([
-    supabase
+    queryClient
       .from('courses')
       .select(`
         *,
@@ -69,12 +93,12 @@ export default async function CoursePage({
       `)
       .eq('id', courseId)
       .single(),
-    supabase
+    queryClient
       .from('course_blocks')
       .select('id, title, block_type_id, parent_block_id, sort_order, is_published, gamification')
       .eq('course_id', courseId)
       .order('sort_order', { ascending: true }),
-    supabase
+    queryClient
       .from('content_pages')
       .select('id', { count: 'exact', head: true })
       .eq('course_id', courseId)
