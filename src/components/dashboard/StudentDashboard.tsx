@@ -12,6 +12,7 @@ import DashboardDiplomasSection from './DashboardDiplomasSection'
 import AiWeeklySummary from './AiWeeklySummary'
 import EngagementWidget from '@/components/engagement/EngagementWidget'
 import Leaderboard from '@/components/engagement/Leaderboard'
+import StudentXpStandingsModal from '@/components/engagement/StudentXpStandingsModal'
 import type { DashboardContext, EnrolledCourse } from '@/lib/dashboard/context'
 
 function Section({
@@ -79,8 +80,14 @@ export default async function StudentDashboard({ ctx }: { ctx: DashboardContext 
     <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <SmartSummaryCard ctx={ctx} />
-        <EngagementWidget uid={ctx.uid} />
-        <Leaderboard />
+        <EngagementWidget
+          uid={ctx.uid}
+          action={
+            <StudentXpStandingsModal>
+              <Leaderboard className="mb-0" />
+            </StudentXpStandingsModal>
+          }
+        />
         <AiWeeklySummary uid={ctx.uid} />
 
         {ctx.enrollments.length === 0 ? (

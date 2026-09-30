@@ -22,7 +22,15 @@ const EVENT_LABELS: Record<string, string> = {
   manual:            'Milestone awarded',
 }
 
-export default async function EngagementWidget({ uid }: { uid: string }) {
+export default async function EngagementWidget({
+  uid,
+  action,
+  children,
+}: {
+  uid: string
+  action?: React.ReactNode
+  children?: React.ReactNode
+}) {
   const supabase = await createClient()
 
   const [streakRes, eventsRes, profileRes] = await Promise.all([
@@ -55,9 +63,12 @@ export default async function EngagementWidget({ uid }: { uid: string }) {
 
   return (
     <section className="bg-white border border-border rounded-2xl p-5 mb-6 shadow-sm">
-      <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4">
-        Formation Progress
-      </h2>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+          Formation Progress
+        </h2>
+        {action ?? children}
+      </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3 mb-5">
