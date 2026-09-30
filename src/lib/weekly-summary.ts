@@ -1,3 +1,5 @@
+import { callOpenRouter, OPENROUTER_DEFAULT_MODELS, getOpenRouterApiKey } from './openrouter'
+
 // Weekly progress summary shared by the student-facing route
 // (/api/ai/weekly-summary) and the scheduler route used by the weekly-digest
 // Edge Function (/api/cron/weekly-summary). The prompt carries course titles
@@ -48,42 +50,20 @@ ${courseLines}
 
 Write the summary now:`
 
-  // Call Anthropic directly. This used to loop back through /api/ai with no
-  // user session, which only worked while /api/ai was an open proxy; it also
-  // turned any network error into an unhandled 500.
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = getOpenRouterApiKey()
   if (!apiKey) return { ok: false, status: 503 }
 
-  let aiRes: Response
-  try {
-    aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model:      'claude-haiku-4-5-20251001',
-        max_tokens: 200,
-        messages:   [{ role: 'user', content: prompt }],
-      }),
-    })
-  } catch {
-    return { ok: false, status: 502 }
+  // If OPENROUTER_API_KEY or OPENAI_API_KEY is present, or if falling back:
+  const res = await callOpenRouter({
+    model: OPENROUTER_DEFAULT_MODELS.summary,
+    messages: [{ role: 'user', content: prompt }],
+    max_tokens: 250,
+  })
+
+  if (!res.ok || !res.text) {
+    return { ok: false, status: (res.status === 503 ? 503 : 502) as 502 | 503 }
   }
 
-  if (!aiRes.ok) {
-    return { ok: false, status: 502 }
-  }
-
-  let aiData: { content?: Array<{ text?: string }> } | null = null
-  try {
-    aiData = await aiRes.json()
-  } catch {
-    return { ok: false, status: 502 }
-  }
-  const summary = aiData?.content?.[0]?.text ?? 'Unable to generate summary right now.'
-
+  const summary = res.text.trim() || 'Unable to generate summary right now.'
   return { ok: true, summary, coursesInProgress: inProg.length }
 }
