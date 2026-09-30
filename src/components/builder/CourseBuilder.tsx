@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import type { CourseBlock, BlockTypeId, BlockFormData } from '@/types/blocks'
 import { BLOCK_TYPE_META } from '@/types/blocks'
@@ -57,6 +57,15 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   const [reorderState,   setReorderState]   = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [showOutline,    setShowOutline]    = useState(false)
 
+  // Sync state if initialBlocks changes from server revalidation
+  useEffect(() => {
+    setBlocks(initialBlocks)
+    if (!activeModuleId || !initialBlocks.some((b) => b.id === activeModuleId)) {
+      const firstModule = initialBlocks.find((b) => b.block_type_id === 'module_header' && !b.parent_block_id)
+      setActiveModuleId(firstModule?.id ?? null)
+    }
+  }, [initialBlocks])
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -74,9 +83,6 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     // Optimistic UI update
     const reorderedIds = reordered.map((b) => b.id)
     setBlocks((prev) => {
-      const _otherBlocks = prev.filter((b) => b.parent_block_id !== active.id && !reorderedIds.includes(b.id)
-        || b.parent_block_id !== items[0]?.parent_block_id)
-      // Replace items in the active module with the reordered list (with updated sort_order)
       const reorderedWithOrder = reordered.map((b, i) => ({ ...b, sort_order: i + 1 }))
       return prev.map((b) => {
         const updated = reorderedWithOrder.find((r) => r.id === b.id)
@@ -87,7 +93,6 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     setReorderState('saving')
     const result = await reorderCourseBlocks({ courseId, reorderedIds })
     if (result.error) {
-      // Revert optimistic update on error
       setBlocks(blocks)
       setReorderState('error')
     } else {
@@ -141,14 +146,13 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
       return
     }
 
-    setBlocks((prev) => {
-      const nextBlocks = prev.filter((b) => b.id !== moduleId && b.parent_block_id !== moduleId)
-      if (activeModuleId === moduleId) {
-        const remainingModules = nextBlocks.filter((b) => b.block_type_id === 'module_header' && !b.parent_block_id)
-        setActiveModuleId(remainingModules[0]?.id ?? null)
-      }
-      return nextBlocks
-    })
+    const nextBlocks = blocks.filter((b) => b.id !== moduleId && b.parent_block_id !== moduleId)
+    setBlocks(nextBlocks)
+
+    if (activeModuleId === moduleId) {
+      const remainingModules = nextBlocks.filter((b) => b.block_type_id === 'module_header' && !b.parent_block_id)
+      setActiveModuleId(remainingModules[0]?.id ?? null)
+    }
   }
 
   // ─── Item operations ────────────────────────────────────────────────────────
@@ -197,6 +201,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   }
 
   async function handleDeleteBlock(blockId: string) {
+    if (!confirm('Delete this item?')) return
     setDeletingId(blockId)
     const res = await deleteCourseBlock({ courseId, blockId })
     setDeletingId(null)

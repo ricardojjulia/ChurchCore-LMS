@@ -53,6 +53,7 @@ vi.mock('@/utils/supabase/service', () => ({
           return q
         },
         eq: () => q,
+        in: () => q,
         select: () => q,
         single: async () => ({ data: { id: 'b-new-1', ...m.inserted[m.inserted.length - 1] }, error: null }),
         then: (resolve: (v: any) => void) => Promise.resolve({ error: null }).then(resolve),
