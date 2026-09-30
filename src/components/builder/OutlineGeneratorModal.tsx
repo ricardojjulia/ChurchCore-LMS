@@ -101,11 +101,11 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
   async function accept() {
     if (!outline) return
     setAccepting(true)
+    setError(null)
     const result = await createCourseFromOutline({ courseId, outline })
     setAccepting(false)
     if (result.error) {
       setError(result.error)
-      setMode('error')
       return
     }
     onOutlineAccepted()
@@ -260,6 +260,12 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
               <p className="text-xs text-muted-foreground text-center">
                 {outline.modules.length} modules · {outline.modules.reduce((n, m) => n + m.blocks.length, 0)} blocks
               </p>
+
+              {error && (
+                <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 text-sm text-rose-700 font-medium">
+                  {error}
+                </div>
+              )}
             </div>
           )}
         </div>
