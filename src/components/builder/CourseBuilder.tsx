@@ -24,7 +24,13 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { reorderCourseBlocks } from '@/app/actions/learning'
+import {
+  reorderCourseBlocks,
+  deleteCourseModule,
+  deleteCourseBlock,
+  addCourseModule,
+  saveCourseBlock,
+} from '@/app/actions/learning'
 
 interface Props {
   courseId: string
@@ -41,16 +47,15 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   const [activeModuleId, setActiveModuleId] = useState<string | null>(
     initialBlocks.find((b) => b.block_type_id === 'module_header')?.id ?? null
   )
-  const [showLibrary, setShowLibrary] = useState(false)
-  const [selectedType, setSelectedType] = useState<BlockTypeId | null>(null)
-  const [editingBlock, setEditingBlock] = useState<CourseBlock | null>(null)
-  const [addingModule, setAddingModule] = useState(false)
+  const [showLibrary,    setShowLibrary]    = useState(false)
+  const [selectedType,   setSelectedType]   = useState<BlockTypeId | null>(null)
+  const [editingBlock,   setEditingBlock]   = useState<CourseBlock | null>(null)
+  const [addingModule,   setAddingModule]   = useState(false)
   const [newModuleTitle, setNewModuleTitle] = useState('')
-  const [saving,        setSaving]        = useState(false)
-  const [reorderState,  setReorderState]  = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [showOutline,   setShowOutline]   = useState(false)
-
-  const supabase = createClient()
+  const [saving,         setSaving]         = useState(false)
+  const [deletingId,     setDeletingId]     = useState<string | null>(null)
+  const [reorderState,   setReorderState]   = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [showOutline,    setShowOutline]    = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -106,32 +111,44 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     if (!newModuleTitle.trim()) return
     setSaving(true)
 
-    const { data, error } = await supabase
-      .from('course_blocks')
-      .insert({
-        course_id: courseId,
-        block_type_id: 'module_header',
-        title: newModuleTitle.trim(),
-        sort_order: nextSortOrder(moduleHeaders),
-      })
-      .select()
-      .single()
+    const res = await addCourseModule({
+      courseId,
+      title: newModuleTitle.trim(),
+      sortOrder: nextSortOrder(moduleHeaders),
+    })
 
     setSaving(false)
-    if (error || !data) return
-    setBlocks((prev) => [...prev, data as CourseBlock])
-    setActiveModuleId(data.id)
+    if (res.error || !res.data) {
+      alert(`Could not create module: ${res.error || 'Unknown error'}`)
+      return
+    }
+
+    setBlocks((prev) => [...prev, res.data!])
+    setActiveModuleId(res.data.id)
     setNewModuleTitle('')
     setAddingModule(false)
   }
 
   async function handleDeleteModule(moduleId: string) {
     if (!confirm('Delete this module and all its content?')) return
-    await supabase.from('course_blocks').delete().eq('id', moduleId)
-    setBlocks((prev) => prev.filter((b) => b.id !== moduleId && b.parent_block_id !== moduleId))
-    if (activeModuleId === moduleId) {
-      setActiveModuleId(moduleHeaders.find((m) => m.id !== moduleId)?.id ?? null)
+    setDeletingId(moduleId)
+
+    const res = await deleteCourseModule({ courseId, moduleId })
+    setDeletingId(null)
+
+    if (res.error) {
+      alert(`Could not delete module: ${res.error}`)
+      return
     }
+
+    setBlocks((prev) => {
+      const nextBlocks = prev.filter((b) => b.id !== moduleId && b.parent_block_id !== moduleId)
+      if (activeModuleId === moduleId) {
+        const remainingModules = nextBlocks.filter((b) => b.block_type_id === 'module_header' && !b.parent_block_id)
+        setActiveModuleId(remainingModules[0]?.id ?? null)
+      }
+      return nextBlocks
+    })
   }
 
   // ─── Item operations ────────────────────────────────────────────────────────
@@ -146,35 +163,27 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     if (!activeModuleId) return
     setSaving(true)
 
+    const res = await saveCourseBlock({
+      courseId,
+      blockId:       editingBlock?.id,
+      parentBlockId: activeModuleId,
+      blockTypeId:   selectedType!,
+      title:         data.title,
+      content:       data.content,
+      gamification:  data.gamification,
+      sortOrder:     editingBlock ? undefined : nextSortOrder(activeModuleItems),
+    })
+
+    setSaving(false)
+    if (res.error || !res.data) {
+      alert(`Could not save item: ${res.error || 'Unknown error'}`)
+      return
+    }
+
     if (editingBlock) {
-      const { data: updated, error } = await supabase
-        .from('course_blocks')
-        .update({ title: data.title, content: data.content, gamification: data.gamification ?? {} })
-        .eq('id', editingBlock.id)
-        .select()
-        .single()
-
-      setSaving(false)
-      if (error || !updated) return
-      setBlocks((prev) => prev.map((b) => (b.id === editingBlock.id ? (updated as CourseBlock) : b)))
+      setBlocks((prev) => prev.map((b) => (b.id === editingBlock.id ? res.data! : b)))
     } else {
-      const { data: inserted, error } = await supabase
-        .from('course_blocks')
-        .insert({
-          course_id: courseId,
-          parent_block_id: activeModuleId,
-          block_type_id: selectedType!,
-          title: data.title,
-          content: data.content,
-          gamification: data.gamification ?? {},
-          sort_order: nextSortOrder(activeModuleItems),
-        })
-        .select()
-        .single()
-
-      setSaving(false)
-      if (error || !inserted) return
-      setBlocks((prev) => [...prev, inserted as CourseBlock])
+      setBlocks((prev) => [...prev, res.data!])
     }
 
     setSelectedType(null)
@@ -188,7 +197,15 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   }
 
   async function handleDeleteBlock(blockId: string) {
-    await supabase.from('course_blocks').delete().eq('id', blockId)
+    setDeletingId(blockId)
+    const res = await deleteCourseBlock({ courseId, blockId })
+    setDeletingId(null)
+
+    if (res.error) {
+      alert(`Could not delete item: ${res.error}`)
+      return
+    }
+
     setBlocks((prev) => prev.filter((b) => b.id !== blockId))
     if (editingBlock?.id === blockId) {
       setSelectedType(null)
@@ -203,10 +220,11 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     if (swapIdx < 0 || swapIdx >= items.length) return
 
     const [a, b] = [items[idx], items[swapIdx]]
-    await Promise.all([
-      supabase.from('course_blocks').update({ sort_order: b.sort_order }).eq('id', a.id),
-      supabase.from('course_blocks').update({ sort_order: a.sort_order }).eq('id', b.id),
-    ])
+    const reordered = [...items]
+    reordered[idx] = b
+    reordered[swapIdx] = a
+    const reorderedIds = reordered.map((item) => item.id)
+
     setBlocks((prev) =>
       prev.map((block) => {
         if (block.id === a.id) return { ...block, sort_order: b.sort_order }
@@ -214,6 +232,8 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
         return block
       })
     )
+
+    await reorderCourseBlocks({ courseId, reorderedIds })
   }
 
   const showForm = !!selectedType
@@ -262,10 +282,12 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
               <span className="text-sm font-medium truncate">{m.title}</span>
               <button
                 type="button"
+                disabled={deletingId === m.id}
                 onClick={(e) => { e.stopPropagation(); handleDeleteModule(m.id) }}
-                className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all text-xs ml-2"
+                className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all text-xs ml-2 disabled:opacity-50"
+                title="Delete module"
               >
-                ✕
+                {deletingId === m.id ? '…' : '✕'}
               </button>
             </div>
           ))}
