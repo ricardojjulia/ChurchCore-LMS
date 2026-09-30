@@ -96,9 +96,9 @@ export async function POST(req: NextRequest) {
     promptContent = text
   }
 
-  // Call OpenRouter
+  // Call OpenRouter with intelligent cost-effective model routing
   const result = await callOpenRouter({
-    model: OPENROUTER_DEFAULT_MODELS.outline,
+    task: 'outline',
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: `Please generate a course outline from this curriculum content:\n\n${promptContent}` },
