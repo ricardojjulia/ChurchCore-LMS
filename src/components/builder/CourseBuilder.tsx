@@ -60,6 +60,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   const [blockToDelete,  setBlockToDelete]  = useState<{ id: string; title: string } | null>(null)
   const [reorderState,   setReorderState]   = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [showOutline,    setShowOutline]    = useState(false)
+  const [actionError,    setActionError]    = useState<string | null>(null)
 
   // Sync state if initialBlocks changes from server revalidation
   useEffect(() => {
@@ -119,6 +120,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
     e.preventDefault()
     if (!newModuleTitle.trim()) return
     setSaving(true)
+    setActionError(null)
 
     const res = await addCourseModule({
       courseId,
@@ -128,7 +130,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
 
     setSaving(false)
     if (res.error || !res.data) {
-      alert(`Could not create module: ${res.error || 'Unknown error'}`)
+      setActionError(`Could not create module: ${res.error || 'Unknown error'}`)
       return
     }
 
@@ -140,11 +142,13 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
 
   function handleDeleteModule(moduleId: string) {
     const mod = blocks.find((b) => b.id === moduleId)
+    setActionError(null)
     setModuleToDelete({ id: moduleId, title: mod?.title || 'Module' })
   }
 
   async function confirmDeleteModule(moduleId: string) {
     setDeletingId(moduleId)
+    setActionError(null)
 
     // Optimistically update UI immediately
     const prevBlocks = blocks
@@ -163,7 +167,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
 
       if (res?.error) {
         setBlocks(prevBlocks)
-        alert(`Could not delete module: ${res.error}`)
+        setActionError(`Could not delete module: ${res.error}`)
         return
       }
 
@@ -172,7 +176,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
       setDeletingId(null)
       setModuleToDelete(null)
       setBlocks(prevBlocks)
-      alert(`Could not delete module: ${err?.message || 'Server error'}`)
+      setActionError(`Could not delete module: ${err?.message || 'Server error'}`)
     }
   }
 
@@ -187,6 +191,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
   async function handleSaveBlock(data: BlockFormData) {
     if (!activeModuleId) return
     setSaving(true)
+    setActionError(null)
 
     const res = await saveCourseBlock({
       courseId,
@@ -201,7 +206,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
 
     setSaving(false)
     if (res.error || !res.data) {
-      alert(`Could not save item: ${res.error || 'Unknown error'}`)
+      setActionError(`Could not save item: ${res.error || 'Unknown error'}`)
       return
     }
 
@@ -224,11 +229,13 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
 
   function handleDeleteBlock(blockId: string) {
     const item = blocks.find((b) => b.id === blockId)
+    setActionError(null)
     setBlockToDelete({ id: blockId, title: item?.title || 'Item' })
   }
 
   async function confirmDeleteBlock(blockId: string) {
     setDeletingId(blockId)
+    setActionError(null)
 
     const prevBlocks = blocks
     setBlocks((prev) => prev.filter((b) => b.id !== blockId))
@@ -244,7 +251,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
 
       if (res?.error) {
         setBlocks(prevBlocks)
-        alert(`Could not delete item: ${res.error}`)
+        setActionError(`Could not delete item: ${res.error}`)
         return
       }
 
@@ -253,7 +260,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
       setDeletingId(null)
       setBlockToDelete(null)
       setBlocks(prevBlocks)
-      alert(`Could not delete item: ${err?.message || 'Server error'}`)
+      setActionError(`Could not delete item: ${err?.message || 'Server error'}`)
     }
   }
 
@@ -366,9 +373,25 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
       </aside>
 
       {/* ── Main content area ───────────────────────────────────────────── */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Items list */}
-        <div className={`flex flex-col overflow-hidden transition-all ${showForm ? 'w-1/2' : 'flex-1'}`}>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {actionError && (
+          <div className="bg-rose-500/10 border-b border-rose-500/30 px-6 py-3 flex items-center justify-between text-rose-300 text-sm shrink-0">
+            <div className="flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{actionError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActionError(null)}
+              className="text-xs text-rose-400 hover:text-rose-200 ml-4 font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Items list */}
+          <div className={`flex flex-col overflow-hidden transition-all ${showForm ? 'w-1/2' : 'flex-1'}`}>
           {activeModuleId ? (
             <>
               <div className="px-8 py-5 border-b border-slate-800 flex items-center justify-between shrink-0">
