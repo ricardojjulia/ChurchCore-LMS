@@ -80,6 +80,7 @@ export default function CourseForm({
   const [ageMax, setAgeMax]             = useState<string>(initialAgeMax != null ? String(initialAgeMax) : '')
   const [saving, setSaving]             = useState(false)
   const [deleting, setDeleting]         = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [error, setError]               = useState<string | null>(null)
   const router = useRouter()
 
@@ -132,11 +133,11 @@ export default function CourseForm({
 
   async function handleDelete() {
     if (!courseId) return
-    if (!confirm('Permanently delete this course and all its content? This cannot be undone.')) return
     setDeleting(true)
+    setError(null)
     const supabase = createClient()
     const { error: deleteError } = await supabase.from('courses').delete().eq('id', courseId)
-    if (deleteError) { setDeleting(false); setError(deleteError.message); return }
+    if (deleteError) { setDeleting(false); setConfirmingDelete(false); setError(deleteError.message); return }
     router.push('/courses')
     router.refresh()
   }
@@ -328,15 +329,39 @@ export default function CourseForm({
 
       <div className="flex items-center justify-between pt-2">
         {isEdit ? (
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            onClick={handleDelete}
-            disabled={deleting || saving}
-          >
-            {deleting ? 'Deleting…' : 'Delete Course'}
-          </Button>
+          confirmingDelete ? (
+            <div className="flex items-center gap-2 bg-destructive/10 border border-destructive/30 px-3 py-1.5 rounded-lg">
+              <span className="text-xs text-destructive font-medium">Delete course?</span>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting…' : 'Yes, Delete'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmingDelete(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={() => setConfirmingDelete(true)}
+              disabled={saving}
+            >
+              Delete Course
+            </Button>
+          )
         ) : <span />}
 
         <div className="flex gap-3">
