@@ -1,7 +1,6 @@
 // @vitest-environment node
 /**
- * /api/ai/weekly-summary — calls Anthropic directly (it used to loop back
- * through /api/ai, which stopped working once /api/ai required a staff session).
+ * /api/ai/weekly-summary — calls OpenRouter directly.
  * Covers: 401, 429, no-enrollment short-circuit, 503 unconfigured, 502 on
  * network error and on upstream error, happy path, and that it never calls
  * the /api/ai loopback.
@@ -33,12 +32,12 @@ const req = () => new NextRequest('http://localhost/api/ai/weekly-summary')
 beforeEach(() => {
   vi.resetAllMocks()
   vi.stubGlobal('fetch', fetchMock)
-  vi.stubEnv('ANTHROPIC_API_KEY', 'test-key')
+  vi.stubEnv('OPENROUTER_API_KEY', 'test-openrouter-key')
   mocks.getUser.mockResolvedValue({ data: { user: { id: 'auth-1' } } })
   mocks.checkLimit.mockResolvedValue({ limited: false, retryAfter: 0, limit: 5, remaining: 4 })
   mocks.rpc.mockImplementation(async (fn: string) =>
     fn === 'get_my_academic_performance' ? { data: [ROW] } : { data: 3.3 })
-  fetchMock.mockResolvedValue(Response.json({ content: [{ type: 'text', text: 'Great week!' }] }))
+  fetchMock.mockResolvedValue(Response.json({ choices: [{ message: { content: 'Great week!' } }] }))
 })
 
 afterEach(() => {
@@ -65,6 +64,8 @@ describe('GET /api/ai/weekly-summary', () => {
   })
 
   it('503 when AI is not configured', async () => {
+    vi.stubEnv('OPENROUTER_API_KEY', '')
+    vi.stubEnv('OPENAI_API_KEY', '')
     vi.stubEnv('ANTHROPIC_API_KEY', '')
     expect((await GET(req())).status).toBe(503)
   })
@@ -75,20 +76,20 @@ describe('GET /api/ai/weekly-summary', () => {
   })
 
   it('502 on an upstream error', async () => {
-    fetchMock.mockResolvedValue(Response.json({ error: 'x' }, { status: 529 }))
+    fetchMock.mockResolvedValue(Response.json({ error: { message: 'x' } }, { status: 529 }))
     expect((await GET(req())).status).toBe(502)
   })
 
   it('502 when the provider returns a non-JSON body', async () => {
-    fetchMock.mockResolvedValue(new Response('<html>edge error</html>', { status: 200 }))
+    fetchMock.mockResolvedValue(new Response('<html>edge error</html>', { status: 500 }))
     expect((await GET(req())).status).toBe(502)
   })
 
-  it('returns the summary, calling Anthropic directly rather than the /api/ai loopback', async () => {
+  it('returns the summary via OpenRouter', async () => {
     const res = await GET(req())
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ summary: 'Great week!' })
-    expect(fetchMock.mock.calls[0][0]).toBe('https://api.anthropic.com/v1/messages')
-    expect(fetchMock.mock.calls[0][1].headers['x-api-key']).toBe('test-key')
+    expect(fetchMock.mock.calls[0][0]).toBe('https://openrouter.ai/api/v1/chat/completions')
+    expect(fetchMock.mock.calls[0][1].headers['Authorization']).toBe('Bearer test-openrouter-key')
   })
 })

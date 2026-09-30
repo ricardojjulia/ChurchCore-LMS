@@ -75,16 +75,25 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(body),
       })
-      const data = await res.json()
-      if (!res.ok || data.error) {
-        setError(data.error ?? 'Outline generation failed. Please try again.')
+      
+      let data: any = null
+      try {
+        data = await res.json()
+      } catch {
+        // Non-JSON response (e.g. gateway timeout or proxy error)
+      }
+
+      if (!res.ok || data?.error) {
+        setError(data?.error ?? `Generation request failed (${res.status}: ${res.statusText || 'Server Error'})`)
         setMode('error')
         return
       }
+
       setOutline(data.outline as OutlineSchema)
       setMode('preview')
-    } catch {
-      setError('Network error — please check your connection and try again.')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Network error'
+      setError(`${msg} — please check your connection or server logs and try again.`)
       setMode('error')
     }
   }

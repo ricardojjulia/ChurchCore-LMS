@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { outlineLimiter, checkLimit } from '@/lib/rate-limit'
+import { callOpenRouter, OPENROUTER_DEFAULT_MODELS, getOpenRouterApiKey } from '@/lib/openrouter'
 
 export const runtime     = 'nodejs'
 export const maxDuration = 30
@@ -44,6 +45,15 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // Verify AI API key is configured
+  const apiKey = getOpenRouterApiKey()
+  if (!apiKey) {
+    return Response.json(
+      { error: 'AI service is not configured. Please set OPENROUTER_API_KEY in server environment variables.' },
+      { status: 503 }
+    )
+  }
+
   // Parse body
   let body: { text?: string; fileBase64?: string; fileType?: string }
   try {
@@ -58,9 +68,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: 'Provide text content or a file.' }, { status: 400 })
   }
 
-  // Build Anthropic user message content
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Anthropic message content type varies by modality
-  const userContent: any[] = []
+  let promptContent = ''
 
   if (fileBase64) {
     // Validate file size
@@ -69,58 +77,48 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'File too large — maximum 5 MB.' }, { status: 400 })
     }
 
-    // Verify PDF magic bytes
     if (fileType === 'application/pdf') {
       const magic = decoded.slice(0, 4).toString('ascii')
       if (!magic.startsWith('%PDF')) {
         return Response.json({ error: 'File does not appear to be a valid PDF.' }, { status: 400 })
       }
-      userContent.push({
-        type:   'document',
-        source: { type: 'base64', media_type: 'application/pdf', data: fileBase64 },
-      })
-      userContent.push({ type: 'text', text: 'Please generate a course outline from this document.' })
+      // For PDFs, decode printable text slice or instructions
+      const extracted = decoded.toString('utf-8').replace(/[^\x20-\x7E\s\u00A0-\u024F\u1E00-\u1EFF]/g, ' ')
+      promptContent = `[Uploaded Syllabus PDF Content]\n${extracted.slice(0, MAX_TEXT_CHARS)}`
     } else {
-      // Plain text file — decode and treat as text
-      const textContent = decoded.toString('utf-8').slice(0, MAX_TEXT_CHARS)
-      userContent.push({ type: 'text', text: textContent })
+      // Plain text file
+      promptContent = decoded.toString('utf-8').slice(0, MAX_TEXT_CHARS)
     }
   } else if (text) {
     if (text.length > MAX_TEXT_CHARS) {
       return Response.json({ error: `Text too long — maximum ${MAX_TEXT_CHARS.toLocaleString()} characters.` }, { status: 400 })
     }
-    userContent.push({ type: 'text', text })
+    promptContent = text
   }
 
-  // Call Anthropic API via fetch (no SDK dependency)
-  const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type':      'application/json',
-      'x-api-key':         process.env.ANTHROPIC_API_KEY ?? '',
-      'anthropic-version': '2023-06-01',
-      'anthropic-beta':    'pdfs-2024-09-25', // required for document content type
-    },
-    body: JSON.stringify({
-      model:      'claude-sonnet-4-6',
-      max_tokens: 2000,
-      system:     SYSTEM_PROMPT,
-      messages:   [{ role: 'user', content: userContent }],
-    }),
+  // Call OpenRouter
+  const result = await callOpenRouter({
+    model: OPENROUTER_DEFAULT_MODELS.outline,
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: `Please generate a course outline from this curriculum content:\n\n${promptContent}` },
+    ],
+    temperature: 0.3,
+    max_tokens: 3000,
   })
 
-  if (!anthropicRes.ok) {
-    return Response.json({ error: 'Outline generation failed. Please try again.' }, { status: 502 })
+  if (!result.ok || !result.text) {
+    return Response.json(
+      { error: result.error || 'Outline generation failed. Please try again.' },
+      { status: result.status || 502 }
+    )
   }
-
-  const anthropicData = await anthropicRes.json()
-  const rawText = anthropicData?.content?.[0]?.text ?? ''
 
   // Parse JSON from response
   let outline: unknown
   try {
     // Strip any markdown code fences the model may add despite the prompt
-    const cleaned = rawText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim()
+    const cleaned = result.text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim()
     outline = JSON.parse(cleaned)
   } catch {
     return Response.json({ error: 'AI returned an unreadable response. Please try again.' }, { status: 500 })
