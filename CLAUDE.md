@@ -194,6 +194,8 @@ See `docs/CODE-FACTORY-SYSTEM-PROMPT.md` for the full council governance rules.
 - Do not commit `.env.local` — add to `.env.local.example` instead
 - Do not log raw Stripe payloads
 - Do not return DB errors directly to the client
+- Do not use `window.confirm()` or `window.alert()` for destructive actions — use deterministic inline 2-step confirmations (`[Confirm]` / `[Cancel]`).
+- Do not rely on floating/overlay modals for rapid list-item deletions where event bubbling or coordinate race conditions can trigger instant dismissal.
 
 ---
 
