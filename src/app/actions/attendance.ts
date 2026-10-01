@@ -141,3 +141,87 @@ export async function markStudentAttendance(params: {
   const { error } = await service.from('block_submissions').insert(payload)
   return error ? { error: 'Could not save attendance. Please try again.' } : {}
 }
+
+export async function createQuickAttendanceSession({
+  courseId,
+  sessionTitle,
+  pointsPossible = 10,
+  trackingMode = 'both',
+}: {
+  courseId:        string
+  sessionTitle:    string
+  pointsPossible?: number
+  trackingMode?:   string
+}): Promise<{ data?: any; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthenticated' }
+
+  const { data: pr } = await supabase
+    .from('profile_roles')
+    .select('role, org_id')
+    .eq('auth_id', user.id)
+    .single()
+  if (!pr || !['admin', 'manager', 'teacher'].includes(pr.role)) return { error: 'Forbidden' }
+
+  const service = createServiceClient()
+
+  // Find or create module header
+  const { data: modules } = await service
+    .from('course_blocks')
+    .select('id, sort_order')
+    .eq('course_id', courseId)
+    .eq('block_type_id', 'module_header')
+    .order('sort_order', { ascending: true })
+
+  let targetModuleId = modules?.[0]?.id
+
+  if (!targetModuleId) {
+    const newModuleId = crypto.randomUUID()
+    const { error: modErr } = await service.from('course_blocks').insert({
+      id:            newModuleId,
+      course_id:     courseId,
+      org_id:        pr.org_id,
+      block_type_id: 'module_header',
+      title:         'Attendance Sessions',
+      content:       {},
+      sort_order:    1000,
+    })
+    if (modErr) return { error: `Failed to create module header: ${modErr.message}` }
+    targetModuleId = newModuleId
+  }
+
+  // Find max sort order among child blocks
+  const { data: childBlocks } = await service
+    .from('course_blocks')
+    .select('sort_order')
+    .eq('course_id', courseId)
+    .eq('parent_block_id', targetModuleId)
+    .order('sort_order', { ascending: false })
+    .limit(1)
+
+  const nextOrder = (childBlocks?.[0]?.sort_order ?? 0) + 1000
+
+  const { data: newBlock, error: insErr } = await service
+    .from('course_blocks')
+    .insert({
+      course_id:       courseId,
+      org_id:          pr.org_id,
+      parent_block_id: targetModuleId,
+      block_type_id:   'attendance',
+      title:           sessionTitle.trim() || 'Attendance Session',
+      content: {
+        session_title:   sessionTitle.trim() || 'Attendance Session',
+        tracking_mode:   trackingMode,
+        points_possible: pointsPossible,
+        created_at:      new Date().toISOString(),
+      },
+      sort_order: nextOrder,
+    })
+    .select('id, title')
+    .single()
+
+  if (insErr) return { error: insErr.message }
+  return { data: newBlock }
+}
+

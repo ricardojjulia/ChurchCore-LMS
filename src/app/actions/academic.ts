@@ -369,3 +369,169 @@ export async function updateSectionEnrollmentType(
   revalidatePath(`/admin/sections/${sectionId}`)
   return {}
 }
+
+// ── Meeting Schedules (Hybrid / Sync Live Sessions) ──────────────────────────
+
+export async function createMeetingSchedule(
+  sectionId: string,
+  formData: FormData,
+): Promise<{ error?: string }> {
+  let ctx
+  try { ctx = await requireAdmin() } catch (e: any) { return { error: e.message } }
+
+  const startTime      = (formData.get('start_time')      as string)?.trim() || null
+  const endTime        = (formData.get('end_time')        as string)?.trim() || null
+  const timezone       = (formData.get('timezone')        as string)?.trim() || 'UTC'
+  const effectiveFrom  = (formData.get('effective_from')  as string)?.trim()
+  const effectiveUntil = (formData.get('effective_until') as string)?.trim() || null
+  const locationType   = (formData.get('location_type')   as string) || 'virtual'
+  const locationDetail = (formData.get('location_detail') as string)?.trim() || null
+  const rrule          = (formData.get('rrule')          as string)?.trim() || null
+
+  if (!effectiveFrom) return { error: 'Effective start date is required' }
+  if (startTime && endTime && endTime <= startTime) {
+    return { error: 'End time must be after start time' }
+  }
+
+  const { error } = await ctx.supabase.from('meeting_schedules').insert({
+    section_id:      sectionId,
+    start_time:      startTime,
+    end_time:        endTime,
+    timezone,
+    effective_from:  effectiveFrom,
+    effective_until: effectiveUntil,
+    location_type:   locationType,
+    location_detail: locationDetail,
+    rrule,
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/admin/sections/${sectionId}`)
+  return {}
+}
+
+export async function deleteMeetingSchedule(
+  scheduleId: string,
+  sectionId: string,
+): Promise<{ error?: string }> {
+  let ctx
+  try { ctx = await requireAdmin() } catch (e: any) { return { error: e.message } }
+
+  const { error } = await ctx.supabase
+    .from('meeting_schedules')
+    .delete()
+    .eq('id', scheduleId)
+    .eq('section_id', sectionId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/admin/sections/${sectionId}`)
+  return {}
+}
+
+export async function generateAttendanceFromSchedule({
+  sectionId,
+  courseId,
+}: {
+  sectionId: string
+  courseId:  string
+}): Promise<{ count?: number; error?: string }> {
+  let ctx
+  try { ctx = await requireAdmin() } catch (e: any) { return { error: e.message } }
+
+  const [{ data: schedules }, { data: course }] = await Promise.all([
+    ctx.supabase
+      .from('meeting_schedules')
+      .select('*')
+      .eq('section_id', sectionId),
+    ctx.supabase
+      .from('courses')
+      .select('id, org_id')
+      .eq('id', courseId)
+      .single(),
+  ])
+
+  if (!schedules || schedules.length === 0) {
+    return { error: 'No meeting schedules found for this section.' }
+  }
+  if (!course) return { error: 'Course not found.' }
+
+  // Check if course has a module header to attach attendance blocks to
+  const { data: modules } = await ctx.supabase
+    .from('course_blocks')
+    .select('id, sort_order')
+    .eq('course_id', courseId)
+    .eq('block_type_id', 'module_header')
+    .order('sort_order', { ascending: true })
+
+  let targetModuleId = modules?.[0]?.id
+
+  // If no module header exists, create a default "Live Sessions & Attendance" module
+  if (!targetModuleId) {
+    const newModuleId = crypto.randomUUID()
+    const { error: modErr } = await ctx.supabase.from('course_blocks').insert({
+      id:            newModuleId,
+      course_id:     courseId,
+      org_id:        course.org_id,
+      block_type_id: 'module_header',
+      title:         'Live Sessions & Attendance',
+      content:       {},
+      sort_order:    1000,
+    })
+    if (modErr) return { error: `Failed to create module header: ${modErr.message}` }
+    targetModuleId = newModuleId
+  }
+
+  // Generate attendance sessions for each schedule
+  const newBlocks: any[] = []
+  let itemSortOrder = 1000
+
+  for (const sched of schedules) {
+    const startDate = new Date(sched.effective_from)
+    const endDate = sched.effective_until ? new Date(sched.effective_until) : new Date(startDate.getTime() + 60 * 24 * 60 * 60 * 1000)
+
+    // Generate up to 16 weekly meetings
+    const curr = new Date(startDate)
+    let count = 0
+    while (curr <= endDate && count < 16) {
+      const dateStr = curr.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      const timeStr = sched.start_time ? ` (${sched.start_time.slice(0, 5)})` : ''
+      const title = `Session: ${dateStr}${timeStr}`
+
+      newBlocks.push({
+        id:              crypto.randomUUID(),
+        course_id:       courseId,
+        org_id:          course.org_id,
+        parent_block_id: targetModuleId,
+        block_type_id:   'attendance',
+        title,
+        content: {
+          session_title:   title,
+          tracking_mode:   'both',
+          points_possible: 10,
+          location_type:   sched.location_type,
+          location_detail: sched.location_detail,
+          meeting_date:    curr.toISOString().slice(0, 10),
+        },
+        sort_order: itemSortOrder,
+      })
+
+      itemSortOrder += 1000
+      count++
+      // Advance by 7 days
+      curr.setDate(curr.getDate() + 7)
+    }
+  }
+
+  if (newBlocks.length > 0) {
+    const { error: insErr } = await ctx.supabase.from('course_blocks').insert(newBlocks)
+    if (insErr) return { error: insErr.message }
+  }
+
+  revalidatePath(`/courses/${courseId}`)
+  revalidatePath(`/courses/${courseId}/attendance`)
+  revalidatePath(`/courses/${courseId}/build`)
+  return { count: newBlocks.length }
+}
+

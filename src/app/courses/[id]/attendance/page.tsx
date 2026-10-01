@@ -2,8 +2,10 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import AttendanceManager from '@/components/attendance/AttendanceManager'
+import QuickSessionModal from '@/components/attendance/QuickSessionModal'
 
 export const dynamic = 'force-dynamic'
+
 
 export default async function AttendancePage({
   params,
@@ -96,29 +98,36 @@ export default async function AttendancePage({
               {blocks.length} session{blocks.length !== 1 ? 's' : ''} · {enrollments.length} student{enrollments.length !== 1 ? 's' : ''}
             </p>
           </div>
-          <Link
-            href={`/courses/${courseId}/build`}
-            className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
-          >
-            ✏️ Add Sessions in Builder
-          </Link>
+          <div className="flex items-center gap-2">
+            <QuickSessionModal courseId={courseId} />
+            <Link
+              href={`/courses/${courseId}/build`}
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground border border-border bg-white rounded-xl px-3 py-2 hover:bg-slate-50 transition-colors"
+            >
+              ✏️ Builder
+            </Link>
+          </div>
         </div>
 
         {blocks.length === 0 ? (
           <div className="bg-white border border-border rounded-2xl p-12 text-center">
             <p className="text-4xl mb-3">🗓️</p>
-            <p className="font-semibold text-foreground">No attendance blocks yet</p>
+            <p className="font-semibold text-foreground">No attendance sessions yet</p>
             <p className="text-sm text-muted-foreground mt-1 mb-4">
-              Add an Attendance block in the course builder to start tracking.
+              Add a quick attendance session now or configure sessions in the course builder.
             </p>
-            <Link
-              href={`/courses/${courseId}/build`}
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors"
-            >
-              Open Builder →
-            </Link>
+            <div className="flex items-center justify-center gap-3">
+              <QuickSessionModal courseId={courseId} />
+              <Link
+                href={`/courses/${courseId}/build`}
+                className="inline-flex items-center gap-2 border border-border bg-white text-foreground text-xs font-semibold px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors"
+              >
+                Open Builder →
+              </Link>
+            </div>
           </div>
         ) : (
+
           <AttendanceManager
             courseId={courseId}
             blocks={blocks.map((b) => ({

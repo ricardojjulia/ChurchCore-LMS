@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import GroupsPanel from './GroupsPanel'
 import SectionEnrollmentTypeForm from './SectionEnrollmentTypeForm'
+import MeetingSchedulePanel from '@/components/academic/MeetingSchedulePanel'
 import { Database } from 'lucide-react'
 
 const ENROLLMENT_TYPE_BADGE: Record<string, { label: string; className: string }> = {
@@ -31,12 +32,12 @@ export default async function SectionDetailPage({
 
   if (!me || !['admin', 'manager', 'teacher'].includes(me.role)) redirect('/dashboard')
 
-  const [sectionResult, groupsResult, managedLinkResult] = await Promise.all([
+  const [sectionResult, groupsResult, managedLinkResult, schedulesResult] = await Promise.all([
     supabase
       .from('course_sections')
       .select(`
         id, section_code, delivery_format, is_active, max_enrollment,
-        enrollment_open_date, enrollment_close_date, enrollment_type,
+        enrollment_open_date, enrollment_close_date, enrollment_type, blueprint_id,
         course_blueprints ( id, title, course_code ),
         academic_terms ( term_name, term_code, start_date, end_date )
       `)
@@ -58,19 +59,35 @@ export default async function SectionDetailPage({
       .eq('managed_by_external_system', true)
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from('meeting_schedules')
+      .select('*')
+      .eq('section_id', sectionId)
+      .order('effective_from', { ascending: true }),
   ])
 
   const section = sectionResult.data
   if (!section) redirect('/admin/sections')
 
+  // Find linked courses that use this blueprint
+  const { data: linkedCourses } = section.blueprint_id
+    ? await supabase
+        .from('courses')
+        .select('id, title')
+        .eq('blueprint_id', section.blueprint_id)
+        .order('title')
+    : { data: [] }
+
   const blueprint = section.course_blueprints as unknown as { id: string; title: string; course_code: string } | null
   const term      = section.academic_terms    as unknown as { term_name: string; term_code: string; start_date: string; end_date: string } | null
   const groups    = groupsResult.data ?? []
+  const schedules = schedulesResult.data ?? []
 
   const totalMembers = groups.reduce(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join not narrowed
     (s, g) => s + ((g.section_group_members as any[])?.length ?? 0), 0
   )
+
 
   return (
     <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -146,6 +163,14 @@ export default async function SectionDetailPage({
           isAdmin={['admin', 'manager'].includes(me.role)}
         />
 
+        {/* Meeting Schedule & Live Hybrid Sessions */}
+        <MeetingSchedulePanel
+          sectionId={sectionId}
+          deliveryFormat={section.delivery_format}
+          schedules={schedules}
+          linkedCourses={linkedCourses ?? []}
+        />
+
         {/* Enrollment type settings (admin/manager only) */}
         {['admin', 'manager'].includes(me.role) && (
           <div className="bg-white border border-border rounded-2xl p-8 shadow-sm">
@@ -161,5 +186,6 @@ export default async function SectionDetailPage({
         )}
       </div>
     </main>
+
   )
 }
