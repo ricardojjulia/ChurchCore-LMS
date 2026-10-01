@@ -34,6 +34,7 @@ export default function SidebarPlaceholder() {
             width={0}
             height={0}
             sizes="160px"
+            priority
             className={cn(
               'drop-shadow-[0_0_34px_rgba(249,247,241,0.22)] h-auto',
               collapsed ? 'w-10' : 'w-40',

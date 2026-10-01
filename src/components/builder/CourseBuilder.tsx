@@ -501,6 +501,7 @@ export default function CourseBuilder({ courseId, initialBlocks }: Props) {
                     </div>
                   ) : (
                     <DndContext
+                      id="course-builder-dnd-context"
                       sensors={sensors}
                       collisionDetection={closestCenter}
                       onDragEnd={handleDragEnd}
