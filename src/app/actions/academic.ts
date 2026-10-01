@@ -227,6 +227,61 @@ export async function updateBlueprint(
   return {}
 }
 
+export async function deleteBlueprint(blueprintId: string): Promise<{ error?: string }> {
+  let ctx
+  try { ctx = await requireAdmin() } catch (e: any) { return { error: e.message } }
+
+  const { data: managedLink, error: linkErr } = await ctx.supabase
+    .from('external_entity_links')
+    .select('id')
+    .eq('local_table', 'course_blueprints')
+    .eq('local_id', blueprintId)
+    .eq('managed_by_external_system', true)
+    .limit(1)
+    .maybeSingle()
+
+  if (linkErr) return { error: 'Unable to verify blueprint status' }
+  if (managedLink) {
+    return { error: 'This blueprint is managed by an external system (OneRoster/SIS) and cannot be deleted.' }
+  }
+
+  // Check for attached courses
+  const { data: attachedCourses } = await ctx.supabase
+    .from('courses')
+    .select('id, title')
+    .eq('blueprint_id', blueprintId)
+    .limit(5)
+
+  // Check for attached sections
+  const { data: attachedSections } = await ctx.supabase
+    .from('course_sections')
+    .select('id, section_code')
+    .eq('blueprint_id', blueprintId)
+    .limit(5)
+
+  const courseCount = attachedCourses?.length ?? 0
+  const sectionCount = attachedSections?.length ?? 0
+
+  if (courseCount > 0 || sectionCount > 0) {
+    const reasons: string[] = []
+    if (courseCount > 0) reasons.push(`${courseCount} linked course${courseCount > 1 ? 's' : ''}`)
+    if (sectionCount > 0) reasons.push(`${sectionCount} linked section${sectionCount > 1 ? 's' : ''}`)
+    return {
+      error: `Cannot delete blueprint because it has dependencies (${reasons.join(', ')}). You can deactivate (archive) this blueprint by unchecking "Active" instead.`,
+    }
+  }
+
+  const { error: delErr } = await ctx.supabase
+    .from('course_blueprints')
+    .delete()
+    .eq('id', blueprintId)
+
+  if (delErr) return { error: delErr.message }
+
+  revalidatePath('/admin/blueprints')
+  return {}
+}
+
 // ── Sections ───────────────────────────────────────────────────────────────
 
 export async function createSection(formData: FormData): Promise<{ error?: string }> {
