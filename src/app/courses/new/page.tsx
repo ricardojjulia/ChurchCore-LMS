@@ -3,7 +3,12 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import CourseForm from '@/components/courses/CourseForm'
 
-export default async function NewCoursePage() {
+export default async function NewCoursePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ blueprint_id?: string }>
+}) {
+  const { blueprint_id } = (await searchParams) ?? {}
   const supabase = await createClient()
   const {
     data: { user },
@@ -29,10 +34,23 @@ export default async function NewCoursePage() {
       .order('title', { ascending: true }),
     supabase
       .from('course_blueprints')
-      .select('id, title, course_code, program_tracks(name, code)')
+      .select('id, title, description, course_code, program_tracks(name, code)')
       .eq('is_active', true)
       .order('title', { ascending: true }),
   ])
+
+  let selectedBp = blueprint_id
+    ? blueprintsResult.data?.find((b) => b.id === blueprint_id)
+    : null
+
+  if (blueprint_id && !selectedBp) {
+    const { data: directBp } = await supabase
+      .from('course_blueprints')
+      .select('id, title, description, course_code, program_tracks(name, code)')
+      .eq('id', blueprint_id)
+      .maybeSingle()
+    selectedBp = directBp
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -46,7 +64,9 @@ export default async function NewCoursePage() {
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">New Course</h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Fill in the details. You can add modules after saving.
+            {selectedBp
+              ? `Creating a course initialized from blueprint ${selectedBp.course_code}: ${selectedBp.title}.`
+              : 'Fill in the details. You can add modules after saving.'}
           </p>
         </div>
 
@@ -55,9 +75,13 @@ export default async function NewCoursePage() {
             userId={profile?.uid ?? ''}
             existingCourses={existingCoursesResult.data ?? []}
             blueprints={blueprintsResult.data ?? []}
+            initialBlueprintId={selectedBp?.id ?? null}
+            initialTitle={selectedBp?.title ?? ''}
+            initialDescription={selectedBp?.description ?? ''}
           />
         </div>
       </div>
     </main>
   )
 }
+
