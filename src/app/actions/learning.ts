@@ -214,6 +214,84 @@ export async function markVideoWatched(blockId: string): Promise<{ error?: strin
   return error ? { error: 'Could not save your progress. Please try again.' } : {}
 }
 
+// ── Submit or complete an H5P interactive block ─────────────────────────────
+
+export async function submitH5PProgress({
+  blockId,
+  score,
+  maxScore,
+  completionStatus = 'completed',
+  xApiStatement,
+}: {
+  blockId: string
+  score?: number
+  maxScore?: number
+  completionStatus?: 'passed' | 'completed' | 'failed' | 'in_progress'
+  xApiStatement?: Record<string, unknown>
+}): Promise<{ error?: string; xpAwarded?: number; gradePct?: number }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('uid')
+    .eq('auth_id', user.id)
+    .single()
+  if (!profile) return { error: 'Profile not found' }
+
+  const { data: block } = await supabase
+    .from('course_blocks')
+    .select('course_id, gamification, content')
+    .eq('id', blockId)
+    .single()
+
+  const h5pContent = (block?.content ?? {}) as Record<string, unknown>
+  const passingScorePct = (h5pContent.passing_score_pct as number | undefined) ?? 70
+  const requirePassing = (h5pContent.require_passing as boolean | undefined) ?? true
+
+  let gradePct: number | null = null
+  if (score !== undefined && maxScore && maxScore > 0) {
+    gradePct = Math.round((score / maxScore) * 100)
+  }
+
+  const passed = gradePct !== null ? gradePct >= passingScorePct : true
+  const status = requirePassing ? (passed ? 'graded' : 'submitted') : 'graded'
+
+  const { error } = await supabase
+    .from('block_submissions')
+    .insert({
+      block_id: blockId,
+      user_id: profile.uid,
+      status,
+      score: score ?? null,
+      max_score: maxScore ?? null,
+      grade_pct: gradePct,
+      content: {
+        h5p_event: completionStatus,
+        statement: xApiStatement,
+        completed_at: new Date().toISOString(),
+      },
+      submitted_at: new Date().toISOString(),
+      graded_at: status === 'graded' ? new Date().toISOString() : null,
+    })
+
+  if (error) return { error: 'Could not record H5P activity progress.' }
+
+  let xpAwarded = 0
+  if (status === 'graded' || passed) {
+    const baseReward = (block?.gamification as { base_xp_reward?: number })?.base_xp_reward ?? 50
+    const xpRes = await tryAwardXp(profile.uid, baseReward)
+    if (xpRes) xpAwarded = baseReward
+    if (block?.course_id) {
+      revalidatePath(`/courses/${block.course_id}/learn`)
+    }
+    revalidatePath('/dashboard')
+  }
+
+  return { gradePct: gradePct ?? undefined, xpAwarded }
+}
+
 // ── Submit an assignment block ────────────────────────────────────────────────
 
 export async function submitAssignment(
