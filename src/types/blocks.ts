@@ -2,7 +2,7 @@ export type BlockCategory = 'content' | 'activity' | 'structure'
 
 export type StructureBlockTypeId = 'module_header'
 export type ContentBlockTypeId   = 'page' | 'video_stream' | 'resource_file' | 'external_url' | 'scorm' | 'live_session' | 'teacher_plug'
-export type ActivityBlockTypeId  = 'assignment' | 'quiz' | 'discussion' | 'survey' | 'checklist' | 'flashcard_set' | 'attendance'
+export type ActivityBlockTypeId  = 'assignment' | 'quiz' | 'discussion' | 'survey' | 'checklist' | 'flashcard_set' | 'attendance' | 'h5p'
 export type BlockTypeId          = StructureBlockTypeId | ContentBlockTypeId | ActivityBlockTypeId
 
 export interface BlockTypeMeta {
@@ -33,6 +33,7 @@ export const BLOCK_TYPE_META: Record<BlockTypeId, BlockTypeMeta> = {
   checklist:     { label: 'Checklist',    icon: '✅', category: 'activity',  color: 'emerald', description: 'Steps a learner ticks off',            is_active: true  },
   flashcard_set: { label: 'Flashcards',   icon: '🗂️', category: 'activity',  color: 'amber',   description: 'Front-and-back study cards',           is_active: true  },
   attendance:    { label: 'Attendance',   icon: '🗓️', category: 'activity',  color: 'cyan',    description: 'Track student presence and engagement', is_active: true  },
+  h5p:           { label: 'H5P Interactive', icon: '✨', category: 'activity', color: 'fuchsia', description: 'Interactive video, branching scenario, quiz, or embedded H5P', is_active: true },
 }
 
 export interface CourseBlock {
@@ -88,3 +89,16 @@ export interface ChecklistContent { items: ChecklistItem[] }
 
 export interface Flashcard { id: string; front: string; back: string }
 export interface FlashcardContent { cards: Flashcard[] }
+
+export interface H5PContent {
+  embed_type: 'url' | 'package' | 'embed_code'
+  url?: string
+  embed_code?: string
+  package_url?: string
+  package_filename?: string
+  package_title?: string
+  package_main_library?: string
+  passing_score_pct?: number
+  require_passing?: boolean
+  aspect_ratio?: '16:9' | '4:3' | '1:1' | 'auto'
+}

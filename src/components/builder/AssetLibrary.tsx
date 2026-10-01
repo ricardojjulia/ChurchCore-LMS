@@ -10,6 +10,8 @@ const COLOR_MAP: Record<string, string> = {
   emerald: 'bg-emerald-900/40 border-emerald-700/50 hover:border-emerald-500',
   violet:  'bg-violet-900/40 border-violet-700/50 hover:border-violet-500',
   rose:    'bg-rose-900/40 border-rose-700/50 hover:border-rose-500',
+  cyan:    'bg-cyan-900/40 border-cyan-700/50 hover:border-cyan-500',
+  fuchsia: 'bg-fuchsia-900/40 border-fuchsia-700/50 hover:border-fuchsia-500',
 }
 
 interface Props {
@@ -19,7 +21,7 @@ interface Props {
 
 const SECTIONS: { label: string; types: BlockTypeId[] }[] = [
   { label: 'Content',    types: ['page', 'video_stream', 'resource_file', 'external_url'] },
-  { label: 'Activities', types: ['assignment', 'quiz', 'discussion', 'attendance', 'survey', 'checklist', 'flashcard_set'] },
+  { label: 'Activities', types: ['assignment', 'quiz', 'h5p', 'discussion', 'attendance', 'survey', 'checklist', 'flashcard_set'] },
 ]
 
 export default function AssetLibrary({ onSelect, onClose }: Props) {

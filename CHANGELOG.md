@@ -10,7 +10,12 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
-- **Complete Portuguese (`pt`) Localization & 3-Way i18n:** Added comprehensive Portuguese translation dictionary (`messages/pt.json`) achieving 100% key parity (770 keys) with English and Spanish. Updated `LocaleSwitcher` for seamless 3-way toggling across EN, ES, and PT.
+- **H5P Interactive Learning Content (COUNCIL-2026-046):** Native support for H5P interactive activities in ChurchCore LMS.
+  - **Course Builder Form (`H5PForm`):** Supports both interactive iframe embed URLs (from H5P.com, Lumi, Curriki, WordPress) and direct `.h5p` zip package uploads with client-side metadata parsing (`JSZip`).
+  - **Live Student Player (`H5PPlayer`):** Interactive viewport with customizable aspect ratios (`16:9`, `4:3`, `1:1`, `auto`), auto-resizing, and fullscreen mode.
+  - **xAPI Gradebook & XP Integration:** Intercepts H5P xAPI statements via `window.postMessage` to auto-grade passing scores, advance student course progression, record submissions in `block_submissions`, and award gamification XP.
+  - **Multilingual Support:** Fully localized H5P activity badges, completion buttons, and progress status across English, Spanish, and Portuguese.
+- **Complete Portuguese (`pt`) Localization & 3-Way i18n:** Added comprehensive Portuguese translation dictionary (`messages/pt.json`) achieving 100% key parity (780 keys) with English and Spanish. Updated `LocaleSwitcher` for seamless 3-way toggling across EN, ES, and PT.
 - **Multilingual UI Coverage:** Fully localized dashboards (`SmartSummaryCard`, `AdminDashboard`, `InstructorDashboard`, `StudentDashboard`), gamification widgets (`EngagementWidget`, `StudentXpStandingsModal`, `AiWeeklySummary`), academic management (`AdminBlueprintsPage`, `BlueprintForm`, `AdminSectionsPage`), and system transactional emails (`PasswordResetEmail`, `SignupVerifyEmail`).
 - **AI Course Builder Incremental Generation:** AI course generator now supports appending new modules and lessons to existing courses without overwriting prior content, alongside an optional full replacement workflow.
 - **Hybrid Course Attendance & Availability Tracking:** Support for course start/expiration availability windows and quick attendance roll-call tracking for scheduled hybrid classroom sessions.

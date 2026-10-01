@@ -14,6 +14,7 @@ import AttendanceForm from './node-forms/AttendanceForm'
 import SurveyForm from './node-forms/SurveyForm'
 import ChecklistForm from './node-forms/ChecklistForm'
 import FlashcardForm from './node-forms/FlashcardForm'
+import H5PForm from './node-forms/H5PForm'
 
 interface Props {
   blockTypeId: BlockTypeId
@@ -45,6 +46,7 @@ export default function NodeForm({ blockTypeId, initial, onSave, onCancel }: Pro
     case 'survey':        return <SurveyForm {...props} />
     case 'checklist':     return <ChecklistForm {...props} />
     case 'flashcard_set': return <FlashcardForm {...props} />
+    case 'h5p':           return <H5PForm {...props} />
     default:              return null
   }
 }

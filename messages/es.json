@@ -680,6 +680,18 @@
       "unsupportedType": "Tipo de bloque no compatible.",
       "downloadButton": "Descargar →"
     },
+    "h5p": {
+      "badge": "H5P Interactivo",
+      "notConfigured": "No se ha configurado ninguna URL de inserción ni archivo de paquete .h5p en este bloque.",
+      "scoreTemplate": "Puntuación: {score}%",
+      "passed": "• Aprobado",
+      "belowPassing": "• Por debajo del mínimo",
+      "completed": "Completado",
+      "passingRequirementTemplate": "Requisito de aprobación: puntuación mínima de {pct}%.",
+      "completeToProgress": "Completa la actividad interactiva para avanzar.",
+      "confirmCompletedButton": "He completado esta actividad",
+      "savedSuccess": "¡Actividad completada con éxito! Progreso guardado."
+    },
     "assignment": {
       "submittedBanner": "✓ Entregado: en espera de calificación del instructor",
       "attachedFileFallback": "Archivo adjunto",
