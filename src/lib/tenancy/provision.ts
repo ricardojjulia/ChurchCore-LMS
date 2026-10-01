@@ -14,7 +14,7 @@ export interface ProvisionInput {
   source: 'admin' | 'self_serve'
   features?: Record<string, boolean>
   timezone?: string
-  locale?: 'en' | 'es'
+  locale?: 'en' | 'es' | 'pt'
 }
 
 export interface ProvisionedOrg {

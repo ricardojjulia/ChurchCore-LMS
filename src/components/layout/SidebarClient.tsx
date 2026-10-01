@@ -95,14 +95,14 @@ function NavItem({
       title={collapsed ? label : undefined}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex items-center gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-colors relative',
+        'flex items-center gap-3 px-2.5 py-2 rounded-xl text-sm font-medium transition-all relative group',
         active
-          ? 'bg-slate-800 text-white'
-          : 'text-slate-400 hover:text-white hover:bg-slate-800',
+          ? 'bg-indigo-950/70 text-amber-300 border border-indigo-800/60 shadow-xs font-semibold'
+          : 'text-slate-400 hover:text-white hover:bg-slate-800/80 border border-transparent',
         collapsed && 'justify-center gap-0 px-2',
       )}
     >
-      <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />
+      <Icon className={cn('w-5 h-5 shrink-0 transition-transform group-hover:scale-105', active ? 'text-amber-300' : 'text-slate-400 group-hover:text-slate-200')} aria-hidden="true" />
 
       <span className={cn(
         'overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-200',

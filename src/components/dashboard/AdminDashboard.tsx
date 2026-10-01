@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import SmartSummaryCard from './SmartSummaryCard'
@@ -13,7 +14,7 @@ import type { DashboardContext } from '@/lib/dashboard/context'
 import type { SystemHealthCheck } from '@/types/health'
 import { cn } from '@/lib/utils'
 
-function HealthWidget({ checks }: { checks: SystemHealthCheck[] }) {
+function HealthWidget({ checks, t }: { checks: SystemHealthCheck[]; t: any }) {
   const errorCount   = checks.filter((c) => c.status === 'error').length
   const warningCount = checks.filter((c) => c.status === 'warning').length
   const hasIssues    = errorCount > 0 || warningCount > 0
@@ -22,32 +23,32 @@ function HealthWidget({ checks }: { checks: SystemHealthCheck[] }) {
     <Link
       href="/admin/health"
       className={cn(
-        'flex items-center justify-between rounded-xl border px-5 py-4 transition-all hover:shadow-sm',
+        'card-crisp flex items-center justify-between px-5 py-4 transition-all hover:shadow-md',
         errorCount > 0
-          ? 'bg-rose-50 border-rose-200 hover:border-rose-300'
+          ? 'border-rose-800/60 hover:border-rose-600 bg-rose-950/20'
           : warningCount > 0
-            ? 'bg-amber-50 border-amber-200 hover:border-amber-300'
-            : 'bg-emerald-50 border-emerald-200 hover:border-emerald-300'
+            ? 'border-amber-800/60 hover:border-amber-600 bg-amber-950/20'
+            : 'border-emerald-800/60 hover:border-emerald-600 bg-emerald-950/20'
       )}
     >
       <div>
-        <p className="text-sm font-bold text-foreground">System Health</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <p className="text-sm font-bold text-white">{t('systemHealth')}</p>
+        <p className="text-xs text-slate-400 mt-0.5">
           {checks.length === 0
-            ? 'No checks run yet'
+            ? t('noChecksRun')
             : hasIssues
-              ? `${errorCount > 0 ? `${errorCount} error${errorCount > 1 ? 's' : ''}` : ''}${errorCount > 0 && warningCount > 0 ? ', ' : ''}${warningCount > 0 ? `${warningCount} warning${warningCount > 1 ? 's' : ''}` : ''}`
-              : 'All systems operational'}
+              ? `${errorCount > 0 ? t('errorCountTemplate', { n: errorCount }) : ''}${errorCount > 0 && warningCount > 0 ? ', ' : ''}${warningCount > 0 ? t('warningCountTemplate', { n: warningCount }) : ''}`
+              : t('allSystemsOperational')}
         </p>
       </div>
       {hasIssues && (
         <span className={cn(
-          'text-xs font-bold px-2.5 py-1 rounded-full',
+          'text-xs font-bold px-2.5 py-1 rounded-lg border',
           errorCount > 0
-            ? 'bg-rose-700 text-white'
-            : 'bg-amber-100 text-amber-900'
+            ? 'bg-rose-950 text-rose-300 border-rose-800'
+            : 'bg-amber-950 text-amber-300 border-amber-800'
         )}>
-          {errorCount > 0 ? `${errorCount} error${errorCount > 1 ? 's' : ''}` : `${warningCount} warn`}
+          {errorCount > 0 ? t('errorCountTemplate', { n: errorCount }) : t('warningCountTemplate', { n: warningCount })}
         </span>
       )}
     </Link>
@@ -67,18 +68,18 @@ function StatCard({
 }) {
   const inner = (
     <div className={cn(
-      'flex flex-col justify-between rounded-xl border bg-white px-5 py-4 h-24',
-      href && 'hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer',
+      'card-crisp flex flex-col justify-between px-5 py-4 h-24 hover:border-indigo-500/50 hover:shadow-md transition-all',
+      href && 'cursor-pointer',
       className
     )}>
-      <span className="text-3xl font-extrabold text-foreground">{value}</span>
-      <span className="text-xs text-muted-foreground font-medium">{label}</span>
+      <span className="text-3xl font-display font-bold text-white">{value}</span>
+      <span className="text-xs text-slate-400 font-medium">{label}</span>
     </div>
   )
   return href ? <Link href={href}>{inner}</Link> : inner
 }
 
-export default function AdminDashboard({
+export default async function AdminDashboard({
   ctx,
   healthChecks = [],
   onboarding,
@@ -89,10 +90,11 @@ export default function AdminDashboard({
   healthChecks?: SystemHealthCheck[]
   onboarding?:   { logo_uploaded: boolean; first_teacher_invited: boolean; first_course_created: boolean; first_announcement_published: boolean } | null
 }) {
+  const t = await getTranslations('dashboard.summary')
   const stats = ctx.stats
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-5xl mx-auto">
         {trialEndsAt && <TrialBanner trialEndsAt={trialEndsAt} />}
         <SmartSummaryCard ctx={ctx} />
@@ -106,76 +108,76 @@ export default function AdminDashboard({
 
         {/* System health widget */}
         <section className="mb-6">
-          <HealthWidget checks={healthChecks} />
+          <HealthWidget checks={healthChecks} t={t} />
         </section>
 
         {/* Institution stats */}
         {stats && (
           <section className="mb-8">
-            <h2 className="text-lg font-bold text-foreground mb-3">Institution Overview</h2>
+            <h2 className="text-lg font-display font-bold text-white mb-3">{t('institutionOverview')}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <StatCard label="Total Users"    value={stats.totalUsers}    href="/admin/users" className="border-slate-200" />
-              <StatCard label="Students"       value={stats.totalStudents} className="border-emerald-200" />
-              <StatCard label="Teachers"       value={stats.totalTeachers} className="border-sky-200" />
-              <StatCard label="Total Courses"  value={stats.totalCourses}  href="/courses"     className="border-indigo-200" />
+              <StatCard label={t('totalUsers')}    value={stats.totalUsers}    href="/admin/users" />
+              <StatCard label={t('students')}       value={stats.totalStudents} />
+              <StatCard label={t('teachers')}       value={stats.totalTeachers} />
+              <StatCard label={t('totalCourses')}  value={stats.totalCourses}  href="/courses" />
             </div>
           </section>
         )}
 
         {/* Quick actions */}
         <section className="mb-8">
-          <h2 className="text-lg font-bold text-foreground mb-3">Quick Actions</h2>
+          <h2 className="text-lg font-display font-bold text-white mb-3">{t('quickActions')}</h2>
           <div className="flex flex-wrap gap-3">
-            <Button asChild><Link href="/courses/new">+ New Course</Link></Button>
-            <Button asChild variant="outline"><Link href="/admin/users">Manage Users</Link></Button>
-            <Button asChild variant="outline"><Link href="/hq">Project HQ</Link></Button>
+            <Button asChild className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold"><Link href="/courses/new">{t('newCourseButton')}</Link></Button>
+            <Button asChild variant="outline" className="border-slate-800 text-slate-300 hover:text-white hover:bg-slate-900"><Link href="/admin/users">{t('manageUsers')}</Link></Button>
+            <Button asChild variant="outline" className="border-slate-800 text-slate-300 hover:text-white hover:bg-slate-900"><Link href="/hq">{t('projectHq')}</Link></Button>
           </div>
         </section>
 
         {/* Managed courses */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-foreground">Your Courses</h2>
+            <h2 className="text-lg font-display font-bold text-white">{t('yourCourses')}</h2>
             {ctx.ownedCourses.length > 0 && (
-              <Badge variant="secondary" className="text-xs">{ctx.ownedCourses.length}</Badge>
+              <Badge variant="secondary" className="text-xs bg-slate-800 text-slate-300">{ctx.ownedCourses.length}</Badge>
             )}
           </div>
 
           {ctx.ownedCourses.length === 0 ? (
-            <div className="bg-white border border-border rounded-xl p-8 text-center">
-              <p className="text-muted-foreground italic mb-3">No courses yet.</p>
-              <Button asChild size="sm">
-                <Link href="/courses/new">Create a course</Link>
+            <div className="card-crisp p-8 text-center">
+              <p className="text-slate-400 italic mb-3">{t('noCoursesYet')}</p>
+              <Button asChild size="sm" className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">
+                <Link href="/courses/new">{t('createACourse')}</Link>
               </Button>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {ctx.ownedCourses.map((c) => (
-                <div key={c.id} className="bg-white border border-border rounded-xl overflow-hidden hover:border-primary/40 hover:shadow-md transition-all">
+                <div key={c.id} className="card-crisp overflow-hidden hover:border-indigo-500/50 hover:shadow-lg transition-all flex flex-col justify-between">
                   <div className="p-5">
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="font-bold text-foreground leading-snug">{c.title}</h3>
+                      <h3 className="font-bold text-white leading-snug">{c.title}</h3>
                       <Badge
                         variant="outline"
                         className={cn(
-                          'shrink-0 text-xs font-bold',
+                          'shrink-0 text-xs font-semibold px-2 py-0.5 rounded-md border',
                           c.isPublished
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                            ? 'bg-emerald-950/70 text-emerald-400 border-emerald-800/70'
+                            : 'bg-amber-950/70 text-amber-300 border-amber-800/70'
                         )}
                       >
-                        {c.isPublished ? 'Live' : 'Draft'}
+                        {c.isPublished ? t('published') : t('drafts')}
                       </Badge>
                     </div>
                     {c.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">{c.description}</p>
+                      <p className="text-sm text-slate-400 line-clamp-2">{c.description}</p>
                     )}
                   </div>
-                  <div className="border-t border-border px-5 py-3 bg-muted/20 flex gap-3">
-                    <Link href={`/courses/${c.id}`} className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors">View →</Link>
-                    <Link href={`/courses/${c.id}/edit`} className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">Edit</Link>
-                    <Link href={`/courses/${c.id}/build`} className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">Builder</Link>
-                    <Link href={`/courses/${c.id}/analytics`} className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">Analytics</Link>
+                  <div className="border-t border-slate-800/80 px-5 py-3 bg-slate-950/40 flex gap-3 text-xs font-semibold">
+                    <Link href={`/courses/${c.id}`} className="text-amber-300 hover:text-amber-200 transition-colors">{t('view')} →</Link>
+                    <Link href={`/courses/${c.id}/edit`} className="text-slate-400 hover:text-white transition-colors">Edit</Link>
+                    <Link href={`/courses/${c.id}/build`} className="text-slate-400 hover:text-white transition-colors">{t('builder')}</Link>
+                    <Link href={`/courses/${c.id}/analytics`} className="text-slate-400 hover:text-white transition-colors">{t('analytics')}</Link>
                   </div>
                 </div>
               ))}
@@ -191,9 +193,9 @@ export default function AdminDashboard({
         {/* Enrolled as student */}
         {ctx.enrollments.length > 0 && (
           <section className="mb-8">
-            <h2 className="text-lg font-bold text-foreground mb-3">
-              Also Enrolled In
-              <span className="text-sm font-normal text-muted-foreground ml-2">(as student)</span>
+            <h2 className="text-lg font-display font-bold text-white mb-3">
+              {t('alsoEnrolledIn')}
+              <span className="text-sm font-normal text-slate-400 ml-2">(as student)</span>
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {ctx.enrollments.map((e) => (

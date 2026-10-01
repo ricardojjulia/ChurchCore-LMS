@@ -1,6 +1,16 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import StudentXpStandingsModal from './StudentXpStandingsModal'
+
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => {
+    const map: Record<string, string> = {
+      studentStandings: 'Student XP Standings',
+      communityLeaderboard: 'Formation rank & community XP leaderboard',
+    }
+    return map[key] ?? key
+  },
+}))
 
 describe('StudentXpStandingsModal Component', () => {
   it('renders trigger button with "Student XP Standings" by default', () => {

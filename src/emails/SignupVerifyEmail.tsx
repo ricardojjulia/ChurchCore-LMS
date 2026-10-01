@@ -7,7 +7,7 @@ interface Props {
   variant:   'verify' | 'existing'
   churchName: string
   actionUrl: string
-  locale:    'en' | 'es'
+  locale:    'en' | 'es' | 'pt'
 }
 
 const COPY = {
@@ -28,6 +28,15 @@ const COPY = {
     existingBody: 'Alguien (esperamos que tú) intentó crear una nueva iglesia con este correo. Ya tienes una cuenta, así que inicia sesión.',
     existingButton: 'Iniciar sesión',
     footer: 'Este enlace vence en 24 horas. Si no lo solicitaste, puedes ignorar este correo.',
+  },
+  pt: {
+    verifyTitle: (c: string) => `Confirme seu e-mail para criar ${c}`,
+    verifyBody: 'Clique abaixo para confirmar seu endereço de e-mail. Sua igreja e o teste gratuito de 14 dias serão criados assim que você fizer isso.',
+    verifyButton: 'Confirmar e criar minha igreja',
+    existingTitle: 'Você já tem uma conta no ChurchCore LMS',
+    existingBody: 'Alguém (esperamos que você) tentou iniciar uma nova igreja com este endereço de e-mail. Você já possui uma conta, portanto, faça login.',
+    existingButton: 'Entrar',
+    footer: 'Este link expira em 24 horas. Se você não solicitou isso, ignore este e-mail.',
   },
 }
 

@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/utils/supabase/server'
 
 interface EngagementEvent {
@@ -13,15 +14,6 @@ interface StreakRow {
   last_event_date: string | null
 }
 
-const EVENT_LABELS: Record<string, string> = {
-  block_completion:  'Completed a lesson',
-  quiz_pass:         'Passed a quiz',
-  discussion_post:   'Posted in discussion',
-  daily_login:       'Daily check-in',
-  course_completion: 'Completed a course',
-  manual:            'Milestone awarded',
-}
-
 export default async function EngagementWidget({
   uid,
   action,
@@ -31,7 +23,17 @@ export default async function EngagementWidget({
   action?: React.ReactNode
   children?: React.ReactNode
 }) {
+  const t = await getTranslations('dashboard.summary')
   const supabase = await createClient()
+
+  const EVENT_LABELS: Record<string, string> = {
+    block_completion:  'Completed a lesson',
+    quiz_pass:         'Passed a quiz',
+    discussion_post:   'Posted in discussion',
+    daily_login:       'Daily check-in',
+    course_completion: 'Completed a course',
+    manual:            'Milestone awarded',
+  }
 
   const [streakRes, eventsRes, profileRes] = await Promise.all([
     supabase
@@ -62,52 +64,52 @@ export default async function EngagementWidget({
   const longestStreak = streak?.longest_streak ?? 0
 
   return (
-    <section className="bg-white border border-border rounded-2xl p-5 mb-6 shadow-sm">
+    <section className="card-crisp p-5 mb-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
-          Formation Progress
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
+          {t('formationProgress')}
         </h2>
         {action ?? children}
       </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3 mb-5">
-        <div className="text-center">
-          <p className="text-2xl font-extrabold text-foreground tabular-nums">
+        <div className="text-center p-3 rounded-lg bg-slate-900/60 border border-slate-800/80">
+          <p className="text-2xl font-extrabold text-amber-300 tabular-nums">
             {xp.toLocaleString()}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Total XP</p>
+          <p className="text-xs text-slate-400 mt-0.5 font-medium">{t('totalXp')}</p>
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-extrabold text-foreground tabular-nums">
+        <div className="text-center p-3 rounded-lg bg-slate-900/60 border border-slate-800/80">
+          <p className="text-2xl font-extrabold text-slate-100 tabular-nums">
             {currentStreak > 0 ? `${currentStreak}🔥` : '—'}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Day streak</p>
+          <p className="text-xs text-slate-400 mt-0.5 font-medium">{t('dayStreak')}</p>
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-extrabold text-foreground tabular-nums">
+        <div className="text-center p-3 rounded-lg bg-slate-900/60 border border-slate-800/80">
+          <p className="text-2xl font-extrabold text-indigo-300 tabular-nums">
             {level}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Level</p>
+          <p className="text-xs text-slate-400 mt-0.5 font-medium">{t('level')}</p>
         </div>
       </div>
 
       {/* Recent activity */}
       {events.length > 0 ? (
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
-            Recent Activity
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 font-mono">
+            {t('recentActivity')}
           </p>
           {events.map((ev) => (
-            <div key={ev.id} className="flex items-center justify-between text-sm">
-              <span className="text-foreground">
+            <div key={ev.id} className="flex items-center justify-between text-sm py-1 border-b border-slate-800/50 last:border-0">
+              <span className="text-slate-200">
                 {EVENT_LABELS[ev.event_type] ?? ev.event_type}
               </span>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
                 {ev.xp_earned > 0 && (
-                  <span className="text-emerald-700 font-semibold">+{ev.xp_earned} XP</span>
+                  <span className="text-emerald-400 font-semibold">+{ev.xp_earned} XP</span>
                 )}
-                <span>
+                <span className="text-slate-500">
                   {new Date(ev.recorded_at).toLocaleDateString('en-US', {
                     month: 'short', day: 'numeric',
                   })}
@@ -117,14 +119,14 @@ export default async function EngagementWidget({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground italic">
-          Complete a lesson to start tracking your progress.
+        <p className="text-sm text-slate-400 italic">
+          {t('completeLessonHint')}
         </p>
       )}
 
       {longestStreak > 1 && (
-        <p className="text-xs text-muted-foreground mt-3">
-          Longest streak: {longestStreak} days
+        <p className="text-xs text-slate-400 mt-3">
+          {t('longestStreak', { days: longestStreak })}
         </p>
       )}
     </section>

@@ -68,32 +68,32 @@ export default async function DashboardMessagesPreview({ uid }: { uid: string })
   return (
     <section className="mb-8">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold text-foreground">Messages</h2>
-        <Link href="/messages" className="text-xs text-primary font-medium hover:underline">
+        <h2 className="text-lg font-display font-bold text-white">Messages</h2>
+        <Link href="/messages" className="text-xs text-amber-300 font-semibold hover:text-amber-200 transition-colors">
           View all →
         </Link>
       </div>
 
-      <div className="bg-white border border-border rounded-xl overflow-hidden divide-y divide-border">
+      <div className="card-crisp overflow-hidden divide-y divide-slate-800/80">
         {threads.map((t) => (
           <Link
             key={t.threadId}
             href={`/messages/${t.threadId}`}
-            className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-3 px-4 py-3 hover:bg-slate-900/40 transition-colors"
           >
-            <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">
+            <div className="shrink-0 w-9 h-9 rounded-xl bg-indigo-950 text-amber-300 border border-indigo-800/70 font-display font-bold text-sm flex items-center justify-center">
               {t.initial}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <p className={`text-sm truncate ${t.isUnread ? 'font-bold text-foreground' : 'font-medium text-foreground'}`}>
+                <p className={`text-sm truncate ${t.isUnread ? 'font-bold text-white' : 'font-medium text-slate-200'}`}>
                   {t.displayName}
                 </p>
-                <span className="text-xs text-muted-foreground shrink-0 ml-2">{timeAgo(t.lastAt)}</span>
+                <span className="text-xs text-slate-400 shrink-0 ml-2">{timeAgo(t.lastAt)}</span>
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
-                {t.isUnread && <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />}
-                <p className={`text-xs truncate ${t.isUnread ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {t.isUnread && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />}
+                <p className={`text-xs truncate ${t.isUnread ? 'text-slate-200' : 'text-slate-400'}`}>
                   {t.preview}
                 </p>
               </div>

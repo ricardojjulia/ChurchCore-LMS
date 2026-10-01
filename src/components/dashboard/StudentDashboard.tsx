@@ -32,11 +32,11 @@ function Section({
     if (!emptyText) return null
     return (
       <section className="mb-8">
-        <h2 className="text-lg font-bold text-foreground mb-3">{title}</h2>
-        <div className="bg-white border border-border rounded-xl p-8 text-center">
-          <p className="text-muted-foreground italic mb-3">{emptyText}</p>
+        <h2 className="text-lg font-display font-bold text-white mb-3">{title}</h2>
+        <div className="card-crisp p-8 text-center">
+          <p className="text-slate-400 italic mb-3">{emptyText}</p>
           {emptyHref && emptyLabel && (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="border-slate-800 text-slate-300 hover:text-white hover:bg-slate-900">
               <Link href={emptyHref}>{emptyLabel}</Link>
             </Button>
           )}
@@ -48,8 +48,8 @@ function Section({
   return (
     <section className="mb-8" aria-label={title}>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold text-foreground">{title}</h2>
-        <Badge variant="secondary" className="text-xs">{courses.length}</Badge>
+        <h2 className="text-lg font-display font-bold text-white">{title}</h2>
+        <Badge variant="secondary" className="text-xs bg-slate-800 text-slate-300">{courses.length}</Badge>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {courses.map((c) => (
@@ -77,7 +77,7 @@ export default async function StudentDashboard({ ctx }: { ctx: DashboardContext 
   const showMessagesFirst     = tod === 'night'
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-5xl mx-auto">
         <SmartSummaryCard ctx={ctx} />
         <EngagementWidget
@@ -91,11 +91,11 @@ export default async function StudentDashboard({ ctx }: { ctx: DashboardContext 
         <AiWeeklySummary uid={ctx.uid} />
 
         {ctx.enrollments.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl p-10 text-center mb-8">
-            <p className="text-muted-foreground italic mb-4">
+          <div className="card-crisp p-10 text-center mb-8">
+            <p className="text-slate-400 italic mb-4">
               {t('dashboard.student.emptyEnrollments')}
             </p>
-            <Button asChild>
+            <Button asChild className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">
               <Link href="/courses">{t('dashboard.student.browseCoursesButton')}</Link>
             </Button>
           </div>

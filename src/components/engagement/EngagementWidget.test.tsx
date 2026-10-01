@@ -9,6 +9,23 @@ vi.mock('@/utils/supabase/server', () => ({
   createClient: vi.fn(),
 }))
 
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn().mockResolvedValue((key: string, values?: any) => {
+    const map: Record<string, string> = {
+      formationProgress: 'Formation Progress',
+      totalXp: 'Total XP',
+      dayStreak: 'Day streak',
+      level: 'Level',
+      recentActivity: 'Recent Activity',
+      completeLessonHint: 'Complete a lesson to start tracking your progress.',
+    }
+    if (key === 'longestStreak') {
+      return `Longest streak: ${values?.days} days`
+    }
+    return map[key] ?? key
+  }),
+}))
+
 describe('EngagementWidget Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()

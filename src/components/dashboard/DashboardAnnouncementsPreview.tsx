@@ -4,17 +4,17 @@ import { cn } from '@/lib/utils'
 import MarkReadButton from './MarkReadButton'
 
 const PRIORITY_STYLE = {
-  urgent: 'bg-rose-50 border-rose-200 text-rose-800',
-  high:   'bg-amber-50 border-amber-200 text-amber-800',
-  normal: 'bg-sky-50 border-sky-200 text-sky-800',
-  low:    'bg-slate-50 border-slate-200 text-slate-600',
+  urgent: 'bg-rose-950/40 border-rose-800/80 text-rose-300',
+  high:   'bg-amber-950/40 border-amber-800/80 text-amber-300',
+  normal: 'bg-indigo-950/40 border-indigo-800/80 text-indigo-300',
+  low:    'card-crisp text-slate-300',
 }
 
 const PRIORITY_DOT = {
   urgent: 'bg-rose-500',
-  high:   'bg-amber-500',
-  normal: 'bg-sky-500',
-  low:    'bg-slate-400',
+  high:   'bg-amber-400',
+  normal: 'bg-indigo-400',
+  low:    'bg-slate-500',
 }
 
 function timeAgo(iso: string): string {
@@ -51,13 +51,13 @@ export default async function DashboardAnnouncementsPreview({
     return (
       <section className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-foreground">Announcements</h2>
-          <Link href="/announcements/new" className="text-xs text-primary font-medium hover:underline">
+          <h2 className="text-lg font-display font-bold text-white">Announcements</h2>
+          <Link href="/announcements/new" className="text-xs text-amber-300 font-semibold hover:text-amber-200 transition-colors">
             + Post
           </Link>
         </div>
-        <div className="bg-white border border-border rounded-xl p-6 text-center">
-          <p className="text-sm text-muted-foreground italic">No announcements yet.</p>
+        <div className="card-crisp p-6 text-center">
+          <p className="text-sm text-slate-400 italic">No announcements yet.</p>
         </div>
       </section>
     )
@@ -74,7 +74,7 @@ export default async function DashboardAnnouncementsPreview({
     <section className="mb-8">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-bold text-foreground">Announcements</h2>
+          <h2 className="text-lg font-display font-bold text-white">Announcements</h2>
           {unreadCount > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold">
               {unreadCount} new
@@ -82,11 +82,11 @@ export default async function DashboardAnnouncementsPreview({
           )}
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/announcements" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/announcements" className="text-xs text-slate-400 hover:text-white transition-colors">
             View all
           </Link>
           {isStaff && (
-            <Link href="/announcements/new" className="text-xs text-primary font-medium hover:underline">
+            <Link href="/announcements/new" className="text-xs text-amber-300 font-semibold hover:text-amber-200 transition-colors">
               + Post
             </Link>
           )}
@@ -99,24 +99,24 @@ export default async function DashboardAnnouncementsPreview({
             key={a.id}
             className={cn(
               'rounded-xl border px-4 py-3 transition-all',
-              !a.isRead ? PRIORITY_STYLE[a.priority as keyof typeof PRIORITY_STYLE] : 'bg-white border-border opacity-70'
+              !a.isRead ? PRIORITY_STYLE[a.priority as keyof typeof PRIORITY_STYLE] : 'card-crisp opacity-75'
             )}
           >
             <div className="flex items-start gap-3">
               <span className={cn(
                 'mt-1.5 w-2 h-2 rounded-full shrink-0',
-                !a.isRead ? PRIORITY_DOT[a.priority as keyof typeof PRIORITY_DOT] : 'bg-slate-200'
+                !a.isRead ? PRIORITY_DOT[a.priority as keyof typeof PRIORITY_DOT] : 'bg-slate-700'
               )} />
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                  <p className={cn('text-sm font-semibold leading-snug', !a.isRead ? '' : 'text-muted-foreground')}>
+                  <p className={cn('text-sm font-semibold leading-snug', !a.isRead ? 'text-white' : 'text-slate-300')}>
                     {a.title}
                   </p>
-                  <span className="text-xs text-muted-foreground shrink-0">{timeAgo(a.publish_at)}</span>
+                  <span className="text-xs text-slate-400 shrink-0">{timeAgo(a.publish_at)}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{a.body}</p>
+                <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{a.body}</p>
                 <div className="flex items-center gap-3 mt-1.5">
-                  <span className="text-xs text-muted-foreground">by {a.authorName}</span>
+                  <span className="text-xs text-slate-400">by {a.authorName}</span>
                   {!a.isRead && <MarkReadButton announcementId={a.id} />}
                 </div>
               </div>

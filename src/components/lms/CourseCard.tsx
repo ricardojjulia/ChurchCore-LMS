@@ -22,10 +22,10 @@ interface Props {
 }
 
 const STATUS_BADGE: Record<CourseStatus, { label: string; className: string }> = {
-  published: { label: 'Live',      className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  draft:     { label: 'Draft',     className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  archived:  { label: 'Archived',  className: 'bg-slate-100 text-slate-500 border-slate-200' },
-  suspended: { label: 'Suspended', className: 'bg-rose-50 text-rose-700 border-rose-200' },
+  published: { label: 'Live',      className: 'bg-emerald-950/70 text-emerald-400 border-emerald-800/70' },
+  draft:     { label: 'Draft',     className: 'bg-amber-950/70 text-amber-300 border-amber-800/70' },
+  archived:  { label: 'Archived',  className: 'bg-slate-900 text-slate-400 border-slate-800' },
+  suspended: { label: 'Suspended', className: 'bg-rose-950/70 text-rose-400 border-rose-800/70' },
 }
 
 export default function CourseCard({
@@ -50,18 +50,18 @@ export default function CourseCard({
   const badgeInfo = status ? STATUS_BADGE[status] : null
 
   return (
-    <Wrapper className="block group">
-      <Card className={cn(
-        'h-full overflow-hidden transition-all duration-150',
-        href && 'hover:border-primary/40 hover:shadow-md cursor-pointer'
+    <Wrapper className="block group h-full">
+      <div className={cn(
+        'card-crisp h-full flex flex-col justify-between overflow-hidden transition-all duration-200',
+        href && 'hover:border-indigo-500/50 hover:shadow-lg cursor-pointer'
       )}>
-        <CardContent className="p-6">
+        <div className="p-6 flex-1">
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-bold text-foreground leading-snug">{title}</h3>
+            <h3 className="font-bold text-white leading-snug group-hover:text-amber-300 transition-colors">{title}</h3>
             {showStatus && badgeInfo && (
               <Badge
                 variant="outline"
-                className={cn('shrink-0 text-xs font-bold', badgeInfo.className)}
+                className={cn('shrink-0 text-xs font-semibold px-2 py-0.5 rounded-md border', badgeInfo.className)}
               >
                 {badgeInfo.label}
               </Badge>
@@ -69,33 +69,34 @@ export default function CourseCard({
           </div>
 
           {blueprintCode && (
-            <span className="inline-block text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded mb-2">
+            <span className="inline-block text-[10px] font-mono font-semibold text-indigo-300 bg-indigo-950/80 border border-indigo-800/70 px-2 py-0.5 rounded-md mb-2">
               {blueprintCode}
             </span>
           )}
 
           {description && (
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{description}</p>
+            <p className="text-sm text-slate-400 line-clamp-2 mb-3">{description}</p>
           )}
 
           {minRequiredLevel && minRequiredLevel > 1 && (
-            <p className="text-xs font-semibold text-primary">
+            <p className="text-xs font-semibold text-indigo-400">
               Requires Level {minRequiredLevel}
             </p>
           )}
-        </CardContent>
+        </div>
 
-        <CardFooter className="border-t border-border px-6 py-3 bg-muted/30 flex gap-3">
+        <div className="border-t border-slate-800/80 px-6 py-3 bg-slate-950/40 flex items-center justify-between">
           <Link
             href={`/courses/${id}`}
-            className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+            className="text-sm font-semibold text-amber-300 hover:text-amber-200 transition-colors flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
             onClick={(e) => e.stopPropagation()}
           >
-            View →
+            <span>View</span>
+            <span>→</span>
           </Link>
           {actions}
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </Wrapper>
   )
 }

@@ -19,7 +19,8 @@ export default function LocaleSwitcher({ collapsed = false }: Props) {
   }
 
   function toggleLocale() {
-    switchLocale(locale === 'en' ? 'es' : 'en')
+    const next = locale === 'en' ? 'es' : locale === 'es' ? 'pt' : 'en'
+    switchLocale(next)
   }
 
   if (collapsed) {
@@ -30,7 +31,7 @@ export default function LocaleSwitcher({ collapsed = false }: Props) {
         title={locale.toUpperCase()}
         className={cn(
           'w-full flex items-center justify-center p-2 rounded-lg transition-colors',
-          'text-slate-400 hover:text-white hover:bg-slate-800',
+          'text-slate-400 hover:text-white hover:bg-slate-850',
         )}
       >
         <Languages className="w-5 h-5 shrink-0" aria-hidden="true" />
@@ -47,8 +48,8 @@ export default function LocaleSwitcher({ collapsed = false }: Props) {
         aria-pressed={locale === 'en'}
         className={
           locale === 'en'
-            ? 'text-xs font-bold text-white px-1 py-0.5 rounded'
-            : 'text-xs text-slate-400 hover:text-white transition-colors px-1 py-0.5 rounded hover:bg-slate-800'
+            ? 'text-xs font-bold text-amber-300 px-1 py-0.5 rounded bg-indigo-950/70 border border-indigo-800/60'
+            : 'text-xs text-slate-400 hover:text-white transition-colors px-1 py-0.5 rounded hover:bg-slate-800/60'
         }
       >
         EN
@@ -60,11 +61,24 @@ export default function LocaleSwitcher({ collapsed = false }: Props) {
         aria-pressed={locale === 'es'}
         className={
           locale === 'es'
-            ? 'text-xs font-bold text-white px-1 py-0.5 rounded'
-            : 'text-xs text-slate-400 hover:text-white transition-colors px-1 py-0.5 rounded hover:bg-slate-800'
+            ? 'text-xs font-bold text-amber-300 px-1 py-0.5 rounded bg-indigo-950/70 border border-indigo-800/60'
+            : 'text-xs text-slate-400 hover:text-white transition-colors px-1 py-0.5 rounded hover:bg-slate-800/60'
         }
       >
         ES
+      </button>
+      <span className="text-slate-600 text-xs select-none">/</span>
+      <button
+        type="button"
+        onClick={() => switchLocale('pt')}
+        aria-pressed={locale === 'pt'}
+        className={
+          locale === 'pt'
+            ? 'text-xs font-bold text-amber-300 px-1 py-0.5 rounded bg-indigo-950/70 border border-indigo-800/60'
+            : 'text-xs text-slate-400 hover:text-white transition-colors px-1 py-0.5 rounded hover:bg-slate-800/60'
+        }
+      >
+        PT
       </button>
     </div>
   )

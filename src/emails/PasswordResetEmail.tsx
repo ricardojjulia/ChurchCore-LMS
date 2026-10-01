@@ -4,7 +4,7 @@ import * as React from 'react'
 // an address that has an account; the request's answer never says which.
 interface Props {
   actionUrl: string
-  locale:    'en' | 'es'
+  locale:    'en' | 'es' | 'pt'
 }
 
 const COPY = {
@@ -19,6 +19,12 @@ const COPY = {
     body: 'Alguien (esperamos que tú) pidió restablecer la contraseña de tu cuenta de ChurchCore LMS. Haz clic abajo para elegir una nueva.',
     button: 'Elegir una nueva contraseña',
     footer: 'Este enlace vence en 1 hora y funciona una sola vez. Si no lo pediste, puedes ignorar este correo: tu contraseña no ha cambiado.',
+  },
+  pt: {
+    title: 'Redefina sua senha',
+    body: 'Alguém (esperamos que você) solicitou a redefinição da senha da sua conta ChurchCore LMS. Clique abaixo para escolher uma nova.',
+    button: 'Escolher uma nova senha',
+    footer: 'Este link expira em 1 hora e funciona apenas uma vez. Se você não solicitou isso, ignore este e-mail — sua senha não foi alterada.',
   },
 }
 
