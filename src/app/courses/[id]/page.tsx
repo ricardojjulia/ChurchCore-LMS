@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { BLOCK_TYPE_META } from '@/types/blocks'
 import EnrollButton from '@/components/learning/EnrollButton'
+import LiveMeetingCard from '@/components/academic/LiveMeetingCard'
 import type { CourseBlock } from '@/types/blocks'
 import { getTranslations } from 'next-intl/server'
 
@@ -134,6 +135,20 @@ export default async function CoursePage({
     academic_terms: { term_name: string; term_code: string } | null
   }[] = []
 
+  let liveSchedules: Array<{
+    id:              string
+    section_code:    string
+    delivery_format: string
+    rrule:           string | null
+    start_time:      string | null
+    end_time:        string | null
+    timezone:        string
+    effective_from:  string
+    effective_until: string | null
+    location_type:   string | null
+    location_detail: string | null
+  }> = []
+
   if (blueprint?.id) {
     const { data } = await supabase
       .from('course_sections')
@@ -142,12 +157,33 @@ export default async function CoursePage({
       .order('created_at', { ascending: false })
 
     blueprintSections = (data ?? []) as unknown as typeof blueprintSections
+
+    const activeSectionIds = blueprintSections.filter((s) => s.is_active).map((s) => s.id)
+    if (activeSectionIds.length > 0) {
+      const { data: schedData } = await supabase
+        .from('meeting_schedules')
+        .select('*')
+        .in('section_id', activeSectionIds)
+        .order('effective_from', { ascending: true })
+
+      if (schedData && schedData.length > 0) {
+        liveSchedules = schedData.map((sch) => {
+          const sec = blueprintSections.find((s) => s.id === sch.section_id)
+          return {
+            ...sch,
+            section_code: sec?.section_code || 'Section',
+            delivery_format: sec?.delivery_format || 'hybrid',
+          }
+        })
+      }
+    }
   }
 
   // Derive student-facing enrollment notices from active sections
   const activeSections = blueprintSections.filter((s) => s.is_active)
   const hasInviteOnly  = activeSections.some((s) => s.enrollment_type === 'invite_only')
   const hasCohortGated = activeSections.some((s) => s.enrollment_type === 'cohort_gated')
+
 
   // Check enrollment
   let enrollment: { transit_status: string; progress_percent: number } | null = null
@@ -516,8 +552,14 @@ export default async function CoursePage({
           </section>
         )}
 
+        {/* Live Classroom & Hybrid Meetings */}
+        {liveSchedules.length > 0 && (
+          <LiveMeetingCard courseTitle={course.title} schedules={liveSchedules} />
+        )}
+
         {/* Curriculum */}
         <h2 className="text-lg font-bold text-foreground mb-4">{t('courses.detail.curriculumHeading')}</h2>
+
         <div className="space-y-4">
           {moduleHeaders.length === 0 && allBlocks.length === 0 ? (
             <div className="bg-white border border-border rounded-xl p-10 text-center">
