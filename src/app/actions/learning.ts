@@ -809,9 +809,11 @@ async function getStaffCaller(supabase: any, courseId: string) {
 export async function createCourseFromOutline({
   courseId,
   outline,
+  mode = 'append',
 }: {
   courseId: string
   outline:  OutlineSchema
+  mode?:    'append' | 'replace'
 }): Promise<{ error?: string; blocksCreated?: number }> {
   try {
     const supabase = await createClient()
@@ -825,6 +827,37 @@ export async function createCourseFromOutline({
     // reference parent_block_id before the bulk insert runs.
     const totalBlocks = outline.modules.reduce((n, m) => n + 1 + m.blocks.length, 0)
     if (totalBlocks > 50) return { error: 'Outline too large — maximum 50 blocks.' }
+
+    // If replace mode is requested, remove all existing blocks for this course first
+    if (mode === 'replace') {
+      const { error: delError } = await service
+        .from('course_blocks')
+        .delete()
+        .eq('course_id', courseId)
+
+      if (delError) {
+        console.error('Failed to clear existing course blocks for replacement:', delError)
+        return { error: `Failed to clear existing course blocks: ${delError.message}` }
+      }
+    }
+
+    // Determine initial sort_order for new modules
+    let moduleOrder = 1000
+    if (mode === 'append') {
+      const { data: existingModules } = await service
+        .from('course_blocks')
+        .select('sort_order')
+        .eq('course_id', courseId)
+        .eq('block_type_id', 'module_header')
+        .order('sort_order', { ascending: false })
+        .limit(1)
+
+      const highestOrder = existingModules?.[0]?.sort_order
+      if (typeof highestOrder === 'number') {
+        moduleOrder = highestOrder + 1000
+      }
+    }
+
 
     const moduleRows: {
       id:              string
@@ -846,7 +879,6 @@ export async function createCourseFromOutline({
       sort_order:      number
     }[] = []
 
-    let moduleOrder = 1000
     for (const mod of outline.modules) {
       const moduleId = crypto.randomUUID()
       moduleRows.push({

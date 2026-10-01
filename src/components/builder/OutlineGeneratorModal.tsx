@@ -26,6 +26,7 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
   const [inputText,  setInputText]  = useState('')
   const [inputFile,  setInputFile]  = useState<File | null>(null)
   const [outline,    setOutline]    = useState<OutlineSchema | null>(null)
+  const [buildMode,  setBuildMode]  = useState<'append' | 'replace'>('append')
   const [error,      setError]      = useState<string | null>(null)
   const [accepting,  setAccepting]  = useState(false)
   const fileRef                     = useRef<HTMLInputElement>(null)
@@ -91,7 +92,7 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
     if (!outline) return
     setAccepting(true)
     setError(null)
-    const result = await createCourseFromOutline({ courseId, outline })
+    const result = await createCourseFromOutline({ courseId, outline, mode: buildMode })
     setAccepting(false)
     if (result.error) {
       setError(result.error)
@@ -99,6 +100,7 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
     }
     onOutlineAccepted()
   }
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -273,7 +275,63 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
                 ))}
               </div>
 
-              <p className="text-xs text-muted-foreground text-center">
+              {/* Action Mode Selection */}
+              <div className="bg-slate-50 border border-border rounded-xl p-3.5 space-y-2 mt-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Course Build Action</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <label
+                    className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
+                      buildMode === 'append'
+                        ? 'bg-white border-primary ring-2 ring-primary/20 text-foreground shadow-sm'
+                        : 'bg-white/60 border-border text-muted-foreground hover:bg-white hover:text-foreground'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="buildMode"
+                      value="append"
+                      checked={buildMode === 'append'}
+                      onChange={() => setBuildMode('append')}
+                      className="mt-0.5 text-primary focus:ring-primary h-4 w-4"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-foreground">
+                        ➕ Add to Course (Append)
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+                        Preserves all existing lessons and appends these {outline.modules.length} modules to the end.
+                      </p>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
+                      buildMode === 'replace'
+                        ? 'bg-rose-50/70 border-rose-400 ring-2 ring-rose-400/20 text-rose-950 shadow-sm'
+                        : 'bg-white/60 border-border text-muted-foreground hover:bg-white hover:text-foreground'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="buildMode"
+                      value="replace"
+                      checked={buildMode === 'replace'}
+                      onChange={() => setBuildMode('replace')}
+                      className="mt-0.5 text-rose-600 focus:ring-rose-500 h-4 w-4"
+                    />
+                    <div>
+                      <p className="text-xs font-bold text-rose-900">
+                        🔄 Replace Entire Course
+                      </p>
+                      <p className="text-[11px] text-rose-700/80 mt-0.5 leading-snug">
+                        Clears existing modules in this course and replaces them with this new outline.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center pt-1">
                 {outline.modules.length} modules · {outline.modules.reduce((n, m) => n + m.blocks.length, 0)} blocks
               </p>
 
@@ -288,19 +346,27 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
 
         {/* Footer */}
         {mode === 'preview' && outline && (
-          <div className="px-6 py-4 border-t border-border flex items-center gap-3 shrink-0">
+          <div className="px-6 py-4 border-t border-border flex items-center gap-3 shrink-0 bg-slate-50/50">
             <button
               type="button"
               onClick={accept}
               disabled={accepting}
-              className="flex-1 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm"
+              className={`flex-1 py-2.5 font-bold rounded-xl transition-colors disabled:opacity-50 text-sm shadow-sm ${
+                buildMode === 'replace'
+                  ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+              }`}
             >
-              {accepting ? 'Building course…' : 'Accept & Build'}
+              {accepting
+                ? 'Building course…'
+                : buildMode === 'replace'
+                ? 'Replace All & Build Course'
+                : `Add ${outline.modules.length} Module${outline.modules.length > 1 ? 's' : ''} to Course`}
             </button>
             <button
               type="button"
               onClick={() => setMode('input')}
-              className="px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              className="px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors border border-border bg-white rounded-xl hover:bg-slate-50"
             >
               Regenerate
             </button>
@@ -310,3 +376,4 @@ export default function OutlineGeneratorModal({ courseId, onOutlineAccepted, onC
     </div>
   )
 }
+

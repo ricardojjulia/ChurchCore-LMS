@@ -54,6 +54,8 @@ vi.mock('@/utils/supabase/service', () => ({
         },
         eq: () => q,
         in: () => q,
+        order: () => q,
+        limit: () => q,
         select: () => q,
         single: async () => {
           if (table === 'profiles' || table === 'profile_roles') {
@@ -65,12 +67,13 @@ vi.mock('@/utils/supabase/service', () => ({
           return { data: { id: 'b-new-1', ...m.inserted[m.inserted.length - 1] }, error: null }
         },
         then: (resolve: (v: any) => void) => Promise.resolve({
-          data: table === 'course_blocks' ? [{ id: 'child-1' }] : null,
+          data: table === 'course_blocks' ? [{ id: 'child-1', sort_order: 2000 }] : null,
           error: null,
         }).then(resolve),
       }
       return q
     },
+
   }),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
@@ -166,6 +169,13 @@ describe('createCourseFromOutline', () => {
     expect((discBlock?.content as any)?.prompt).toBe('What is your testimony?')
   })
 
+  it('supports replace mode by deleting existing blocks before inserting', async () => {
+    const res = await createCourseFromOutline({ courseId: 'c-1', outline: outline as never, mode: 'replace' })
+    expect(res).toEqual({ blocksCreated: 5 })
+    expect(m.deleted.length).toBeGreaterThanOrEqual(1)
+  })
+
+
   it('refuses a course in another org', async () => {
     m.courseOrg = 'org-b'
     expect(await createCourseFromOutline({ courseId: 'c-1', outline: outline as never })).toEqual({ error: 'Not found' })
@@ -182,6 +192,7 @@ describe('createCourseFromOutline', () => {
     expect(await createCourseFromOutline({ courseId: 'c-1', outline: big as never })).toEqual({ error: 'Outline too large — maximum 50 blocks.' })
   })
 })
+
 
 describe('deleteCourseModule & deleteCourseBlock', () => {
   it('deletes a course module and cascaded children via service client', async () => {
