@@ -10,88 +10,88 @@
     --church-accent: #134074;
     --church-muted: #8DA9C4;
 
-    /* slate-50 ≈ #f8fafc — keeps the existing page background feel */
-    --background:         210 40% 98%;
-    --foreground:         220 20% 10%;
+    /* Slate-950 default background matching ChurchCore Orthos */
+    --background:         222 47% 4%;   /* #020617 / slate-950 */
+    --foreground:         210 40% 98%;  /* #f8fafc */
 
-    --card:               0 0% 100%;
-    --card-foreground:    220 20% 10%;
+    --card:               222 47% 7%;   /* #0f172a / slate-900 */
+    --card-foreground:    210 40% 98%;
 
-    --popover:            0 0% 100%;
-    --popover-foreground: 220 20% 10%;
+    --popover:            222 47% 7%;
+    --popover-foreground: 210 40% 98%;
 
-    /* Deep ministry blue */
-    --primary:            220 65% 32%;
+    /* Deep indigo primary with amber accents */
+    --primary:            234 89% 64%;
     --primary-foreground: 0 0% 98%;
 
-    --secondary:          220 14% 96%;
-    --secondary-foreground: 220 20% 15%;
+    --secondary:          217 33% 16%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted:              220 14% 95%;
-    --muted-foreground:   220 10% 40%;
+    --muted:              217 33% 16%;
+    --muted-foreground:   215 20% 65%;
 
-    --accent:             220 14% 95%;
-    --accent-foreground:  220 20% 15%;
+    --accent:             217 33% 16%;
+    --accent-foreground:  210 40% 98%;
 
     --destructive:        0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --success:            142 72% 29%;
+    --success:            142 70% 45%;
     --success-foreground: 0 0% 98%;
 
     --warning:            38 92% 50%;
-    --warning-foreground: 220 85% 10%;
+    --warning-foreground: 222 47% 4%;
 
-    --border:             220 13% 91%;
-    --input:              220 13% 91%;
-    --ring:               220 65% 32%;
+    --border:             217 33% 20%;
+    --input:              217 33% 20%;
+    --ring:               234 89% 64%;
 
-    --radius:             0.5rem;
+    --radius:             0.75rem;
 
-    --chart-1:            220 65% 32%;
-    --chart-2:            142 72% 29%;
+    --chart-1:            234 89% 64%;
+    --chart-2:            142 70% 45%;
     --chart-3:            38 92% 50%;
-    --chart-4:            280 65% 45%;
-    --chart-5:            340 75% 50%;
+    --chart-4:            280 65% 60%;
+    --chart-5:            340 75% 55%;
   }
 
   .dark {
-    --background:         220 25% 7%;
-    --foreground:         220 14% 95%;
+    --background:         222 47% 4%;
+    --foreground:         210 40% 98%;
 
-    --card:               220 20% 10%;
-    --card-foreground:    220 14% 95%;
+    --card:               222 47% 7%;
+    --card-foreground:    210 40% 98%;
 
-    --popover:            220 20% 10%;
-    --popover-foreground: 220 14% 95%;
+    --popover:            222 47% 7%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary:            220 65% 55%;
-    --primary-foreground: 220 25% 7%;
+    --primary:            234 89% 64%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary:          220 15% 18%;
-    --secondary-foreground: 220 14% 90%;
+    --secondary:          217 33% 16%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted:              220 15% 18%;
-    --muted-foreground:   220 10% 60%;
+    --muted:              217 33% 16%;
+    --muted-foreground:   215 20% 65%;
 
-    --accent:             220 15% 18%;
-    --accent-foreground:  220 14% 90%;
+    --accent:             217 33% 16%;
+    --accent-foreground:  210 40% 98%;
 
     --destructive:        0 62% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --success:            142 60% 35%;
+    --success:            142 60% 45%;
     --success-foreground: 0 0% 98%;
 
-    --warning:            38 80% 45%;
-    --warning-foreground: 220 25% 7%;
+    --warning:            38 80% 50%;
+    --warning-foreground: 222 47% 4%;
 
-    --border:             220 15% 20%;
-    --input:              220 15% 20%;
-    --ring:               220 65% 55%;
+    --border:             217 33% 20%;
+    --input:              217 33% 20%;
+    --ring:               234 89% 64%;
 
-    --chart-1:            220 65% 55%;
-    --chart-2:            142 60% 40%;
+    --chart-1:            234 89% 64%;
+    --chart-2:            142 60% 45%;
     --chart-3:            38 80% 55%;
     --chart-4:            280 65% 60%;
     --chart-5:            340 75% 55%;
@@ -104,19 +104,67 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans), 'Plus Jakarta Sans', 'Aptos', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.011em;
+  }
+
+  .font-display {
+    font-family: var(--font-sans), 'Plus Jakarta Sans', 'Aptos Display', system-ui, sans-serif;
+    letter-spacing: -0.022em;
   }
 
   /* WCAG 2.1 AA — visible focus ring for keyboard navigation */
   :focus-visible {
     outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
   /* Mobile safe-area support for bottom nav */
   .safe-area-inset-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+}
+
+/* Custom Scrollbars matching ChurchCore Orthos */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Signature Crisp Card Elevation - ChurchCore Orthos Style */
+.card-crisp {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.85);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-crisp:hover {
+  border-color: rgba(71, 85, 105, 0.95);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
 }
 
 @layer components {

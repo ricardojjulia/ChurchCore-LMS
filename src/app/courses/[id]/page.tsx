@@ -253,39 +253,41 @@ export default async function CoursePage({
     : t('courses.detail.ctaStart')
 
   return (
-    <main className="min-h-screen bg-slate-50/50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6" aria-label="Breadcrumb">
-          <Link href="/courses" className="hover:text-primary transition-colors font-medium">{t('courses.detail.coursescrumb')}</Link>
-          <span aria-hidden="true">/</span>
-          <span className="text-foreground font-semibold truncate">{course.title}</span>
+        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6" aria-label="Breadcrumb">
+          <Link href="/courses" className="hover:text-amber-300 transition-colors font-medium">{t('courses.detail.coursescrumb')}</Link>
+          <span aria-hidden="true" className="text-slate-600">/</span>
+          <span className="text-slate-200 font-semibold truncate">{course.title}</span>
         </nav>
 
         {/* Course hero */}
-        <div className="bg-white border border-border rounded-2xl overflow-hidden mb-8 shadow-sm">
+        <div className="card-crisp overflow-hidden mb-8">
           <div className="px-8 py-7">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-xs font-bold uppercase tracking-widest ${
-                    course.status === 'published' ? 'text-emerald-700' : 'text-amber-700'
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
+                    course.status === 'published'
+                      ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60'
+                      : 'bg-amber-950/60 text-amber-300 border-amber-800/60'
                   }`}>
                     {course.status === 'published' ? t('courses.detail.statusPublished') : (course.status ? t('common.draft') : t('courses.detail.statusDraft'))}
                   </span>
                 </div>
-                <h1 className="text-3xl font-extrabold text-foreground tracking-tight">{course.title}</h1>
+                <h1 className="text-3xl font-extrabold text-slate-100 tracking-tight font-display">{course.title}</h1>
                 {course.description && (
-                  <p className="text-muted-foreground mt-2 text-base leading-relaxed">{course.description}</p>
+                  <p className="text-slate-300 mt-2 text-base leading-relaxed">{course.description}</p>
                 )}
 
                 {/* Stats row */}
-                <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-slate-400">
                   {publishedCount > 0 && (
                     <span>{t('courses.detail.lessonCountTemplate', { publishedCount })}</span>
                   )}
                   {totalXp > 0 && (
-                    <span className="text-indigo-600 font-semibold">{t('courses.detail.xpAvailableTemplate', { totalXp })}</span>
+                    <span className="text-amber-300 font-semibold">{t('courses.detail.xpAvailableTemplate', { totalXp })}</span>
                   )}
                   {moduleHeaders.length > 0 && (
                     <span>{t('courses.detail.moduleCountTemplate', { count: moduleHeaders.length })}</span>
@@ -294,17 +296,17 @@ export default async function CoursePage({
                     <span>📚 {t('courses.detail.materialsCountTemplate', { materialsCount })}</span>
                   )}
                   {course.min_required_level > 1 && (
-                    <span className="inline-flex items-center gap-1 text-amber-600 font-semibold bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5 text-xs">
+                    <span className="inline-flex items-center gap-1 text-amber-300 font-semibold bg-amber-950/60 border border-amber-800/60 rounded-full px-2.5 py-0.5 text-xs">
                       ⚡ {t('courses.detail.levelRequiredBadge', { level: course.min_required_level })}
                     </span>
                   )}
                   {course.prereq && (
-                    <span className="inline-flex items-center gap-1 text-slate-500 text-xs">
-                      {t('courses.detail.requiresLabel')} <span className="font-medium text-slate-700">{course.prereq.title}</span>
+                    <span className="inline-flex items-center gap-1 text-slate-400 text-xs">
+                      {t('courses.detail.requiresLabel')} <span className="font-medium text-slate-200">{course.prereq.title}</span>
                     </span>
                   )}
                   {(course.age_min != null || course.age_max != null) && (
-                    <span className="inline-flex items-center bg-blue-50 text-blue-700 border border-blue-200 text-xs px-2 py-0.5 rounded font-medium">
+                    <span className="inline-flex items-center bg-indigo-950/60 text-indigo-300 border border-indigo-800/60 text-xs px-2.5 py-0.5 rounded-full font-medium">
                       {course.age_min != null && course.age_max != null
                         ? t('courses.detail.ageRangeTemplate', { min: course.age_min, max: course.age_max })
                         : course.age_min != null
@@ -321,19 +323,19 @@ export default async function CoursePage({
                   <>
                     <Link
                       href={ctaHref}
-                      className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-6 py-3 rounded-xl transition-all shadow-md text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/50"
                     >
                       {ctaLabel} →
                     </Link>
                     {enrollment && (
                       <div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                        <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                           <span>{t('courses.detail.progressBarLabel')}</span>
                           <span>{enrollment.progress_percent}%</span>
                         </div>
-                        <div className="h-1.5 w-40 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-40 bg-slate-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-primary rounded-full"
+                            className="h-full bg-gradient-to-r from-indigo-500 to-amber-400 rounded-full"
                             style={{ width: `${enrollment.progress_percent}%` }}
                           />
                         </div>
@@ -342,7 +344,7 @@ export default async function CoursePage({
                     {materialsCount > 0 && !isStaff && (
                       <Link
                         href={`/courses/${courseId}/pages`}
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-xl px-4 py-2 hover:bg-slate-50 transition-colors"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-300 hover:text-white border border-slate-700/80 rounded-xl px-4 py-2 hover:bg-slate-900/60 transition-colors"
                       >
                         {t('courses.detail.materialsLink', { materialsCount })}
                       </Link>
@@ -352,12 +354,12 @@ export default async function CoursePage({
                   <>
                     <EnrollButton courseId={courseId} locked={enrollLocked} lockReason={enrollLockReason} />
                     {hasInviteOnly && (
-                      <p className="text-xs text-rose-600 font-medium mt-1">
+                      <p className="text-xs text-rose-400 font-medium mt-1">
                         {t('courses.detail.inviteOnlyNotice')}
                       </p>
                     )}
                     {!hasInviteOnly && hasCohortGated && (
-                      <p className="text-xs text-amber-600 font-medium mt-1">
+                      <p className="text-xs text-amber-300 font-medium mt-1">
                         {t('courses.detail.cohortRequiredNotice')}
                       </p>
                     )}
@@ -365,7 +367,7 @@ export default async function CoursePage({
                 ) : !user ? (
                   <Link
                     href="/login"
-                    className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm"
+                    className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-6 py-3 rounded-xl transition-colors text-sm"
                   >
                     {t('courses.detail.loginToEnrollButton')}
                   </Link>
@@ -375,37 +377,37 @@ export default async function CoursePage({
                   <div className="flex gap-2 flex-wrap">
                     <Link
                       href={`/courses/${courseId}/build`}
-                      className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                      className="text-xs font-semibold text-slate-300 hover:text-white border border-slate-700/80 rounded-lg px-3 py-1.5 hover:bg-slate-900/60 transition-colors"
                     >
                       ✏️ Builder
                     </Link>
                     <Link
                       href={`/courses/${courseId}/analytics`}
-                      className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                      className="text-xs font-semibold text-slate-300 hover:text-white border border-slate-700/80 rounded-lg px-3 py-1.5 hover:bg-slate-900/60 transition-colors"
                     >
                       Analytics
                     </Link>
                     <Link
                       href={`/courses/${courseId}/submissions`}
-                      className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                      className="text-xs font-semibold text-slate-300 hover:text-white border border-slate-700/80 rounded-lg px-3 py-1.5 hover:bg-slate-900/60 transition-colors"
                     >
                       Submissions
                     </Link>
                     <Link
                       href={`/courses/${courseId}/enroll`}
-                      className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                      className="text-xs font-semibold text-slate-300 hover:text-white border border-slate-700/80 rounded-lg px-3 py-1.5 hover:bg-slate-900/60 transition-colors"
                     >
                       Enrollment
                     </Link>
                     <Link
                       href={`/courses/${courseId}/pages`}
-                      className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                      className="text-xs font-semibold text-slate-300 hover:text-white border border-slate-700/80 rounded-lg px-3 py-1.5 hover:bg-slate-900/60 transition-colors"
                     >
                       📚 Materials
                     </Link>
                     <Link
                       href={`/courses/${courseId}/attendance`}
-                      className="text-sm font-semibold text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                      className="text-xs font-semibold text-slate-300 hover:text-white border border-slate-700/80 rounded-lg px-3 py-1.5 hover:bg-slate-900/60 transition-colors"
                     >
                       🗓️ Attendance
                     </Link>
@@ -417,12 +419,12 @@ export default async function CoursePage({
         </div>
 
         {isStaff && allBlocks.some((b) => b.block_type_id === 'survey') && (
-          <section className="bg-white border border-border rounded-2xl p-6 mb-8 shadow-sm">
-            <h2 className="text-lg font-bold text-foreground">Survey results</h2>
+          <section className="card-crisp p-6 mb-8">
+            <h2 className="text-lg font-bold text-slate-100 font-display">Survey results</h2>
             <ul className="mt-3 space-y-2">
               {allBlocks.filter((b) => b.block_type_id === 'survey').map((b) => (
                 <li key={b.id}>
-                  <Link href={`/courses/${courseId}/surveys/${b.id}`} className="text-sm font-semibold text-primary hover:underline">
+                  <Link href={`/courses/${courseId}/surveys/${b.id}`} className="text-sm font-semibold text-amber-300 hover:underline">
                     {b.title}
                   </Link>
                 </li>
@@ -432,17 +434,17 @@ export default async function CoursePage({
         )}
 
         {isStaff && (
-          <section className="bg-white border border-border rounded-2xl p-6 mb-8 shadow-sm">
+          <section className="card-crisp p-6 mb-8">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
-                <h2 className="text-lg font-bold text-foreground">Academic Placement</h2>
-                <p className="text-sm text-muted-foreground mt-1">
+                <h2 className="text-lg font-bold text-slate-100 font-display">Academic Placement</h2>
+                <p className="text-sm text-slate-400 mt-1">
                   Courses attach to blueprints. Tracks live on blueprints; terms and sections are created from blueprints.
                 </p>
               </div>
               <Link
                 href={`/courses/${courseId}/edit`}
-                className="text-sm font-semibold text-primary border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                className="text-sm font-semibold text-amber-300 border border-slate-700/80 rounded-lg px-3 py-1.5 hover:bg-slate-900/60 transition-colors"
               >
                 Edit Course Placement
               </Link>
@@ -451,79 +453,79 @@ export default async function CoursePage({
             {blueprint ? (
               <div className="mt-5 space-y-5">
                 <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="border border-border rounded-xl p-4 bg-slate-50">
-                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Blueprint</p>
-                    <p className="font-semibold text-foreground mt-1">{blueprint.title}</p>
-                    <p className="text-xs font-mono text-muted-foreground mt-0.5">{blueprint.course_code}</p>
+                  <div className="border border-slate-800 rounded-xl p-4 bg-slate-900/50">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Blueprint</p>
+                    <p className="font-semibold text-slate-100 mt-1">{blueprint.title}</p>
+                    <p className="text-xs font-mono text-slate-400 mt-0.5">{blueprint.course_code}</p>
                   </div>
-                  <div className="border border-border rounded-xl p-4 bg-slate-50">
-                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Program Track</p>
+                  <div className="border border-slate-800 rounded-xl p-4 bg-slate-900/50">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Program Track</p>
                     {blueprint.program_tracks ? (
                       <>
-                        <p className="font-semibold text-foreground mt-1">{blueprint.program_tracks.name}</p>
-                        <p className="text-xs font-mono text-muted-foreground mt-0.5">{blueprint.program_tracks.code}</p>
+                        <p className="font-semibold text-slate-100 mt-1">{blueprint.program_tracks.name}</p>
+                        <p className="text-xs font-mono text-slate-400 mt-0.5">{blueprint.program_tracks.code}</p>
                       </>
                     ) : (
-                      <p className="text-sm text-muted-foreground mt-1">No track assigned.</p>
+                      <p className="text-sm text-slate-400 mt-1">No track assigned.</p>
                     )}
                   </div>
-                  <div className="border border-border rounded-xl p-4 bg-slate-50">
-                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Sections</p>
-                    <p className="font-semibold text-foreground mt-1">{blueprintSections.length}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Scheduled offerings from this blueprint.</p>
+                  <div className="border border-slate-800 rounded-xl p-4 bg-slate-900/50">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">Sections</p>
+                    <p className="font-semibold text-slate-100 mt-1">{blueprintSections.length}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Scheduled offerings from this blueprint.</p>
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   <Link
                     href={`/admin/blueprints/${blueprint.id}`}
-                    className="text-sm font-semibold text-primary border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                    className="text-sm font-semibold text-amber-300 border border-slate-700/80 rounded-lg px-3 py-1.5 hover:bg-slate-900/60 transition-colors"
                   >
                     Edit Blueprint
                   </Link>
                   <Link
                     href={`/admin/sections/new?blueprint=${blueprint.id}`}
-                    className="text-sm font-semibold text-primary border border-border rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+                    className="text-sm font-semibold text-amber-300 border border-slate-700/80 rounded-lg px-3 py-1.5 hover:bg-slate-900/60 transition-colors"
                   >
                     Create Section for this Blueprint
                   </Link>
                 </div>
 
                 {blueprintSections.length > 0 && (
-                  <div className="border border-border rounded-xl overflow-hidden">
+                  <div className="border border-slate-800 rounded-xl overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-slate-50 border-b border-border">
+                      <thead className="bg-slate-900/70 border-b border-slate-800">
                         <tr>
-                          <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Section</th>
-                          <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Term</th>
-                          <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Format</th>
-                          <th className="text-left px-4 py-2 font-semibold text-muted-foreground">Enrollment</th>
+                          <th className="text-left px-4 py-2 font-semibold text-slate-400">Section</th>
+                          <th className="text-left px-4 py-2 font-semibold text-slate-400">Term</th>
+                          <th className="text-left px-4 py-2 font-semibold text-slate-400">Format</th>
+                          <th className="text-left px-4 py-2 font-semibold text-slate-400">Enrollment</th>
                           <th className="px-4 py-2"><span className="sr-only">Actions</span></th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-border">
+                      <tbody className="divide-y divide-slate-800/80">
                         {blueprintSections.map((section) => {
                           const enrollBadge =
                             section.enrollment_type === 'cohort_gated'
-                              ? { label: 'Cohort Required', className: 'bg-amber-50 text-amber-700 border-amber-200' }
+                              ? { label: 'Cohort Required', className: 'bg-amber-950/60 text-amber-300 border-amber-800/60' }
                               : section.enrollment_type === 'invite_only'
-                              ? { label: 'Invite Only',     className: 'bg-rose-50  text-rose-700  border-rose-200'  }
-                              : { label: 'Open',            className: 'bg-emerald-50 text-emerald-700 border-emerald-200' }
+                              ? { label: 'Invite Only',     className: 'bg-rose-950/60  text-rose-400  border-rose-800/60'  }
+                              : { label: 'Open',            className: 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60' }
                           return (
-                            <tr key={section.id}>
-                              <td className="px-4 py-3 font-mono text-foreground">{section.section_code}</td>
+                            <tr key={section.id} className="hover:bg-slate-900/40">
+                              <td className="px-4 py-3 font-mono text-slate-200">{section.section_code}</td>
                               <td className="px-4 py-3">
-                                <p className="text-foreground">{section.academic_terms?.term_name ?? '—'}</p>
-                                <p className="text-xs text-muted-foreground font-mono">{section.academic_terms?.term_code ?? ''}</p>
+                                <p className="text-slate-200">{section.academic_terms?.term_name ?? '—'}</p>
+                                <p className="text-xs text-slate-400 font-mono">{section.academic_terms?.term_code ?? ''}</p>
                               </td>
-                              <td className="px-4 py-3 text-muted-foreground">{section.delivery_format}</td>
+                              <td className="px-4 py-3 text-slate-400">{section.delivery_format}</td>
                               <td className="px-4 py-3">
                                 <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded border ${enrollBadge.className}`}>
                                   {enrollBadge.label}
                                 </span>
                               </td>
                               <td className="px-4 py-3 text-right">
-                                <Link href={`/admin/sections/${section.id}`} className="text-sm font-semibold text-primary hover:underline">
+                                <Link href={`/admin/sections/${section.id}`} className="text-sm font-semibold text-amber-300 hover:underline">
                                   Manage →
                                 </Link>
                               </td>
@@ -536,14 +538,14 @@ export default async function CoursePage({
                 )}
               </div>
             ) : (
-              <div className="mt-5 border border-amber-200 bg-amber-50 rounded-xl p-4">
-                <p className="text-sm font-semibold text-amber-900">This course is standalone.</p>
-                <p className="text-sm text-amber-800 mt-1">
+              <div className="mt-5 border border-amber-900/60 bg-amber-950/30 rounded-xl p-4">
+                <p className="text-sm font-semibold text-amber-300">This course is standalone.</p>
+                <p className="text-sm text-slate-300 mt-1">
                   Link it to a blueprint before creating term-based sections or cohort enrollment for this content.
                 </p>
                 <Link
                   href={`/courses/${courseId}/edit`}
-                  className="mt-3 inline-block text-sm font-semibold text-primary hover:underline"
+                  className="mt-3 inline-block text-sm font-semibold text-amber-300 hover:underline"
                 >
                   Attach a Blueprint →
                 </Link>
@@ -558,22 +560,22 @@ export default async function CoursePage({
         )}
 
         {/* Curriculum */}
-        <h2 className="text-lg font-bold text-foreground mb-4">{t('courses.detail.curriculumHeading')}</h2>
+        <h2 className="text-lg font-bold text-slate-100 mb-4 font-display">{t('courses.detail.curriculumHeading')}</h2>
 
         <div className="space-y-4">
           {moduleHeaders.length === 0 && allBlocks.length === 0 ? (
-            <div className="bg-white border border-border rounded-xl p-10 text-center">
-              <p className="text-muted-foreground italic">{t('courses.detail.emptyCurriculum')}</p>
+            <div className="card-crisp p-10 text-center">
+              <p className="text-slate-400 italic">{t('courses.detail.emptyCurriculum')}</p>
               {isStaff && (
-                <Link href={`/courses/${courseId}/build`} className="mt-3 inline-block text-sm text-primary hover:underline">
+                <Link href={`/courses/${courseId}/build`} className="mt-3 inline-block text-sm text-amber-300 hover:underline">
                   Add content in Builder →
                 </Link>
               )}
             </div>
           ) : moduleHeaders.length === 0 ? (
             // Flat list (no modules)
-            <div className="bg-white border border-border rounded-xl overflow-hidden">
-              <ul className="divide-y divide-border">
+            <div className="card-crisp overflow-hidden">
+              <ul className="divide-y divide-slate-800">
                 {allBlocks
                   .filter((b) => b.block_type_id !== 'module_header' && (b.is_published || isStaff))
                   .map((block) => (
@@ -587,23 +589,23 @@ export default async function CoursePage({
               return (
                 <section
                   key={mod.id}
-                  className="bg-white border border-border rounded-xl overflow-hidden shadow-sm"
+                  className="card-crisp overflow-hidden"
                   aria-label={mod.title}
                 >
-                  <div className="bg-slate-50 border-b border-border px-6 py-4 flex items-center justify-between">
-                    <h3 className="font-bold text-foreground">{mod.title}</h3>
-                    <span className="text-xs text-muted-foreground">
+                  <div className="bg-slate-900/60 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+                    <h3 className="font-bold text-slate-100 font-display">{mod.title}</h3>
+                    <span className="text-xs text-slate-400">
                       {t('courses.detail.moduleItemCountTemplate', { count: items.length })}
                     </span>
                   </div>
                   {items.length > 0 ? (
-                    <ul className="divide-y divide-border">
+                    <ul className="divide-y divide-slate-800">
                       {items.map((block) => (
                         <CurriculumItem key={block.id} block={block} courseId={courseId} isEnrolled={isEnrolled} lockedLabel={t('courses.detail.lockedTooltip')} />
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground italic px-6 py-4">{t('courses.detail.emptyModule')}</p>
+                    <p className="text-sm text-slate-400 italic px-6 py-4">{t('courses.detail.emptyModule')}</p>
                   )}
                 </section>
               )
@@ -630,19 +632,19 @@ function CurriculumItem({
     <div className="flex items-center gap-3 px-6 py-3.5">
       <span className="text-xl shrink-0" aria-hidden="true">{meta?.icon ?? '📦'}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground truncate">{block.title}</p>
-        <p className="text-xs text-muted-foreground capitalize">
+        <p className="text-sm font-semibold text-slate-200 truncate">{block.title}</p>
+        <p className="text-xs text-slate-400 capitalize">
           {meta?.label ?? block.block_type_id}
         </p>
       </div>
       {(block.gamification as GamificationJSON)?.base_xp_reward != null &&
        (block.gamification as GamificationJSON).base_xp_reward! > 0 && (
-        <span className="text-xs text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 shrink-0">
+        <span className="text-xs text-amber-300 font-bold bg-amber-950/50 px-2 py-0.5 rounded border border-amber-800/60 shrink-0">
           +{(block.gamification as GamificationJSON).base_xp_reward} XP
         </span>
       )}
       {!isEnrolled && (
-        <span className="text-slate-300 text-sm shrink-0" aria-label={lockedLabel}>🔒</span>
+        <span className="text-slate-500 text-sm shrink-0" aria-label={lockedLabel}>🔒</span>
       )}
       {isEnrolled && (
         <span className="text-slate-400 text-sm shrink-0" aria-hidden="true">→</span>
@@ -652,7 +654,7 @@ function CurriculumItem({
 
   if (href) {
     return (
-      <li className="hover:bg-slate-50 transition-colors">
+      <li className="hover:bg-slate-900/50 transition-colors">
         <Link href={href} className="block">{inner}</Link>
       </li>
     )

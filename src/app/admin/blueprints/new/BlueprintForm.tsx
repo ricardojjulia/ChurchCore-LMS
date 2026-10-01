@@ -1,6 +1,9 @@
+'use client'
+
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Database, Trash2, AlertTriangle } from 'lucide-react'
 import { createBlueprint, updateBlueprint, deleteBlueprint } from '@/app/actions/academic'
 
@@ -21,6 +24,7 @@ interface Props {
 }
 
 export default function BlueprintForm({ mode, blueprintId, initial, tracks, managedSource }: Props) {
+  const t = useTranslations('adminBlueprints')
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [ok,    setOk]    = useState(false)
@@ -62,50 +66,50 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks, mana
         {managedSource && (
           <div className="flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800">
             <Database className="h-4 w-4" aria-hidden="true" />
-            OneRoster managed
+            {t('oneRosterManaged')}
           </div>
         )}
         {error && <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-sm leading-relaxed">{error}</div>}
-        {ok    && <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-sm font-medium">Saved changes successfully.</div>}
+        {ok    && <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-sm font-medium">{t('savedSuccess')}</div>}
 
         {mode === 'create' && (
           <div>
             <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="course_code">
-              Course Code <span className="text-rose-700">*</span>
+              {t('courseCode')} <span className="text-rose-700">*</span>
             </label>
             <input id="course_code" name="course_code" required
               placeholder="e.g. THEO-101" className="input w-full font-mono uppercase" />
-            <p className="text-xs text-muted-foreground mt-1">Unique, auto-uppercased, immutable after creation.</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('courseCodeHint')}</p>
           </div>
         )}
 
         <div>
           <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="title">
-            Title <span className="text-rose-700">*</span>
+            {t('title')} <span className="text-rose-700">*</span>
           </label>
           <input id="title" name="title" required defaultValue={initial?.title}
-            placeholder="e.g. Introduction to Theology" className="input w-full" readOnly={Boolean(managedSource)} />
+            placeholder={t('titlePlaceholder')} className="input w-full" readOnly={Boolean(managedSource)} />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="description">Description</label>
+          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="description">{t('description')}</label>
           <textarea id="description" name="description" rows={3}
             defaultValue={initial?.description ?? ''}
-            placeholder="Optional course description" className="input w-full resize-none" />
+            placeholder={t('descriptionPlaceholder')} className="input w-full resize-none" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="credits">Credits</label>
+            <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="credits">{t('credits')}</label>
             <input id="credits" name="credits" type="number" step="0.25" min="0"
               defaultValue={initial?.credits ?? ''}
-              placeholder="e.g. 3.0" className="input w-full" />
+              placeholder={t('creditsPlaceholder')} className="input w-full" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="program_track_id">Program Track</label>
+            <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="program_track_id">{t('programTrack')}</label>
             <select id="program_track_id" name="program_track_id"
               defaultValue={initial?.program_track_id ?? ''} className="input w-full">
-              <option value="">— No track —</option>
+              <option value="">{t('noTrack')}</option>
               {tracks.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.code})</option>)}
             </select>
           </div>
@@ -116,7 +120,7 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks, mana
             <input type="checkbox" id="is_active" name="is_active" value="true"
               defaultChecked={initial?.is_active} className="rounded" disabled={Boolean(managedSource)} />
             <label htmlFor="is_active" className="text-sm font-semibold text-foreground cursor-pointer">
-              Active <span className="text-xs font-normal text-muted-foreground">(Uncheck to archive from new course selectors)</span>
+              {t('active')} <span className="text-xs font-normal text-muted-foreground">{t('activeHint')}</span>
             </label>
           </div>
         )}
@@ -124,11 +128,11 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks, mana
         <div className="flex gap-3 pt-2">
           <button type="submit" disabled={pending || deleting}
             className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
-            {pending ? 'Saving…' : mode === 'create' ? 'Create Blueprint' : managedSource ? 'Save LMS Settings' : 'Save Changes'}
+            {pending ? t('btnSaving') : mode === 'create' ? t('btnCreate') : managedSource ? t('btnSaveLms') : t('btnSave')}
           </button>
           <Link href="/admin/blueprints"
             className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-border hover:bg-slate-50 transition-colors text-muted-foreground">
-            Cancel
+            {t('btnCancel')}
           </Link>
         </div>
       </form>
@@ -140,10 +144,10 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks, mana
               <div>
                 <h3 className="text-sm font-bold text-rose-900 flex items-center gap-1.5">
                   <AlertTriangle className="h-4 w-4 text-rose-600" />
-                  Danger Zone
+                  {t('dangerZoneTitle')}
                 </h3>
                 <p className="text-xs text-rose-700 mt-1 max-w-md">
-                  Permanently remove this blueprint. Cannot be undone. Blueprints with active sections or attached courses must be archived instead.
+                  {t('dangerZoneDesc')}
                 </p>
               </div>
 
@@ -154,7 +158,7 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks, mana
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 border border-rose-300 bg-white hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Delete Blueprint
+                  {t('btnDelete')}
                 </button>
               ) : (
                 <div className="flex items-center gap-2">
@@ -164,7 +168,7 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks, mana
                     onClick={handleDelete}
                     className="bg-rose-600 text-white font-bold text-xs px-3 py-2 rounded-lg hover:bg-rose-700 transition-colors disabled:opacity-50"
                   >
-                    {deleting ? 'Deleting…' : 'Confirm Delete'}
+                    {deleting ? t('btnDeleting') : t('btnConfirmDelete')}
                   </button>
                   <button
                     type="button"
@@ -172,7 +176,7 @@ export default function BlueprintForm({ mode, blueprintId, initial, tracks, mana
                     onClick={() => setConfirmDelete(false)}
                     className="bg-white border border-slate-300 text-slate-700 font-semibold text-xs px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
                   >
-                    Cancel
+                    {t('btnCancel')}
                   </button>
                 </div>
               )}

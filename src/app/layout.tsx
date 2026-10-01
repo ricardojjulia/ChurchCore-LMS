@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Plus_Jakarta_Sans, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { createClient } from '@/utils/supabase/server'
 import { headers } from 'next/headers'
@@ -16,7 +16,17 @@ import { FeedbackButton }          from '@/components/feedback/FeedbackButton'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
 
-const inter = Inter({ subsets: ['latin'] })
+const sans = Plus_Jakarta_Sans({
+  variable: '--font-sans',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+})
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+})
 
 export const metadata: Metadata = {
   title: 'ChurchCore LMS',
@@ -78,7 +88,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale       = await getLocale()
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={`${sans.variable} ${geistMono.variable} dark h-full antialiased`}>
       <head>
         {brandCss && <style>{brandCss}</style>}
         <link rel="manifest" href="/manifest.json" />
@@ -104,7 +114,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
       </head>
-      <body className={inter.className}>
+      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
         <NextIntlClientProvider messages={messages}>
         {/* WCAG 2.1 AA — skip navigation */}
         <a

@@ -35,7 +35,7 @@ export interface SignupInput {
   adminName: string
   email: string
   timezone: string
-  locale: 'en' | 'es'
+  locale: 'en' | 'es' | 'pt'
 }
 
 export type SignupValidation =
@@ -53,7 +53,7 @@ export function validateSignup(raw: Record<string, unknown>): SignupValidation {
   const adminName = str('adminName')
   const email = str('email').toLowerCase()
   const timezone = str('timezone') || 'America/New_York'
-  const locale = raw.locale === 'es' ? 'es' : 'en'
+  const locale: 'en' | 'es' | 'pt' = raw.locale === 'es' ? 'es' : raw.locale === 'pt' ? 'pt' : 'en'
 
   if (churchName.length < 2 || churchName.length > 100) return { ok: false, field: 'churchName', code: 'invalid' }
   if (!SLUG_RE.test(slug)) return { ok: false, field: 'slug', code: 'invalid' }

@@ -9,6 +9,14 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- **Complete Portuguese (`pt`) Localization & 3-Way i18n:** Added comprehensive Portuguese translation dictionary (`messages/pt.json`) achieving 100% key parity (770 keys) with English and Spanish. Updated `LocaleSwitcher` for seamless 3-way toggling across EN, ES, and PT.
+- **Multilingual UI Coverage:** Fully localized dashboards (`SmartSummaryCard`, `AdminDashboard`, `InstructorDashboard`, `StudentDashboard`), gamification widgets (`EngagementWidget`, `StudentXpStandingsModal`, `AiWeeklySummary`), academic management (`AdminBlueprintsPage`, `BlueprintForm`, `AdminSectionsPage`), and system transactional emails (`PasswordResetEmail`, `SignupVerifyEmail`).
+- **AI Course Builder Incremental Generation:** AI course generator now supports appending new modules and lessons to existing courses without overwriting prior content, alongside an optional full replacement workflow.
+- **Hybrid Course Attendance & Availability Tracking:** Support for course start/expiration availability windows and quick attendance roll-call tracking for scheduled hybrid classroom sessions.
+- **Modern UI & Aesthetic Alignment:** Polished card surfaces (`card-crisp`), glowing badges, dark slate / indigo theme tokens, and typography aligned with ChurchCore Orthos standards.
+- **Automated Multilingual E2E Verification:** Automated Playwright walkthrough test suite across Manager, Teacher, and Student roles in all 3 languages with automated visual verification.
+
 ---
 
 ## [0.42.0] — 2026-09-30

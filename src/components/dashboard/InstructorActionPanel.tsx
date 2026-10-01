@@ -98,29 +98,29 @@ export default async function InstructorActionPanel({
   if (actions.length === 0) {
     return (
       <section className="mb-8">
-        <h2 className="text-lg font-bold text-foreground mb-3">Action Required</h2>
-        <div className="bg-white border border-emerald-200 rounded-xl px-5 py-4 flex items-center gap-3">
-          <span className="text-emerald-700 text-lg">✓</span>
-          <p className="text-sm text-emerald-700 font-medium">All caught up — nothing needs your attention right now.</p>
+        <h2 className="text-lg font-display font-bold text-white mb-3">Action Required</h2>
+        <div className="card-crisp border-emerald-800/70 bg-emerald-950/20 px-5 py-4 flex items-center gap-3">
+          <span className="text-emerald-400 text-lg">✓</span>
+          <p className="text-sm text-emerald-300 font-medium">All caught up — nothing needs your attention right now.</p>
         </div>
       </section>
     )
   }
 
   const severityColor: Record<ActionItem['severity'], string> = {
-    high:   'border-l-rose-500 bg-rose-50',
-    medium: 'border-l-amber-500 bg-amber-50',
-    low:    'border-l-sky-400 bg-sky-50',
+    high:   'border-l-rose-500 bg-rose-950/30',
+    medium: 'border-l-amber-500 bg-amber-950/30',
+    low:    'border-l-indigo-400 bg-indigo-950/30',
   }
   const severityText: Record<ActionItem['severity'], string> = {
-    high:   'text-rose-700',
-    medium: 'text-amber-700',
-    low:    'text-sky-700',
+    high:   'text-rose-300',
+    medium: 'text-amber-300',
+    low:    'text-indigo-300',
   }
 
   return (
     <section className="mb-8" aria-label="Action Required">
-      <h2 className="text-lg font-bold text-foreground mb-3">
+      <h2 className="text-lg font-display font-bold text-white mb-3">
         Action Required
         <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-600 text-white text-[10px] font-bold">
           {actions.length}
@@ -131,13 +131,13 @@ export default async function InstructorActionPanel({
           <Link
             key={i}
             href={a.href}
-            className={`border border-l-4 rounded-xl px-5 py-3 flex items-center justify-between gap-4 hover:opacity-90 transition-opacity ${severityColor[a.severity]}`}
+            className={`card-crisp border-l-4 px-5 py-3 flex items-center justify-between gap-4 hover:border-indigo-500/50 transition-all ${severityColor[a.severity]}`}
           >
             <div>
               <p className={`text-sm font-semibold ${severityText[a.severity]}`}>{a.label}</p>
-              <p className="text-xs text-muted-foreground">{a.detail}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{a.detail}</p>
             </div>
-            <span className="text-muted-foreground text-sm shrink-0">→</span>
+            <span className="text-slate-400 text-sm shrink-0">→</span>
           </Link>
         ))}
       </div>

@@ -1,15 +1,9 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/utils/supabase/server'
 
 export const dynamic = 'force-dynamic'
-
-const FORMAT_LABELS: Record<string, string> = {
-  synchronous:  'Sync',
-  asynchronous: 'Async',
-  hybrid:       'Hybrid',
-  self_paced:   'Self-paced',
-}
 
 const FORMAT_COLORS: Record<string, string> = {
   synchronous:  'bg-indigo-50 text-indigo-700 border-indigo-200',
@@ -19,6 +13,7 @@ const FORMAT_COLORS: Record<string, string> = {
 }
 
 export default async function AdminSectionsPage() {
+  const t = await getTranslations('adminSections')
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -50,26 +45,33 @@ export default async function AdminSectionsPage() {
     return acc
   }, {})
 
+  const formatLabels: Record<string, string> = {
+    synchronous:  t('formatSync'),
+    asynchronous: t('formatAsync'),
+    hybrid:       t('formatHybrid'),
+    self_paced:   t('formatSelfPaced'),
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">Sections</h1>
+            <h1 className="text-2xl font-extrabold text-foreground">{t('heading')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Scheduled instances of course blueprints — manage groups and enrollment here.
+              {t('subtitle')}
             </p>
           </div>
           <Link href="/admin/sections/new" className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-4 py-2 rounded-xl text-sm hover:bg-primary/90 transition-colors">
-            + New Section
+            {t('newSection')}
           </Link>
         </div>
 
         {(!sections || sections.length === 0) ? (
           <div className="bg-white border border-border rounded-2xl p-12 text-center">
-            <p className="text-muted-foreground">No sections yet.</p>
+            <p className="text-muted-foreground">{t('emptyState')}</p>
             <p className="text-xs text-muted-foreground mt-2">
-              Create sections via the academic term and blueprint admin pages.
+              {t('createFirst')}
             </p>
           </div>
         ) : (
@@ -77,12 +79,12 @@ export default async function AdminSectionsPage() {
             <table className="w-full text-sm">
               <thead className="bg-slate-50 border-b border-border">
                 <tr>
-                  <th className="text-left px-6 py-3 font-semibold text-muted-foreground">Blueprint</th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Term</th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Section</th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Format</th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Groups</th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Status</th>
+                  <th className="text-left px-6 py-3 font-semibold text-muted-foreground">{t('tableBlueprint')}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">{t('tableTerm')}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">{t('tableSection')}</th>
+                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">{t('tableFormat')}</th>
+                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">{t('tableGroups')}</th>
+                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">{t('tableStatus')}</th>
                   <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
@@ -103,7 +105,7 @@ export default async function AdminSectionsPage() {
                       <td className="px-4 py-4 font-mono text-sm text-foreground">{s.section_code}</td>
                       <td className="px-4 py-4 text-center">
                         <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded border ${FORMAT_COLORS[s.delivery_format] ?? 'bg-slate-100 text-slate-600 border-slate-200'}`}>
-                          {FORMAT_LABELS[s.delivery_format] ?? s.delivery_format}
+                          {formatLabels[s.delivery_format] ?? s.delivery_format}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">
@@ -115,7 +117,7 @@ export default async function AdminSectionsPage() {
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : 'bg-slate-100 text-slate-500 border-slate-200'
                         }`}>
-                          {s.is_active ? 'Active' : 'Inactive'}
+                          {s.is_active ? t('statusActive') : t('statusInactive')}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-right">
@@ -123,7 +125,7 @@ export default async function AdminSectionsPage() {
                           href={`/admin/sections/${s.id}`}
                           className="text-sm font-semibold text-primary hover:underline"
                         >
-                          Groups →
+                          {t('viewGroups')}
                         </Link>
                       </td>
                     </tr>

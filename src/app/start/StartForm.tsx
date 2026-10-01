@@ -14,7 +14,7 @@ export default function StartForm() {
   const [slugEdited, setSlugEdited] = useState(false)
   const [adminName, setAdminName] = useState('')
   const [email, setEmail] = useState('')
-  const [locale, setLocale] = useState<'en' | 'es'>('en')
+  const [locale, setLocale] = useState<'en' | 'es' | 'pt'>('en')
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [error, setError] = useState<FieldError>(null)
   const [pending, setPending] = useState(false)
@@ -93,9 +93,10 @@ export default function StartForm() {
       </div>
       <div>
         <label htmlFor="locale" className="mb-1 block text-sm font-semibold text-slate-800">{t('language')}</label>
-        <select id="locale" className={input} value={locale} onChange={(e) => setLocale(e.target.value === 'es' ? 'es' : 'en')}>
+        <select id="locale" className={input} value={locale} onChange={(e) => setLocale(e.target.value as 'en' | 'es' | 'pt')}>
           <option value="en">English</option>
           <option value="es">Español</option>
+          <option value="pt">Português</option>
         </select>
       </div>
       <Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? ''} onSuccess={setTurnstileToken} />
