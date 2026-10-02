@@ -22,11 +22,13 @@ export default async function ReportsPage() {
     case 'admin':    redirect('/admin/reports')
     default:
       return (
-        <main className="mx-auto max-w-xl px-6 py-16 text-center">
-          <h1 className="text-xl font-semibold text-slate-950">{t('reports.fallback.heading')}</h1>
-          <p className="mt-2 text-sm text-slate-600">
-            {t('reports.fallback.description')}
-          </p>
+        <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-6 py-16 text-center">
+          <div className="mx-auto max-w-xl">
+            <h1 className="text-2xl font-extrabold text-white">{t('reports.fallback.heading')}</h1>
+            <p className="mt-2 text-sm text-slate-400">
+              {t('reports.fallback.description')}
+            </p>
+          </div>
         </main>
       )
   }

@@ -21,9 +21,9 @@ type Profile = {
 async function EmptyState() {
   const t = await getTranslations()
   return (
-    <div className="mt-8 border border-slate-200 bg-white p-10 text-center shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-950">{t('reports.student.emptyHeading')}</h2>
-      <p className="mt-2 text-sm text-slate-600">
+    <div className="mt-8 card-crisp p-10 text-center">
+      <h2 className="text-lg font-display font-semibold text-white">{t('reports.student.emptyHeading')}</h2>
+      <p className="mt-2 text-sm text-slate-400">
         {t('reports.student.emptyDescription')}
       </p>
     </div>
@@ -70,11 +70,11 @@ export default async function StudentReportsPage() {
   }))
 
   return (
-    <main className="mx-auto max-w-6xl">
+    <main className="mx-auto max-w-6xl text-slate-100">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-950">{t('reports.student.heading')}</h1>
-          <p className="mt-1 text-sm text-slate-600">
+          <h1 className="text-2xl font-display font-bold text-white">{t('reports.student.heading')}</h1>
+          <p className="mt-1 text-sm text-slate-400">
             {t('reports.student.lastUpdatedTemplate', {
               date: new Date(latestRefresh ?? reportData.generatedAt).toLocaleString(undefined, {
                 dateStyle: 'medium',
@@ -90,7 +90,7 @@ export default async function StudentReportsPage() {
       </div>
 
       <noscript>
-        <p className="mt-4 border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <p className="mt-4 border border-amber-800/60 bg-amber-950/40 px-4 py-3 text-sm text-amber-300">
           {t('reports.student.noscriptFallback')}
         </p>
       </noscript>
@@ -101,10 +101,10 @@ export default async function StudentReportsPage() {
         <div className="mt-8 space-y-8">
           <Suspense fallback={<StudentProgressSkeleton variant="chart" />}>
             <section aria-labelledby="module-completion-heading">
-              <h2 id="module-completion-heading" className="text-lg font-semibold text-slate-950">
+              <h2 id="module-completion-heading" className="text-lg font-display font-semibold text-white">
                 {t('reports.student.moduleCompletionHeading')}
               </h2>
-              <div className="mt-3 border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="mt-3 card-crisp p-4">
                 <ModuleCompletionChart data={moduleCompletionData} />
               </div>
             </section>
@@ -112,10 +112,10 @@ export default async function StudentReportsPage() {
 
           <Suspense fallback={<StudentProgressSkeleton variant="chart" />}>
             <section aria-labelledby="grade-history-heading">
-              <h2 id="grade-history-heading" className="text-lg font-semibold text-slate-950">
+              <h2 id="grade-history-heading" className="text-lg font-display font-semibold text-white">
                 {t('reports.student.gradeHistoryHeading')}
               </h2>
-              <div className="mt-3 border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="mt-3 card-crisp p-4">
                 <GradeHistoryChart data={gradeHistoryData} />
               </div>
             </section>
@@ -123,7 +123,7 @@ export default async function StudentReportsPage() {
 
           <Suspense fallback={<StudentProgressSkeleton variant="table" />}>
             <section aria-labelledby="enrollment-table-heading">
-              <h2 id="enrollment-table-heading" className="text-lg font-semibold text-slate-950">
+              <h2 id="enrollment-table-heading" className="text-lg font-display font-semibold text-white">
                 {t('reports.student.courseEnrollmentsHeading')}
               </h2>
               <div className="mt-3">

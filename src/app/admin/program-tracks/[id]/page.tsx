@@ -67,21 +67,21 @@ export default async function EditProgramTrackPage({
   const nextSequenceOrder = maxOrder + 1
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-4xl mx-auto space-y-8">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500">
-          <Link href="/admin/program-tracks" className="hover:text-primary font-medium">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400">
+          <Link href="/admin/program-tracks" className="hover:text-amber-300 font-medium">
             Program Tracks
           </Link>
-          <span>/</span>
-          <span className="text-foreground font-semibold">{track.name}</span>
+          <span className="text-slate-600">/</span>
+          <span className="text-white font-semibold">{track.name}</span>
         </nav>
 
         {/* Edit track details */}
-        <div className="bg-white border border-border rounded-2xl p-8 shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-sm">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-xl font-extrabold text-foreground">Edit Program Track</h1>
-            <span className="text-xs font-mono text-muted-foreground bg-slate-100 px-2 py-1 rounded">
+            <h1 className="text-xl font-extrabold text-white">Edit Program Track</h1>
+            <span className="text-xs font-mono text-slate-300 bg-slate-800 border border-slate-700 px-2 py-1 rounded">
               {track.code}
             </span>
           </div>
@@ -101,13 +101,13 @@ export default async function EditProgramTrackPage({
         <section>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-lg font-bold text-foreground">Required Courses</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <h2 className="text-lg font-bold text-white">Required Courses</h2>
+              <p className="text-sm text-slate-400 mt-0.5">
                 Courses assigned to this track, in order. A diploma is awarded when all required
                 courses are completed.
               </p>
             </div>
-            <span className="text-sm text-muted-foreground font-medium">
+            <span className="text-sm text-slate-400 font-medium">
               {trackCourses.length}{' '}
               {trackCourses.length === 1 ? 'course' : 'courses'}
             </span>
@@ -117,8 +117,8 @@ export default async function EditProgramTrackPage({
           <TrackCourseList trackId={trackId} trackCourses={trackCourses} />
 
           {/* Add course form */}
-          <div className="bg-white border border-border rounded-2xl p-6 shadow-sm mt-4">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Add Course</h3>
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm mt-4">
+            <h3 className="text-sm font-semibold text-white mb-4">Add Course</h3>
             <AddCourseToTrackForm
               trackId={trackId}
               availableCourses={availableCourses}

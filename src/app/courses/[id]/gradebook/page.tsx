@@ -69,19 +69,19 @@ export default async function GradebookPage({
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div className="mb-6">
           <Link
             href={`/courses/${courseId}/submissions`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-slate-400 hover:text-white transition-colors"
           >
             ← Submissions
           </Link>
-          <h1 className="text-2xl font-extrabold text-foreground mt-1">Gradebook Grid</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{course.title}</p>
+          <h1 className="text-2xl font-display font-extrabold text-white mt-1">Gradebook Grid</h1>
+          <p className="text-sm text-slate-400 mt-0.5">{course.title}</p>
         </div>
 
         <GradebookGrid

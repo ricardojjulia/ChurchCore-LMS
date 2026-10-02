@@ -131,16 +131,16 @@ export default async function AiAnalyticsPage() {
   const maxCohort  = Math.max(...cohortRows.map(([, c]) => c), 1)
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-6xl mx-auto space-y-8">
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">AI Tutor Analytics</h1>
-            <p className="text-sm text-muted-foreground mt-1">Last {DAYS} days · Queries are hashed — no student content stored</p>
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">AI Tutor Analytics</h1>
+            <p className="text-sm text-slate-400 mt-1">Last {DAYS} days · Queries are hashed — no student content stored</p>
           </div>
-          <Link href="/admin/sections" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+          <Link href="/admin/sections" className="text-sm text-slate-400 hover:text-indigo-400 transition-colors">
             ← Sections
           </Link>
         </div>
@@ -155,17 +155,17 @@ export default async function AiAnalyticsPage() {
                 ? (entries.reduce((s, e) => s + (e.chunk_count ?? 0), 0) / entries.length).toFixed(1)
                 : '—' },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-white border border-border rounded-2xl px-5 py-4 shadow-sm">
-              <p className="text-xs text-muted-foreground">{label}</p>
-              <p className="text-2xl font-extrabold text-foreground mt-1">{value}</p>
+            <div key={label} className="bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 shadow-sm">
+              <p className="text-xs text-slate-400">{label}</p>
+              <p className="text-2xl font-extrabold text-white mt-1">{value}</p>
             </div>
           ))}
         </div>
 
         {entries.length === 0 && (
-          <div className="bg-white border border-border rounded-2xl p-12 text-center shadow-sm">
-            <p className="text-muted-foreground">No AI tutor queries in the last {DAYS} days.</p>
-            <p className="text-xs text-muted-foreground mt-2">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center shadow-sm">
+            <p className="text-slate-400">No AI tutor queries in the last {DAYS} days.</p>
+            <p className="text-xs text-slate-500 mt-2">
               Queries appear here once students start using the tutor in indexed sections.
             </p>
           </div>
@@ -174,17 +174,17 @@ export default async function AiAnalyticsPage() {
         {entries.length > 0 && (
           <>
             {/* Queries per day */}
-            <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
-              <h2 className="font-bold text-foreground mb-4">Queries per Day</h2>
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+              <h2 className="font-bold text-white mb-4">Queries per Day</h2>
               <div className="flex items-end gap-1 h-24 overflow-x-auto pb-2">
                 {dailySeries.map(({ date, count }) => (
                   <div key={date} className="flex flex-col items-center gap-1 shrink-0" style={{ width: 24 }}>
                     <div
-                      className="w-4 bg-violet-400 rounded-t"
+                      className="w-4 bg-indigo-500 rounded-t"
                       style={{ height: `${Math.max(2, Math.round((count / maxDaily) * 80))}px` }}
                       title={`${date}: ${count}`}
                     />
-                    <span className="text-[8px] text-muted-foreground -rotate-45 origin-top-left translate-y-2">
+                    <span className="text-[8px] text-slate-400 -rotate-45 origin-top-left translate-y-2">
                       {date.slice(5)}
                     </span>
                   </div>
@@ -195,59 +195,59 @@ export default async function AiAnalyticsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
               {/* Top sections */}
-              <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
-                <h2 className="font-bold text-foreground mb-4">Top Sections by Query Volume</h2>
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+                <h2 className="font-bold text-white mb-4">Top Sections by Query Volume</h2>
                 <div className="space-y-2.5">
                   {topSections.map(({ id, label, count }) => (
                     <div key={id} className="flex items-center gap-3">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm truncate text-foreground">{label}</p>
+                        <p className="text-sm truncate text-slate-200">{label}</p>
                       </div>
-                      <div className="w-24 bg-slate-100 rounded h-2 shrink-0">
+                      <div className="w-24 bg-slate-800 rounded h-2 shrink-0">
                         <div
-                          className="bg-violet-500 h-2 rounded"
+                          className="bg-indigo-500 h-2 rounded"
                           style={{ width: `${Math.round((count / maxSection) * 100)}%` }}
                         />
                       </div>
-                      <span className="text-sm font-bold text-foreground w-8 text-right shrink-0">{count}</span>
+                      <span className="text-sm font-bold text-white w-8 text-right shrink-0">{count}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Queries by cohort */}
-              <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
-                <h2 className="font-bold text-foreground mb-4">Queries by Cohort</h2>
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+                <h2 className="font-bold text-white mb-4">Queries by Cohort</h2>
                 {cohortRows.length === 0 && noCohortCount === entries.length ? (
-                  <p className="text-sm text-muted-foreground italic">No cohort assignments found for querying users.</p>
+                  <p className="text-sm text-slate-400 italic">No cohort assignments found for querying users.</p>
                 ) : (
                   <div className="space-y-2.5">
                     {cohortRows.map(([name, count]) => (
                       <div key={name} className="flex items-center gap-3">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm truncate text-foreground">{name}</p>
+                          <p className="text-sm truncate text-slate-200">{name}</p>
                         </div>
-                        <div className="w-24 bg-slate-100 rounded h-2 shrink-0">
+                        <div className="w-24 bg-slate-800 rounded h-2 shrink-0">
                           <div
                             className="bg-emerald-500 h-2 rounded"
                             style={{ width: `${Math.round((count / maxCohort) * 100)}%` }}
                           />
                         </div>
-                        <span className="text-sm font-bold text-foreground w-8 text-right shrink-0">{count}</span>
+                        <span className="text-sm font-bold text-white w-8 text-right shrink-0">{count}</span>
                       </div>
                     ))}
                     {noCohortCount > 0 && (
                       <div className="flex items-center gap-3">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm truncate text-muted-foreground italic">No cohort</p>
+                          <p className="text-sm truncate text-slate-400 italic">No cohort</p>
                         </div>
-                        <div className="w-24 bg-slate-100 rounded h-2 shrink-0">
+                        <div className="w-24 bg-slate-800 rounded h-2 shrink-0">
                           <div
-                            className="bg-slate-300 h-2 rounded"
+                            className="bg-slate-700 h-2 rounded"
                             style={{ width: `${Math.round((noCohortCount / maxCohort) * 100)}%` }}
                           />
                         </div>
-                        <span className="text-sm font-bold text-muted-foreground w-8 text-right shrink-0">{noCohortCount}</span>
+                        <span className="text-sm font-bold text-slate-400 w-8 text-right shrink-0">{noCohortCount}</span>
                       </div>
                     )}
                   </div>
@@ -258,40 +258,40 @@ export default async function AiAnalyticsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
               {/* Context versions */}
-              <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
-                <h2 className="font-bold text-foreground mb-1">Context Versions in Use</h2>
-                <p className="text-xs text-muted-foreground mb-4">A version change indicates a prompt update. See ADR-2025-003 amendment log.</p>
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+                <h2 className="font-bold text-white mb-1">Context Versions in Use</h2>
+                <p className="text-xs text-slate-400 mb-4">A version change indicates a prompt update. See ADR-2025-003 amendment log.</p>
                 <div className="space-y-1">
                   {Object.entries(byVersion)
                     .sort(([, a], [, b]) => b - a)
                     .map(([version, count]) => (
-                      <div key={version} className="flex items-center justify-between text-sm">
-                        <span className="font-mono text-foreground">{version}</span>
-                        <span className="text-muted-foreground">{count} queries ({Math.round((count / entries.length) * 100)}%)</span>
+                      <div key={version} className="flex items-center justify-between text-sm py-1 border-b border-slate-800 last:border-0">
+                        <span className="font-mono text-slate-300">{version}</span>
+                        <span className="text-slate-400">{count} queries ({Math.round((count / entries.length) * 100)}%)</span>
                       </div>
                     ))}
                 </div>
               </div>
 
               {/* Content gap signals */}
-              <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
-                <h2 className="font-bold text-foreground mb-1">Low Similarity Sections</h2>
-                <p className="text-xs text-muted-foreground mb-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+                <h2 className="font-bold text-white mb-1">Low Similarity Sections</h2>
+                <p className="text-xs text-slate-400 mb-4">
                   Sections where avg best-match similarity is below 80% — students may be asking questions the content doesn't cover.
                 </p>
                 {lowSimilaritySections.length === 0 ? (
-                  <p className="text-sm text-emerald-700">No sections with persistent low similarity. Content coverage looks good.</p>
+                  <p className="text-sm text-emerald-400">No sections with persistent low similarity. Content coverage looks good.</p>
                 ) : (
                   <div className="space-y-2">
                     {lowSimilaritySections.map((s) => (
-                      <div key={s.id} className="flex items-center justify-between text-sm">
-                        <span className="truncate text-foreground flex-1 mr-4">{s.label}</span>
+                      <div key={s.id} className="flex items-center justify-between text-sm py-1 border-b border-slate-800 last:border-0">
+                        <span className="truncate text-slate-200 flex-1 mr-4">{s.label}</span>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-amber-600 font-semibold">{Math.round(s.avgMax * 100)}% avg</span>
-                          <span className="text-muted-foreground text-xs">({s.queries} queries)</span>
+                          <span className="text-amber-400 font-semibold">{Math.round(s.avgMax * 100)}% avg</span>
+                          <span className="text-slate-400 text-xs">({s.queries} queries)</span>
                           <Link
                             href={`/courses/${s.id}/pages`}
-                            className="text-primary text-xs hover:underline"
+                            className="text-indigo-400 text-xs hover:underline"
                           >
                             Pages →
                           </Link>
@@ -307,8 +307,8 @@ export default async function AiAnalyticsPage() {
             {topSections.length > 0 && (
               <div className="space-y-4">
                 <div>
-                  <h2 className="font-bold text-foreground">Curriculum Gap Analysis</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <h2 className="font-bold text-white">Curriculum Gap Analysis</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
                     AI-generated gap analysis for your most-queried sections. No student query text is stored or used — analysis is based on content coverage and similarity statistics only.
                   </p>
                 </div>

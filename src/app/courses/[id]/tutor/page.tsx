@@ -70,33 +70,33 @@ export default async function TutorPage({
   const hasPublishedPages = (pages ?? []).length > 0
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-slate-950 text-slate-100">
       {/* Breadcrumb */}
-      <nav className="border-b border-border bg-white px-6 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/courses" className="hover:text-primary transition-colors">Courses</Link>
+      <nav className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-sm px-6 py-3 flex items-center gap-2 text-sm text-slate-400">
+        <Link href="/courses" className="hover:text-amber-300 transition-colors">Courses</Link>
         <span>/</span>
-        <Link href={`/courses/${courseId}`} className="hover:text-primary transition-colors truncate max-w-[200px]">
+        <Link href={`/courses/${courseId}`} className="hover:text-amber-300 transition-colors truncate max-w-[200px]">
           {blueprint?.title ?? courseId}
         </Link>
         <span>/</span>
-        <span className="text-foreground font-semibold">AI Tutor</span>
-        <span className="ml-auto text-xs font-mono text-muted-foreground">{section.section_code}</span>
+        <span className="text-white font-semibold">AI Tutor</span>
+        <span className="ml-auto text-xs font-mono text-slate-500">{section.section_code}</span>
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* No published pages at all */}
         {!hasPublishedPages && (
-          <div className="bg-white border border-border rounded-2xl p-12 text-center shadow-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center shadow-sm">
             <div className="text-4xl mb-4">📄</div>
-            <h2 className="text-base font-bold text-foreground mb-2">No published content yet</h2>
-            <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+            <h2 className="text-base font-bold text-white mb-2">No published content yet</h2>
+            <p className="text-sm text-slate-400 mb-4 max-w-sm mx-auto">
               The AI tutor answers questions based on published course pages.
               Once content is published and indexed, you can start asking questions here.
             </p>
             {isStaff && (
               <Link
                 href={`/courses/${courseId}/pages`}
-                className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-4 py-2 rounded-xl text-sm hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-xl text-sm hover:bg-indigo-500 transition-colors"
               >
                 Go to Pages →
               </Link>
@@ -106,7 +106,7 @@ export default async function TutorPage({
 
         {/* Has pages — show the chat */}
         {hasPublishedPages && (
-          <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden"
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden"
                style={{ height: 'calc(100vh - 200px)', minHeight: '520px' }}>
             <TutorChat
               sectionId={sectionId}
@@ -118,7 +118,7 @@ export default async function TutorPage({
         )}
 
         {/* Section metadata — unobtrusive footer */}
-        <p className="text-center text-xs text-muted-foreground mt-4">
+        <p className="text-center text-xs text-slate-500 mt-4">
           Section {section.section_code}
           {blueprint?.course_code ? ` · ${blueprint.course_code}` : ''}
           {' · AI answers are based on published course content only'}

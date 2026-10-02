@@ -93,17 +93,17 @@ export default async function PublicCourseDetailPage({ params }: Props) {
     : undefined
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-          <Link href={`/join/${slug}/courses`} className="hover:text-primary transition-colors font-medium">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+          <Link href={`/join/${slug}/courses`} className="hover:text-indigo-400 transition-colors font-medium">
             {org.name}
           </Link>
-          <span>/</span>
-          <span className="text-slate-700 font-semibold truncate">{course.title}</span>
+          <span className="text-slate-600">/</span>
+          <span className="text-white font-semibold truncate">{course.title}</span>
         </nav>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 mb-8 shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 mb-8 shadow-sm">
           {branding?.logo_url && (
             <img
               src={branding.logo_url}
@@ -111,30 +111,30 @@ export default async function PublicCourseDetailPage({ params }: Props) {
               className="h-10 mb-4 object-contain"
             />
           )}
-          <h1 className="text-2xl font-bold text-slate-900">{course.title}</h1>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">{course.title}</h1>
           {course.description && (
-            <p className="text-muted-foreground mt-2 text-base leading-relaxed">{course.description}</p>
+            <p className="text-slate-300 mt-2 text-base leading-relaxed">{course.description}</p>
           )}
           <Link
             href={`/join/${slug}`}
             style={ctaStyle}
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-6 py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm mt-6"
+            className="inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-500 transition-colors text-sm mt-6 shadow-sm"
           >
             Sign up →
           </Link>
         </div>
 
-        <h2 className="text-lg font-bold text-slate-900 mb-4">Curriculum</h2>
+        <h2 className="text-xl font-extrabold text-white mb-4">Curriculum</h2>
 
         {blocks.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-xl p-10 text-center">
-            <p className="text-muted-foreground italic">Curriculum coming soon.</p>
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10 text-center shadow-sm">
+            <p className="text-slate-400 italic">Curriculum coming soon.</p>
           </div>
         ) : moduleHeaders.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-            <ul className="divide-y divide-slate-100">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+            <ul className="divide-y divide-slate-800">
               {flatItems.map((block) => (
-                <li key={block.id} className="px-6 py-3.5 text-sm font-medium text-slate-800">
+                <li key={block.id} className="px-6 py-3.5 text-sm font-medium text-slate-200">
                   {block.title}
                 </li>
               ))}
@@ -145,20 +145,20 @@ export default async function PublicCourseDetailPage({ params }: Props) {
             {moduleHeaders.map((mod) => {
               const items = itemsFor(mod.id)
               return (
-                <section key={mod.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                  <div className="bg-slate-50 border-b border-slate-100 px-6 py-4">
-                    <h3 className="font-bold text-slate-900">{mod.title}</h3>
+                <section key={mod.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="bg-slate-900/80 border-b border-slate-800 px-6 py-4">
+                    <h3 className="font-bold text-white text-base">{mod.title}</h3>
                   </div>
                   {items.length > 0 ? (
-                    <ul className="divide-y divide-slate-100">
+                    <ul className="divide-y divide-slate-800">
                       {items.map((block) => (
-                        <li key={block.id} className="px-6 py-3.5 text-sm font-medium text-slate-800">
+                        <li key={block.id} className="px-6 py-3.5 text-sm font-medium text-slate-200">
                           {block.title}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground italic px-6 py-4">No items yet.</p>
+                    <p className="text-sm text-slate-400 italic px-6 py-4">No items yet.</p>
                   )}
                 </section>
               )

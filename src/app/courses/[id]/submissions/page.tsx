@@ -105,22 +105,22 @@ export default async function CourseSubmissionsPage({
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="mb-6">
           <Link
             href={`/courses/${courseId}`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-slate-400 hover:text-white transition-colors"
           >
             ← {course.title}
           </Link>
           <div className="flex items-baseline justify-between gap-4 mt-1">
-            <h1 className="text-2xl font-extrabold text-foreground">Submissions</h1>
+            <h1 className="text-2xl font-display font-extrabold text-white">Submissions</h1>
             <Link
               href={`/courses/${courseId}/gradebook`}
-              className="text-sm text-primary hover:underline font-medium shrink-0"
+              className="text-sm text-amber-300 hover:text-amber-200 hover:underline font-medium shrink-0 transition-colors"
             >
               View gradebook grid →
             </Link>
@@ -130,17 +130,17 @@ export default async function CourseSubmissionsPage({
         {/* Stats */}
         <div className="flex flex-wrap gap-3 mb-6">
           {[
-            { label: 'Total',   value: total,   className: 'bg-slate-100 text-slate-700 border-slate-200', filter: 'all' },
-            { label: 'Pending', value: pending,  className: 'bg-amber-100 text-amber-700 border-amber-200', filter: 'submitted' },
-            { label: 'Graded',  value: graded,   className: 'bg-emerald-100 text-emerald-700 border-emerald-200', filter: 'graded' },
+            { label: 'Total',   value: total,   className: 'bg-slate-900 text-slate-200 border-slate-700', filter: 'all' },
+            { label: 'Pending', value: pending,  className: 'bg-amber-950/60 text-amber-300 border-amber-800/60', filter: 'submitted' },
+            { label: 'Graded',  value: graded,   className: 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60', filter: 'graded' },
           ].map(({ label, value, className, filter }) => (
             <Link
               key={label}
               href={buildHref({ status: filter === 'all' ? '' : filter })}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${className} ${filterStatus === filter ? 'ring-2 ring-offset-1 ring-current' : ''}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${className} ${filterStatus === filter ? 'ring-2 ring-offset-1 ring-offset-slate-950 ring-current' : ''}`}
             >
               <span>{value}</span>
-              <span className="font-normal">{label}</span>
+              <span className="font-normal text-slate-400">{label}</span>
             </Link>
           ))}
         </div>
@@ -150,7 +150,7 @@ export default async function CourseSubmissionsPage({
           <div className="flex flex-wrap gap-2 mb-6">
             <Link
               href={buildHref({ block: '' })}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${!filterBlock ? 'bg-primary text-primary-foreground border-primary' : 'bg-white border-border text-muted-foreground hover:border-primary/40'}`}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${!filterBlock ? 'bg-indigo-600 text-white border-indigo-500' : 'card-crisp text-slate-400 hover:text-slate-200 hover:border-slate-700'}`}
             >
               All activities
             </Link>
@@ -158,7 +158,7 @@ export default async function CourseSubmissionsPage({
               <Link
                 key={b.id}
                 href={buildHref({ block: b.id })}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors truncate max-w-[180px] ${filterBlock === b.id ? 'bg-primary text-primary-foreground border-primary' : 'bg-white border-border text-muted-foreground hover:border-primary/40'}`}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors truncate max-w-[180px] ${filterBlock === b.id ? 'bg-indigo-600 text-white border-indigo-500' : 'card-crisp text-slate-400 hover:text-slate-200 hover:border-slate-700'}`}
               >
                 {b.title}
               </Link>
@@ -168,12 +168,12 @@ export default async function CourseSubmissionsPage({
 
         {/* Submission cards */}
         {rows.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl p-10 text-center">
-            <p className="text-muted-foreground italic">
+          <div className="card-crisp p-10 text-center">
+            <p className="text-slate-400 italic">
               {total === 0 ? 'No submissions yet.' : 'No submissions match your filters.'}
             </p>
             {total > 0 && filterStatus !== 'all' && (
-              <Link href={buildHref({ status: '' })} className="text-sm text-primary hover:underline mt-2 inline-block">
+              <Link href={buildHref({ status: '' })} className="text-sm text-amber-300 hover:text-amber-200 underline mt-2 inline-block transition-colors">
                 Clear filters
               </Link>
             )}

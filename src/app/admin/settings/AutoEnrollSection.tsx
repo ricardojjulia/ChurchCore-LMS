@@ -60,25 +60,25 @@ export default function AutoEnrollSection({
   }
 
   return (
-    <section className="bg-white rounded-xl border p-6 space-y-4">
+    <section className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4 shadow-sm">
       <div>
-        <h2 className="text-base font-semibold text-foreground">Auto-enroll new joiners</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">
+        <h2 className="text-base font-semibold text-white">Auto-enroll new joiners</h2>
+        <p className="text-xs text-slate-400 mt-0.5">
           Students who register via your join link are enrolled automatically in the courses checked below.
           Gated courses (invite-only, cohort, prerequisite, or age-restricted) are skipped silently. Up to {AUTO_ENROLL_MAX} courses.
         </p>
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+        <p role="alert" className="text-sm text-red-400 bg-red-950/50 border border-red-800/80 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
 
       {courses.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No published courses yet.</p>
+        <p className="text-sm text-slate-400">No published courses yet.</p>
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-slate-800">
           {courses.map((course) => {
             const checked  = selectedIds.includes(course.id)
             const disabled = isPending || (!checked && atCap)
@@ -87,14 +87,14 @@ export default function AutoEnrollSection({
                 key={course.id}
                 className={`flex items-center justify-between gap-4 py-2.5 ${disabled && !checked ? 'opacity-50' : ''}`}
               >
-                <span className="text-sm text-slate-700">{course.title}</span>
+                <span className="text-sm text-slate-200">{course.title}</span>
                 <input
                   type="checkbox"
                   checked={checked}
                   disabled={disabled}
                   onChange={(e) => toggle(course.id, e.target.checked)}
                   aria-label={`Auto-enroll new joiners in ${course.title}`}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400"
+                  className="h-4 w-4 rounded border-slate-700 bg-slate-800 text-indigo-500 focus:ring-indigo-400"
                 />
               </label>
             )

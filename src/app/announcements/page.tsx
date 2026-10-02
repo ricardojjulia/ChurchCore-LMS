@@ -9,10 +9,10 @@ import PublishDraftButton from './PublishDraftButton'
 export const dynamic = 'force-dynamic'
 
 const PRIORITY_STYLE = {
-  urgent: { bar: 'bg-rose-500',  badge: 'bg-rose-100 text-rose-700 border-rose-200'   },
-  high:   { bar: 'bg-amber-500', badge: 'bg-amber-100 text-amber-700 border-amber-200' },
-  normal: { bar: 'bg-sky-500',   badge: 'bg-sky-100 text-sky-700 border-sky-200'       },
-  low:    { bar: 'bg-slate-300', badge: 'bg-slate-100 text-slate-600 border-slate-200' },
+  urgent: { bar: 'bg-rose-500',  badge: 'bg-rose-950/80 text-rose-300 border-rose-800'   },
+  high:   { bar: 'bg-amber-500', badge: 'bg-amber-950/80 text-amber-300 border-amber-800' },
+  normal: { bar: 'bg-indigo-500',   badge: 'bg-indigo-950/80 text-indigo-300 border-indigo-800'       },
+  low:    { bar: 'bg-slate-600', badge: 'bg-slate-800 text-slate-400 border-slate-700' },
 }
 
 function timeLabel(iso: string): string {
@@ -78,13 +78,13 @@ export default async function AnnouncementsPage() {
   }))
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t('announcements.heading')}</h1>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight font-display">{t('announcements.heading')}</h1>
             {items.filter((a) => !a.isRead).length > 0 && (
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <p className="text-sm text-slate-400 mt-0.5">
                 {t('common.unreadCountTemplate', { n: items.filter((a) => !a.isRead).length })}
               </p>
             )}
@@ -92,7 +92,7 @@ export default async function AnnouncementsPage() {
           {isStaff && (
             <Link
               href="/announcements/new"
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-500 transition-colors"
             >
               {t('announcements.newButton')}
             </Link>
@@ -102,15 +102,15 @@ export default async function AnnouncementsPage() {
         {/* Staff drafts */}
         {isStaff && (drafts ?? []).length > 0 && (
           <section className="mb-6">
-            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
+            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-2">
               {t('announcements.draftsHeading')}
             </h2>
             <div className="space-y-2">
               {(drafts ?? []).map((d: any) => (
-                <div key={d.id} className="bg-white border border-dashed border-border rounded-xl px-4 py-3 flex items-center justify-between gap-4">
+                <div key={d.id} className="card-crisp border-dashed px-4 py-3 flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{d.title}</p>
-                    <p className="text-xs text-muted-foreground">{t('announcements.draftMetaTemplate', { scope: d.scope })}</p>
+                    <p className="text-sm font-semibold text-white truncate">{d.title}</p>
+                    <p className="text-xs text-slate-400">{t('announcements.draftMetaTemplate', { scope: d.scope })}</p>
                   </div>
                   <PublishDraftButton id={d.id} label={t('announcements.publishAction')} />
                 </div>
@@ -122,16 +122,16 @@ export default async function AnnouncementsPage() {
         {/* Scheduled announcements (staff only) */}
         {isStaff && (scheduled ?? []).length > 0 && (
           <section className="mb-6">
-            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wide mb-2">
+            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-2">
               {t('announcements.scheduledHeading')}
             </h2>
             <div className="space-y-2">
               {(scheduled ?? []).map((s: any) => (
-                <div key={s.id} className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-4">
+                <div key={s.id} className="card-crisp border-amber-800/60 bg-amber-950/30 px-4 py-3 flex items-center gap-4">
                   <span className="text-lg shrink-0" aria-hidden="true">🕐</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{s.title}</p>
-                    <p className="text-xs text-amber-700">
+                    <p className="text-sm font-semibold text-white truncate">{s.title}</p>
+                    <p className="text-xs text-amber-300">
                       {t('announcements.publishesDateTemplate', { date: new Date(s.publish_at).toLocaleDateString('en-US', {
                         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
                       }) })}
@@ -145,8 +145,8 @@ export default async function AnnouncementsPage() {
 
         {/* Published announcements */}
         {items.length === 0 ? (
-          <div className="bg-white border border-border rounded-2xl p-12 text-center">
-            <p className="text-muted-foreground italic">{t('announcements.emptyState')}</p>
+          <div className="card-crisp p-12 text-center">
+            <p className="text-slate-400 italic">{t('announcements.emptyState')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -156,7 +156,7 @@ export default async function AnnouncementsPage() {
                 <div
                   key={a.id}
                   className={cn(
-                    'bg-white border border-border rounded-2xl overflow-hidden transition-opacity',
+                    'card-crisp overflow-hidden transition-opacity p-0',
                     a.isRead && 'opacity-60'
                   )}
                 >
@@ -165,7 +165,7 @@ export default async function AnnouncementsPage() {
                   <div className="px-5 py-4">
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-foreground text-base leading-snug">{a.title}</h3>
+                        <h3 className="font-bold text-white text-base leading-snug">{a.title}</h3>
                         <span className={cn('px-2 py-0.5 text-[10px] font-bold rounded-full border', pStyle.badge)}>
                           {t(`announcements.priority.${a.priority as 'urgent' | 'high' | 'normal' | 'low'}` as any)}
                         </span>
@@ -173,11 +173,11 @@ export default async function AnnouncementsPage() {
                           <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground shrink-0">{timeLabel(a.publish_at)}</span>
+                      <span className="text-xs text-slate-400 shrink-0">{timeLabel(a.publish_at)}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{a.body}</p>
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/50">
-                      <span className="text-xs text-muted-foreground">{t('announcements.postedByTemplate', { authorName: a.authorName })}</span>
+                    <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{a.body}</p>
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-800">
+                      <span className="text-xs text-slate-400">{t('announcements.postedByTemplate', { authorName: a.authorName })}</span>
                       {!a.isRead && <MarkReadButton announcementId={a.id} />}
                     </div>
                   </div>

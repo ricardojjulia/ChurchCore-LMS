@@ -112,11 +112,11 @@ export default async function CoursePage({
 
   if (!course) {
     return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-        <div className="max-w-md text-center bg-white border border-rose-200 rounded-2xl p-10">
-          <h2 className="text-lg font-bold text-rose-800">{t('courses.detail.notFoundHeading')}</h2>
-          <p className="text-sm text-rose-600 mt-1">{t('courses.detail.notFoundMessage')}</p>
-          <Link href="/courses" className="mt-4 inline-block text-sm text-primary hover:underline">
+      <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4 text-slate-100">
+        <div className="max-w-md text-center card-crisp border-rose-800/60 p-10">
+          <h2 className="text-lg font-display font-bold text-rose-300">{t('courses.detail.notFoundHeading')}</h2>
+          <p className="text-sm text-rose-400/80 mt-1">{t('courses.detail.notFoundMessage')}</p>
+          <Link href="/courses" className="mt-4 inline-block text-sm text-amber-300 hover:text-amber-200 transition-colors underline">
             {t('courses.detail.notFoundBackLink')}
           </Link>
         </div>

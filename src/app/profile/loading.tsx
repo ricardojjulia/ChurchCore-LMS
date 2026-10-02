@@ -2,15 +2,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function ProfileLoading() {
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <Skeleton className="h-9 w-48 mb-2" />
           <Skeleton className="h-4 w-64" />
         </div>
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="card-crisp overflow-hidden">
           {/* Banner skeleton */}
-          <div className="bg-gradient-to-r from-indigo-950 to-slate-900 px-8 py-6 flex items-center gap-5">
+          <div className="bg-gradient-to-r from-indigo-950 to-slate-900 px-8 py-6 flex items-center gap-5 border-b border-slate-800">
             <Skeleton className="w-16 h-16 rounded-full bg-indigo-800/50" />
             <div className="space-y-2">
               <Skeleton className="h-6 w-40 bg-indigo-800/50" />

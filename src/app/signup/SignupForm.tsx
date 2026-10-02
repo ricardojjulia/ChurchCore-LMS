@@ -86,7 +86,7 @@ export default function SignupForm() {
       {error && (
         <div
           role="alert"
-          className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 rounded-xl text-red-700 dark:text-red-300 text-sm"
+          className="p-3 bg-red-950/40 border border-red-900/50 rounded-xl text-red-300 text-sm"
         >
           {error}
         </div>
@@ -94,12 +94,12 @@ export default function SignupForm() {
 
       {/* Organization Details */}
       <div className="space-y-3 pt-1">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
           Organization Details
         </h3>
 
         <div>
-          <label htmlFor="orgName" className="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">
+          <label htmlFor="orgName" className="block text-sm font-medium mb-1 text-slate-200">
             Organization or Church Name
           </label>
           <input
@@ -109,16 +109,16 @@ export default function SignupForm() {
             value={orgName}
             onChange={handleOrgNameChange}
             placeholder="Grace Community Church or Trinity Seminary"
-            className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+            className="w-full border border-slate-700 bg-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
           />
         </div>
 
         <div>
-          <label htmlFor="orgSlug" className="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">
+          <label htmlFor="orgSlug" className="block text-sm font-medium mb-1 text-slate-200">
             Workspace URL Slug
           </label>
-          <div className="flex items-center rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 overflow-hidden focus-within:ring-2 focus-within:ring-primary shadow-sm">
-            <span className="px-3 text-xs text-slate-500 dark:text-slate-400 font-mono select-none">
+          <div className="flex items-center rounded-xl border border-slate-700 bg-slate-800 overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 shadow-sm">
+            <span className="px-3 text-xs text-slate-400 font-mono select-none">
               churchcore.app/join/
             </span>
             <input
@@ -128,20 +128,20 @@ export default function SignupForm() {
               value={orgSlug}
               onChange={handleSlugChange}
               placeholder="grace-community"
-              className="flex-1 bg-transparent px-2 py-2.5 text-sm font-mono text-slate-900 dark:text-white focus:outline-none"
+              className="flex-1 bg-transparent px-2 py-2.5 text-sm font-mono text-white focus:outline-none"
             />
           </div>
         </div>
       </div>
 
       {/* Administrator Account */}
-      <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <div className="space-y-3 pt-3 border-t border-slate-800">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
           Administrator Account
         </h3>
 
         <div>
-          <label htmlFor="adminName" className="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">
+          <label htmlFor="adminName" className="block text-sm font-medium mb-1 text-slate-200">
             Your Full Name
           </label>
           <input
@@ -151,12 +151,12 @@ export default function SignupForm() {
             value={adminName}
             onChange={(e) => setAdminName(e.target.value)}
             placeholder="Pastor John Doe"
-            className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+            className="w-full border border-slate-700 bg-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
           />
         </div>
 
         <div>
-          <label htmlFor="adminEmail" className="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">
+          <label htmlFor="adminEmail" className="block text-sm font-medium mb-1 text-slate-200">
             Admin Email Address
           </label>
           <input
@@ -166,12 +166,12 @@ export default function SignupForm() {
             value={adminEmail}
             onChange={(e) => setAdminEmail(e.target.value)}
             placeholder="john@gracecommunity.org"
-            className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+            className="w-full border border-slate-700 bg-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">
+          <label htmlFor="password" className="block text-sm font-medium mb-1 text-slate-200">
             Password (min. 8 characters)
           </label>
           <input
@@ -182,7 +182,7 @@ export default function SignupForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••••••"
-            className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+            className="w-full border border-slate-700 bg-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
           />
         </div>
       </div>
@@ -200,7 +200,7 @@ export default function SignupForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full mt-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl py-3 px-4 text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+        className="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl py-3 px-4 text-sm transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {loading ? (
           <>
@@ -212,9 +212,9 @@ export default function SignupForm() {
         )}
       </button>
 
-      <div className="text-center text-xs text-slate-500 dark:text-slate-400 pt-2">
+      <div className="text-center text-xs text-slate-400 pt-2">
         <span>Already have an account? </span>
-        <a href="/login" className="font-semibold text-primary hover:underline">
+        <a href="/login" className="font-semibold text-indigo-400 hover:text-indigo-300 underline">
           Sign In
         </a>
       </div>

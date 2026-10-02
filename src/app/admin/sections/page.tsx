@@ -6,10 +6,10 @@ import { createClient } from '@/utils/supabase/server'
 export const dynamic = 'force-dynamic'
 
 const FORMAT_COLORS: Record<string, string> = {
-  synchronous:  'bg-indigo-50 text-indigo-700 border-indigo-200',
-  asynchronous: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  hybrid:       'bg-amber-50 text-amber-700 border-amber-200',
-  self_paced:   'bg-slate-100 text-slate-600 border-slate-200',
+  synchronous:  'bg-indigo-950/50 text-indigo-400 border-indigo-800',
+  asynchronous: 'bg-emerald-950/50 text-emerald-400 border-emerald-800',
+  hybrid:       'bg-amber-950/50 text-amber-400 border-amber-800',
+  self_paced:   'bg-slate-800 text-slate-400 border-slate-700',
 }
 
 export default async function AdminSectionsPage() {
@@ -53,69 +53,69 @@ export default async function AdminSectionsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">{t('heading')}</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-2xl font-extrabold text-white">{t('heading')}</h1>
+            <p className="text-sm text-slate-400 mt-1">
               {t('subtitle')}
             </p>
           </div>
-          <Link href="/admin/sections/new" className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-4 py-2 rounded-xl text-sm hover:bg-primary/90 transition-colors">
+          <Link href="/admin/sections/new" className="inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-xl text-sm hover:bg-indigo-500 transition-colors">
             {t('newSection')}
           </Link>
         </div>
 
         {(!sections || sections.length === 0) ? (
-          <div className="bg-white border border-border rounded-2xl p-12 text-center">
-            <p className="text-muted-foreground">{t('emptyState')}</p>
-            <p className="text-xs text-muted-foreground mt-2">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
+            <p className="text-slate-400">{t('emptyState')}</p>
+            <p className="text-xs text-slate-500 mt-2">
               {t('createFirst')}
             </p>
           </div>
         ) : (
-          <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b border-border">
+              <thead className="bg-slate-900/80 border-b border-slate-800 text-slate-300">
                 <tr>
-                  <th className="text-left px-6 py-3 font-semibold text-muted-foreground">{t('tableBlueprint')}</th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">{t('tableTerm')}</th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">{t('tableSection')}</th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">{t('tableFormat')}</th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">{t('tableGroups')}</th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">{t('tableStatus')}</th>
+                  <th className="text-left px-6 py-3 font-semibold text-slate-400">{t('tableBlueprint')}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-400">{t('tableTerm')}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-400">{t('tableSection')}</th>
+                  <th className="text-center px-4 py-3 font-semibold text-slate-400">{t('tableFormat')}</th>
+                  <th className="text-center px-4 py-3 font-semibold text-slate-400">{t('tableGroups')}</th>
+                  <th className="text-center px-4 py-3 font-semibold text-slate-400">{t('tableStatus')}</th>
                   <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-slate-800">
                 {sections.map((s) => {
                   const blueprint = s.course_blueprints as unknown as { title: string; course_code: string } | null
                   const term      = s.academic_terms    as unknown as { term_name: string; term_code: string } | null
                   return (
-                    <tr key={s.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={s.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-foreground">{blueprint?.title ?? '—'}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{blueprint?.course_code}</p>
+                        <p className="font-semibold text-white">{blueprint?.title ?? '—'}</p>
+                        <p className="text-xs text-slate-400 font-mono">{blueprint?.course_code}</p>
                       </td>
                       <td className="px-4 py-4">
-                        <p className="text-foreground">{term?.term_name ?? '—'}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{term?.term_code}</p>
+                        <p className="text-slate-200">{term?.term_name ?? '—'}</p>
+                        <p className="text-xs text-slate-400 font-mono">{term?.term_code}</p>
                       </td>
-                      <td className="px-4 py-4 font-mono text-sm text-foreground">{s.section_code}</td>
+                      <td className="px-4 py-4 font-mono text-sm text-slate-200">{s.section_code}</td>
                       <td className="px-4 py-4 text-center">
-                        <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded border ${FORMAT_COLORS[s.delivery_format] ?? 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                        <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded border ${FORMAT_COLORS[s.delivery_format] ?? 'bg-slate-800 text-slate-400 border-slate-700'}`}>
                           {formatLabels[s.delivery_format] ?? s.delivery_format}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-center">
-                        <span className="font-bold text-foreground">{groupCountMap[s.id] ?? 0}</span>
+                        <span className="font-bold text-white">{groupCountMap[s.id] ?? 0}</span>
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span className={`inline-flex text-xs font-semibold px-2 py-0.5 rounded-full border ${
                           s.is_active
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-slate-100 text-slate-500 border-slate-200'
+                            ? 'bg-emerald-950/50 text-emerald-400 border-emerald-800'
+                            : 'bg-slate-800 text-slate-400 border-slate-700'
                         }`}>
                           {s.is_active ? t('statusActive') : t('statusInactive')}
                         </span>
@@ -123,7 +123,7 @@ export default async function AdminSectionsPage() {
                       <td className="px-4 py-4 text-right">
                         <Link
                           href={`/admin/sections/${s.id}`}
-                          className="text-sm font-semibold text-primary hover:underline"
+                          className="text-sm font-semibold text-amber-300 hover:text-amber-200 hover:underline"
                         >
                           {t('viewGroups')}
                         </Link>

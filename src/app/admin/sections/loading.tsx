@@ -2,52 +2,52 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function SectionsLoading() {
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-6xl mx-auto">
         {/* Page header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <Skeleton className="h-8 w-32 mb-2" />
-            <Skeleton className="h-4 w-96" />
+            <Skeleton className="h-8 w-32 mb-2 bg-slate-800" />
+            <Skeleton className="h-4 w-96 bg-slate-800" />
           </div>
-          <Skeleton className="h-9 w-32 rounded-xl" />
+          <Skeleton className="h-9 w-32 rounded-xl bg-slate-800" />
         </div>
 
         {/* Table — sections has 7 columns: Blueprint, Term, Section, Format, Groups, Status, Actions */}
-        <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
           {/* Table header */}
-          <div className="bg-slate-50 border-b border-border px-6 py-3 flex items-center gap-4">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-20" />
-            <Skeleton className="h-4 w-16 ml-auto" />
-            <Skeleton className="h-4 w-14" />
-            <Skeleton className="h-4 w-14" />
-            <Skeleton className="h-4 w-10" />
+          <div className="bg-slate-900/80 border-b border-slate-800 px-6 py-3 flex items-center gap-4">
+            <Skeleton className="h-4 w-24 bg-slate-800" />
+            <Skeleton className="h-4 w-20 bg-slate-800" />
+            <Skeleton className="h-4 w-20 bg-slate-800" />
+            <Skeleton className="h-4 w-16 ml-auto bg-slate-800" />
+            <Skeleton className="h-4 w-14 bg-slate-800" />
+            <Skeleton className="h-4 w-14 bg-slate-800" />
+            <Skeleton className="h-4 w-10 bg-slate-800" />
           </div>
           {/* Table rows */}
           {Array.from({ length: 7 }).map((_, i) => (
-            <div key={i} className="px-6 py-4 border-b border-border flex items-center gap-4">
+            <div key={i} className="px-6 py-4 border-b border-slate-800 flex items-center gap-4">
               {/* Blueprint column */}
               <div className="flex-1 min-w-0">
-                <Skeleton className="h-4 w-40 mb-1.5" />
-                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-40 mb-1.5 bg-slate-800" />
+                <Skeleton className="h-3 w-24 bg-slate-800" />
               </div>
               {/* Term column */}
               <div className="w-28">
-                <Skeleton className="h-4 w-24 mb-1" />
-                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-4 w-24 mb-1 bg-slate-800" />
+                <Skeleton className="h-3 w-16 bg-slate-800" />
               </div>
               {/* Section code */}
-              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-20 bg-slate-800" />
               {/* Format badge */}
-              <Skeleton className="h-5 w-16 rounded" />
+              <Skeleton className="h-5 w-16 rounded bg-slate-800" />
               {/* Groups count */}
-              <Skeleton className="h-4 w-6" />
+              <Skeleton className="h-4 w-6 bg-slate-800" />
               {/* Status badge */}
-              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-5 w-16 rounded-full bg-slate-800" />
               {/* Action link */}
-              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-20 bg-slate-800" />
             </div>
           ))}
         </div>

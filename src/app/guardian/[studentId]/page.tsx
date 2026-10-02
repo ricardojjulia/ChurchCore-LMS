@@ -46,17 +46,17 @@ interface Overview {
 }
 
 const STATUS_STYLE: Record<string, { className: string }> = {
-  enrolled:    { className: 'text-sky-700 bg-sky-50 border-sky-200' },
-  in_progress: { className: 'text-amber-700 bg-amber-50 border-amber-200' },
-  completed:   { className: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-  dropped:     { className: 'text-rose-700 bg-rose-50 border-rose-200' },
+  enrolled:    { className: 'text-sky-300 bg-sky-950/60 border-sky-800/60' },
+  in_progress: { className: 'text-amber-300 bg-amber-950/60 border-amber-800/60' },
+  completed:   { className: 'text-emerald-300 bg-emerald-950/60 border-emerald-800/60' },
+  dropped:     { className: 'text-rose-300 bg-rose-950/60 border-rose-800/60' },
 }
 
 function gradeColor(pct: number | null): string {
-  if (pct === null) return 'text-slate-600'
-  if (pct >= 90) return 'text-emerald-700'
-  if (pct >= 70) return 'text-amber-700'
-  return 'text-rose-700'
+  if (pct === null) return 'text-slate-400'
+  if (pct >= 90) return 'text-emerald-400'
+  if (pct >= 70) return 'text-amber-400'
+  return 'text-rose-400'
 }
 
 export default async function GuardianStudentPage({
@@ -109,38 +109,38 @@ export default async function GuardianStudentPage({
   )
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6" aria-label="Breadcrumb">
-          <Link href="/guardian" className="hover:text-primary transition-colors font-medium">
+        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6" aria-label="Breadcrumb">
+          <Link href="/guardian" className="hover:text-amber-300 transition-colors font-medium">
             {t('guardian.list.heading')}
           </Link>
-          <span aria-hidden="true">/</span>
-          <span className="text-foreground font-semibold">{student.display_name ?? t('common.studentFallback')}</span>
+          <span aria-hidden="true" className="text-slate-600">/</span>
+          <span className="text-white font-semibold">{student.display_name ?? t('common.studentFallback')}</span>
         </nav>
 
         {/* Student profile header */}
-        <div className="bg-white border border-border rounded-2xl p-6 mb-6 flex items-center gap-5">
-          <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-            <span className="text-2xl font-extrabold text-indigo-700">
+        <div className="card-crisp p-6 mb-6 flex items-center gap-5">
+          <div className="w-16 h-16 rounded-full bg-indigo-900/60 border border-indigo-700/60 flex items-center justify-center shrink-0">
+            <span className="text-2xl font-extrabold text-indigo-300">
               {(student.display_name ?? '?')[0]?.toUpperCase()}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-extrabold text-foreground">{student.display_name ?? t('common.studentFallback')}</h1>
+            <h1 className="text-xl font-display font-extrabold text-white tracking-tight">{student.display_name ?? t('common.studentFallback')}</h1>
             {student.student_id && (
-              <p className="text-sm text-muted-foreground">{student.student_id}</p>
+              <p className="text-sm text-slate-400 font-mono">{student.student_id}</p>
             )}
           </div>
           <div className="flex gap-6 text-center shrink-0">
             <div>
-              <p className="text-2xl font-extrabold text-indigo-600">{student.current_level}</p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('common.levelLabel')}</p>
+              <p className="text-2xl font-extrabold text-indigo-400">{student.current_level}</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wider">{t('common.levelLabel')}</p>
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-foreground">{student.xp.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t('guardian.detail.xpStatLabel')}</p>
+              <p className="text-2xl font-extrabold text-amber-300">{student.xp.toLocaleString()}</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wider">{t('guardian.detail.xpStatLabel')}</p>
             </div>
           </div>
         </div>
@@ -148,11 +148,11 @@ export default async function GuardianStudentPage({
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Enrollments */}
           <section>
-            <h2 className="text-base font-bold text-foreground mb-3">
+            <h2 className="text-base font-display font-bold text-white mb-3">
               {t('guardian.detail.coursesSectionHeadingTemplate', { n: overview.enrollments.length })}
             </h2>
             {overview.enrollments.length === 0 ? (
-              <div className="bg-white border border-border rounded-xl p-6 text-center text-sm text-muted-foreground italic">
+              <div className="card-crisp p-6 text-center text-sm text-slate-400 italic">
                 {t('guardian.detail.emptyEnrollments')}
               </div>
             ) : (
@@ -164,10 +164,10 @@ export default async function GuardianStudentPage({
                     : e.status === 'dropped' ? t('status.dropped')
                     : t('status.enrolled')
                   return (
-                    <div key={e.course_id} className="bg-white border border-border rounded-xl p-4">
+                    <div key={e.course_id} className="card-crisp p-4">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div>
-                          <p className="text-sm font-semibold text-foreground leading-snug">{e.course_title}</p>
+                          <p className="text-sm font-semibold text-white leading-snug">{e.course_title}</p>
                           {e.status !== 'dropped' && teacherByCourse.get(e.course_id) && (
                             <MessageAboutStudent
                               studentUid={student.uid}
@@ -182,18 +182,18 @@ export default async function GuardianStudentPage({
                         </span>
                       </div>
                       <div className="mb-3">
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                        <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                           <span>{t('guardian.detail.progressBarLabel')}</span>
-                          <span>{e.progress_percent}%</span>
+                          <span className="font-semibold text-slate-200">{e.progress_percent}%</span>
                         </div>
-                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-primary rounded-full"
+                            className="h-full bg-indigo-500 rounded-full"
                             style={{ width: `${e.progress_percent}%` }}
                           />
                         </div>
                       </div>
-                      <div className="flex justify-end pt-1 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-end pt-1 border-t border-slate-800">
                         <ContactTeacherModal
                           studentUid={student.uid}
                           studentName={student.display_name ?? 'Student'}
@@ -211,26 +211,26 @@ export default async function GuardianStudentPage({
           <div className="space-y-6">
             {/* Recent grades */}
             <section>
-              <h2 className="text-base font-bold text-foreground mb-3">{t('guardian.detail.recentGradesHeading')}</h2>
+              <h2 className="text-base font-display font-bold text-white mb-3">{t('guardian.detail.recentGradesHeading')}</h2>
               {overview.recent_grades.length === 0 ? (
-                <div className="bg-white border border-border rounded-xl p-6 text-center text-sm text-muted-foreground italic">
+                <div className="card-crisp p-6 text-center text-sm text-slate-400 italic">
                   {t('guardian.detail.emptyGrades')}
                 </div>
               ) : (
-                <div className="bg-white border border-border rounded-xl overflow-hidden">
-                  <ul className="divide-y divide-border">
+                <div className="card-crisp overflow-hidden">
+                  <ul className="divide-y divide-slate-800">
                     {overview.recent_grades.map((g, i) => (
-                      <li key={i} className="px-4 py-3 flex items-center justify-between gap-3">
+                      <li key={i} className="px-4 py-3 flex items-center justify-between gap-3 hover:bg-slate-800/40 transition-colors">
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{g.block_title}</p>
-                          <p className="text-xs text-muted-foreground truncate">{g.course_title}</p>
+                          <p className="text-sm font-semibold text-white truncate">{g.block_title}</p>
+                          <p className="text-xs text-slate-400 truncate">{g.course_title}</p>
                         </div>
                         <div className="text-right shrink-0">
                           <p className={`text-sm font-bold ${gradeColor(g.grade_pct)}`}>
                             {g.score ?? '?'} / {g.max_score ?? '?'}
                           </p>
                           {g.grade_pct !== null && (
-                            <p className="text-xs text-muted-foreground">{g.grade_pct}%</p>
+                            <p className="text-xs text-slate-400">{g.grade_pct}%</p>
                           )}
                         </div>
                       </li>
@@ -243,19 +243,19 @@ export default async function GuardianStudentPage({
             {/* Certificates */}
             {overview.certificates.length > 0 && (
               <section>
-                <h2 className="text-base font-bold text-foreground mb-3">
+                <h2 className="text-base font-display font-bold text-white mb-3">
                   {t('guardian.detail.certificatesSectionHeadingTemplate', { n: overview.certificates.length })}
                 </h2>
                 <div className="space-y-2">
                   {overview.certificates.map((c) => (
                     <div
                       key={c.certificate_number}
-                      className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3"
+                      className="bg-amber-950/40 border border-amber-800/60 rounded-xl px-4 py-3 flex items-center gap-3"
                     >
                       <span className="text-xl shrink-0" aria-hidden="true">🏆</span>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-amber-900 truncate">{c.course_title}</p>
-                        <p className="text-xs text-amber-700">
+                        <p className="text-sm font-bold text-amber-200 truncate">{c.course_title}</p>
+                        <p className="text-xs text-amber-400/80">
                           {c.certificate_number} ·{' '}
                           {new Date(c.issued_at).toLocaleDateString('en-US', {
                             month: 'short', day: 'numeric', year: 'numeric',

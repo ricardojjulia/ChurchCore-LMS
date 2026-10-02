@@ -72,64 +72,64 @@ export default async function CourseCompletePage({
         </div>
 
         {/* Certificate card */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden mb-6">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden mb-6">
           {/* Certificate header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-indigo-800 px-8 py-6 text-center">
+          <div className="bg-gradient-to-r from-indigo-700 to-indigo-900 px-8 py-6 text-center border-b border-indigo-800/50">
             <p className="text-indigo-200 text-xs font-bold uppercase tracking-widest mb-1">
               {t('courses.complete.certificateHeader')}
             </p>
-            <p className="text-white text-sm">ChurchCore LMS</p>
+            <p className="text-white text-sm font-semibold">ChurchCore LMS</p>
           </div>
 
           {/* Certificate body */}
           <div className="px-8 py-8 text-center">
-            <p className="text-sm text-muted-foreground mb-1">{t('courses.complete.certifiesText')}</p>
-            <p className="text-2xl font-extrabold text-foreground mb-1">
+            <p className="text-sm text-slate-400 mb-1">{t('courses.complete.certifiesText')}</p>
+            <p className="text-2xl font-extrabold text-white mb-1">
               {profile.display_name ?? t('common.studentFallback')}
             </p>
-            <p className="text-sm text-muted-foreground mb-4">{t('courses.complete.hasCompletedText')}</p>
-            <p className="text-xl font-bold text-indigo-700 mb-6">{course.title}</p>
+            <p className="text-sm text-slate-400 mb-4">{t('courses.complete.hasCompletedText')}</p>
+            <p className="text-xl font-bold text-indigo-400 mb-6">{course.title}</p>
 
             {/* Stats row */}
             <div className="flex justify-center gap-8 mb-6">
               {cert?.final_grade !== null && cert?.final_grade !== undefined && (
                 <div className="text-center">
-                  <p className="text-3xl font-extrabold text-foreground">{cert.letter_grade}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t('courses.complete.finalGradeLabel')}</p>
-                  <p className="text-xs font-semibold text-muted-foreground">{cert.final_grade}%</p>
+                  <p className="text-3xl font-extrabold text-white">{cert.letter_grade}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{t('courses.complete.finalGradeLabel')}</p>
+                  <p className="text-xs font-semibold text-slate-400">{cert.final_grade}%</p>
                 </div>
               )}
               {cert?.total_xp_earned !== undefined && cert.total_xp_earned > 0 && (
                 <div className="text-center">
-                  <p className="text-3xl font-extrabold text-indigo-600">{cert.total_xp_earned}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t('courses.complete.xpEarnedLabel')}</p>
+                  <p className="text-3xl font-extrabold text-indigo-400">{cert.total_xp_earned}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{t('courses.complete.xpEarnedLabel')}</p>
                 </div>
               )}
               <div className="text-center">
-                <p className="text-3xl font-extrabold text-emerald-700">{enrollment.progress_percent}%</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{t('courses.complete.completionStatLabel')}</p>
+                <p className="text-3xl font-extrabold text-emerald-400">{enrollment.progress_percent}%</p>
+                <p className="text-xs text-slate-400 mt-0.5">{t('courses.complete.completionStatLabel')}</p>
               </div>
             </div>
 
-            <p className="text-xs text-muted-foreground mb-2">{completedDate}</p>
+            <p className="text-xs text-slate-400 mb-2">{completedDate}</p>
             {cert?.certificate_no && (
-              <p className="text-[10px] font-mono text-muted-foreground">
+              <p className="text-[10px] font-mono text-slate-500">
                 {cert.certificate_no}
               </p>
             )}
           </div>
 
           {/* Level badge */}
-          <div className="border-t border-border px-8 py-4 bg-muted/20 flex items-center justify-between">
+          <div className="border-t border-slate-800 px-8 py-4 bg-slate-950/50 flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground">{t('courses.complete.currentStandingLabel')}</p>
-              <p className="text-sm font-bold text-foreground">
+              <p className="text-xs text-slate-400">{t('courses.complete.currentStandingLabel')}</p>
+              <p className="text-sm font-bold text-white">
                 {t('courses.complete.levelBadgeTemplate', { level: profile.current_level, xp: profile.xp_points.toLocaleString() })}
               </p>
             </div>
             <Link
               href="/leaderboard"
-              className="no-print text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+              className="no-print text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
             >
               {t('courses.complete.leaderboardLink')}
             </Link>
@@ -140,7 +140,7 @@ export default async function CourseCompletePage({
         <div className="no-print flex flex-wrap gap-3 justify-center">
           <Link
             href="/certificates"
-            className="inline-flex items-center gap-2 bg-white text-slate-900 font-bold px-5 py-2.5 rounded-xl hover:bg-slate-100 transition-colors text-sm"
+            className="inline-flex items-center gap-2 bg-slate-800 border border-slate-700 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-slate-700 transition-colors text-sm"
           >
             {t('courses.complete.viewCertificatesButton')}
           </Link>

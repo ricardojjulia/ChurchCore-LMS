@@ -34,12 +34,12 @@ const FEATURE_LABELS: Record<string, string> = {
 
 function StatusChip({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    active:    'bg-green-100 text-green-700',
-    suspended: 'bg-red-100 text-red-700',
-    trial:     'bg-yellow-100 text-yellow-800',
+    active:    'bg-emerald-950/50 text-emerald-400 border-emerald-800',
+    suspended: 'bg-rose-950/50 text-rose-400 border-rose-800',
+    trial:     'bg-amber-950/50 text-amber-400 border-amber-800',
   }
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[status] ?? 'bg-slate-100 text-slate-700'}`}>
+    <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${styles[status] ?? 'bg-slate-800 text-slate-400 border-slate-700'}`}>
       {status}
     </span>
   )
@@ -102,15 +102,15 @@ export default function BillingPageClient({ org, features, starterPriceId }: Pro
     <div className="space-y-6">
       {/* Suspension banner */}
       {org.status === 'suspended' && (
-        <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-4">
-          <AlertTriangle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="flex items-start gap-3 bg-rose-950/50 border border-rose-800 rounded-2xl px-5 py-4">
+          <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
           <div>
-            <p className="text-sm font-semibold text-red-800">Subscription cancelled</p>
-            <p className="text-sm text-red-700 mt-0.5">
+            <p className="text-sm font-semibold text-rose-300">Subscription cancelled</p>
+            <p className="text-sm text-rose-400 mt-0.5">
               Your subscription has been cancelled. Members cannot access the platform.{' '}
               <a
                 href="mailto:support@churchcore.app"
-                className="underline font-medium"
+                className="underline font-medium text-white hover:text-amber-300"
               >
                 Contact support
               </a>{' '}
@@ -121,11 +121,11 @@ export default function BillingPageClient({ org, features, starterPriceId }: Pro
       )}
 
       {/* Current plan card */}
-      <section className="bg-white rounded-xl border border-border p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">Current Plan</h2>
+      <section className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-white">Current Plan</h2>
 
         <div className="flex items-center gap-3">
-          <span className="text-2xl font-bold text-foreground">{planLabel}</span>
+          <span className="text-2xl font-bold text-white">{planLabel}</span>
           <StatusChip status={org.status} />
         </div>
 
@@ -133,10 +133,10 @@ export default function BillingPageClient({ org, features, starterPriceId }: Pro
           {Object.entries(features).map(([key, enabled]) => (
             <div key={key} className="flex items-center gap-2 text-sm">
               {enabled
-                ? <CheckCircle className="h-4 w-4 text-green-600 shrink-0" aria-hidden="true" />
-                : <XCircle    className="h-4 w-4 text-slate-300 shrink-0" aria-hidden="true" />
+                ? <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" aria-hidden="true" />
+                : <XCircle    className="h-4 w-4 text-slate-600 shrink-0" aria-hidden="true" />
               }
-              <span className={enabled ? 'text-foreground' : 'text-muted-foreground'}>
+              <span className={enabled ? 'text-slate-200' : 'text-slate-500'}>
                 {FEATURE_LABELS[key] ?? key.replace(/_/g, ' ')}
               </span>
             </div>
@@ -145,14 +145,14 @@ export default function BillingPageClient({ org, features, starterPriceId }: Pro
       </section>
 
       {/* CTA card */}
-      <section className="bg-white rounded-xl border border-border p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-foreground">
+      <section className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-white">
           {org.stripe_customer_id ? 'Manage Subscription' : 'Upgrade Your Plan'}
         </h2>
 
         {org.stripe_customer_id ? (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-slate-400">
               View invoices, update your payment method, change plans, or cancel your subscription
               through the Stripe billing portal.
             </p>
@@ -160,29 +160,29 @@ export default function BillingPageClient({ org, features, starterPriceId }: Pro
               type="button"
               onClick={handleManageBilling}
               disabled={loading}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-5 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center rounded-xl text-sm font-semibold h-10 px-5 bg-indigo-600 text-white hover:bg-indigo-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? 'Opening portal…' : 'Manage Subscription & Invoices'}
             </button>
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-slate-400">
               You are on the Free plan. Upgrade to Starter to unlock courses, reporting, and more.
             </p>
             <button
               type="button"
               onClick={handleUpgrade}
               disabled={loading}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-5 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center rounded-xl text-sm font-semibold h-10 px-5 bg-indigo-600 text-white hover:bg-indigo-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? 'Redirecting…' : 'Upgrade Plan'}
             </button>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-400">
               Need help?{' '}
               <a
                 href="mailto:support@churchcore.app"
-                className="text-primary underline"
+                className="text-indigo-400 hover:text-indigo-300 underline"
               >
                 Contact support
               </a>
@@ -191,7 +191,7 @@ export default function BillingPageClient({ org, features, starterPriceId }: Pro
         )}
 
         {error && (
-          <p className="text-sm text-red-600" role="alert">{error}</p>
+          <p className="text-sm text-rose-400" role="alert">{error}</p>
         )}
       </section>
     </div>

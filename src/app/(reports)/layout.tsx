@@ -64,11 +64,11 @@ function routeRole(pathname: string): ReportRole | null {
 
 function ForbiddenReports({ expectedRole, actualRole }: { expectedRole: ReportRole; actualRole: ReportRole }) {
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-12">
-      <div className="mx-auto max-w-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">403</p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-950">Reports access denied</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-600">
+    <main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100">
+      <div className="mx-auto max-w-2xl card-crisp p-8">
+        <p className="text-sm font-semibold uppercase tracking-wide text-rose-400">403</p>
+        <h1 className="mt-2 text-2xl font-display font-bold text-white">Reports access denied</h1>
+        <p className="mt-3 text-sm leading-6 text-slate-400">
           This report area is for {expectedRole} users. Your current reporting role is {actualRole}.
         </p>
       </div>
@@ -78,10 +78,10 @@ function ForbiddenReports({ expectedRole, actualRole }: { expectedRole: ReportRo
 
 function ReportsSidebarShell({ context }: { context: ReportsContextValue }) {
   return (
-    <aside className="border-r border-slate-200 bg-white px-5 py-6">
+    <aside className="border-r border-slate-800 bg-slate-900/60 px-5 py-6 backdrop-blur-md">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Reports</p>
-        <p className="mt-1 text-lg font-bold text-slate-950">ChurchCore LMS</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Reports</p>
+        <p className="mt-1 text-lg font-display font-bold text-white">ChurchCore LMS</p>
       </div>
       <ReportsNav links={navByRole[context.role]} ariaLabel={`${context.role} reports`} />
     </aside>
@@ -116,7 +116,7 @@ export default async function ReportsLayout({ children }: { children: ReactNode 
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
+    <div className="min-h-screen bg-slate-950 text-slate-100 lg:grid lg:grid-cols-[280px_1fr]">
       <ReportsSidebar context={reportsContext} />
       <section className="min-w-0 px-4 py-8 sm:px-6 lg:px-10">
         <div className="mb-6 flex justify-end">

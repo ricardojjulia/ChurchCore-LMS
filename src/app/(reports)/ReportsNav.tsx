@@ -32,8 +32,8 @@ export function ReportsNav({ links, ariaLabel }: Props) {
             className={cn(
               'block border-l-2 px-3 py-2 text-sm font-medium transition-colors',
               active
-                ? 'border-indigo-500 pl-2 text-white'
-                : 'border-transparent text-slate-700 hover:border-slate-900 hover:bg-slate-50 hover:text-slate-950',
+                ? 'border-indigo-400 pl-2 text-white bg-indigo-950/40'
+                : 'border-transparent text-slate-400 hover:border-slate-600 hover:bg-slate-800/40 hover:text-slate-100',
             )}
           >
             {item.label}

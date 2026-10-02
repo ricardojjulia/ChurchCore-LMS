@@ -74,18 +74,18 @@ export default function ImportForm() {
     return (
       <div className="space-y-5">
         {/* Rate limit warning */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm text-amber-800">
+        <div className="bg-amber-950/50 border border-amber-800 rounded-xl px-5 py-4 text-sm text-amber-300">
           <strong>Note:</strong> Importing more than 3 users requires Supabase Pro plan due to invite rate limits.
         </div>
 
         {/* Drop zone (styled label over file input) */}
-        <div className="bg-white border border-border rounded-2xl shadow-sm p-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm p-8">
           <label
             htmlFor="csv-file-input"
-            className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-slate-200 rounded-xl px-6 py-12 cursor-pointer hover:border-slate-300 hover:bg-slate-50 transition-colors"
+            className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-slate-700 rounded-xl px-6 py-12 cursor-pointer hover:border-indigo-500 hover:bg-slate-800/50 transition-colors"
           >
             <svg
-              className="w-10 h-10 text-slate-400"
+              className="w-10 h-10 text-slate-500"
               fill="none"
               stroke="currentColor"
               strokeWidth={1.5}
@@ -99,8 +99,8 @@ export default function ImportForm() {
               />
             </svg>
             <div className="text-center">
-              <p className="text-sm font-semibold text-foreground">Click to choose a CSV file</p>
-              <p className="text-xs text-muted-foreground mt-1">or drag and drop (not supported — use the file picker)</p>
+              <p className="text-sm font-semibold text-white">Click to choose a CSV file</p>
+              <p className="text-xs text-slate-400 mt-1">or drag and drop (use the file picker)</p>
             </div>
             <input
               ref={fileInputRef}
@@ -112,14 +112,14 @@ export default function ImportForm() {
             />
           </label>
 
-          <div className="mt-6 space-y-2 text-sm text-muted-foreground">
+          <div className="mt-6 space-y-2 text-sm text-slate-400">
             <p>
-              Upload a CSV with columns: <code className="bg-slate-100 px-1 py-0.5 rounded text-xs font-mono">email</code>,{' '}
-              <code className="bg-slate-100 px-1 py-0.5 rounded text-xs font-mono">display_name</code>,{' '}
-              <code className="bg-slate-100 px-1 py-0.5 rounded text-xs font-mono">role</code>.
+              Upload a CSV with columns: <code className="bg-slate-800 text-slate-300 px-1 py-0.5 rounded text-xs font-mono">email</code>,{' '}
+              <code className="bg-slate-800 text-slate-300 px-1 py-0.5 rounded text-xs font-mono">display_name</code>,{' '}
+              <code className="bg-slate-800 text-slate-300 px-1 py-0.5 rounded text-xs font-mono">role</code>.
               Column order does not matter. Headers are case-insensitive.
             </p>
-            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-md px-3 py-2">
+            <p className="text-xs text-amber-400 bg-amber-950/50 border border-amber-800 rounded-md px-3 py-2">
               Display names must not contain commas.
             </p>
           </div>
@@ -135,60 +135,60 @@ export default function ImportForm() {
     return (
       <div className="space-y-5">
         {/* Summary */}
-        <div className="bg-white border border-border rounded-2xl shadow-sm px-6 py-5">
-          <p className="text-sm text-foreground">
-            <span className="font-semibold text-emerald-700">{rows.length} row{rows.length !== 1 ? 's' : ''}</span> ready to invite.
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm px-6 py-5">
+          <p className="text-sm text-slate-300">
+            <span className="font-semibold text-emerald-400">{rows.length} row{rows.length !== 1 ? 's' : ''}</span> ready to invite.
             {parseErrors.length > 0 && (
               <>
                 {' '}
-                <span className="font-semibold text-rose-600">{parseErrors.length} row{parseErrors.length !== 1 ? 's' : ''}</span> have errors.
+                <span className="font-semibold text-rose-400">{parseErrors.length} row{parseErrors.length !== 1 ? 's' : ''}</span> have errors.
               </>
             )}
           </p>
         </div>
 
         {/* Rate limit warning */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-sm text-amber-800">
+        <div className="bg-amber-950/50 border border-amber-800 rounded-xl px-5 py-4 text-sm text-amber-300">
           <strong>Note:</strong> Importing more than 3 users requires Supabase Pro plan due to invite rate limits.
         </div>
 
         {/* Preview table */}
-        <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-slate-50">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-12">Row</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Role</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
+                <tr className="border-b border-slate-800 bg-slate-900/80">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide w-12">Row</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Email</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Name</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Role</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-slate-800">
                 {rows.map((row, i) => (
-                  <tr key={`valid-${i}`} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3 text-muted-foreground">{i + 1}</td>
-                    <td className="px-5 py-3 font-medium text-foreground">{row.email}</td>
-                    <td className="px-5 py-3 text-foreground">{row.display_name}</td>
+                  <tr key={`valid-${i}`} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="px-5 py-3 text-slate-400">{i + 1}</td>
+                    <td className="px-5 py-3 font-medium text-white">{row.email}</td>
+                    <td className="px-5 py-3 text-slate-300">{row.display_name}</td>
                     <td className="px-5 py-3">
-                      <span className="text-xs bg-slate-100 text-slate-700 border border-slate-200 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-slate-800 text-slate-300 border border-slate-700 px-2 py-0.5 rounded">
                         {row.role}
                       </span>
                     </td>
                     <td className="px-5 py-3">
-                      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">
+                      <Badge className="bg-emerald-950/50 text-emerald-400 border-emerald-800">
                         ✓ Ready
                       </Badge>
                     </td>
                   </tr>
                 ))}
                 {parseErrors.map((err, i) => (
-                  <tr key={`error-${i}`} className="bg-rose-50/50 hover:bg-rose-50 transition-colors">
-                    <td className="px-5 py-3 text-muted-foreground">{err.rowNum}</td>
-                    <td className="px-5 py-3 text-muted-foreground italic" colSpan={3}>—</td>
+                  <tr key={`error-${i}`} className="bg-rose-950/20 hover:bg-rose-950/30 transition-colors">
+                    <td className="px-5 py-3 text-slate-400">{err.rowNum}</td>
+                    <td className="px-5 py-3 text-slate-500 italic" colSpan={3}>—</td>
                     <td className="px-5 py-3">
-                      <Badge className="bg-rose-50 text-rose-700 border-rose-200">
+                      <Badge className="bg-rose-950/50 text-rose-400 border-rose-800">
                         ✗ {err.message}
                       </Badge>
                     </td>
@@ -196,7 +196,7 @@ export default function ImportForm() {
                 ))}
                 {totalRows === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-5 py-10 text-center text-muted-foreground italic">
+                    <td colSpan={5} className="px-5 py-10 text-center text-slate-500 italic">
                       No rows found in this file.
                     </td>
                   </tr>
@@ -209,11 +209,11 @@ export default function ImportForm() {
         {/* Actions */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={resetAll} size="sm">
+            <Button variant="outline" onClick={resetAll} size="sm" className="border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700">
               ← Back
             </Button>
             {parseErrors.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={handleDownloadErrors}>
+              <Button variant="ghost" size="sm" onClick={handleDownloadErrors} className="text-slate-400 hover:text-white">
                 Download error rows as CSV
               </Button>
             )}
@@ -222,6 +222,7 @@ export default function ImportForm() {
             onClick={handleImport}
             disabled={rows.length === 0 || importing}
             size="sm"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold"
           >
             {importing ? 'Sending invites…' : `Send ${rows.length} Invite${rows.length !== 1 ? 's' : ''}`}
           </Button>
@@ -234,53 +235,53 @@ export default function ImportForm() {
   return (
     <div className="space-y-5">
       {/* Summary bar */}
-      <div className="bg-white border border-border rounded-2xl shadow-sm px-6 py-5">
-        <p className="text-sm text-foreground font-medium">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm px-6 py-5">
+        <p className="text-sm text-slate-300 font-medium">
           Invites sent:{' '}
-          <span className="font-bold text-emerald-700">{sentCount}</span>
+          <span className="font-bold text-emerald-400">{sentCount}</span>
           {' | '}
           Already members:{' '}
-          <span className="font-bold text-slate-600">{skippedCount}</span>
+          <span className="font-bold text-slate-400">{skippedCount}</span>
           {' | '}
           Failed:{' '}
-          <span className="font-bold text-rose-600">{failedCount}</span>
+          <span className="font-bold text-rose-400">{failedCount}</span>
         </p>
       </div>
 
       {/* Results table */}
-      <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-slate-50">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Detail</th>
+              <tr className="border-b border-slate-800 bg-slate-900/80">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Email</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Status</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Detail</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-slate-800">
               {results.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-5 py-10 text-center text-muted-foreground italic">
+                  <td colSpan={3} className="px-5 py-10 text-center text-slate-500 italic">
                     No results.
                   </td>
                 </tr>
               ) : (
                 results.map((result, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3 font-medium text-foreground">{result.email}</td>
+                  <tr key={i} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="px-5 py-3 font-medium text-white">{result.email}</td>
                     <td className="px-5 py-3">
                       {result.status === 'sent' && (
-                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Sent</Badge>
+                        <Badge className="bg-emerald-950/50 text-emerald-400 border-emerald-800">Sent</Badge>
                       )}
                       {result.status === 'skipped' && (
-                        <Badge className="bg-slate-100 text-slate-600 border-slate-200">Skipped</Badge>
+                        <Badge className="bg-slate-800 text-slate-400 border-slate-700">Skipped</Badge>
                       )}
                       {result.status === 'failed' && (
-                        <Badge className="bg-rose-50 text-rose-700 border-rose-200">Failed</Badge>
+                        <Badge className="bg-rose-950/50 text-rose-400 border-rose-800">Failed</Badge>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-muted-foreground text-xs">
+                    <td className="px-5 py-3 text-slate-400 text-xs">
                       {result.reason ?? '—'}
                     </td>
                   </tr>
@@ -293,12 +294,12 @@ export default function ImportForm() {
 
       {/* Footer actions */}
       <div className="flex items-center gap-3 flex-wrap">
-        <Button onClick={resetAll} variant="outline" size="sm">
+        <Button onClick={resetAll} variant="outline" size="sm" className="border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700">
           Import another file
         </Button>
         <Link
           href="/admin/users"
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-3 border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+          className="inline-flex items-center justify-center rounded-xl text-sm font-medium h-9 px-3 border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800 transition-colors"
         >
           Back to Users
         </Link>

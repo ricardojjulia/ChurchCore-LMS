@@ -72,10 +72,10 @@ export default async function ThreadPage({ params }: { params: Promise<{ threadI
   const sortedMessages = (messages ?? []).reverse()
 
   return (
-    <main className="min-h-screen bg-slate-50 flex flex-col">
+    <main className="min-h-screen bg-slate-950 flex flex-col text-slate-100">
       {/* Thread header */}
-      <div className="bg-white border-b border-border px-4 py-3 flex items-center gap-3 sticky top-14 z-30">
-        <Link href="/messages" aria-label="Back to messages" className="text-muted-foreground hover:text-foreground transition-colors p-1 -ml-1">
+      <div className="bg-slate-900/90 backdrop-blur-sm border-b border-slate-800 px-4 py-3 flex items-center gap-3 sticky top-14 z-30">
+        <Link href="/messages" aria-label="Back to messages" className="text-slate-400 hover:text-white transition-colors p-1 -ml-1">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
             <path d="M19 12H5M12 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -84,16 +84,16 @@ export default async function ThreadPage({ params }: { params: Promise<{ threadI
         {/* Others' avatars */}
         <div className="flex -space-x-2">
           {others.slice(0, 3).map((o: any) => (
-            <div key={o.uid} className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center border-2 border-white">
+            <div key={o.uid} className="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-400 font-bold text-xs flex items-center justify-center border-2 border-slate-900">
               {o.display_name?.[0]?.toUpperCase()}
             </div>
           ))}
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-foreground text-sm truncate">{threadTitle}</p>
+          <p className="font-bold text-white text-sm truncate">{threadTitle}</p>
           {others.length === 1 && (
-            <p className="text-xs text-muted-foreground truncate">{others[0]?.email}</p>
+            <p className="text-xs text-slate-400 truncate">{others[0]?.email}</p>
           )}
         </div>
       </div>

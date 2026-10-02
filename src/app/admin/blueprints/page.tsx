@@ -19,58 +19,58 @@ export default async function AdminBlueprintsPage() {
     .order('course_code')
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">{t('heading')}</h1>
-            <p className="text-sm text-muted-foreground mt-1">{t('subtitle')}</p>
+            <h1 className="text-2xl font-extrabold text-white">{t('heading')}</h1>
+            <p className="text-sm text-slate-400 mt-1">{t('subtitle')}</p>
           </div>
-          <Link href="/admin/blueprints/new" className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-4 py-2 rounded-xl text-sm hover:bg-primary/90 transition-colors">
+          <Link href="/admin/blueprints/new" className="inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-xl text-sm hover:bg-indigo-500 transition-colors">
             {t('newBlueprint')}
           </Link>
         </div>
 
         {(!blueprints || blueprints.length === 0) ? (
-          <div className="bg-white border border-border rounded-2xl p-12 text-center">
-            <p className="text-muted-foreground">{t('emptyState')}</p>
-            <Link href="/admin/blueprints/new" className="mt-3 inline-block text-sm text-primary hover:underline">{t('createFirst')}</Link>
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
+            <p className="text-slate-400">{t('emptyState')}</p>
+            <Link href="/admin/blueprints/new" className="mt-3 inline-block text-sm text-amber-300 hover:underline">{t('createFirst')}</Link>
           </div>
         ) : (
-          <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b border-border">
+              <thead className="bg-slate-900/80 border-b border-slate-800 text-slate-300">
                 <tr>
-                  <th className="text-left px-6 py-3 font-semibold text-muted-foreground">{t('tableBlueprint')}</th>
-                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground">{t('tableTrack')}</th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">{t('tableCredits')}</th>
-                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground">{t('tableStatus')}</th>
+                  <th className="text-left px-6 py-3 font-semibold text-slate-400">{t('tableBlueprint')}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-400">{t('tableTrack')}</th>
+                  <th className="text-center px-4 py-3 font-semibold text-slate-400">{t('tableCredits')}</th>
+                  <th className="text-center px-4 py-3 font-semibold text-slate-400">{t('tableStatus')}</th>
                   <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-slate-800">
                 {blueprints.map((b) => {
                   const track = b.program_tracks as unknown as { name: string; code: string } | null
                   return (
-                    <tr key={b.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={b.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-foreground">{b.title}</p>
-                        <p className="text-xs text-muted-foreground font-mono">{b.course_code}</p>
-                        {b.description && <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-xs">{b.description}</p>}
+                        <p className="font-semibold text-white">{b.title}</p>
+                        <p className="text-xs text-slate-400 font-mono">{b.course_code}</p>
+                        {b.description && <p className="text-xs text-slate-400 mt-0.5 truncate max-w-xs">{b.description}</p>}
                       </td>
                       <td className="px-4 py-4">
                         {track
-                           ? <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded">{track.code}</span>
-                          : <span className="text-slate-300 text-xs">—</span>}
+                           ? <span className="text-xs font-semibold bg-indigo-950/60 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded">{track.code}</span>
+                          : <span className="text-slate-600 text-xs">—</span>}
                       </td>
-                      <td className="px-4 py-4 text-center text-muted-foreground">{b.credits ?? '—'}</td>
+                      <td className="px-4 py-4 text-center text-slate-400">{b.credits ?? '—'}</td>
                       <td className="px-4 py-4 text-center">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${b.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${b.is_active ? 'bg-emerald-950/50 text-emerald-400 border-emerald-800' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
                           {b.is_active ? t('statusActive') : t('statusInactive')}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <Link href={`/admin/blueprints/${b.id}`} className="text-sm font-semibold text-primary hover:underline">Edit →</Link>
+                        <Link href={`/admin/blueprints/${b.id}`} className="text-sm font-semibold text-amber-300 hover:text-amber-200 hover:underline">Edit →</Link>
                       </td>
                     </tr>
                   )

@@ -57,103 +57,103 @@ export default function TermForm({ mode, termId, initial, parentTerms, managedSo
   const configStr = initial?.config ? JSON.stringify(initial.config, null, 2) : '{}'
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5 text-slate-100">
       {managedSource && (
-        <div className="flex items-center gap-2 rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800">
+        <div className="flex items-center gap-2 rounded-md border border-sky-800 bg-sky-950/50 px-3 py-2 text-sm font-semibold text-sky-300">
           <Database className="h-4 w-4" aria-hidden="true" />
           OneRoster managed
         </div>
       )}
-      {error && <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-sm">{error}</div>}
-      {ok    && <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-sm">Saved.</div>}
+      {error && <div className="bg-rose-950/40 border border-rose-800 rounded-xl p-3 text-rose-300 text-sm">{error}</div>}
+      {ok    && <div className="bg-emerald-950/40 border border-emerald-800 rounded-xl p-3 text-emerald-300 text-sm">Saved.</div>}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="term_name">
-            Name <span className="text-rose-700">*</span>
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="term_name">
+            Name <span className="text-rose-400">*</span>
           </label>
           <input id="term_name" name="term_name" required defaultValue={initial?.term_name}
-            placeholder="e.g. Fall Semester 2025" className="input w-full" readOnly={Boolean(managedSource)} />
+            placeholder="e.g. Fall Semester 2025" className="input w-full bg-slate-800 border-slate-700 text-white placeholder-slate-500" readOnly={Boolean(managedSource)} />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="term_code">
-            Code <span className="text-rose-700">*</span>
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="term_code">
+            Code <span className="text-rose-400">*</span>
           </label>
           <input id="term_code" name="term_code" required defaultValue={initial?.term_code}
-            placeholder="e.g. FALL-2025" className="input w-full font-mono uppercase"
+            placeholder="e.g. FALL-2025" className="input w-full font-mono uppercase bg-slate-800 border-slate-700 text-white placeholder-slate-500"
             readOnly={mode === 'edit'} />
-          {mode === 'edit' && <p className="text-xs text-muted-foreground mt-1">Code is immutable after creation.</p>}
+          {mode === 'edit' && <p className="text-xs text-slate-400 mt-1">Code is immutable after creation.</p>}
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="type">
-          Type <span className="text-rose-700">*</span>
+        <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="type">
+          Type <span className="text-rose-400">*</span>
         </label>
-        <select id="type" name="type" required defaultValue={initial?.type} className="input w-full"
+        <select id="type" name="type" required defaultValue={initial?.type} className="input w-full bg-slate-800 border-slate-700 text-white"
           disabled={mode === 'edit'}>
           <option value="">— Select type —</option>
           {TERM_TYPES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
         </select>
-        {mode === 'edit' && <p className="text-xs text-muted-foreground mt-1">Type is immutable after creation.</p>}
+        {mode === 'edit' && <p className="text-xs text-slate-400 mt-1">Type is immutable after creation.</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="start_date">
-            Start Date <span className="text-rose-700">*</span>
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="start_date">
+            Start Date <span className="text-rose-400">*</span>
           </label>
           <input id="start_date" name="start_date" type="date" required
-            defaultValue={initial?.start_date} className="input w-full" readOnly={Boolean(managedSource)} />
+            defaultValue={initial?.start_date} className="input w-full bg-slate-800 border-slate-700 text-white" readOnly={Boolean(managedSource)} />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="end_date">
-            End Date <span className="text-rose-700">*</span>
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="end_date">
+            End Date <span className="text-rose-400">*</span>
           </label>
           <input id="end_date" name="end_date" type="date" required
-            defaultValue={initial?.end_date} className="input w-full" readOnly={Boolean(managedSource)} />
+            defaultValue={initial?.end_date} className="input w-full bg-slate-800 border-slate-700 text-white" readOnly={Boolean(managedSource)} />
         </div>
       </div>
 
       {mode === 'create' && parentTerms.length > 0 && (
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="parent_term_id">
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="parent_term_id">
             Parent Term
           </label>
-          <select id="parent_term_id" name="parent_term_id" defaultValue={initial?.parent_term_id ?? ''} className="input w-full">
+          <select id="parent_term_id" name="parent_term_id" defaultValue={initial?.parent_term_id ?? ''} className="input w-full bg-slate-800 border-slate-700 text-white">
             <option value="">— No parent (top-level) —</option>
             {parentTerms.map((t) => (
               <option key={t.id} value={t.id}>{t.term_name} ({t.term_code})</option>
             ))}
           </select>
-          <p className="text-xs text-muted-foreground mt-1">Depth is auto-computed from parent. Max depth 4.</p>
+          <p className="text-xs text-slate-400 mt-1">Depth is auto-computed from parent. Max depth 4.</p>
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="config">
-          Config <span className="text-xs font-normal text-muted-foreground">(JSON — optional overrides)</span>
+        <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="config">
+          Config <span className="text-xs font-normal text-slate-400">(JSON — optional overrides)</span>
         </label>
         <textarea id="config" name="config" rows={4}
           defaultValue={configStr}
-          className="input w-full font-mono text-xs resize-none" />
+          className="input w-full font-mono text-xs resize-none bg-slate-800 border-slate-700 text-white" />
       </div>
 
       {mode === 'edit' && (
         <div className="flex items-center gap-2">
           <input type="checkbox" id="is_active" name="is_active" value="true"
-            defaultChecked={initial?.is_active} className="rounded" disabled={Boolean(managedSource)} />
-          <label htmlFor="is_active" className="text-sm font-semibold text-foreground">Active</label>
+            defaultChecked={initial?.is_active} className="rounded bg-slate-800 border-slate-700 text-indigo-600" disabled={Boolean(managedSource)} />
+          <label htmlFor="is_active" className="text-sm font-semibold text-slate-200">Active</label>
         </div>
       )}
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={pending}
-          className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
+          className="bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-indigo-500 transition-colors disabled:opacity-50">
           {pending ? 'Saving…' : mode === 'create' ? 'Create Term' : managedSource ? 'Save LMS Settings' : 'Save Changes'}
         </button>
         <Link href="/admin/terms"
-          className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-border hover:bg-slate-50 transition-colors text-muted-foreground">
+          className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-slate-700 hover:bg-slate-800 transition-colors text-slate-300">
           Cancel
         </Link>
       </div>

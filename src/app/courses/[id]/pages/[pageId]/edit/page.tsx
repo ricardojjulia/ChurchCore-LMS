@@ -42,13 +42,13 @@ export default async function PageEditorRoute({
     .single()
 
   return (
-    <main className="min-h-screen bg-white">
-      <div className="border-b border-border px-4 py-2 flex items-center gap-2 text-xs text-muted-foreground bg-slate-50">
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="border-b border-slate-800 px-4 py-2 flex items-center gap-2 text-xs text-slate-400 bg-slate-900">
         <span>{course?.title ?? 'Course'}</span>
         <span>/</span>
         <span>Pages</span>
         <span>/</span>
-        <span className="font-medium text-foreground truncate">{page.title}</span>
+        <span className="font-medium text-white truncate">{page.title}</span>
       </div>
 
       <PageEditor

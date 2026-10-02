@@ -2,10 +2,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function DashboardLoading() {
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Smart Summary Card skeleton */}
-        <div className="bg-white border border-border rounded-2xl px-6 py-5 mb-6 shadow-sm">
+        <div className="card-crisp px-6 py-5 mb-6">
           <Skeleton className="h-7 w-64 mb-2" />
           <Skeleton className="h-4 w-80 mb-3" />
           <div className="flex items-center gap-3">
@@ -23,7 +23,7 @@ export default function DashboardLoading() {
         {/* Course card skeletons */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white border border-border rounded-xl overflow-hidden flex flex-col">
+            <div key={i} className="card-crisp overflow-hidden flex flex-col">
               <div className="p-5 flex-1">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <Skeleton className="h-5 w-3/4" />

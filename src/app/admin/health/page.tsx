@@ -21,16 +21,16 @@ export default async function AdminHealthPage() {
   const initialChecks = await getHealthChecks(supabase)
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">System Health</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">System Health</h1>
+          <p className="text-sm text-slate-400 mt-1">
             Live infrastructure checks. Results are persisted for trend analysis.
           </p>
         </div>
 
-        <div className="bg-white border border-border rounded-2xl shadow-sm p-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-sm p-8">
           <SystemHealthPanel initialChecks={initialChecks} />
         </div>
       </div>

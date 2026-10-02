@@ -257,13 +257,13 @@ export function OneRosterImportClient() {
     return (
       <div className="space-y-5">
         {error && (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          <div className="rounded-lg border border-rose-800/80 bg-rose-950/50 px-4 py-3 text-sm text-rose-400">
             {error}
           </div>
         )}
 
         {applyResult && (
-          <div role="status" className={`rounded-lg border px-4 py-3 text-sm ${applyResult.status === 'applied' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
+          <div role="status" className={`rounded-lg border px-4 py-3 text-sm ${applyResult.status === 'applied' ? 'border-emerald-800/80 bg-emerald-950/50 text-emerald-300' : 'border-amber-800/80 bg-amber-950/50 text-amber-300'}`}>
             {applyResult.status === 'applied' ? 'Import completed.' : 'Import completed with quarantined rows.'} {applyResult.created} created, {applyResult.updated} updated, {applyResult.unchanged} unchanged, {applyResult.deactivated} deactivated, {applyResult.quarantined} quarantined.
           </div>
         )}
@@ -275,7 +275,7 @@ export function OneRosterImportClient() {
         </div>
 
         <section aria-labelledby="planned-changes-heading">
-          <h2 id="planned-changes-heading" className="mb-3 text-sm font-semibold text-foreground">Planned changes</h2>
+          <h2 id="planned-changes-heading" className="mb-3 text-sm font-semibold text-white">Planned changes</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             <SummaryCard label="Create" value={result.diff.created} tone="success" />
             <SummaryCard label="Update" value={result.diff.updated} />
@@ -285,68 +285,68 @@ export function OneRosterImportClient() {
           </div>
         </section>
 
-        <div className="rounded-lg border border-border bg-white overflow-x-auto">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-slate-50">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-muted-foreground">File</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Rows</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Ready</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Quarantine</th>
+              <tr className="border-b border-slate-800 bg-slate-900/80">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">File</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-400">Rows</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-400">Ready</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-400">Quarantine</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-slate-800">
               {files.map(([fileType, file]) => (
-                <tr key={fileType}>
-                  <td className="px-4 py-3 font-medium text-foreground">{fileType}.csv</td>
-                  <td className="px-4 py-3 text-right text-muted-foreground">{file.totalRows}</td>
-                  <td className="px-4 py-3 text-right text-emerald-700">{file.validRows}</td>
-                  <td className="px-4 py-3 text-right text-rose-700">{file.quarantinedRows}</td>
+                <tr key={fileType} className="hover:bg-slate-800/40">
+                  <td className="px-4 py-3 font-medium text-white">{fileType}.csv</td>
+                  <td className="px-4 py-3 text-right text-slate-400">{file.totalRows}</td>
+                  <td className="px-4 py-3 text-right text-emerald-400">{file.validRows}</td>
+                  <td className="px-4 py-3 text-right text-rose-400">{file.quarantinedRows}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        <div className="rounded-lg border border-border bg-white p-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
           <div className="flex items-center gap-2">
             {result.valid ? (
-              <CheckCircle2 className="h-5 w-5 text-emerald-700" aria-hidden="true" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-400" aria-hidden="true" />
             ) : (
-              <AlertCircle className="h-5 w-5 text-rose-600" aria-hidden="true" />
+              <AlertCircle className="h-5 w-5 text-rose-400" aria-hidden="true" />
             )}
-            <h2 className="text-sm font-semibold text-foreground">
+            <h2 className="text-base font-semibold text-white">
               {result.valid ? 'Package Passed Validation' : 'Package Needs Review'}
             </h2>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">
+            <Badge className="border-emerald-800 bg-emerald-950/50 text-emerald-400">
               {errors.length} errors
             </Badge>
-            <Badge className="border-amber-200 bg-amber-50 text-amber-700">
+            <Badge className="border-amber-800 bg-amber-950/50 text-amber-400">
               {warnings.length} warnings
             </Badge>
           </div>
 
           {result.issues.length > 0 && (
-            <div className="mt-4 max-h-72 overflow-y-auto rounded-md border border-border">
+            <div className="mt-4 max-h-72 overflow-y-auto rounded-xl border border-slate-800">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-border bg-slate-50">
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Level</th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">File</th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Row</th>
-                    <th className="px-3 py-2 text-left font-semibold text-muted-foreground">Issue</th>
+                  <tr className="border-b border-slate-800 bg-slate-900/80">
+                    <th className="px-3 py-2 text-left font-semibold text-slate-400">Level</th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-400">File</th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-400">Row</th>
+                    <th className="px-3 py-2 text-left font-semibold text-slate-400">Issue</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-slate-800">
                   {result.issues.map((issue, index) => (
-                    <tr key={`${issue.code}-${index}`}>
-                      <td className="px-3 py-2 uppercase text-muted-foreground">{issue.severity}</td>
-                      <td className="px-3 py-2">{issue.fileType ?? '-'}</td>
-                      <td className="px-3 py-2">{issue.rowNumber ?? '-'}</td>
-                      <td className="px-3 py-2">{issue.message}</td>
+                    <tr key={`${issue.code}-${index}`} className="hover:bg-slate-800/40">
+                      <td className="px-3 py-2 uppercase text-slate-400">{issue.severity}</td>
+                      <td className="px-3 py-2 text-slate-300">{issue.fileType ?? '-'}</td>
+                      <td className="px-3 py-2 text-slate-300">{issue.rowNumber ?? '-'}</td>
+                      <td className="px-3 py-2 text-slate-200">{issue.message}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -366,13 +366,14 @@ export function OneRosterImportClient() {
         ) : null}
 
         <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={reset} disabled={applying}>
+          <Button variant="outline" onClick={reset} disabled={applying} className="border-slate-700 bg-slate-800 text-white hover:bg-slate-700">
             <RotateCcw className="mr-2 h-4 w-4" aria-hidden="true" />
             Reset
           </Button>
           <Button
             disabled={!result.valid || applying || !!applyResult || !identityReady}
             onClick={handleApply}
+            className="bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50"
             title={!result.valid ? 'Resolve validation errors before applying' : !identityReady ? 'Link every roster user before applying' : undefined}
           >
             <Upload className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -387,22 +388,22 @@ export function OneRosterImportClient() {
   return (
     <div className="space-y-5">
       {error && (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="rounded-lg border border-rose-800/80 bg-rose-950/50 px-4 py-3 text-sm text-rose-400">
           {error}
         </div>
       )}
 
-      <div className="rounded-lg border border-border bg-white p-8">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-sm">
         <label
           htmlFor="oneroster-file"
-          className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-slate-200 px-6 py-12 text-center transition-colors hover:border-slate-300 hover:bg-slate-50"
+          className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-700 bg-slate-950/40 px-6 py-12 text-center transition-colors hover:border-slate-600 hover:bg-slate-800/40"
         >
-          <FileArchive className="h-10 w-10 text-slate-400" aria-hidden="true" />
+          <FileArchive className="h-10 w-10 text-indigo-400" aria-hidden="true" />
           <div>
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-sm font-semibold text-white">
               {uploading ? 'Validating package...' : 'Choose OneRoster ZIP package'}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">10 MB maximum</p>
+            <p className="mt-1 text-xs text-slate-400">10 MB maximum</p>
           </div>
           <input
             ref={fileRef}
@@ -416,7 +417,7 @@ export function OneRosterImportClient() {
         </label>
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      <div className="rounded-xl border border-amber-800/80 bg-amber-950/50 px-4 py-3 text-sm text-amber-300">
         Users must be linked to existing LMS profiles before identity data can apply. Unsupported roles and unresolved references remain quarantined.
       </div>
       <ImportHistory jobs={history} loading={historyLoading} reviewingJobId={reviewingJobId} onReview={handleReviewJob} />
@@ -438,37 +439,37 @@ function IdentityLinkPanel({
   linkingSourceId: string | null
 }) {
   return (
-    <section aria-labelledby="identity-links-heading" className="rounded-lg border border-border bg-white p-4">
+    <section aria-labelledby="identity-links-heading" className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
       <div className="flex items-center gap-2">
-        <Link2 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        <h2 id="identity-links-heading" className="text-sm font-semibold text-foreground">Link roster users</h2>
+        <Link2 className="h-4 w-4 text-indigo-400" aria-hidden="true" />
+        <h2 id="identity-links-heading" className="text-base font-semibold text-white">Link roster users</h2>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">Choose an existing LMS profile for each roster sourcedId. Auth accounts are never created from an import.</p>
+      <p className="mt-1 text-xs text-slate-400">Choose an existing LMS profile for each roster sourcedId. Auth accounts are never created from an import.</p>
       <div className="mt-4 space-y-3">
         {identityLinks.users.map((user) => {
           if (!user.sourcedId) return null
           const selected = selections[user.sourcedId] ?? user.linkedProfileUid ?? ''
           const linked = Boolean(user.linkedProfileUid)
           return (
-            <div key={user.sourcedId} className="grid gap-3 rounded-md border border-border p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] md:items-center">
+            <div key={user.sourcedId} className="grid gap-3 rounded-xl border border-slate-800 bg-slate-800/40 p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] md:items-center">
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">{user.sourcedId}</p>
-                <p className="text-xs text-muted-foreground">{linked ? 'Linked' : 'Link required'}</p>
+                <p className="truncate text-sm font-medium text-white">{user.sourcedId}</p>
+                <p className="text-xs text-slate-400">{linked ? 'Linked' : 'Link required'}</p>
               </div>
               <select
                 aria-label={`LMS profile for ${user.sourcedId}`}
                 value={selected}
                 onChange={(event) => onSelect(user.sourcedId as string, event.target.value)}
-                className="h-9 min-w-0 rounded-md border border-input bg-background px-3 text-sm"
+                className="h-9 min-w-0 rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="">Select LMS profile</option>
+                <option value="" className="bg-slate-800 text-slate-300">Select LMS profile</option>
                 {identityLinks.profiles.map((profile) => (
-                  <option key={profile.uid} value={profile.uid}>
+                  <option key={profile.uid} value={profile.uid} className="bg-slate-800 text-white">
                     {profile.display_name} ({profile.email})
                   </option>
                 ))}
               </select>
-              <Button size="sm" variant={linked ? 'outline' : 'default'} disabled={!selected || linkingSourceId !== null} onClick={() => onLink(user.sourcedId as string)}>
+              <Button size="sm" variant={linked ? 'outline' : 'default'} disabled={!selected || linkingSourceId !== null} onClick={() => onLink(user.sourcedId as string)} className={linked ? 'border-slate-700 bg-slate-800 text-white hover:bg-slate-700' : 'bg-indigo-600 text-white hover:bg-indigo-500'}>
                 <Link2 className="mr-2 h-4 w-4" aria-hidden="true" />
                 {linkingSourceId === user.sourcedId ? 'Linking...' : linked ? 'Relink' : 'Link'}
               </Button>
@@ -494,34 +495,34 @@ function ImportHistory({
   return (
     <section aria-labelledby="import-history-heading" className="pt-2">
       <div className="mb-3 flex items-center gap-2">
-        <History className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        <h2 id="import-history-heading" className="text-sm font-semibold text-foreground">Recent imports</h2>
+        <History className="h-4 w-4 text-indigo-400" aria-hidden="true" />
+        <h2 id="import-history-heading" className="text-base font-semibold text-white">Recent imports</h2>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-border bg-white">
+      <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900 shadow-sm">
         {loading ? (
-          <p className="px-4 py-6 text-sm text-muted-foreground">Loading imports...</p>
+          <p className="px-4 py-6 text-sm text-slate-400">Loading imports...</p>
         ) : jobs.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-muted-foreground">No imports yet.</p>
+          <p className="px-4 py-6 text-sm text-slate-400">No imports yet.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-slate-50">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-muted-foreground">Started</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-muted-foreground">Status</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Rows</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Changes</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Quarantine</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Action</th>
+              <tr className="border-b border-slate-800 bg-slate-900/80">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">Started</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">Status</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-400">Rows</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-400">Changes</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-400">Quarantine</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-400">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-slate-800">
               {jobs.map((job) => (
-                <tr key={job.id}>
-                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{formatTimestamp(job.created_at)}</td>
-                  <td className="px-4 py-3"><Badge variant="outline">{formatStatus(job.status)}</Badge></td>
-                  <td className="px-4 py-3 text-right">{job.total_rows}</td>
-                  <td className="px-4 py-3 text-right">{job.created + job.updated + job.deactivated}</td>
-                  <td className="px-4 py-3 text-right text-rose-700">{job.quarantined}</td>
+                <tr key={job.id} className="hover:bg-slate-800/40">
+                  <td className="whitespace-nowrap px-4 py-3 text-slate-400">{formatTimestamp(job.created_at)}</td>
+                  <td className="px-4 py-3"><Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">{formatStatus(job.status)}</Badge></td>
+                  <td className="px-4 py-3 text-right text-slate-300">{job.total_rows}</td>
+                  <td className="px-4 py-3 text-right text-slate-300">{job.created + job.updated + job.deactivated}</td>
+                  <td className="px-4 py-3 text-right text-rose-400">{job.quarantined}</td>
                   <td className="px-4 py-3 text-right">
                     {job.connection_id && ['validated', 'ready'].includes(job.status) ? (
                       <Button
@@ -529,12 +530,13 @@ function ImportHistory({
                         variant="outline"
                         disabled={reviewingJobId !== null}
                         onClick={() => onReview(job.id)}
+                        className="border-slate-700 bg-slate-800 text-white hover:bg-slate-700"
                       >
                         <Eye className="mr-2 h-4 w-4" aria-hidden="true" />
                         {reviewingJobId === job.id ? 'Opening...' : 'Review'}
                       </Button>
                     ) : (
-                      <span className="text-muted-foreground">-</span>
+                      <span className="text-slate-500">-</span>
                     )}
                   </td>
                 </tr>
@@ -568,15 +570,15 @@ function SummaryCard({
   tone?: 'neutral' | 'success' | 'danger'
 }) {
   const valueClass = tone === 'success'
-    ? 'text-emerald-700'
+    ? 'text-emerald-400'
     : tone === 'danger'
-      ? 'text-rose-700'
-      : 'text-foreground'
+      ? 'text-rose-400'
+      : 'text-white'
 
   return (
-    <div className="rounded-lg border border-border bg-white px-4 py-3">
-      <p className="text-xs font-semibold uppercase text-muted-foreground">{label}</p>
-      <p className={`mt-1 text-2xl font-semibold ${valueClass}`}>{value}</p>
+    <div className="rounded-2xl border border-slate-800 bg-slate-900 px-4 py-3 shadow-sm">
+      <p className="text-xs font-semibold uppercase text-slate-400">{label}</p>
+      <p className={`mt-1 text-2xl font-bold ${valueClass}`}>{value}</p>
     </div>
   )
 }

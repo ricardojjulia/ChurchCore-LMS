@@ -40,7 +40,7 @@ export default async function PublicCourseCatalogPage({ params }: Props) {
     | undefined
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8 text-center">
           {branding?.logo_url && (
@@ -50,13 +50,13 @@ export default async function PublicCourseCatalogPage({ params }: Props) {
               className="h-12 mb-4 mx-auto object-contain"
             />
           )}
-          <h1 className="text-2xl font-bold text-slate-900">{org.name}</h1>
-          <p className="text-muted-foreground text-sm mt-1">Public course catalog</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">{org.name}</h1>
+          <p className="text-slate-400 text-sm mt-1">Public course catalog</p>
         </div>
 
         {!courses || courses.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
-            <p className="text-muted-foreground italic">No courses are open for public preview right now.</p>
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10 text-center shadow-sm">
+            <p className="text-slate-400 italic">No courses are open for public preview right now.</p>
           </div>
         ) : (
           <ul className="space-y-4">

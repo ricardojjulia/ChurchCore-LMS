@@ -38,10 +38,10 @@ function QuestionPreview({ q }: { q: BankQuestion }) {
   const text    = (content.text ?? '') as string
   return (
     <div className="flex items-start gap-3">
-      <span className="text-xs font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded shrink-0 mt-0.5">
+      <span className="text-xs font-mono bg-slate-800 text-indigo-400 border border-slate-700 px-1.5 py-0.5 rounded shrink-0 mt-0.5">
         {TYPE_LABEL[q.question_type as QuestionType] ?? q.question_type}
       </span>
-      <p className="text-sm text-foreground line-clamp-2">{text || <em className="text-muted-foreground">No text</em>}</p>
+      <p className="text-sm text-white line-clamp-2">{text || <em className="text-slate-500">No text</em>}</p>
     </div>
   )
 }
@@ -143,7 +143,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
       <button
         type="button"
         onClick={() => setVisible(true)}
-        className="w-full border-2 border-dashed border-border rounded-xl py-3 text-sm font-semibold text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+        className="w-full border-2 border-dashed border-slate-700 rounded-xl py-3 text-sm font-semibold text-slate-400 hover:border-indigo-500 hover:text-indigo-400 transition-colors"
       >
         + Add Question
       </button>
@@ -151,13 +151,13 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
   }
 
   return (
-    <div className="bg-slate-50 border border-border rounded-xl p-4 space-y-3">
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
       <div className="flex gap-3">
         <select aria-label="Question type"
           value={draft.type}
           onChange={(e) => setType(e.target.value as QuestionType)}
           title="Question type"
-          className="border border-border rounded-lg px-3 py-2 text-sm bg-white flex-1 focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-white flex-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           {(Object.keys(TYPE_LABEL) as QuestionType[]).map((t) => (
             <option key={t} value={t}>{TYPE_LABEL[t]}</option>
@@ -167,7 +167,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
           type="number" min={1} max={100} value={draft.points}
           title="Points"
           onChange={(e) => setDraft((prev) => ({ ...prev, points: Number(e.target.value) }))}
-          className="border border-border rounded-lg px-3 py-2 text-sm bg-white w-20 focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-white w-20 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           placeholder="pts"
         />
       </div>
@@ -177,7 +177,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
         onChange={(e) => setDraft((prev) => ({ ...prev, text: e.target.value }))}
         placeholder="Question text…"
         rows={2}
-        className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+        className="w-full border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
       />
 
       {/* MC / TF options */}
@@ -192,7 +192,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
                 onChange={() => setDraft((prev) => ({ ...prev, correct_index: oi }))}
                 aria-label={`Mark option ${oi + 1} as correct`}
                 title={`Mark option ${oi + 1} as correct`}
-                className="shrink-0 accent-primary"
+                className="shrink-0 accent-indigo-500"
               />
               <input aria-label={draft.type === 'true_false' ? opt : `Option ${oi + 1}`}
                 value={opt}
@@ -202,11 +202,11 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
                 })}
                 placeholder={draft.type === 'true_false' ? opt : `Option ${oi + 1}`}
                 disabled={draft.type === 'true_false'}
-                className={`flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30${draft.type === 'true_false' ? ' opacity-60' : ''}`}
+                className={`flex-1 border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500${draft.type === 'true_false' ? ' opacity-60' : ''}`}
               />
             </div>
           ))}
-          <p className="text-xs text-slate-500">Select the correct answer (radio).</p>
+          <p className="text-xs text-slate-400">Select the correct answer (radio).</p>
         </div>
       )}
 
@@ -219,20 +219,20 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
                 value={pair.left}
                 onChange={(e) => updatePair(pi, 'left', e.target.value)}
                 placeholder={`Left ${pi + 1}`}
-                className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="flex-1 border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
-              <span className="text-slate-400 text-xs shrink-0">→</span>
+              <span className="text-slate-500 text-xs shrink-0">→</span>
               <input aria-label={`Right ${pi + 1}`}
                 value={pair.right}
                 onChange={(e) => updatePair(pi, 'right', e.target.value)}
                 placeholder={`Right ${pi + 1}`}
-                className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="flex-1 border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
               {draft.pairs.length > 2 && (
                 <button
                   type="button"
                   onClick={() => setDraft((prev) => ({ ...prev, pairs: prev.pairs.filter((_, j) => j !== pi) }))}
-                  className="text-rose-700 hover:text-rose-800 text-sm shrink-0"
+                  className="text-rose-400 hover:text-rose-300 text-sm shrink-0"
                 >
                   ✕
                 </button>
@@ -242,7 +242,7 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
           <button
             type="button"
             onClick={() => setDraft((prev) => ({ ...prev, pairs: [...prev.pairs, { id: newId(), left: '', right: '' }] }))}
-            className="text-xs font-bold text-primary hover:text-primary/80 transition-colors"
+            className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
           >
             + Add Pair
           </button>
@@ -253,25 +253,25 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
       {draft.type === 'fill_blank' && (
         <div className="space-y-3">
           <div>
-            <p className="text-xs text-slate-500 mb-1">
-              Use <code className="bg-slate-200 px-1 rounded">[blank]</code> for each blank.
+            <p className="text-xs text-slate-400 mb-1">
+              Use <code className="bg-slate-800 text-indigo-300 px-1 rounded">[blank]</code> for each blank.
             </p>
             <textarea aria-label="Template"
               value={draft.template}
               onChange={(e) => updateTemplate(e.target.value)}
               placeholder='The fruit of the Spirit is [blank] and [blank].'
               rows={2}
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+              className="w-full border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
             />
           </div>
           {draft.blanks.map((blank, bi) => (
             <div key={blank.id} className="flex items-center gap-2">
-              <span className="text-xs text-slate-500 w-16 shrink-0">Blank {bi + 1}:</span>
+              <span className="text-xs text-slate-400 w-16 shrink-0">Blank {bi + 1}:</span>
               <input aria-label={`Blank ${bi + 1} acceptable answers`}
                 value={blank.acceptable_answers.join(', ')}
                 onChange={(e) => updateBlankAnswers(bi, e.target.value)}
                 placeholder="love, charity"
-                className="flex-1 border border-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+                className="flex-1 border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           ))}
@@ -282,14 +282,14 @@ function AddQuestionForm({ onAdd }: { onAdd: (d: QuestionDraft) => void }) {
         <button
           type="button"
           onClick={handleAdd}
-          className="bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+          className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
         >
           Add to Bank
         </button>
         <button
           type="button"
           onClick={() => { setDraft(emptyDraft()); setVisible(false) }}
-          className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors px-3"
+          className="text-sm font-semibold text-slate-400 hover:text-white transition-colors px-3"
         >
           Cancel
         </button>
@@ -355,54 +355,54 @@ export default function BankDetailClient({ bankId, initialBank, initialQuestions
   return (
     <div className="space-y-8">
       {/* Back link */}
-      <a href="/admin/question-banks" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <a href="/admin/question-banks" className="text-sm text-slate-400 hover:text-white transition-colors">
         ← Question Banks
       </a>
 
       {/* Bank details form */}
       <div>
-        <h1 className="text-2xl font-extrabold text-foreground mb-6">
+        <h1 className="text-2xl font-extrabold text-white mb-6">
           {isNew ? 'New Question Bank' : 'Edit Question Bank'}
         </h1>
 
         {error && (
-          <p className="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-4 py-2 mb-4" role="alert">
+          <p className="text-sm text-rose-400 bg-rose-950/50 border border-rose-800 rounded-lg px-4 py-2 mb-4" role="alert">
             {error}
           </p>
         )}
 
-        <form onSubmit={handleSaveBank} className="bg-white border border-border rounded-xl p-6 space-y-4">
+        <form onSubmit={handleSaveBank} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-foreground mb-1.5">
-              Bank Name <span className="text-rose-700">*</span>
+            <label className="block text-sm font-semibold text-slate-200 mb-1.5">
+              Bank Name <span className="text-rose-400">*</span>
             </label>
             <input aria-label="Bank Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. New Testament Survey"
               required
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-foreground mb-1.5">Description</label>
+            <label className="block text-sm font-semibold text-slate-200 mb-1.5">Description</label>
             <textarea aria-label="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional description of this question pool."
               rows={2}
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div className="flex items-center gap-3">
             <button
               type="submit"
               disabled={saving}
-              className="bg-primary text-primary-foreground text-sm font-semibold px-5 py-2 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-60"
+              className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors disabled:opacity-60"
             >
               {saving ? 'Saving…' : isNew ? 'Create Bank' : 'Save Changes'}
             </button>
-            {saved && <span className="text-sm text-emerald-700 font-medium">Saved ✓</span>}
+            {saved && <span className="text-sm text-emerald-400 font-medium">Saved ✓</span>}
           </div>
         </form>
       </div>
@@ -411,26 +411,26 @@ export default function BankDetailClient({ bankId, initialBank, initialQuestions
       {activeBankId && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-foreground">
+            <h2 className="text-lg font-bold text-white">
               Questions ({questions.length})
             </h2>
           </div>
 
           <div className="space-y-2 mb-4">
             {questions.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6 border border-dashed border-border rounded-xl">
+              <p className="text-sm text-slate-400 text-center py-6 border border-dashed border-slate-700 rounded-xl">
                 No questions yet — add one below.
               </p>
             ) : (
               questions.map((q) => (
-                <div key={q.id} className="bg-white border border-border rounded-xl px-4 py-3 flex items-start gap-3">
+                <div key={q.id} className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <QuestionPreview q={q} />
                   </div>
                   <button
                     type="button"
                     onClick={() => handleDeleteQuestion(q.id)}
-                    className="text-rose-700 hover:text-rose-800 text-sm transition-colors shrink-0"
+                    className="text-rose-400 hover:text-rose-300 text-sm transition-colors shrink-0"
                     aria-label="Remove question"
                     title="Remove question"
                   >
@@ -446,7 +446,7 @@ export default function BankDetailClient({ bankId, initialBank, initialQuestions
       )}
 
       {!activeBankId && (
-        <p className="text-sm text-muted-foreground italic">
+        <p className="text-sm text-slate-400 italic">
           Create the bank first to start adding questions.
         </p>
       )}

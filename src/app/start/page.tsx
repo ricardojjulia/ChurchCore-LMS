@@ -21,27 +21,27 @@ export default async function StartPage({
   if (user) redirect('/dashboard')
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-12">
-      <div className="mx-auto max-w-lg">
-        <h1 className="text-3xl font-extrabold text-foreground">{t('title')}</h1>
+    <main className="min-h-screen bg-slate-950 px-4 py-12 text-slate-100 flex items-center justify-center">
+      <div className="mx-auto max-w-lg w-full">
+        <h1 className="text-3xl font-extrabold text-white tracking-tight">{t('title')}</h1>
         {signupEnabled() ? (
           <>
-            <p className="mt-2 text-slate-700">{t('subtitle')}</p>
+            <p className="mt-2 text-slate-400">{t('subtitle')}</p>
             {error && (
-              <p role="alert" className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
+              <p role="alert" className="mt-4 rounded-xl border border-rose-800/80 bg-rose-950/50 p-3 text-sm text-rose-400">
                 {t(`errors.${['slug_taken', 'invalid_link', 'failed'].includes(error) ? error : 'generic'}`)}
               </p>
             )}
             <StartForm />
           </>
         ) : (
-          <div className="mt-6 rounded-xl border border-border bg-white p-6">
-            <h2 className="text-lg font-bold text-foreground">{t('comingSoonTitle')}</h2>
-            <p className="mt-2 text-sm text-slate-700">{t('comingSoonBody')}</p>
+          <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-white">{t('comingSoonTitle')}</h2>
+            <p className="mt-2 text-sm text-slate-400">{t('comingSoonBody')}</p>
           </div>
         )}
-        <p className="mt-6 text-sm text-slate-700">
-          {t('haveAccount')} <Link href="/login" className="font-semibold text-indigo-700 underline">{t('signIn')}</Link>
+        <p className="mt-6 text-sm text-slate-400">
+          {t('haveAccount')} <Link href="/login" className="font-semibold text-indigo-400 hover:text-indigo-300 underline">{t('signIn')}</Link>
         </p>
       </div>
     </main>

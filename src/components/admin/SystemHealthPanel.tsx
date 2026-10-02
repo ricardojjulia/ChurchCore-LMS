@@ -11,16 +11,16 @@ const STATUS_ICON: Record<HealthStatus, string> = {
 }
 
 const STATUS_STYLES: Record<HealthStatus, string> = {
-  ok:      'bg-emerald-50 text-emerald-700 border-emerald-200',
-  warning: 'bg-amber-50 text-amber-700 border-amber-200',
-  error:   'bg-rose-50 text-rose-700 border-rose-200',
-  unknown: 'bg-slate-50 text-slate-600 border-slate-200',
+  ok:      'bg-emerald-950/40 text-emerald-300 border-emerald-800/60',
+  warning: 'bg-amber-950/40 text-amber-300 border-amber-800/60',
+  error:   'bg-rose-950/40 text-rose-300 border-rose-800/60',
+  unknown: 'bg-slate-800 text-slate-300 border-slate-700',
 }
 
 const STATUS_DOT: Record<HealthStatus, string> = {
-  ok:      'bg-emerald-500',
+  ok:      'bg-emerald-400',
   warning: 'bg-amber-400',
-  error:   'bg-rose-500',
+  error:   'bg-rose-400',
   unknown: 'bg-slate-400',
 }
 
@@ -44,14 +44,14 @@ function CheckRow({ check }: { check: SystemHealthCheck }) {
         <div className="flex items-center gap-2.5 min-w-0">
           <span aria-hidden="true">{STATUS_ICON[check.status]}</span>
           <div className="min-w-0">
-            <p className="text-sm font-semibold font-mono truncate">{check.check_name}</p>
+            <p className="text-sm font-semibold font-mono truncate text-white">{check.check_name}</p>
             {check.message && (
-              <p className="text-xs mt-0.5">{check.message}</p>
+              <p className="text-xs mt-0.5 opacity-90">{check.message}</p>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs whitespace-nowrap">
+          <span className="text-xs whitespace-nowrap opacity-80">
             <time dateTime={check.last_checked ?? undefined} suppressHydrationWarning>{relativeTime(check.last_checked)}</time>
           </span>
           {check.action_url && (
@@ -76,7 +76,7 @@ function CheckRow({ check }: { check: SystemHealthCheck }) {
         </div>
       </div>
       {expanded && hasMetadata && (
-        <pre className="mt-2 text-xs bg-white/50 rounded-lg p-2 overflow-auto max-h-32 border border-current/10">
+        <pre className="mt-2 text-xs bg-slate-900/80 rounded-lg p-2 overflow-auto max-h-32 border border-slate-700 text-slate-200">
           {JSON.stringify(check.metadata, null, 2)}
         </pre>
       )}
@@ -163,16 +163,16 @@ export default function SystemHealthPanel({ initialChecks = [] }: Props) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className={`w-3 h-3 rounded-full ${STATUS_DOT[overallStatus]}`} />
-          <span className="text-sm font-semibold text-slate-700">{statusLabel}</span>
+          <span className="text-sm font-semibold text-slate-200">{statusLabel}</span>
           {lastCheckedLabel && !isLoading && (
-            <span className="text-xs text-muted-foreground"><time suppressHydrationWarning>{lastCheckedLabel}</time></span>
+            <span className="text-xs text-slate-400"><time suppressHydrationWarning>{lastCheckedLabel}</time></span>
           )}
         </div>
         <button
           type="button"
           onClick={runChecks}
           disabled={isLoading}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-primary rounded-lg px-4 py-1.5 hover:bg-primary/90 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg px-4 py-1.5 hover:bg-indigo-500 transition-colors disabled:opacity-50"
         >
           {isLoading && (
             <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -186,12 +186,12 @@ export default function SystemHealthPanel({ initialChecks = [] }: Props) {
 
       {/* Error states */}
       {panelState === 'not_found' && (
-        <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
+        <div className="text-sm text-rose-400 bg-rose-950/40 border border-rose-800/60 rounded-xl px-4 py-3">
           Health check endpoint not found. Contact your system administrator.
         </div>
       )}
       {panelState === 'error' && errorMsg && (
-        <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
+        <div className="text-sm text-rose-400 bg-rose-950/40 border border-rose-800/60 rounded-xl px-4 py-3">
           Health check failed. Try again or check Edge Function logs.
           <span className="block mt-1 text-xs">{errorMsg}</span>
         </div>
@@ -199,7 +199,7 @@ export default function SystemHealthPanel({ initialChecks = [] }: Props) {
 
       {/* Check rows — previous results stay visible while loading */}
       {latestByName.length === 0 ? (
-        <p className="text-sm text-muted-foreground italic text-center py-8">
+        <p className="text-sm text-slate-400 italic text-center py-8">
           No checks have run yet. Click "Run Checks" to start.
         </p>
       ) : (

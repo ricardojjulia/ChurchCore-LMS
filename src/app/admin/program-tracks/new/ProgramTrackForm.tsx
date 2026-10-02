@@ -42,19 +42,19 @@ export default function ProgramTrackForm({ mode, trackId, initial }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-sm">
+        <div className="bg-rose-950/50 border border-rose-800 rounded-xl p-3 text-rose-300 text-sm">
           {error}
         </div>
       )}
       {ok && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-emerald-800 text-sm">
+        <div className="bg-emerald-950/50 border border-emerald-800 rounded-xl p-3 text-emerald-300 text-sm">
           Saved.
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="name">
-          Name <span className="text-rose-700">*</span>
+        <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="name">
+          Name <span className="text-rose-400">*</span>
         </label>
         <input
           id="name"
@@ -62,13 +62,13 @@ export default function ProgramTrackForm({ mode, trackId, initial }: Props) {
           required
           defaultValue={initial?.name}
           placeholder="e.g. Youth Ministry"
-          className="input w-full"
+          className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="code">
-          Code <span className="text-rose-700">*</span>
+        <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="code">
+          Code <span className="text-rose-400">*</span>
         </label>
         <input
           id="code"
@@ -77,9 +77,9 @@ export default function ProgramTrackForm({ mode, trackId, initial }: Props) {
           readOnly={mode === 'edit'}
           defaultValue={initial?.code}
           placeholder="e.g. YM"
-          className="input w-full font-mono uppercase"
+          className={`w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500${mode === 'edit' ? ' opacity-60 cursor-not-allowed' : ''}`}
         />
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-slate-400 mt-1">
           {mode === 'create'
             ? 'Unique identifier — auto-uppercased.'
             : 'Code is immutable after creation.'}
@@ -87,7 +87,7 @@ export default function ProgramTrackForm({ mode, trackId, initial }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="description">
+        <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="description">
           Description
         </label>
         <textarea
@@ -96,7 +96,7 @@ export default function ProgramTrackForm({ mode, trackId, initial }: Props) {
           rows={3}
           defaultValue={initial?.description ?? ''}
           placeholder="Optional — describe what belongs in this track"
-          className="input w-full resize-none"
+          className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
 
@@ -108,9 +108,9 @@ export default function ProgramTrackForm({ mode, trackId, initial }: Props) {
             name="is_active"
             value="true"
             defaultChecked={initial?.is_active}
-            className="rounded"
+            className="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-indigo-500"
           />
-          <label htmlFor="is_active" className="text-sm font-semibold text-foreground">
+          <label htmlFor="is_active" className="text-sm font-semibold text-slate-200">
             Active
           </label>
         </div>
@@ -120,13 +120,13 @@ export default function ProgramTrackForm({ mode, trackId, initial }: Props) {
         <button
           type="submit"
           disabled={pending}
-          className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+          className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50"
         >
           {pending ? 'Saving…' : mode === 'create' ? 'Create Program Track' : 'Save Changes'}
         </button>
         <Link
           href="/admin/program-tracks"
-          className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-border hover:bg-slate-50 transition-colors text-muted-foreground"
+          className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-slate-700 hover:bg-slate-800 transition-colors text-slate-300"
         >
           Cancel
         </Link>

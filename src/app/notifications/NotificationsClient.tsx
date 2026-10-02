@@ -91,9 +91,9 @@ export default function NotificationsClient({
 
   if (items.length === 0) {
     return (
-      <div className="bg-white border border-border rounded-xl p-12 text-center">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center shadow-sm">
         <p className="text-4xl mb-3">🔔</p>
-        <p className="text-muted-foreground italic">{t('notifications.caughtUpEmpty')}</p>
+        <p className="text-slate-400 italic">{t('notifications.caughtUpEmpty')}</p>
       </div>
     )
   }
@@ -110,8 +110,8 @@ export default function NotificationsClient({
               className={cn(
                 'text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors',
                 filter === f
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-white border-border text-muted-foreground hover:border-primary/40'
+                  ? 'bg-indigo-600 text-white border-indigo-500'
+                  : 'card-crisp text-slate-400 hover:text-slate-200 hover:border-slate-700'
               )}
             >
               {f === 'all' ? t('notifications.filterAll') : t('notifications.filterUnread')}
@@ -126,7 +126,7 @@ export default function NotificationsClient({
         {unreadIds.length > 0 && (
           <button
             onClick={markAllRead}
-            className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+            className="text-xs font-semibold text-amber-300 hover:text-amber-200 transition-colors"
           >
             {t('notifications.markAllRead')}
           </button>
@@ -135,18 +135,18 @@ export default function NotificationsClient({
 
       {/* List */}
       {displayed.length === 0 ? (
-        <div className="bg-white border border-border rounded-xl p-8 text-center">
-          <p className="text-muted-foreground italic text-sm">{t('notifications.noUnreadEmpty')}</p>
+        <div className="card-crisp p-8 text-center">
+          <p className="text-slate-400 italic text-sm">{t('notifications.noUnreadEmpty')}</p>
         </div>
       ) : (
-        <div className="bg-white border border-border rounded-xl overflow-hidden divide-y divide-border">
+        <div className="card-crisp overflow-hidden divide-y divide-slate-800">
           {displayed.map((n) => {
             const icon = TYPE_ICON[n.type] ?? '🔔'
             const inner = (
               <div
                 className={cn(
                   'flex items-start gap-4 px-5 py-4 transition-colors group',
-                  !n.is_read ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-slate-50/80'
+                  !n.is_read ? 'bg-indigo-950/40 hover:bg-indigo-900/40' : 'hover:bg-slate-800/40'
                 )}
                 onClick={() => { if (!n.is_read) markRead(n.id) }}
               >
@@ -155,17 +155,17 @@ export default function NotificationsClient({
                   <div className="flex items-start justify-between gap-2">
                     <p className={cn(
                       'text-sm leading-snug',
-                      !n.is_read ? 'font-semibold text-foreground' : 'text-foreground/80'
+                      !n.is_read ? 'font-semibold text-white' : 'text-slate-300'
                     )}>
                       {n.title}
                     </p>
                     <div className="flex items-center gap-2 shrink-0">
                       {!n.is_read && (
-                        <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                        <span className="w-2 h-2 rounded-full bg-indigo-400 shrink-0" />
                       )}
                       <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); dismiss(n.id) }}
-                        className="text-slate-300 hover:text-slate-500 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 text-xs leading-none"
+                        className="text-slate-500 hover:text-slate-300 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 text-xs leading-none"
                         aria-label={t('notifications.dismissAriaLabel')}
                       >
                         ✕

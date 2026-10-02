@@ -52,18 +52,18 @@ export default async function QuestionBanksPage() {
   }))
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">Question Banks</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
+            <h1 className="text-2xl font-extrabold text-white">Question Banks</h1>
+            <p className="text-slate-400 text-sm mt-0.5">
               Reusable question pools that can be drawn randomly into any quiz.
             </p>
           </div>
           <Link
             href="/admin/question-banks/new"
-            className="shrink-0 inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            className="shrink-0 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
           >
             + New Bank
           </Link>

@@ -36,7 +36,7 @@ interface ConnectionResponse {
   attempts?: Attempt[]
 }
 
-const fieldClass = 'mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200'
+const fieldClass = 'mt-1 h-10 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 text-sm text-white placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500'
 
 export function OneRosterConnectionClient() {
   const [connection, setConnection] = useState<Connection | null>(null)
@@ -124,49 +124,49 @@ export function OneRosterConnectionClient() {
     window.setTimeout(() => setCopied(false), 1500)
   }
 
-  if (loading) return <p className="py-10 text-sm text-muted-foreground">Loading connection...</p>
+  if (loading) return <p className="py-10 text-sm text-slate-400">Loading connection...</p>
 
   return (
     <div className="space-y-6">
-      {error && <div className="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
-      {saved && <div role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">Connection saved.</div>}
+      {error && <div className="rounded-lg border border-rose-800/80 bg-rose-950/50 px-4 py-3 text-sm text-rose-400">{error}</div>}
+      {saved && <div role="status" className="rounded-lg border border-emerald-800/80 bg-emerald-950/50 px-4 py-3 text-sm text-emerald-300">Connection saved.</div>}
 
-      <section aria-labelledby="connection-settings-heading" className="border-y border-border py-5">
+      <section aria-labelledby="connection-settings-heading" className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm">
         <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 id="connection-settings-heading" className="text-base font-semibold text-foreground">Academy connection</h2>
-          <Badge variant="outline">{connection?.status ?? 'Not configured'}</Badge>
+          <h2 id="connection-settings-heading" className="text-base font-semibold text-white">Academy connection</h2>
+          <Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">{connection?.status ?? 'Not configured'}</Badge>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="text-sm font-medium text-foreground">
+          <label className="text-sm font-medium text-slate-300">
             Name
             <input className={fieldClass} value={name} maxLength={120} onChange={(event) => setName(event.target.value)} />
           </label>
-          <label className="text-sm font-medium text-foreground">
+          <label className="text-sm font-medium text-slate-300">
             Academy tenant ID
             <input className={fieldClass} value={sourceTenantId} maxLength={200} onChange={(event) => setSourceTenantId(event.target.value)} />
           </label>
-          <label className="text-sm font-medium text-foreground">
+          <label className="text-sm font-medium text-slate-300">
             Key ID
             <input className={fieldClass} value={keyId} maxLength={120} onChange={(event) => setKeyId(event.target.value)} />
           </label>
-          <label className="text-sm font-medium text-foreground">
+          <label className="text-sm font-medium text-slate-300">
             Delivery cadence
             <select className={fieldClass} value={interval} onChange={(event) => setInterval(Number(event.target.value))}>
-              <option value={15}>Every 15 minutes</option>
-              <option value={60}>Hourly</option>
-              <option value={360}>Every 6 hours</option>
-              <option value={720}>Every 12 hours</option>
-              <option value={1440}>Daily</option>
-              <option value={10080}>Weekly</option>
+              <option value={15} className="bg-slate-800 text-white">Every 15 minutes</option>
+              <option value={60} className="bg-slate-800 text-white">Hourly</option>
+              <option value={360} className="bg-slate-800 text-white">Every 6 hours</option>
+              <option value={720} className="bg-slate-800 text-white">Every 12 hours</option>
+              <option value={1440} className="bg-slate-800 text-white">Daily</option>
+              <option value={10080} className="bg-slate-800 text-white">Weekly</option>
             </select>
           </label>
         </div>
 
-        <label className="mt-4 block text-sm font-medium text-foreground">
+        <label className="mt-4 block text-sm font-medium text-slate-300">
           Ed25519 public key
           <textarea
-            className="mt-1 min-h-36 w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-foreground outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+            className="mt-1 min-h-36 w-full resize-y rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 font-mono text-xs text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
             value={publicKey}
             maxLength={4096}
             spellCheck={false}
@@ -175,11 +175,11 @@ export function OneRosterConnectionClient() {
         </label>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-          <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} className="h-4 w-4 rounded border-input" />
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
+            <input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} className="h-4 w-4 rounded border-slate-700 bg-slate-800 text-indigo-500 focus:ring-indigo-400" />
             Accept signed deliveries
           </label>
-          <Button onClick={save} disabled={saving}>
+          <Button onClick={save} disabled={saving} className="bg-indigo-600 text-white hover:bg-indigo-500">
             <Save className="mr-2 h-4 w-4" aria-hidden="true" />
             {saving ? 'Saving...' : 'Save'}
           </Button>
@@ -187,10 +187,10 @@ export function OneRosterConnectionClient() {
       </section>
 
       {connection && (
-        <section aria-labelledby="delivery-status-heading" className="space-y-4">
+        <section aria-labelledby="delivery-status-heading" className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 id="delivery-status-heading" className="text-base font-semibold text-foreground">Delivery status</h2>
-            <Button variant="ghost" size="icon" onClick={() => void load()} title="Refresh delivery status" aria-label="Refresh delivery status">
+            <h2 id="delivery-status-heading" className="text-base font-semibold text-white">Delivery status</h2>
+            <Button variant="ghost" size="icon" onClick={() => void load()} title="Refresh delivery status" aria-label="Refresh delivery status" className="text-slate-400 hover:text-white">
               <RefreshCw className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
@@ -202,35 +202,35 @@ export function OneRosterConnectionClient() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase text-muted-foreground">Delivery endpoint</p>
-            <div className="mt-1 flex min-w-0 items-center gap-2 rounded-md border border-border bg-slate-50 px-3 py-2">
-              <code className="min-w-0 flex-1 truncate text-xs text-foreground">{connection.deliveryEndpoint}</code>
-              <Button variant="ghost" size="icon" onClick={() => void copyEndpoint()} title="Copy delivery endpoint" aria-label="Copy delivery endpoint">
-                {copied ? <Check className="h-4 w-4 text-emerald-700" aria-hidden="true" /> : <Clipboard className="h-4 w-4" aria-hidden="true" />}
+            <p className="text-xs font-semibold uppercase text-slate-400">Delivery endpoint</p>
+            <div className="mt-1 flex min-w-0 items-center gap-2 rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2">
+              <code className="min-w-0 flex-1 truncate text-xs text-indigo-300">{connection.deliveryEndpoint}</code>
+              <Button variant="ghost" size="icon" onClick={() => void copyEndpoint()} title="Copy delivery endpoint" aria-label="Copy delivery endpoint" className="text-slate-400 hover:text-white">
+                {copied ? <Check className="h-4 w-4 text-emerald-400" aria-hidden="true" /> : <Clipboard className="h-4 w-4" aria-hidden="true" />}
               </Button>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-md border border-border bg-white">
+          <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900">
             {attempts.length === 0 ? (
-              <p className="px-4 py-6 text-sm text-muted-foreground">No deliveries yet.</p>
+              <p className="px-4 py-6 text-sm text-slate-400">No deliveries yet.</p>
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-slate-50">
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-muted-foreground">Delivered</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-muted-foreground">Status</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Rows</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted-foreground">Quarantine</th>
+                  <tr className="border-b border-slate-800 bg-slate-900/80">
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">Delivered</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-400">Status</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-400">Rows</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-400">Quarantine</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-slate-800">
                   {attempts.map((attempt) => (
-                    <tr key={attempt.id}>
-                      <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{formatTimestamp(attempt.delivered_at)}</td>
-                      <td className="px-4 py-3"><Badge variant="outline">{formatStatus(attempt.status)}</Badge></td>
-                      <td className="px-4 py-3 text-right">{attempt.total_rows}</td>
-                      <td className="px-4 py-3 text-right text-rose-700">{attempt.quarantined_rows}</td>
+                    <tr key={attempt.id} className="hover:bg-slate-800/40">
+                      <td className="whitespace-nowrap px-4 py-3 text-slate-400">{formatTimestamp(attempt.delivered_at)}</td>
+                      <td className="px-4 py-3"><Badge variant="outline" className="border-slate-700 bg-slate-800 text-slate-300">{formatStatus(attempt.status)}</Badge></td>
+                      <td className="px-4 py-3 text-right text-slate-300">{attempt.total_rows}</td>
+                      <td className="px-4 py-3 text-right text-rose-400">{attempt.quarantined_rows}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -245,9 +245,9 @@ export function OneRosterConnectionClient() {
 
 function StatusValue({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-l-2 border-slate-200 pl-3">
-      <p className="text-xs font-semibold uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 font-medium text-foreground">{value}</p>
+    <div className="border-l-2 border-slate-700 pl-3">
+      <p className="text-xs font-semibold uppercase text-slate-400">{label}</p>
+      <p className="mt-1 font-medium text-white">{value}</p>
     </div>
   )
 }

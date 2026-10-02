@@ -71,35 +71,35 @@ export default async function CourseEnrollPage({
   })
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <Link
             href={`/courses/${courseId}`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-slate-400 hover:text-white transition-colors"
           >
             ← {course.title}
           </Link>
           <div className="flex items-center justify-between mt-1">
-            <h1 className="text-2xl font-extrabold text-foreground">Manage Enrollment</h1>
+            <h1 className="text-2xl font-display font-extrabold text-white">Manage Enrollment</h1>
             <div className="flex gap-2">
               <Link
                 href={`/courses/${courseId}/submissions`}
-                className="text-xs font-semibold text-muted-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-white transition-colors"
+                className="text-xs font-semibold text-slate-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
               >
                 Submissions
               </Link>
               <Link
                 href={`/courses/${courseId}/analytics`}
-                className="text-xs font-semibold text-muted-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-white transition-colors"
+                className="text-xs font-semibold text-slate-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
               >
                 Analytics
               </Link>
             </div>
           </div>
-          <p className="text-muted-foreground text-sm mt-1">
-            Search and enroll or unenroll students in <strong>{course.title}</strong>.
+          <p className="text-slate-400 text-sm mt-1">
+            Search and enroll or unenroll students in <strong className="text-white">{course.title}</strong>.
           </p>
         </div>
 

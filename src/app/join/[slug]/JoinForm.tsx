@@ -83,7 +83,7 @@ export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Prop
     <div className="mb-4"><SsoButtons next={`/join/${orgSlug}/complete`} /></div>
     <form onSubmit={handleSubmit} method="post" className="space-y-4">
       <div>
-        <label htmlFor="displayName" className="block text-sm font-medium mb-1">
+        <label htmlFor="displayName" className="block text-sm font-medium text-slate-300 mb-1">
           {t('join.form.fullNameLabel')}
         </label>
         <input
@@ -92,13 +92,13 @@ export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Prop
           required
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           placeholder={t('join.form.namePlaceholder')}
         />
       </div>
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium mb-1">
+        <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">
           {t('join.form.emailLabel')}
         </label>
         <input
@@ -107,13 +107,13 @@ export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Prop
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           placeholder={t('join.form.emailPlaceholder')}
         />
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium mb-1">
+        <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
           {t('join.form.passwordLabel')}
         </label>
         <input
@@ -123,7 +123,7 @@ export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Prop
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           placeholder={t('join.form.passwordPlaceholder')}
         />
       </div>
@@ -138,21 +138,21 @@ export default function JoinForm({ orgId, orgName, orgSlug, primaryColor }: Prop
       />
 
       {error && (
-        <p role="alert" className="text-sm text-destructive">{error}</p>
+        <p role="alert" className="text-sm text-rose-400 bg-rose-950/50 border border-rose-800/80 rounded-lg px-3 py-2">{error}</p>
       )}
 
       <button
         type="submit"
         disabled={loading || !turnstileToken}
         style={btnStyle}
-        className="w-full bg-primary text-primary-foreground rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50"
+        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-2.5 text-sm font-semibold disabled:opacity-50 transition-colors shadow-sm"
       >
         {loading ? t('join.form.submitLoading') : t('join.form.submitButtonTemplate', { orgName })}
       </button>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-center text-sm text-slate-400">
         {t('join.form.alreadyHaveAccountText')}{' '}
-        <a href="/login" className="underline">
+        <a href="/login" className="text-indigo-400 hover:text-indigo-300 underline font-semibold">
           {t('join.form.signInLink')}
         </a>
       </p>

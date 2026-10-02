@@ -48,14 +48,14 @@ export default async function SurveyResultsPage({
   }>
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-600">
-        <Link href={`/courses/${courseId}`} className="hover:underline">{course.title}</Link>
+    <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 min-h-screen text-slate-100">
+      <nav aria-label="Breadcrumb" className="mb-4 text-sm text-slate-400">
+        <Link href={`/courses/${courseId}`} className="hover:text-amber-300 transition-colors">{course.title}</Link>
         <span aria-hidden="true"> / </span>
-        <span>Survey results</span>
+        <span className="text-white">Survey results</span>
       </nav>
-      <h1 className="text-2xl font-bold text-foreground">{block.title}</h1>
-      <p className="mt-1 text-sm text-slate-600">
+      <h1 className="text-2xl font-bold text-white">{block.title}</h1>
+      <p className="mt-1 text-sm text-slate-400">
         {participants ?? 0} response{participants === 1 ? '' : 's'} · {anonymous ? 'Anonymous' : 'Named'}
       </p>
 
@@ -64,21 +64,21 @@ export default async function SurveyResultsPage({
           const answers = rows.map((r) => ({ value: r.answers?.[q.id], name: r.profiles?.display_name ?? null }))
             .filter((a) => a.value !== undefined && a.value !== '')
           return (
-            <section key={q.id} className="rounded-xl border border-border bg-white p-5">
-              <h2 className="text-sm font-semibold text-foreground">{i + 1}. {q.text}</h2>
-              {answers.length === 0 && <p className="mt-2 text-sm italic text-slate-600">No answers yet.</p>}
+            <section key={q.id} className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+              <h2 className="text-sm font-semibold text-white">{i + 1}. {q.text}</h2>
+              {answers.length === 0 && <p className="mt-2 text-sm italic text-slate-500">No answers yet.</p>}
 
               {q.type === 'scale' && answers.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-sm text-slate-700">
-                    Average: <strong>{(answers.reduce((s, a) => s + Number(a.value), 0) / answers.length).toFixed(1)}</strong> / 5
+                  <p className="text-sm text-slate-300">
+                    Average: <strong className="text-white">{(answers.reduce((s, a) => s + Number(a.value), 0) / answers.length).toFixed(1)}</strong> / 5
                   </p>
                   <ul className="mt-2 space-y-1">
                     {[1, 2, 3, 4, 5].map((n) => (
-                      <li key={n} className="flex items-center gap-2 text-xs text-slate-700">
+                      <li key={n} className="flex items-center gap-2 text-xs text-slate-400">
                         <span className="w-3">{n}</span>
-                        <span className="h-2 rounded bg-indigo-600" style={{ width: `${(answers.filter((a) => Number(a.value) === n).length / answers.length) * 100}%`, minWidth: 2 }} />
-                        <span>{answers.filter((a) => Number(a.value) === n).length}</span>
+                        <span className="h-2 rounded bg-indigo-500" style={{ width: `${(answers.filter((a) => Number(a.value) === n).length / answers.length) * 100}%`, minWidth: 2 }} />
+                        <span className="text-slate-300">{answers.filter((a) => Number(a.value) === n).length}</span>
                       </li>
                     ))}
                   </ul>
@@ -86,9 +86,9 @@ export default async function SurveyResultsPage({
               )}
 
               {q.type === 'choice' && answers.length > 0 && (
-                <ul className="mt-3 space-y-1 text-sm text-slate-700">
+                <ul className="mt-3 space-y-1 text-sm text-slate-300">
                   {(q.options ?? []).map((opt) => (
-                    <li key={opt}>{opt}: <strong>{answers.filter((a) => a.value === opt).length}</strong></li>
+                    <li key={opt}>{opt}: <strong className="text-white">{answers.filter((a) => a.value === opt).length}</strong></li>
                   ))}
                 </ul>
               )}
@@ -96,9 +96,9 @@ export default async function SurveyResultsPage({
               {q.type === 'text' && answers.length > 0 && (
                 <ul className="mt-3 space-y-2">
                   {answers.map((a, j) => (
-                    <li key={j} className="rounded-lg bg-slate-50 p-3 text-sm text-slate-800">
+                    <li key={j} className="rounded-lg bg-slate-800/80 border border-slate-700/50 p-3 text-sm text-slate-200">
                       <p className="whitespace-pre-wrap">{String(a.value)}</p>
-                      {!anonymous && a.name && <p className="mt-1 text-xs text-slate-600">{a.name}</p>}
+                      {!anonymous && a.name && <p className="mt-1 text-xs text-slate-400">{a.name}</p>}
                     </li>
                   ))}
                 </ul>
