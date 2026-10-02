@@ -27,7 +27,7 @@ async function ensureBlockTypesRegistered(
           is_active: meta.is_active ?? true,
         }
       })
-      .filter(Boolean)
+      .filter((item): item is NonNullable<typeof item> => item !== null)
 
     if (toUpsert.length > 0) {
       await service.from('block_types').upsert(toUpsert, { onConflict: 'id' })

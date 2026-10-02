@@ -9,7 +9,8 @@
     "scripts/factory.js",
     "supabase/functions/**",
     "playwright-report/**",
-    "test-results/**"
+    "test-results/**",
+    "public/**"
   ],
   "rules": {
     "@typescript-eslint/no-explicit-any": "off",

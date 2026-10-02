@@ -170,7 +170,7 @@ export async function GET(
       })
     } else {
       const buffer = await targetZipFile.async('nodebuffer')
-      return new NextResponse(buffer, {
+      return new NextResponse(new Uint8Array(buffer), {
         status: 200,
         headers: {
           'Content-Type': mimeType,

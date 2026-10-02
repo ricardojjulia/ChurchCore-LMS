@@ -10,6 +10,18 @@ import {
   type ChurchCoreInboundPayload,
 } from '@/lib/churchcore-connect'
 import { generateKeyPairSync } from 'node:crypto'
+import { covers } from '@/tests/covers'
+
+covers(
+  'page:/admin/integrations',
+  'page:/admin/integrations/churchcore',
+  'api:GET /api/integrations/churchcore/connection',
+  'api:PUT /api/integrations/churchcore/connection',
+  'api:DELETE /api/integrations/churchcore/connection',
+  'api:POST /api/integrations/churchcore/deliveries',
+  'api:POST /api/integrations/churchcore/deliveries/[id]/preview',
+  'api:POST /api/integrations/churchcore/deliveries/[id]/apply'
+)
 
 describe('COUNCIL-2026-038: ChurchCore Connect Integration', () => {
   describe('Role Mapping & Privilege Guards', () => {

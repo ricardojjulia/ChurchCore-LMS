@@ -9,18 +9,39 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+---
+
+## [0.43.0] — 2026-10-02
+
+Major capability release delivering SCORM interactive modules, ChurchCore ChMS bidirectional connect, H5P interactive learning runtime, complete Portuguese localization, and UI contrast polish.
+
 ### Added
-- **H5P Interactive Learning Content (COUNCIL-2026-046):** Native support for H5P interactive activities in ChurchCore LMS.
-  - **Course Builder Form (`H5PForm`):** Supports both interactive iframe embed URLs (from H5P.com, Lumi, Curriki, WordPress) and direct `.h5p` zip package uploads with client-side metadata parsing (`JSZip`).
-  - **Live Student Player (`H5PPlayer`):** Interactive viewport with customizable aspect ratios (`16:9`, `4:3`, `1:1`, `auto`), auto-resizing, and fullscreen mode.
-  - **xAPI Gradebook & XP Integration:** Intercepts H5P xAPI statements via `window.postMessage` to auto-grade passing scores, advance student course progression, record submissions in `block_submissions`, and award gamification XP.
-  - **Multilingual Support:** Fully localized H5P activity badges, completion buttons, and progress status across English, Spanish, and Portuguese.
-- **Complete Portuguese (`pt`) Localization & 3-Way i18n:** Added comprehensive Portuguese translation dictionary (`messages/pt.json`) achieving 100% key parity (780 keys) with English and Spanish. Updated `LocaleSwitcher` for seamless 3-way toggling across EN, ES, and PT.
-- **Multilingual UI Coverage:** Fully localized dashboards (`SmartSummaryCard`, `AdminDashboard`, `InstructorDashboard`, `StudentDashboard`), gamification widgets (`EngagementWidget`, `StudentXpStandingsModal`, `AiWeeklySummary`), academic management (`AdminBlueprintsPage`, `BlueprintForm`, `AdminSectionsPage`), and system transactional emails (`PasswordResetEmail`, `SignupVerifyEmail`).
-- **AI Course Builder Incremental Generation:** AI course generator now supports appending new modules and lessons to existing courses without overwriting prior content, alongside an optional full replacement workflow.
-- **Hybrid Course Attendance & Availability Tracking:** Support for course start/expiration availability windows and quick attendance roll-call tracking for scheduled hybrid classroom sessions.
-- **Modern UI & Aesthetic Alignment:** Polished card surfaces (`card-crisp`), glowing badges, dark slate / indigo theme tokens, and typography aligned with ChurchCore Orthos standards.
-- **Automated Multilingual E2E Verification:** Automated Playwright walkthrough test suite across Manager, Teacher, and Student roles in all 3 languages with automated visual verification.
+
+- **SCORM 1.2 & 2004 Runtime Engine (COUNCIL-2026-042):**
+  - **Zip Manifest Parsing:** Secure zip archive parser supporting `imsmanifest.xml` validation for SCORM 1.2 and 2004 packages with path traversal protection.
+  - **Runtime CMI Bridge:** Client-side runtime bridge (`window.API` / `window.API_1484_11`) capturing runtime commits and tracking learner progress, completion status, raw/scaled scores, session time, and suspend data.
+  - **Asset Streaming API:** High-performance package decompression route with LRU caching and runtime script injection.
+  - **Interactive Learner Player (`ScormPlayer`):** Fullscreen toggle, aspect ratio customization, score synchronization with `block_submissions`, and automated XP awarding upon completion.
+  - **Course Builder Form (`ScormForm`):** Direct `.zip` upload (up to 100MB), manifest inspection, and passing score thresholds.
+
+- **ChurchCore Connect ChMS Integration (COUNCIL-2026-038):**
+  - **Cryptographic Pairing:** Per-tenant signed handshake using Ed25519 public keys, key IDs, staleness checks, and delivery ID idempotency.
+  - **Inbound Staged Sync:** Syncs members, households (family guardian links), and small groups / ministries (as cohorts tagged `source='churchcore'`).
+  - **Data Safeguards & Minors Protection (Amendments 3 & 4):** Strict prohibition of pastoral/care fields (`pastoral_notes`, `care_assignments`, `prayer_requests`, `ai_*`). Strips minor contact details unless explicit guardian consent is flagged.
+  - **Review Queue & Diff Inspector:** Inbound deliveries staged with per-entity diff inspection (creates, updates, deactivations). Privilege elevations to admin/manager held for mandatory manual review.
+  - **Outbound Milestone Sync:** Automated dispatch of course enrollments, milestone progress (25/50/75/100%), certificates issued, and path completions to ChurchCore member records.
+  - **Integrations Hub UI:** Dedicated Admin Integrations hub (`/admin/integrations`) and ChurchCore Connect workspace (`/admin/integrations/churchcore`).
+  - **Profile Badge:** `<ManagedInChurchCoreBadge />` displayed on synced member profiles.
+
+- **H5P Interactive Content Engine (COUNCIL-2026-046):**
+  - Native standalone runtime player (`h5p-standalone`), embed URL support, direct `.h5p` zip package uploads, and xAPI gradebook integration.
+
+- **Portuguese (`pt`) 3-Way Localization:**
+  - 100% key parity (780 keys) in `messages/pt.json` alongside English and Spanish with seamless 3-way language switching.
+
+### Fixed
+
+- **Course Preview White-on-White Contrast:** Fixed foreground and background color contrast across all course builder preview viewports, interactive block players, and the student `LearningShell`.
 
 ---
 

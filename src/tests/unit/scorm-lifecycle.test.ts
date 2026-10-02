@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { submitScormCommit } from '@/app/actions/scorm'
+import { covers } from '@/tests/covers'
+
+covers(
+  'action:scorm.submitScormCommit',
+  'api:POST /api/upload/scorm',
+  'api:GET /api/scorm/package/[blockId]/[...file]'
+)
 
 const mockGetUser = vi.fn()
 const mockFrom = vi.fn()
