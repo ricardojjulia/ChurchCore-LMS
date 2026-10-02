@@ -74,15 +74,15 @@ export default function LiveSessionPlayer({
   return (
     <div className="space-y-4">
       {/* Session card */}
-      <div className="bg-white border border-border rounded-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border-b border-border px-5 py-4 flex items-center gap-3">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-gradient-to-r from-violet-950/40 to-indigo-950/40 border-b border-slate-800 px-5 py-4 flex items-center gap-3">
           <span className="text-2xl" aria-hidden="true">🎙️</span>
           <div>
-            <p className="font-bold text-foreground leading-snug">{title}</p>
-            <p className="text-xs text-muted-foreground">{label}</p>
+            <p className="font-bold text-white leading-snug">{title}</p>
+            <p className="text-xs text-slate-400">{label}</p>
           </div>
           {isLive && (
-            <span className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200">
+            <span className="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-950/60 text-rose-400 text-xs font-bold border border-rose-500/30">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
               {t('learning.liveSession.liveBadge')}
             </span>
@@ -91,7 +91,7 @@ export default function LiveSessionPlayer({
 
         <div className="px-5 py-4 space-y-4">
           {description && (
-            <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+            <p className="text-sm text-slate-300 leading-relaxed">{description}</p>
           )}
 
           {/* Date/time */}
@@ -99,12 +99,12 @@ export default function LiveSessionPlayer({
             <div className="flex items-start gap-3 text-sm">
               <span className="text-lg mt-0.5" aria-hidden="true">📅</span>
               <div>
-                <p className="font-semibold text-foreground">
+                <p className="font-semibold text-white">
                   {new Date(scheduledFor).toLocaleDateString('en-US', {
                     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
                   })}
                 </p>
-                <p className="text-muted-foreground">
+                <p className="text-slate-400">
                   {new Date(scheduledFor).toLocaleTimeString('en-US', {
                     hour: '2-digit', minute: '2-digit',
                   })}
@@ -116,11 +116,11 @@ export default function LiveSessionPlayer({
 
           {/* Countdown */}
           {msUntilStart !== null && msUntilStart > 0 && !isEnded && (
-            <div className="bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3 text-center">
-              <p className="text-xs text-indigo-700 font-semibold uppercase tracking-widest mb-1">
+            <div className="bg-indigo-950/40 border border-indigo-500/30 rounded-lg px-4 py-3 text-center">
+              <p className="text-xs text-indigo-400 font-semibold uppercase tracking-widest mb-1">
                 {t('learning.liveSession.startingInLabel')}
               </p>
-              <p className="text-2xl font-extrabold text-indigo-700 tabular-nums">
+              <p className="text-2xl font-extrabold text-indigo-300 tabular-nums">
                 {formatCountdown(msUntilStart)}
               </p>
             </div>
@@ -128,7 +128,7 @@ export default function LiveSessionPlayer({
 
           {/* Status banners */}
           {isEnded && !recordingUrl && (
-            <div className="bg-slate-50 border border-border rounded-lg px-4 py-3 text-center text-sm text-muted-foreground">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-center text-sm text-slate-400">
               {t('learning.liveSession.endedNotice')}
             </div>
           )}
@@ -142,10 +142,10 @@ export default function LiveSessionPlayer({
               aria-disabled={!canJoin}
               className={`
                 inline-flex items-center gap-2 w-full justify-center py-3 px-5 rounded-xl
-                text-white font-bold text-sm transition-colors
+                text-white font-bold text-sm transition-colors shadow-sm
                 ${canJoin
                   ? color
-                  : 'bg-slate-200 text-slate-400 cursor-not-allowed pointer-events-none'
+                  : 'bg-slate-800 text-slate-500 cursor-not-allowed pointer-events-none'
                 }
               `}
             >
@@ -159,7 +159,7 @@ export default function LiveSessionPlayer({
               href={recordingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 underline transition-colors"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-400 hover:text-indigo-300 underline transition-colors"
             >
               {t('learning.liveSession.viewRecordingButton')}
             </a>

@@ -26,9 +26,9 @@ export default function SurveyPlayer({
     getMyActivityState(blockId).then((s) => setResponded(!!s.responded)).catch(() => {})
   }, [blockId])
 
-  if (questions.length === 0) return <p className="italic text-muted-foreground">{t('emptyActivity')}</p>
+  if (questions.length === 0) return <p className="italic text-slate-400">{t('emptyActivity')}</p>
   if (responded) {
-    return <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{t('surveyThanks')}</p>
+    return <p role="status" className="rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-4 text-sm text-emerald-300">{t('surveyThanks')}</p>
   }
 
   function submit(e: React.FormEvent) {
@@ -44,15 +44,15 @@ export default function SurveyPlayer({
 
   return (
     <form onSubmit={submit} className="space-y-6">
-      <p className="text-sm text-muted-foreground">{anonymous ? t('surveyIntroAnonymous') : t('surveyIntroNamed')}</p>
+      <p className="text-sm text-slate-400">{anonymous ? t('surveyIntroAnonymous') : t('surveyIntroNamed')}</p>
       {questions.map((q, i) => (
-        <fieldset key={q.id} className="rounded-xl border border-border bg-white p-4">
-          <legend className="px-1 text-sm font-semibold text-foreground">{i + 1}. {q.text}</legend>
+        <fieldset key={q.id} className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+          <legend className="px-1 text-sm font-semibold text-white">{i + 1}. {q.text}</legend>
           {q.type === 'scale' && (
             <div className="mt-3">
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <label key={n} className="flex flex-col items-center gap-1 text-xs text-slate-700">
+                  <label key={n} className="flex flex-col items-center gap-1 text-xs text-slate-300">
                     <input
                       type="radio"
                       name={`q-${q.id}`}
@@ -65,7 +65,7 @@ export default function SurveyPlayer({
                   </label>
                 ))}
               </div>
-              <div className="mt-1 flex justify-between text-xs text-slate-600">
+              <div className="mt-1 flex justify-between text-xs text-slate-400">
                 <span>{t('scaleLow')}</span><span>{t('scaleHigh')}</span>
               </div>
             </div>
@@ -73,7 +73,7 @@ export default function SurveyPlayer({
           {q.type === 'choice' && (
             <div className="mt-3 space-y-2">
               {(q.options ?? []).map((opt) => (
-                <label key={opt} className="flex items-center gap-2 text-sm text-slate-800">
+                <label key={opt} className="flex items-center gap-2 text-sm text-slate-300">
                   <input
                     type="radio"
                     name={`q-${q.id}`}
@@ -94,16 +94,17 @@ export default function SurveyPlayer({
               onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
               maxLength={2000}
               rows={3}
-              className="mt-3 w-full rounded-md border border-input px-3 py-2 text-sm"
+              placeholder={t('textAnswerLabel')}
+              className="mt-3 w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           )}
         </fieldset>
       ))}
-      {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
+      {error && <p role="alert" className="text-sm text-rose-400">{error}</p>}
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60"
+        className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-60 transition-colors shadow-sm"
       >
         {pending ? t('submitting') : t('submitSurvey')}
       </button>

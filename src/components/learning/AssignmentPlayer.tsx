@@ -97,12 +97,12 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
 
   if (result?.done || alreadySubmitted) {
     return (
-      <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 space-y-3">
-        <p className="text-sm font-semibold text-emerald-700">
+      <div className="mt-6 rounded-xl border border-emerald-500/30 bg-emerald-950/40 px-5 py-4 space-y-3">
+        <p className="text-sm font-semibold text-emerald-400">
           {t('learning.assignment.submittedBanner')}
         </p>
         {existingSub?.content?.text && (
-          <div className="text-sm text-slate-700 whitespace-pre-wrap bg-white border border-border rounded-lg p-4">
+          <div className="text-sm text-slate-300 whitespace-pre-wrap bg-slate-900 border border-slate-800 rounded-lg p-4">
             {existingSub.content.text}
           </div>
         )}
@@ -111,7 +111,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
             href={existingSub.content.file_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
+            className="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 hover:underline font-medium"
           >
             📎 {existingSub.content.file_name ?? t('learning.assignment.attachedFileFallback')}
           </a>
@@ -122,20 +122,27 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
 
   if (isGraded && existingSub) {
     const pct   = existingSub.grade_pct
-    const color = pct === null ? 'slate' : pct >= 90 ? 'emerald' : pct >= 70 ? 'amber' : 'rose'
+    const colorClasses = pct === null
+      ? 'border-slate-800 bg-slate-900 text-slate-300'
+      : pct >= 90
+      ? 'border-emerald-500/30 bg-emerald-950/40 text-emerald-300'
+      : pct >= 70
+      ? 'border-amber-500/30 bg-amber-950/40 text-amber-300'
+      : 'border-rose-500/30 bg-rose-950/40 text-rose-300'
+
     return (
-      <div className={`mt-6 rounded-xl border border-${color}-200 bg-${color}-50 px-5 py-4 space-y-3`}>
+      <div className={`mt-6 rounded-xl border ${colorClasses} px-5 py-4 space-y-3`}>
         <div className="flex items-center justify-between">
-          <p className={`text-sm font-bold text-${color}-700`}>
+          <p className="text-sm font-bold">
             {t('learning.assignment.gradeLabel')} {existingSub.score ?? '?'} / {existingSub.max_score ?? maxPoints}
             {pct !== null && ` (${pct}%)`}
           </p>
         </div>
         {existingSub.feedback && (
-          <p className="text-sm text-slate-700 italic">{existingSub.feedback}</p>
+          <p className="text-sm text-slate-300 italic">{existingSub.feedback}</p>
         )}
         {existingSub.content?.text && (
-          <div className="text-sm text-slate-600 whitespace-pre-wrap bg-white border border-border rounded-lg p-4">
+          <div className="text-sm text-slate-300 whitespace-pre-wrap bg-slate-900 border border-slate-800 rounded-lg p-4">
             {existingSub.content.text}
           </div>
         )}
@@ -144,7 +151,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
             href={existingSub.content.file_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
+            className="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 hover:underline font-medium"
           >
             📎 {existingSub.content.file_name ?? t('learning.assignment.attachedFileFallback')}
           </a>
@@ -155,10 +162,10 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
 
   return (
     <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-      <div className="rounded-xl border border-border bg-white p-5 space-y-4">
+      <div className="rounded-xl border border-slate-800 bg-slate-900 p-5 space-y-4">
         {submissionType !== 'file' && (
           <div>
-            <label className="block text-sm font-semibold text-foreground mb-2">
+            <label className="block text-sm font-semibold text-white mb-2">
               {t('learning.assignment.responseFieldLabel')}
             </label>
             <textarea
@@ -166,10 +173,10 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
               onChange={(e) => setBody(e.target.value)}
               rows={8}
               placeholder={t('learning.assignment.responsePlaceholder')}
-              className="w-full text-sm text-foreground bg-slate-50 border border-border rounded-lg p-3 resize-y focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition"
+              className="w-full text-sm text-white bg-slate-800 border border-slate-700 rounded-lg p-3 resize-y focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder:text-slate-500 transition"
               aria-label="Assignment response"
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               {t('learning.assignment.charCountHelperTemplate', { n: body.length.toLocaleString(), maxPoints })}
             </p>
           </div>
@@ -178,32 +185,32 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
         {/* File attachment */}
         {submissionType !== 'text' && (
         <div>
-          <p className="text-sm font-semibold text-foreground mb-2">
+          <p className="text-sm font-semibold text-white mb-2">
             {submissionType === 'file' ? t('learning.assignment.uploadFileTypeLabel') : t('learning.assignment.attachmentTypeLabel')}{' '}
-            {submissionType === 'both' && <span className="font-normal text-muted-foreground">(optional)</span>}
+            {submissionType === 'both' && <span className="font-normal text-slate-400">(optional)</span>}
           </p>
           {file ? (
-            <div className="flex items-center gap-3 bg-slate-50 border border-border rounded-lg px-4 py-2.5">
+            <div className="flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2.5">
               <span className="text-lg" aria-hidden="true">📎</span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
-                <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
+                <p className="text-sm font-medium text-white truncate">{file.name}</p>
+                <p className="text-xs text-slate-400">{(file.size / 1024).toFixed(1)} KB</p>
               </div>
               <button
                 type="button"
                 onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = '' }}
-                className="text-xs text-rose-500 hover:text-rose-700 font-medium"
+                className="text-xs text-rose-400 hover:text-rose-300 font-medium"
                 aria-label="Remove file"
               >
                 {t('learning.assignment.removeFileButton')}
               </button>
             </div>
           ) : (
-            <label className="flex items-center gap-3 bg-slate-50 border border-dashed border-border rounded-lg px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors">
+            <label className="flex items-center gap-3 bg-slate-800/60 border border-dashed border-slate-700 rounded-lg px-4 py-3 cursor-pointer hover:bg-slate-800 transition-colors">
               <span className="text-slate-400 text-xl" aria-hidden="true">📤</span>
               <div>
-                <p className="text-sm font-medium text-foreground">{t('learning.assignment.dropzoneLabel')}</p>
-                <p className="text-xs text-muted-foreground">{t('learning.assignment.dropzoneHint')}</p>
+                <p className="text-sm font-medium text-white">{t('learning.assignment.dropzoneLabel')}</p>
+                <p className="text-xs text-slate-400">{t('learning.assignment.dropzoneHint')}</p>
               </div>
               <input
                 ref={fileRef}
@@ -215,13 +222,13 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
               />
             </label>
           )}
-          {fileErr && <p className="text-xs text-rose-600 mt-1" role="alert">{fileErr}</p>}
+          {fileErr && <p className="text-xs text-rose-400 mt-1" role="alert">{fileErr}</p>}
         </div>
         )}
       </div>
 
       {result?.error && (
-        <p className="text-sm text-rose-600 font-medium" role="alert">{result.error}</p>
+        <p className="text-sm text-rose-400 font-medium" role="alert">{result.error}</p>
       )}
 
       <button
@@ -232,7 +239,7 @@ export default function AssignmentPlayer({ blockId, instructions, maxPoints, sub
           (submissionType === 'file' && !file) ||
           (submissionType === 'both' && !body.trim() && !file)
         }
-        className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
+        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg disabled:opacity-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
       >
         {pending ? t('common.submittingButton') : t('learning.assignment.submitButton')}
       </button>

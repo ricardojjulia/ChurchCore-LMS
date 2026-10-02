@@ -37,7 +37,7 @@ export default function ChecklistPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- load once per block
   }, [blockId])
 
-  if (items.length === 0) return <p className="italic text-muted-foreground">{t('emptyActivity')}</p>
+  if (items.length === 0) return <p className="italic text-slate-400">{t('emptyActivity')}</p>
 
   function toggle(id: string) {
     touched.current = true
@@ -61,13 +61,13 @@ export default function ChecklistPlayer({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm font-medium text-slate-700" aria-live="polite">
+      <p className="text-sm font-medium text-slate-300" aria-live="polite">
         {t('checklistProgress', { done, total: items.length })}
       </p>
       <ul className="space-y-2">
         {items.map((item) => (
           <li key={item.id}>
-            <label className="flex items-start gap-3 rounded-xl border border-border bg-white p-3 text-sm text-slate-800">
+            <label className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3 text-sm text-slate-200 hover:bg-slate-800/80 transition-colors cursor-pointer">
               <input
                 type="checkbox"
                 checked={checked.includes(item.id)}
@@ -76,14 +76,14 @@ export default function ChecklistPlayer({
               />
               <span>
                 {item.text}
-                {!item.required && <span className="ml-2 text-xs text-slate-600">({t('optionalTag')})</span>}
+                {!item.required && <span className="ml-2 text-xs text-slate-400">({t('optionalTag')})</span>}
               </span>
             </label>
           </li>
         ))}
       </ul>
-      {requiredDone && <p role="status" className="text-sm font-medium text-emerald-800">{t('checklistComplete')}</p>}
-      {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
+      {requiredDone && <p role="status" className="text-sm font-medium text-emerald-400">{t('checklistComplete')}</p>}
+      {error && <p role="alert" className="text-sm text-rose-400">{error}</p>}
     </div>
   )
 }

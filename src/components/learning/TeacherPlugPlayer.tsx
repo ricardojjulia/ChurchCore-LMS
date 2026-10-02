@@ -67,16 +67,16 @@ export default function TeacherPlugPlayer({
 
   if (loading) {
     return (
-      <div className="bg-white border border-border rounded-2xl p-6 animate-pulse">
-        <div className="h-4 bg-slate-200 rounded w-1/3 mb-3" />
-        <div className="h-3 bg-slate-100 rounded w-2/3" />
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 animate-pulse">
+        <div className="h-4 bg-slate-800 rounded w-1/3 mb-3" />
+        <div className="h-3 bg-slate-800/60 rounded w-2/3" />
       </div>
     )
   }
 
   if (error || !profile) {
     return (
-      <div className="bg-white border border-border rounded-xl p-5 text-sm text-muted-foreground italic">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-sm text-slate-400 italic">
         Instructor card not available.
       </div>
     )
@@ -90,29 +90,29 @@ export default function TeacherPlugPlayer({
   const website   = content.website ?? profile.website_url
 
   return (
-    <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
       <div className="flex items-start gap-4">
         {/* Avatar */}
         {photoUrl ? (
           <Image
             src={photoUrl}
             alt={name}
-            className="w-14 h-14 rounded-full object-cover shrink-0 border border-border"
+            className="w-14 h-14 rounded-full object-cover shrink-0 border border-slate-700"
             width={56}
             height={56}
             unoptimized
           />
         ) : (
-          <div className="w-14 h-14 rounded-full bg-primary/10 text-primary font-bold text-lg flex items-center justify-center shrink-0 border border-primary/20">
+          <div className="w-14 h-14 rounded-full bg-indigo-950/60 text-indigo-400 font-bold text-lg flex items-center justify-center shrink-0 border border-indigo-500/30">
             {initials}
           </div>
         )}
 
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-0.5">
             {t('learning.teacherPlug.yourInstructorLabel')}
           </p>
-          <h3 className="text-lg font-extrabold text-foreground">{name}</h3>
+          <h3 className="text-lg font-extrabold text-white">{name}</h3>
 
           {/* Specialties */}
           {specialty && (
@@ -120,7 +120,7 @@ export default function TeacherPlugPlayer({
               {specialty.split(',').map((s) => s.trim()).filter(Boolean).map((s) => (
                 <span
                   key={s}
-                  className="text-xs font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full"
+                  className="text-xs font-semibold bg-indigo-950/60 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full"
                 >
                   {s}
                 </span>
@@ -132,7 +132,7 @@ export default function TeacherPlugPlayer({
 
       {/* Bio */}
       {bio && (
-        <p className="mt-4 text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+        <p className="mt-4 text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
           {bio}
         </p>
       )}
@@ -143,7 +143,7 @@ export default function TeacherPlugPlayer({
           href={website}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block mt-3 text-sm text-primary hover:underline font-medium"
+          className="inline-block mt-3 text-sm text-indigo-400 hover:text-indigo-300 hover:underline font-medium"
         >
           {website.replace(/^https?:\/\//, '')} →
         </a>
