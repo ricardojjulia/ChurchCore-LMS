@@ -22,7 +22,7 @@ export const BLOCK_TYPE_META: Record<BlockTypeId, BlockTypeMeta> = {
   video_stream:  { label: 'Video',        icon: '🎬', category: 'content',   color: 'amber',   description: 'YouTube, Vimeo, or direct video link', is_active: true  },
   resource_file: { label: 'File',         icon: '📎', category: 'content',   color: 'teal',    description: 'PDF, slide deck, or downloadable file', is_active: true  },
   external_url:  { label: 'External URL', icon: '🔗', category: 'content',   color: 'slate',   description: 'Link to an external website',          is_active: true  },
-  scorm:         { label: 'SCORM',        icon: '📦', category: 'content',   color: 'slate',   description: 'SCORM-compatible package',             is_active: false },
+  scorm:         { label: 'SCORM Package', icon: '📦', category: 'content', color: 'indigo',   description: 'SCORM 1.2 / 2004 interactive module', is_active: true },
   live_session:  { label: 'Live Session', icon: '🎙️', category: 'content',   color: 'violet',  description: 'Zoom, Meet, or live class link',       is_active: true  },
   teacher_plug:  { label: 'Teacher Card', icon: '👤', category: 'content',   color: 'indigo',  description: 'Instructor bio and introduction card', is_active: true  },
   // Activity
