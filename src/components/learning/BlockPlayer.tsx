@@ -41,11 +41,11 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
     const body = content.body as string | object | undefined
     const html = tiptapToHtml(body)
     return (
-      <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
+      <div className="prose prose-invert prose-sm max-w-none text-slate-200 leading-relaxed">
         {html ? (
           <div dangerouslySetInnerHTML={{ __html: html }} />
         ) : (
-          <p className="italic text-muted-foreground">{t('learning.block.emptyPageBody')}</p>
+          <p className="italic text-slate-400">{t('learning.block.emptyPageBody')}</p>
         )}
       </div>
     )
@@ -54,7 +54,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   // ── Video ──────────────────────────────────────────────────────────
   if (block.block_type_id === 'video_stream') {
     const url = content.url as string | undefined
-    if (!url) return <p className="text-muted-foreground italic">{t('learning.block.noVideoUrl')}</p>
+    if (!url) return <p className="text-slate-400 italic">{t('learning.block.noVideoUrl')}</p>
     return (
       <VideoPlayer
         url={url}
@@ -72,18 +72,18 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   if (block.block_type_id === 'resource_file') {
     const url  = content.url as string | undefined
     const name = content.filename as string | undefined
-    if (!url) return <p className="text-muted-foreground italic">{t('learning.block.fileUnavailable')}</p>
+    if (!url) return <p className="text-slate-400 italic">{t('learning.block.fileUnavailable')}</p>
     return (
-      <div className="flex items-center gap-4 bg-white border border-border rounded-xl p-5">
+      <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 rounded-xl p-5">
         <span className="text-3xl" aria-hidden="true">📎</span>
         <div>
-          <p className="font-semibold text-foreground">{name ?? t('learning.block.downloadFileFallback')}</p>
+          <p className="font-semibold text-white">{name ?? t('learning.block.downloadFileFallback')}</p>
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
             download
-            className="text-sm text-primary hover:text-primary/80 underline transition-colors"
+            className="text-sm text-indigo-400 hover:text-indigo-300 underline transition-colors"
           >
             {t('learning.block.downloadButton')}
           </a>
@@ -96,17 +96,17 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   if (block.block_type_id === 'external_url') {
     const url         = content.url as string | undefined
     const description = content.description as string | undefined
-    if (!url) return <p className="text-muted-foreground italic">{t('learning.block.noUrlConfigured')}</p>
+    if (!url) return <p className="text-slate-400 italic">{t('learning.block.noUrlConfigured')}</p>
     return (
-      <div className="flex items-start gap-4 bg-white border border-border rounded-xl p-5">
+      <div className="flex items-start gap-4 bg-slate-900 border border-slate-800 rounded-xl p-5">
         <span className="text-2xl mt-0.5" aria-hidden="true">🔗</span>
         <div>
-          {description && <p className="text-sm text-muted-foreground mb-2">{description}</p>}
+          {description && <p className="text-sm text-slate-400 mb-2">{description}</p>}
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-primary font-semibold hover:text-primary/80 underline transition-colors break-all"
+            className="text-sm text-indigo-400 font-semibold hover:text-indigo-300 underline transition-colors break-all"
           >
             {url}
           </a>
@@ -125,12 +125,12 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
     return (
       <div>
         {instructions && (
-          <div className="prose prose-sm max-w-none text-foreground mb-4">
+          <div className="prose prose-invert prose-sm max-w-none text-slate-200 mb-4">
             <p className="whitespace-pre-wrap">{instructions}</p>
           </div>
         )}
         {dueDate && (
-          <p className="text-xs text-muted-foreground mb-4">
+          <p className="text-xs text-slate-400 mb-4">
             {t('learning.block.dueLabel')} {new Date(dueDate).toLocaleDateString('en-US', { dateStyle: 'long', timeStyle: 'short' })}
           </p>
         )}
@@ -153,15 +153,15 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
     // A quiz may be built entirely from question-bank draws (resolved by
     // QuizPlayer on mount), so "empty" means no inline questions AND no draws.
     if (questions.length === 0 && bankDraws.length === 0) {
-      return <p className="text-muted-foreground italic">{t('learning.block.quizEmpty')}</p>
+      return <p className="text-slate-400 italic">{t('learning.block.quizEmpty')}</p>
     }
     const desc = content.description as string | undefined
     const drawnCount = bankDraws.reduce((s, d) => s + (d.count ?? 0), 0)
     const quizTotalPoints = questions.reduce((s, q) => s + q.points, 0)
     return (
       <div>
-        {desc && <p className="text-sm text-muted-foreground mb-4">{desc}</p>}
-        <div className="flex items-center gap-3 mb-4 text-xs text-muted-foreground">
+        {desc && <p className="text-sm text-slate-400 mb-4">{desc}</p>}
+        <div className="flex items-center gap-3 mb-4 text-xs text-slate-400">
           <span>{t('learning.block.questionCountTemplate', { count: questions.length + drawnCount })}</span>
           {bankDraws.length === 0 && (
             <>
@@ -189,7 +189,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   // ── Live Session ───────────────────────────────────────────────────
   if (block.block_type_id === 'live_session') {
     const meetingUrl   = content.meeting_url as string | undefined
-    if (!meetingUrl) return <p className="text-muted-foreground italic">{t('learning.block.noMeetingUrl')}</p>
+    if (!meetingUrl) return <p className="text-slate-400 italic">{t('learning.block.noMeetingUrl')}</p>
     return (
       <LiveSessionPlayer
         title={block.title}
@@ -221,7 +221,7 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
 
   // ── Teacher Plug ───────────────────────────────────────────────────
   if (block.block_type_id === 'teacher_plug') {
-    if (!orgId) return <p className="text-muted-foreground italic">{t('common.instructorCardUnavailable')}</p>
+    if (!orgId) return <p className="text-slate-400 italic">{t('common.instructorCardUnavailable')}</p>
     return <TeacherPlugPlayer blockContent={block.content} orgId={orgId} />
   }
 
@@ -253,8 +253,8 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   }
 
   return (
-    <div className="bg-slate-50 border border-border rounded-xl p-5 text-center">
-      <p className="text-muted-foreground text-sm italic">{t('learning.block.unsupportedType')}</p>
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 text-center">
+      <p className="text-slate-400 text-sm italic">{t('learning.block.unsupportedType')}</p>
     </div>
   )
 }

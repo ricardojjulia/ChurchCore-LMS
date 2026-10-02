@@ -159,8 +159,8 @@ export default function QuizPlayer({
 
   if (loadingBank) {
     return (
-      <div className="mt-6 flex items-center gap-3 text-muted-foreground text-sm">
-        <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="mt-6 flex items-center gap-3 text-slate-400 text-sm">
+        <div className="w-4 h-4 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
         <span>{t('learning.quiz.preparingLoading')}</span>
       </div>
     )
@@ -169,10 +169,10 @@ export default function QuizPlayer({
   // Attempts exhausted — show locked state, no form
   if (attemptsAllowed > 0 && attemptsUsed >= attemptsAllowed && !existingSub) {
     return (
-      <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-5 py-6 text-center space-y-2">
+      <div className="mt-6 rounded-xl border border-slate-800 bg-slate-900 px-5 py-6 text-center space-y-2">
         <p className="text-2xl">🔒</p>
-        <p className="font-semibold text-foreground">{t('learning.quiz.noAttemptsHeading')}</p>
-        <p className="text-sm text-muted-foreground">
+        <p className="font-semibold text-white">{t('learning.quiz.noAttemptsHeading')}</p>
+        <p className="text-sm text-slate-400">
           {t('learning.quiz.attemptsExhaustedDescription', { n: attemptsAllowed })}
         </p>
       </div>
@@ -277,14 +277,19 @@ export default function QuizPlayer({
   const displayScore    = result?.earnedScore ?? existingSub?.score
 
   if (submitted && displayGradePct !== null && displayGradePct !== undefined) {
-    const color = displayGradePct >= 90 ? 'emerald' : displayGradePct >= 70 ? 'amber' : 'rose'
+    const colorClasses = displayGradePct >= 90
+      ? 'border-emerald-500/30 bg-emerald-950/40 text-emerald-300'
+      : displayGradePct >= 70
+      ? 'border-amber-500/30 bg-amber-950/40 text-amber-300'
+      : 'border-rose-500/30 bg-rose-950/40 text-rose-300'
+
     return (
       <div className="mt-6 space-y-4">
-        <div className={`rounded-xl border border-${color}-200 bg-${color}-50 px-5 py-4`}>
-          <p className={`text-lg font-extrabold text-${color}-700`}>
+        <div className={`rounded-xl border ${colorClasses} px-5 py-4`}>
+          <p className="text-lg font-extrabold">
             {displayScore}/{maxScore} — {displayGradePct}%
           </p>
-          <p className={`text-sm text-${color}-600 mt-0.5`}>
+          <p className="text-sm mt-0.5 opacity-90">
             {displayGradePct >= 90 ? t('learning.quiz.feedbackExcellent') : displayGradePct >= 70 ? t('learning.quiz.feedbackGood') : t('learning.quiz.feedbackNeedsWork')}
           </p>
         </div>
@@ -293,10 +298,10 @@ export default function QuizPlayer({
           {questions.map((q, qi) => {
             const storedAnswer = getStoredAnswer(q.id)
             return (
-              <div key={q.id} className="bg-white border border-border rounded-xl p-5">
-                <p className="text-sm font-semibold text-foreground mb-3">
+              <div key={q.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                <p className="text-sm font-semibold text-white mb-3">
                   {qi + 1}. {q.text}
-                  <span className="ml-2 text-xs text-muted-foreground">({t('learning.quiz.pointsTemplate', { n: q.points })})</span>
+                  <span className="ml-2 text-xs text-slate-400">({t('learning.quiz.pointsTemplate', { n: q.points })})</span>
                 </p>
 
                 {/* MC / TF result */}
@@ -310,9 +315,9 @@ export default function QuizPlayer({
                           key={oi}
                           className={cn(
                             'flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm border',
-                            oi === correct ? 'border-emerald-300 bg-emerald-50 text-emerald-800' :
-                            oi === chosen && oi !== correct ? 'border-rose-300 bg-rose-50 text-rose-800' :
-                            'border-border bg-slate-50 text-muted-foreground'
+                            oi === correct ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300' :
+                            oi === chosen && oi !== correct ? 'border-rose-500/40 bg-rose-950/40 text-rose-300' :
+                            'border-slate-800 bg-slate-800/60 text-slate-400'
                           )}
                         >
                           <span className="text-xs font-bold">
@@ -335,15 +340,15 @@ export default function QuizPlayer({
                       return (
                         <div key={pair.id} className={cn(
                           'flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm border',
-                          correct ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                                  : 'border-rose-300 bg-rose-50 text-rose-800'
+                          correct ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300'
+                                  : 'border-rose-500/40 bg-rose-950/40 text-rose-300'
                         )}>
                           <span className="text-xs font-bold">{correct ? '✓' : '✗'}</span>
-                          <span className="font-medium">{pair.left}</span>
-                          <span className="text-muted-foreground mx-1">→</span>
+                          <span className="font-medium text-white">{pair.left}</span>
+                          <span className="text-slate-400 mx-1">→</span>
                           <span>{chosen ?? <em className="opacity-60">{t('learning.quiz.noAnswerFallback')}</em>}</span>
                           {!correct && (
-                            <span className="ml-auto text-xs text-emerald-700 font-medium">
+                            <span className="ml-auto text-xs text-emerald-400 font-medium">
                               {t('learning.quiz.correctAnswerTemplate', { right: pair.right })}
                             </span>
                           )}
@@ -365,13 +370,13 @@ export default function QuizPlayer({
                       return (
                         <div key={blank.id} className={cn(
                           'flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm border',
-                          correct ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                                  : 'border-rose-300 bg-rose-50 text-rose-800'
+                          correct ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300'
+                                  : 'border-rose-500/40 bg-rose-950/40 text-rose-300'
                         )}>
                           <span className="text-xs font-bold">{correct ? '✓' : '✗'}</span>
-                          <span>{t('learning.quiz.blankResultLabelTemplate', { n: bi + 1 })} <strong>{given || <em className="opacity-60">{t('learning.quiz.noAnswerFallback')}</em>}</strong></span>
+                          <span>{t('learning.quiz.blankResultLabelTemplate', { n: bi + 1 })} <strong className="text-white">{given || <em className="opacity-60">{t('learning.quiz.noAnswerFallback')}</em>}</strong></span>
                           {!correct && (
-                            <span className="ml-auto text-xs text-emerald-700 font-medium">
+                            <span className="ml-auto text-xs text-emerald-400 font-medium">
                               {t('learning.quiz.acceptedAnswersTemplate', { answers: blank.acceptable_answers.join(' / ') })}
                             </span>
                           )}
@@ -413,12 +418,12 @@ export default function QuizPlayer({
       {(attemptsAllowed > 0 || minimumGradePct > 0) && (
         <div className="flex flex-wrap gap-2">
           {attemptsAllowed > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
               {t('learning.quiz.attemptCounterTemplate', { n: attemptsUsed + 1, m: attemptsAllowed })}
             </span>
           )}
           {minimumGradePct > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700">
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-amber-950/40 border border-amber-500/30 text-amber-300">
               {t('learning.quiz.passingScoreTemplate', { pct: minimumGradePct })}
             </span>
           )}
@@ -430,8 +435,8 @@ export default function QuizPlayer({
         <div className={cn(
           'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold w-fit',
           timerUrgent
-            ? 'bg-rose-50 border border-rose-200 text-rose-700'
-            : 'bg-slate-50 border border-border text-muted-foreground'
+            ? 'bg-rose-950/40 border border-rose-500/30 text-rose-300'
+            : 'bg-slate-800 border border-slate-700 text-slate-300'
         )}>
           <span aria-hidden="true">{timerUrgent ? '⏰' : '⏱'}</span>
           <span>{t('learning.quiz.timeRemainingTemplate', { time: formatTime(timeLeft) })}</span>
@@ -439,10 +444,10 @@ export default function QuizPlayer({
       )}
 
       {questions.map((q, qi) => (
-        <div key={q.id} className="bg-white border border-border rounded-xl p-5">
-          <p className="text-sm font-semibold text-foreground mb-3">
+        <div key={q.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+          <p className="text-sm font-semibold text-white mb-3">
             {qi + 1}. {q.text}
-            <span className="ml-2 text-xs text-muted-foreground">({t('learning.quiz.pointsTemplate', { n: q.points })})</span>
+            <span className="ml-2 text-xs text-slate-400">({t('learning.quiz.pointsTemplate', { n: q.points })})</span>
           </p>
 
           {/* Multiple Choice / True-False */}
@@ -460,13 +465,13 @@ export default function QuizPlayer({
                     className={cn(
                       'w-full flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm border text-left transition-all',
                       selected
-                        ? 'border-primary bg-primary/5 text-foreground font-medium'
-                        : 'border-border hover:border-primary/40 hover:bg-slate-50 text-muted-foreground'
+                        ? 'border-indigo-500 bg-indigo-950/30 text-white font-medium'
+                        : 'border-slate-700 hover:border-indigo-500/50 hover:bg-slate-800 text-slate-300'
                     )}
                   >
                     <span className={cn(
                       'flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold',
-                      selected ? 'border-primary bg-primary text-white' : 'border-slate-300'
+                      selected ? 'border-indigo-500 bg-indigo-600 text-white' : 'border-slate-600'
                     )}>
                       {selected ? '●' : String.fromCharCode(65 + oi)}
                     </span>
@@ -486,22 +491,22 @@ export default function QuizPlayer({
                 const rights   = shuffledRights.get(q.id) ?? q.pairs!.map((p) => p.right)
                 return (
                   <div key={pair.id} className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-foreground flex-1 min-w-0 truncate">
+                    <span className="text-sm font-medium text-white flex-1 min-w-0 truncate">
                       {pair.left}
                     </span>
-                    <span className="text-muted-foreground text-xs shrink-0">→</span>
+                    <span className="text-slate-400 text-xs shrink-0">→</span>
                     <select aria-label={t('learning.quiz.matchForTitle', { left: pair.left })}
                       value={selected}
                       onChange={(e) => setMatchedPair(q.id, pair.id, e.target.value)}
                       title={t('learning.quiz.matchForTitle', { left: pair.left })}
                       className={cn(
-                        'flex-1 border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30',
-                        selected ? 'border-primary text-foreground' : 'border-border text-muted-foreground'
+                        'flex-1 border border-slate-700 rounded-lg px-3 py-2 text-sm bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white',
+                        selected ? 'border-indigo-500' : 'text-slate-300'
                       )}
                     >
-                      <option value="">{t('learning.quiz.selectPlaceholder')}</option>
+                      <option value="" className="bg-slate-900 text-slate-400">{t('learning.quiz.selectPlaceholder')}</option>
                       {rights.map((r) => (
-                        <option key={r} value={r}>{r}</option>
+                        <option key={r} value={r} className="bg-slate-900 text-white">{r}</option>
                       ))}
                     </select>
                   </div>
@@ -512,7 +517,7 @@ export default function QuizPlayer({
 
           {/* Fill in the Blank */}
           {q.type === 'fill_blank' && q.template !== undefined && (
-            <div className="text-sm text-foreground leading-loose">
+            <div className="text-sm text-slate-200 leading-loose">
               {parseTemplate(q.template).map((seg, si) => {
                 if (seg.kind === 'text') return <span key={si}>{seg.text}</span>
                 const filled = (answers.get(q.id) as Record<string, string> | undefined) ?? {}
@@ -525,7 +530,7 @@ export default function QuizPlayer({
                     aria-label={t('learning.quiz.blankInputAriaLabel', { blankN: seg.index + 1, questionN: qi + 1 })}
                     title={t('learning.quiz.blankInputPlaceholderTemplate', { n: seg.index + 1 })}
                     placeholder={t('learning.quiz.blankInputPlaceholderTemplate', { n: seg.index + 1 })}
-                    className="inline-block border-b-2 border-primary bg-transparent mx-1 px-1 w-28 text-center focus:outline-none focus:border-primary/70"
+                    className="inline-block border-b-2 border-indigo-500 bg-transparent mx-1 px-1 w-28 text-center text-white focus:outline-none focus:border-indigo-400"
                   />
                 )
               })}
@@ -535,14 +540,14 @@ export default function QuizPlayer({
       ))}
 
       {result?.error && (
-        <p className="text-sm text-rose-600" role="alert">{result.error}</p>
+        <p className="text-sm text-rose-400" role="alert">{result.error}</p>
       )}
 
       <div className="flex items-center gap-3">
         <button
           type="submit"
           disabled={pending || (!allAnswered && !autoSubmittedRef.current)}
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-60 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
+          className="inline-flex items-center gap-2 bg-indigo-600 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-indigo-500 disabled:opacity-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           {pending ? t('common.submittingButton') : t('learning.quiz.submitButtonTemplate', { n: answeredCount, m: questions.length })}
         </button>

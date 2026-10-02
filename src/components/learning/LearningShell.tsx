@@ -285,7 +285,7 @@ export default function LearningShell({
       <FocusModeToggle isFocusMode={isFocusMode} toggle={toggleFocusMode} />
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto bg-slate-50">
+      <main className="flex-1 overflow-y-auto bg-slate-950 text-slate-100">
         {/* Staff Preview Bar */}
         {isStaff && (
           <div className="bg-slate-900 text-slate-200 border-b border-slate-800 px-6 py-2.5 flex items-center justify-between text-xs sticky top-0 z-20 shadow-sm">
@@ -313,16 +313,16 @@ export default function LearningShell({
           return (
             <div className="max-w-3xl mx-auto py-8 px-6">
               <div className="mb-6">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
                   <span aria-hidden="true">📄</span>
                   <span className="font-medium uppercase tracking-wide">{t('learning.shell.pageEyebrowLabel')}</span>
                 </div>
-                <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{page.title}</h1>
+                <h1 className="text-2xl font-extrabold text-white tracking-tight">{page.title}</h1>
               </div>
-              <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
+              <div className="prose prose-invert prose-sm max-w-none text-slate-200 leading-relaxed">
                 {html
                   ? <div dangerouslySetInnerHTML={{ __html: html }} />
-                  : <p className="italic text-muted-foreground">{t('learning.block.emptyPageBody')}</p>
+                  : <p className="italic text-slate-400">{t('learning.block.emptyPageBody')}</p>
                 }
               </div>
             </div>
@@ -332,8 +332,8 @@ export default function LearningShell({
         {!currentContentPage && !current ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <p className="text-xl font-bold text-foreground mb-2">{t('learning.shell.welcomeTemplate', { courseTitle })}</p>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-xl font-bold text-white mb-2">{t('learning.shell.welcomeTemplate', { courseTitle })}</p>
+              <p className="text-slate-400 text-sm">
                 {navBlocks.length === 0
                   ? t('learning.shell.noContentPlaceholder')
                   : t('learning.shell.selectLessonPlaceholder')}
@@ -344,7 +344,7 @@ export default function LearningShell({
           <div className="max-w-3xl mx-auto py-8 px-6">
             {/* Block header */}
             <div className="mb-6">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+              <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
                 <span>{BLOCK_TYPE_META[current.block_type_id]?.icon}</span>
                 <span className="font-medium uppercase tracking-wide">
                   {BLOCK_TYPE_META[current.block_type_id]?.label ?? current.block_type_id}
@@ -352,16 +352,16 @@ export default function LearningShell({
                 {(current.gamification as any)?.base_xp_reward > 0 && (
                   <>
                     <span>·</span>
-                    <span className="text-indigo-700 font-semibold">
+                    <span className="text-indigo-400 font-semibold">
                       +{(current.gamification as any).base_xp_reward} XP
                     </span>
                   </>
                 )}
-                <span className="ml-auto text-[10px]">
+                <span className="ml-auto text-[10px] text-slate-400">
                   {currentIndex + 1}/{navBlocks.length}
                 </span>
               </div>
-              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">
                 {current.title}
               </h1>
             </div>
@@ -370,11 +370,11 @@ export default function LearningShell({
             <BlockPlayer block={current} orgId={orgId} submission={currentSub as any} onComplete={handleBlockComplete} viewerRole={viewerRole} />
 
             {/* Navigation */}
-            <div className="flex items-center justify-between mt-10 pt-6 border-t border-border">
+            <div className="flex items-center justify-between mt-10 pt-6 border-t border-slate-800">
               {prevBlock ? (
                 <button
                   onClick={() => navigate(prevBlock.id)}
-                  className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-white transition-colors"
                   aria-label={t('learning.shell.previousAriaLabel', { title: prevBlock.title })}
                 >
                   ← {prevBlock.title.length > 30 ? prevBlock.title.slice(0, 30) + '…' : prevBlock.title}
@@ -384,7 +384,7 @@ export default function LearningShell({
               {nextBlock ? (
                 <button
                   onClick={() => navigate(nextBlock.id)}
-                  className="flex items-center gap-2 bg-primary text-primary-foreground text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                  className="flex items-center gap-2 bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-indigo-500 transition-colors shadow-sm"
                   aria-label={t('learning.shell.nextAriaLabel', { title: nextBlock.title })}
                 >
                   {nextBlock.title.length > 30 ? nextBlock.title.slice(0, 30) + '…' : nextBlock.title} →
@@ -392,14 +392,14 @@ export default function LearningShell({
               ) : !isStaff ? (
                 <button
                   onClick={finishCourse}
-                  className="flex items-center gap-2 bg-emerald-600 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-emerald-700 transition-colors"
+                  className="flex items-center gap-2 bg-emerald-600 text-white text-sm font-semibold px-5 py-2 rounded-lg hover:bg-emerald-500 transition-colors shadow-sm"
                 >
                   {t('learning.shell.completeCourseButton')}
                 </button>
               ) : (
                 <Link
                   href={`/courses/${courseId}`}
-                  className="flex items-center gap-2 bg-slate-700 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
+                  className="flex items-center gap-2 bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors"
                 >
                   {t('learning.shell.backToCourseLink')}
                 </Link>
