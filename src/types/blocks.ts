@@ -95,6 +95,7 @@ export interface H5PContent {
   url?: string
   embed_code?: string
   package_url?: string
+  package_path?: string
   package_filename?: string
   package_title?: string
   package_main_library?: string
