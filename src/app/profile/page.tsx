@@ -22,17 +22,17 @@ export default async function ProfilePage() {
     .single()
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('profile.page.heading')}</h1>
-          <p className="text-slate-500 mt-1 text-sm">{t('profile.page.subtitle')}</p>
+          <h1 className="text-3xl font-display font-extrabold text-white tracking-tight">{t('profile.page.heading')}</h1>
+          <p className="text-slate-400 mt-1 text-sm">{t('profile.page.subtitle')}</p>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="card-crisp overflow-hidden">
           {/* Level / XP banner */}
-          <div className="bg-gradient-to-r from-indigo-950 to-slate-900 px-8 py-6 flex items-center gap-5">
-            <div className="w-16 h-16 rounded-full bg-indigo-500 flex items-center justify-center text-2xl font-black text-white shrink-0">
+          <div className="bg-gradient-to-r from-indigo-950 to-slate-900 px-8 py-6 flex items-center gap-5 border-b border-slate-800">
+            <div className="w-16 h-16 rounded-full bg-indigo-600 border border-indigo-400/40 flex items-center justify-center text-2xl font-black text-white shrink-0">
               {profile?.display_name?.[0]?.toUpperCase() ?? '?'}
             </div>
             <div>
@@ -40,7 +40,7 @@ export default async function ProfilePage() {
                 {profile?.display_name ?? t('profile.page.setNameFallback')}
               </p>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-xs font-bold text-indigo-300 uppercase tracking-widest">
+                <span className="text-xs font-bold text-amber-300 uppercase tracking-widest">
                   {profile?.role ?? 'student'}
                 </span>
                 <span className="text-xs text-slate-400">
@@ -63,12 +63,12 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        <div className="mt-6 bg-white border border-slate-200 rounded-2xl shadow-sm px-8 py-6 flex items-center justify-between gap-4">
+        <div className="mt-6 card-crisp px-8 py-6 flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">{t('auth.password.changeHeading')}</h2>
-            <p className="text-sm text-slate-600">{t('auth.password.intro')}</p>
+            <h2 className="text-base font-semibold text-white">{t('auth.password.changeHeading')}</h2>
+            <p className="text-sm text-slate-400">{t('auth.password.intro')}</p>
           </div>
-          <Link href="/account/password" className="shrink-0 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-50">
+          <Link href="/account/password" className="shrink-0 rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 hover:text-white transition-colors">
             {t('auth.password.submit')}
           </Link>
         </div>

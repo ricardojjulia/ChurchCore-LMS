@@ -24,17 +24,17 @@ interface Props {
 }
 
 const STATUS_STYLE = {
-  published: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-  draft:     'text-amber-700 bg-amber-50 border-amber-200',
-  archived:  'text-slate-500 bg-slate-50 border-slate-200',
+  published: 'text-emerald-400 bg-emerald-950/50 border-emerald-800',
+  draft:     'text-amber-400 bg-amber-950/50 border-amber-800',
+  archived:  'text-slate-400 bg-slate-800 border-slate-700',
 }
 
 const EMBED_BADGE: Record<string, { label: string; className: string }> = {
-  complete:   { label: 'AI Ready',     className: 'text-violet-700 bg-violet-50 border-violet-200' },
-  pending:    { label: 'Indexing',     className: 'text-slate-700 bg-slate-100 border-slate-200' },
-  processing: { label: 'Indexing',     className: 'text-slate-700 bg-slate-100 border-slate-200' },
-  stale:      { label: 'Stale',        className: 'text-slate-700 bg-slate-100 border-slate-200' },
-  failed:     { label: 'Index failed', className: 'text-rose-600 bg-rose-50 border-rose-200' },
+  complete:   { label: 'AI Ready',     className: 'text-violet-400 bg-violet-950/50 border-violet-800' },
+  pending:    { label: 'Indexing',     className: 'text-slate-400 bg-slate-800 border-slate-700' },
+  processing: { label: 'Indexing',     className: 'text-slate-400 bg-slate-800 border-slate-700' },
+  stale:      { label: 'Stale',        className: 'text-slate-400 bg-slate-800 border-slate-700' },
+  failed:     { label: 'Index failed', className: 'text-rose-400 bg-rose-950/50 border-rose-800' },
 }
 
 export default function CourseMaterialsList({
@@ -87,9 +87,9 @@ export default function CourseMaterialsList({
     <div>
       {/* Action Error Banner */}
       {actionError && (
-        <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs px-4 py-3 rounded-xl flex items-center justify-between shadow-sm animate-in fade-in">
+        <div className="mb-4 bg-rose-950/40 border border-rose-800 text-rose-300 text-xs px-4 py-3 rounded-xl flex items-center justify-between shadow-sm animate-in fade-in">
           <span>{actionError}</span>
-          <button type="button" onClick={() => setActionError(null)} className="font-bold text-rose-600 hover:text-rose-900 ml-2">
+          <button type="button" onClick={() => setActionError(null)} className="font-bold text-rose-400 hover:text-rose-200 ml-2">
             ✕
           </button>
         </div>
@@ -98,7 +98,7 @@ export default function CourseMaterialsList({
       {/* Staff Actions Bar */}
       {isStaff && (
         <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-slate-400">
             Published materials are visible to enrolled students.
           </p>
 
@@ -106,7 +106,7 @@ export default function CourseMaterialsList({
             <button
               type="button"
               onClick={() => setShowAiModal(true)}
-              className="inline-flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 bg-indigo-950/60 hover:bg-indigo-900/60 text-indigo-300 border border-indigo-800 text-xs font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm"
               title="Generate new material with AI assistance"
             >
               <span>✨</span>
@@ -116,13 +116,13 @@ export default function CourseMaterialsList({
             <DocumentUploadButton
               courseId={courseId}
               buttonText="Import Document"
-              className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-xs font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl transition-colors shadow-sm"
             />
 
             <form action={createPageAndRedirect.bind(null, courseId)}>
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground text-xs font-bold px-3.5 py-2 rounded-xl hover:bg-primary/90 transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 bg-indigo-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl hover:bg-indigo-500 transition-colors shadow-sm"
               >
                 <span>+</span>
                 <span>New Material</span>
@@ -134,12 +134,12 @@ export default function CourseMaterialsList({
 
       {/* List / Empty State */}
       {pages.length === 0 ? (
-        <div className="bg-white border border-border rounded-2xl p-12 text-center shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center shadow-sm">
           <p className="text-4xl mb-3">📚</p>
-          <h2 className="text-base font-bold text-foreground mb-1">
+          <h2 className="text-base font-bold text-white mb-1">
             No course materials yet
           </h2>
-          <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
+          <p className="text-sm text-slate-400 mb-6 max-w-sm mx-auto">
             Add readings, study guides, and resources for your students using the editor, AI prompt, or by importing documents.
           </p>
 
@@ -156,7 +156,7 @@ export default function CourseMaterialsList({
               <DocumentUploadButton
                 courseId={courseId}
                 buttonText="Upload PDF or DOCX"
-                className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
               />
             </div>
           )}
@@ -174,18 +174,18 @@ export default function CourseMaterialsList({
             return (
               <div
                 key={p.id}
-                className="flex items-center justify-between gap-3 bg-white border border-border rounded-xl px-5 py-4 hover:shadow-sm hover:border-primary/30 transition-all group"
+                className="flex items-center justify-between gap-3 bg-slate-900 border border-slate-800 rounded-xl px-5 py-4 hover:border-slate-700 transition-all group"
               >
                 <div className="flex items-center gap-4 min-w-0 flex-1">
                   <span className="text-xl shrink-0" aria-hidden="true">📄</span>
                   <div className="flex-1 min-w-0">
                     <Link
                       href={isStaff ? `/courses/${courseId}/pages/${p.id}/edit` : `/courses/${courseId}/pages/${p.id}`}
-                      className="text-sm font-semibold text-foreground truncate block hover:text-primary transition-colors"
+                      className="text-sm font-semibold text-white truncate block hover:text-amber-300 transition-colors"
                     >
                       {p.title}
                     </Link>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs text-slate-400 mt-0.5">
                       {p.status === 'published' && p.published_at
                         ? `Published ${new Date(p.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
                         : `Updated ${new Date(p.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
@@ -210,7 +210,7 @@ export default function CourseMaterialsList({
                     <div className="flex items-center gap-2 ml-2">
                       <Link
                         href={`/courses/${courseId}/pages/${p.id}/edit`}
-                        className="text-xs font-semibold text-slate-700 hover:text-primary bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1 transition-colors"
+                        className="text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg px-2.5 py-1 transition-colors"
                       >
                         Edit
                       </Link>
@@ -219,14 +219,14 @@ export default function CourseMaterialsList({
                         href={`/courses/${courseId}/pages/${p.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-semibold text-slate-600 hover:text-indigo-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1 transition-colors"
+                        className="text-xs font-semibold text-slate-400 hover:text-indigo-400 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg px-2.5 py-1 transition-colors"
                         title="Preview student view (new tab)"
                       >
                         👁️
                       </Link>
 
                       {isConfirming ? (
-                        <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-lg">
+                        <div className="flex items-center gap-1.5 bg-rose-950/40 border border-rose-800 px-2 py-0.5 rounded-lg">
                           <button
                             type="button"
                             disabled={isArchiving}
@@ -239,7 +239,7 @@ export default function CourseMaterialsList({
                             type="button"
                             disabled={isArchiving}
                             onClick={() => setConfirmingArchiveId(null)}
-                            className="px-1.5 py-0.5 text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded transition-colors"
+                            className="px-1.5 py-0.5 text-xs text-slate-400 hover:text-white bg-slate-800 border border-slate-700 rounded transition-colors"
                           >
                             Cancel
                           </button>
@@ -248,7 +248,7 @@ export default function CourseMaterialsList({
                         <button
                           type="button"
                           onClick={() => setConfirmingArchiveId(p.id)}
-                          className="text-xs text-slate-400 hover:text-rose-600 p-1 rounded hover:bg-rose-50 transition-colors"
+                          className="text-xs text-slate-500 hover:text-rose-400 p-1 rounded hover:bg-rose-950/40 transition-colors"
                           title="Archive this material"
                           aria-label={`Archive ${p.title}`}
                         >
@@ -259,7 +259,7 @@ export default function CourseMaterialsList({
                   ) : (
                     <Link
                       href={`/courses/${courseId}/pages/${p.id}`}
-                      className="text-muted-foreground text-sm hover:text-primary transition-colors"
+                      className="text-slate-400 text-sm hover:text-amber-300 transition-colors"
                     >
                       →
                     </Link>

@@ -31,20 +31,20 @@ export default async function NotificationsPage() {
   const unreadCount = (notifications ?? []).filter((n) => !n.is_read).length
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">{t('notifications.heading')}</h1>
+            <h1 className="text-2xl font-display font-extrabold text-white">{t('notifications.heading')}</h1>
             {unreadCount > 0 && (
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <p className="text-sm text-slate-400 mt-0.5">
                 {t('common.unreadCountTemplate', { n: unreadCount })}
               </p>
             )}
           </div>
           <Link
             href="/dashboard"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-slate-400 hover:text-white transition-colors"
           >
             {t('notifications.backToDashboardLink')}
           </Link>

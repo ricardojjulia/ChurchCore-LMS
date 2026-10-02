@@ -25,17 +25,17 @@ const ROLES:    UserRole[]   = ['admin', 'manager', 'teacher', 'student']
 const STATUSES: UserStatus[] = ['active', 'suspended', 'pending', 'archived']
 
 const ROLE_COLOR: Record<UserRole, string> = {
-  admin:   'bg-indigo-100 text-indigo-800 border-indigo-200',
-  manager: 'bg-purple-100 text-purple-800 border-purple-200',
-  teacher: 'bg-sky-100    text-sky-800    border-sky-200',
-  student: 'bg-slate-100  text-slate-700  border-slate-200',
+  admin:   'bg-indigo-950/50 text-indigo-400 border-indigo-800',
+  manager: 'bg-purple-950/50 text-purple-400 border-purple-800',
+  teacher: 'bg-sky-950/50    text-sky-400    border-sky-800',
+  student: 'bg-slate-800    text-slate-300  border-slate-700',
 }
 
 const STATUS_COLOR: Record<UserStatus, string> = {
-  active:    'bg-emerald-100 text-emerald-800 border-emerald-200',
-  suspended: 'bg-rose-100    text-rose-800    border-rose-200',
-  pending:   'bg-amber-100   text-amber-800   border-amber-200',
-  archived:  'bg-slate-100   text-slate-500   border-slate-200',
+  active:    'bg-emerald-950/50 text-emerald-400 border-emerald-800',
+  suspended: 'bg-rose-950/50    text-rose-400    border-rose-800',
+  pending:   'bg-amber-950/50   text-amber-400   border-amber-800',
+  archived:  'bg-slate-800      text-slate-400   border-slate-700',
 }
 
 export default function UserRow({ profile }: { profile: Profile }) {
@@ -78,19 +78,19 @@ export default function UserRow({ profile }: { profile: Profile }) {
   }
 
   return (
-    <div className="border border-border rounded-xl bg-white overflow-hidden">
+    <div className="border border-slate-800 rounded-xl bg-slate-900 overflow-hidden">
       {/* Row summary */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-slate-50 transition-colors"
+        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-slate-800/40 transition-colors"
       >
-        <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">
+        <div className="shrink-0 w-9 h-9 rounded-full bg-indigo-950/80 border border-indigo-800 text-indigo-400 font-bold text-sm flex items-center justify-center">
           {initial}
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-foreground truncate">{profile.display_name}</p>
-          <p className="text-xs text-muted-foreground truncate">{profile.email}</p>
+          <p className="font-semibold text-white truncate">{profile.display_name}</p>
+          <p className="text-xs text-slate-400 truncate">{profile.email}</p>
         </div>
 
         <div className="hidden sm:flex items-center gap-2 shrink-0">
@@ -99,19 +99,19 @@ export default function UserRow({ profile }: { profile: Profile }) {
         </div>
 
         {profile.student_id && (
-          <span className="hidden md:block text-xs font-mono text-muted-foreground shrink-0">
+          <span className="hidden md:block text-xs font-mono text-slate-400 shrink-0">
             {profile.student_id}
           </span>
         )}
 
-        <span className="text-slate-400 text-sm shrink-0">{open ? '▲' : '▼'}</span>
+        <span className="text-slate-500 text-sm shrink-0">{open ? '▲' : '▼'}</span>
       </button>
 
       {/* Expanded edit panel */}
       {open && (
-        <div className="border-t border-border px-5 py-4 bg-slate-50 space-y-4">
+        <div className="border-t border-slate-800 px-5 py-4 bg-slate-950/60 space-y-4">
           {error && (
-            <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
+            <p className="text-sm text-rose-400 bg-rose-950/50 border border-rose-800 rounded-md px-3 py-2">
               {error}
             </p>
           )}
@@ -119,7 +119,7 @@ export default function UserRow({ profile }: { profile: Profile }) {
           <div className="grid sm:grid-cols-2 gap-4">
             {/* Role selector */}
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Role</p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Role</p>
               <div className="flex flex-wrap gap-2">
                 {ROLES.map((r) => (
                   <button
@@ -130,7 +130,7 @@ export default function UserRow({ profile }: { profile: Profile }) {
                       'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50',
                       role === r
                         ? ROLE_COLOR[r]
-                        : 'border-border text-muted-foreground hover:bg-slate-100'
+                        : 'border-slate-700 text-slate-400 hover:bg-slate-800'
                     )}
                   >
                     {r}
@@ -141,7 +141,7 @@ export default function UserRow({ profile }: { profile: Profile }) {
 
             {/* Status selector */}
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Status</p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Status</p>
               <div className="flex flex-wrap gap-2">
                 {STATUSES.map((s) => (
                   <button
@@ -152,7 +152,7 @@ export default function UserRow({ profile }: { profile: Profile }) {
                       'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50',
                       status === s
                         ? STATUS_COLOR[s]
-                        : 'border-border text-muted-foreground hover:bg-slate-100'
+                        : 'border-slate-700 text-slate-400 hover:bg-slate-800'
                     )}
                   >
                     {s}
@@ -163,15 +163,15 @@ export default function UserRow({ profile }: { profile: Profile }) {
           </div>
 
           {/* Stats + delete */}
-          <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-1 border-t border-border">
-            <span>Level <strong className="text-foreground">{profile.current_level}</strong></span>
-            <span><strong className="text-foreground">{profile.xp_points}</strong> XP</span>
+          <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1 border-t border-slate-800">
+            <span>Level <strong className="text-white">{profile.current_level}</strong></span>
+            <span><strong className="text-white">{profile.xp_points}</strong> XP</span>
             {profile.student_id && (
-              <span>ID <strong className="font-mono text-foreground">{profile.student_id}</strong></span>
+              <span>ID <strong className="font-mono text-white">{profile.student_id}</strong></span>
             )}
             <Link
               href={`/admin/users/${profile.uid}`}
-              className="text-xs text-primary hover:underline font-medium"
+              className="text-xs text-indigo-400 hover:text-indigo-300 hover:underline font-medium"
             >
               View engagement →
             </Link>
@@ -180,7 +180,7 @@ export default function UserRow({ profile }: { profile: Profile }) {
             <div className="ml-auto flex items-center gap-2">
               {confirmDelete ? (
                 <>
-                  <span className="text-xs text-destructive font-semibold">Delete permanently?</span>
+                  <span className="text-xs text-rose-400 font-semibold">Delete permanently?</span>
                   <Button
                     type="button"
                     size="sm"
@@ -197,7 +197,7 @@ export default function UserRow({ profile }: { profile: Profile }) {
                     variant="ghost"
                     disabled={isPending}
                     onClick={() => setConfirmDelete(false)}
-                    className="h-7 text-xs"
+                    className="h-7 text-xs text-slate-400 hover:text-white"
                   >
                     Cancel
                   </Button>
@@ -206,7 +206,7 @@ export default function UserRow({ profile }: { profile: Profile }) {
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(true)}
-                  className="text-xs text-muted-foreground hover:text-destructive transition-colors font-medium"
+                  className="text-xs text-slate-400 hover:text-rose-400 transition-colors font-medium"
                 >
                   Delete user
                 </button>

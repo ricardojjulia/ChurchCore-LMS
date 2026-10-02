@@ -15,15 +15,15 @@ interface PublicCourseCardProps {
 // silently bounce an anon visitor to /login if reused unmodified here.
 export default function PublicCourseCard({ slug, course }: PublicCourseCardProps) {
   return (
-    <li className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+    <li className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm hover:border-slate-700 transition-colors">
       <Link
         href={`/join/${slug}/courses/${course.id}`}
-        className="text-lg font-semibold text-slate-900 hover:text-primary transition-colors"
+        className="text-lg font-bold text-white hover:text-indigo-400 transition-colors"
       >
         {course.title}
       </Link>
       {course.description && (
-        <p className="text-sm text-muted-foreground mt-1 line-clamp-3">{course.description}</p>
+        <p className="text-sm text-slate-400 mt-2 line-clamp-3 leading-relaxed">{course.description}</p>
       )}
     </li>
   )

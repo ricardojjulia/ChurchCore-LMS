@@ -79,22 +79,22 @@ export default async function AttendancePage({
   }>
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 text-slate-100">
       <div className="max-w-6xl mx-auto">
-        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6" aria-label="Breadcrumb">
-          <Link href="/courses" className="hover:text-primary transition-colors font-medium">Courses</Link>
+        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6" aria-label="Breadcrumb">
+          <Link href="/courses" className="hover:text-amber-300 transition-colors font-medium">Courses</Link>
           <span>/</span>
-          <Link href={`/courses/${courseId}`} className="hover:text-primary transition-colors font-medium">
+          <Link href={`/courses/${courseId}`} className="hover:text-amber-300 transition-colors font-medium">
             {course.title}
           </Link>
           <span>/</span>
-          <span className="text-foreground font-semibold">Attendance</span>
+          <span className="text-white font-semibold">Attendance</span>
         </nav>
 
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Attendance</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-2xl font-bold text-white">Attendance</h1>
+            <p className="text-sm text-slate-400 mt-1">
               {blocks.length} session{blocks.length !== 1 ? 's' : ''} · {enrollments.length} student{enrollments.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -102,7 +102,7 @@ export default async function AttendancePage({
             <QuickSessionModal courseId={courseId} />
             <Link
               href={`/courses/${courseId}/build`}
-              className="text-xs font-semibold text-muted-foreground hover:text-foreground border border-border bg-white rounded-xl px-3 py-2 hover:bg-slate-50 transition-colors"
+              className="text-xs font-semibold text-slate-300 hover:text-white border border-slate-700 bg-slate-800 rounded-xl px-3 py-2 hover:bg-slate-700 transition-colors"
             >
               ✏️ Builder
             </Link>
@@ -110,17 +110,17 @@ export default async function AttendancePage({
         </div>
 
         {blocks.length === 0 ? (
-          <div className="bg-white border border-border rounded-2xl p-12 text-center">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
             <p className="text-4xl mb-3">🗓️</p>
-            <p className="font-semibold text-foreground">No attendance sessions yet</p>
-            <p className="text-sm text-muted-foreground mt-1 mb-4">
+            <p className="font-semibold text-white">No attendance sessions yet</p>
+            <p className="text-sm text-slate-400 mt-1 mb-4">
               Add a quick attendance session now or configure sessions in the course builder.
             </p>
             <div className="flex items-center justify-center gap-3">
               <QuickSessionModal courseId={courseId} />
               <Link
                 href={`/courses/${courseId}/build`}
-                className="inline-flex items-center gap-2 border border-border bg-white text-foreground text-xs font-semibold px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center gap-2 border border-slate-700 bg-slate-800 text-slate-200 text-xs font-semibold px-4 py-2 rounded-xl hover:bg-slate-700 transition-colors"
               >
                 Open Builder →
               </Link>

@@ -100,9 +100,9 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground">
+        <h2 className="text-lg font-bold text-white">
           Members{' '}
-          <span className="text-muted-foreground font-normal text-base">
+          <span className="text-slate-400 font-normal text-base">
             ({countLabel})
           </span>
         </h2>
@@ -116,57 +116,57 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
         onKeyDown={(e) => e.key === 'Escape' && setQuery('')}
         placeholder="Search by email or user ID…"
         aria-label="Search cohort members"
-        className="flex-1 border border-input rounded-lg px-4 py-2 text-sm bg-white text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-full"
+        className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
       {serverBusy && (
-        <p className="text-xs text-muted-foreground">Searching…</p>
+        <p className="text-xs text-slate-400">Searching…</p>
       )}
 
       {/* Add member — search by name or email */}
-      <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Add Member</h3>
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+        <h3 className="text-sm font-semibold text-white mb-3">Add Member</h3>
         <UserSearchCombobox
           existingMemberIds={members.map((m) => m.user_id)}
           onSelect={handleSelectUser}
           onClose={() => {}}
         />
         {addErr && (
-          <p className="text-rose-600 text-xs mt-2" role="alert">{addErr}</p>
+          <p className="text-rose-400 text-xs mt-2" role="alert">{addErr}</p>
         )}
         {addSuccess && (
-          <p className="text-emerald-700 text-xs mt-2 font-semibold" role="status">
+          <p className="text-emerald-400 text-xs mt-2 font-semibold" role="status">
             ✓ {addSuccess}
           </p>
         )}
         {pending && (
-          <p className="text-xs text-muted-foreground mt-2">Adding…</p>
+          <p className="text-xs text-slate-400 mt-2">Adding…</p>
         )}
       </div>
 
       {/* Active members table */}
       {activeMembers.length > 0 ? (
-        <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-border">
+            <thead className="bg-slate-900/80 border-b border-slate-800">
               <tr>
-                <th className="text-left px-6 py-3 font-semibold text-muted-foreground">User</th>
-                <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Joined</th>
-                <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Status</th>
+                <th className="text-left px-6 py-3 font-semibold text-slate-300">User</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-300">Joined</th>
+                <th className="text-center px-4 py-3 font-semibold text-slate-300">Status</th>
                 <th className="px-4 py-3" aria-label="Actions" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-slate-800">
               {activeMembers.map((m) => (
-                <tr key={m.id} className="hover:bg-slate-50 transition-colors">
+                <tr key={m.id} className="hover:bg-slate-800/40 transition-colors">
                   <td className="px-6 py-3">
-                    <p className="font-medium text-foreground">{m.auth_user?.email ?? '—'}</p>
-                    <p className="text-xs text-muted-foreground font-mono">{m.user_id}</p>
+                    <p className="font-medium text-white">{m.auth_user?.email ?? '—'}</p>
+                    <p className="text-xs text-slate-400 font-mono">{m.user_id}</p>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground text-xs">
+                  <td className="px-4 py-3 text-slate-400 text-xs">
                     {new Date(m.joined_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center text-xs font-semibold bg-emerald-950/50 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded-full">
                       {m.status}
                     </span>
                   </td>
@@ -175,7 +175,7 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
                       type="button"
                       onClick={() => handleRemove(m.user_id)}
                       disabled={pending}
-                      className="text-xs text-rose-600 hover:text-rose-800 font-semibold disabled:opacity-40"
+                      className="text-xs text-rose-400 hover:text-rose-300 font-semibold disabled:opacity-40"
                     >
                       Remove
                     </button>
@@ -186,8 +186,8 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
           </table>
         </div>
       ) : (
-        <div className="bg-white border border-border rounded-xl p-8 text-center">
-          <p className="text-muted-foreground text-sm italic">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center">
+          <p className="text-slate-400 text-sm italic">
             {isSearching
               ? 'No members found matching your search.'
               : 'No active members yet.'}
@@ -198,20 +198,20 @@ export default function CohortMemberPanel({ cohortId, members }: Props) {
       {/* Withdrawn / inactive */}
       {inactiveMembers.length > 0 && (
         <details className="group">
-          <summary className="cursor-pointer text-sm text-muted-foreground font-medium hover:text-foreground list-none flex items-center gap-1">
+          <summary className="cursor-pointer text-sm text-slate-400 font-medium hover:text-white list-none flex items-center gap-1">
             <span className="group-open:rotate-90 transition-transform inline-block">▶</span>
             {inactiveMembers.length} withdrawn / inactive
           </summary>
-          <div className="mt-2 bg-white border border-border rounded-xl overflow-hidden">
+          <div className="mt-2 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-slate-800">
                 {inactiveMembers.map((m) => (
                   <tr key={m.id} className="opacity-60">
                     <td className="px-6 py-3">
-                      <p className="font-medium text-foreground">{m.auth_user?.email ?? '—'}</p>
+                      <p className="font-medium text-white">{m.auth_user?.email ?? '—'}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-full">
                         {m.status}
                       </span>
                     </td>

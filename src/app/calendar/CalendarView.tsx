@@ -104,24 +104,24 @@ export default function CalendarView({
   return (
     <div className="flex flex-col lg:flex-row gap-6">
       {/* Month grid */}
-      <div className="flex-1 bg-white border border-border rounded-2xl overflow-hidden">
+      <div className="flex-1 card-crisp overflow-hidden p-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <button onClick={prevMonth} aria-label="Previous month" className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
-            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
+          <button onClick={prevMonth} aria-label="Previous month" className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+            <ChevronLeft className="w-4 h-4" />
           </button>
-          <h2 className="font-bold text-foreground">
+          <h2 className="font-bold text-white text-base font-display">
             {MONTHS[month]} {year}
           </h2>
-          <button onClick={nextMonth} aria-label="Next month" className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          <button onClick={nextMonth} aria-label="Next month" className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
         {/* Weekday headers */}
-        <div className="grid grid-cols-7 border-b border-border">
+        <div className="grid grid-cols-7 border-b border-slate-800 bg-slate-900/60">
           {WEEKDAYS.map((d) => (
-            <div key={d} className="py-2 text-center text-xs font-semibold text-muted-foreground">
+            <div key={d} className="py-2 text-center text-xs font-bold text-slate-400">
               {d}
             </div>
           ))}
@@ -130,7 +130,7 @@ export default function CalendarView({
         {/* Day cells */}
         <div className="grid grid-cols-7">
           {cells.map((day, i) => {
-            if (!day) return <div key={`empty-${i}`} className="h-16 border-b border-r border-border/40 last:border-r-0" />
+            if (!day) return <div key={`empty-${i}`} className="h-16 border-b border-r border-slate-800/60 last:border-r-0" />
 
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
             const dayEvents = byDate[dateStr] ?? []
@@ -142,16 +142,16 @@ export default function CalendarView({
                 key={dateStr}
                 onClick={() => setSelected(dateStr)}
                 className={cn(
-                  'h-16 border-b border-r border-border/40 last:border-r-0 p-1.5 text-left',
-                  'hover:bg-slate-50 transition-colors relative group',
-                  isSel && 'bg-primary/5 hover:bg-primary/10'
+                  'h-16 border-b border-r border-slate-800/60 last:border-r-0 p-1.5 text-left',
+                  'hover:bg-slate-800/40 transition-colors relative group',
+                  isSel && 'bg-indigo-950/50 hover:bg-indigo-900/50'
                 )}
               >
                 <span className={cn(
                   'text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full',
-                  isToday && 'bg-primary text-primary-foreground',
-                  !isToday && isSel && 'text-primary',
-                  !isToday && !isSel && 'text-foreground'
+                  isToday && 'bg-indigo-600 text-white font-bold',
+                  !isToday && isSel && 'text-amber-300 font-bold',
+                  !isToday && !isSel && 'text-slate-300'
                 )}>
                   {day}
                 </span>
@@ -167,7 +167,7 @@ export default function CalendarView({
                       />
                     ))}
                     {dayEvents.length > 3 && (
-                      <span className="text-[9px] text-muted-foreground">+{dayEvents.length - 3}</span>
+                      <span className="text-[9px] text-slate-400">+{dayEvents.length - 3}</span>
                     )}
                   </div>
                 )}
@@ -180,9 +180,9 @@ export default function CalendarView({
       {/* Day detail panel */}
       <div className="lg:w-80 flex flex-col gap-4">
         {/* Selected day events */}
-        <div className="bg-white border border-border rounded-2xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <h3 className="font-bold text-foreground text-sm">
+        <div className="card-crisp overflow-hidden p-0">
+          <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between">
+            <h3 className="font-bold text-white text-sm">
               {selected
                 ? new Date(selected + 'T12:00:00').toLocaleDateString(locale, {
                     weekday: 'long', month: 'long', day: 'numeric',
@@ -192,7 +192,7 @@ export default function CalendarView({
             {isStaff && selected && (
               <a
                 href={`/calendar/new?date=${selected}`}
-                className="flex items-center gap-1 text-xs text-primary font-medium hover:underline"
+                className="flex items-center gap-1 text-xs text-amber-300 font-medium hover:text-amber-200 hover:underline"
               >
                 <Plus className="w-3 h-3" /> {t('calendar.view.addButton')}
               </a>
@@ -200,11 +200,11 @@ export default function CalendarView({
           </div>
 
           {selectedEvents.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8 italic">
+            <p className="text-sm text-slate-400 text-center py-8 italic">
               {t('calendar.view.noEventsOnDay')}
             </p>
           ) : (
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-slate-800">
               {selectedEvents.map((ev) => (
                 <div key={ev.source_id} className="px-4 py-3 flex items-start gap-3">
                   <span
@@ -212,14 +212,14 @@ export default function CalendarView({
                     style={{ backgroundColor: ev.color_code }}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground leading-snug">{ev.title}</p>
+                    <p className="text-sm font-semibold text-white leading-snug">{ev.title}</p>
                     {ev.course_name && (
-                      <p className="text-xs text-primary mt-0.5">{ev.course_name}</p>
+                      <p className="text-xs text-indigo-400 mt-0.5">{ev.course_name}</p>
                     )}
                     {ev.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{ev.description}</p>
+                      <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">{ev.description}</p>
                     )}
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       {ev.is_all_day ? t('calendar.view.allDay') : formatTime(ev.starts_at, locale)}
                       {ev.location && ` · ${ev.location}`}
                     </p>
@@ -232,11 +232,11 @@ export default function CalendarView({
 
         {/* Upcoming this month */}
         {Object.keys(byDate).filter((d) => d >= todayStr).length > 0 && (
-          <div className="bg-white border border-border rounded-2xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-border">
-              <h3 className="font-bold text-foreground text-sm">{t('calendar.view.upcomingThisMonth')}</h3>
+          <div className="card-crisp overflow-hidden p-0">
+            <div className="px-4 py-3 border-b border-slate-800">
+              <h3 className="font-bold text-white text-sm">{t('calendar.view.upcomingThisMonth')}</h3>
             </div>
-            <div className="divide-y divide-border max-h-64 overflow-y-auto">
+            <div className="divide-y divide-slate-800 max-h-64 overflow-y-auto">
               {Object.entries(byDate)
                 .filter(([d]) => d >= todayStr)
                 .sort(([a], [b]) => a.localeCompare(b))
@@ -245,18 +245,18 @@ export default function CalendarView({
                   <button
                     key={date}
                     onClick={() => setSelected(date)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-800/40 transition-colors"
                   >
                     <div className="w-8 text-center shrink-0">
-                      <p className="text-xs text-muted-foreground">{new Date(date + 'T12:00:00').toLocaleDateString(locale, { month: 'short' })}</p>
-                      <p className="text-sm font-bold text-foreground leading-tight">
+                      <p className="text-xs text-slate-400">{new Date(date + 'T12:00:00').toLocaleDateString(locale, { month: 'short' })}</p>
+                      <p className="text-sm font-bold text-white leading-tight">
                         {new Date(date + 'T12:00:00').getDate()}
                       </p>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-foreground truncate">{evs[0].title}</p>
+                      <p className="text-xs font-semibold text-white truncate">{evs[0].title}</p>
                       {evs.length > 1 && (
-                        <p className="text-xs text-muted-foreground">{t('calendar.view.moreEventsTemplate', { n: evs.length - 1 })}</p>
+                        <p className="text-xs text-slate-400">{t('calendar.view.moreEventsTemplate', { n: evs.length - 1 })}</p>
                       )}
                     </div>
                   </button>

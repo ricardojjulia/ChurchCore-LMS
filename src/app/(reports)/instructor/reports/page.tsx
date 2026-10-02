@@ -59,11 +59,11 @@ export default async function InstructorReportsPage({
     const refreshedAt = selectedCourse?.refreshed_at
 
     return (
-      <main className="mx-auto max-w-7xl">
+      <main className="mx-auto max-w-7xl text-slate-100">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-950">Instructor Gradebook Reports</h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <h1 className="text-2xl font-display font-bold text-white">Instructor Gradebook Reports</h1>
+            <p className="mt-1 text-sm text-slate-400">
               Data as of{' '}
               {refreshedAt
                 ? new Date(refreshedAt).toLocaleString(undefined, {
@@ -77,14 +77,14 @@ export default async function InstructorReportsPage({
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <form className="flex items-center gap-2" action="/instructor/reports">
-              <label htmlFor="course" className="text-sm font-medium text-slate-700">
+              <label htmlFor="course" className="text-sm font-medium text-slate-300">
                 Course
               </label>
               <select
                 id="course"
                 name="course"
                 defaultValue={selectedCourse?.course_id}
-                className="border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950"
+                className="border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {completionRates.map((course) => (
                   <option key={course.course_id} value={course.course_id}>
@@ -92,7 +92,7 @@ export default async function InstructorReportsPage({
                   </option>
                 ))}
               </select>
-              <button type="submit" className="bg-slate-950 px-3 py-2 text-sm font-semibold text-white">
+              <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white rounded-lg transition-colors">
                 Apply
               </button>
             </form>
@@ -122,41 +122,41 @@ export default async function InstructorReportsPage({
           </div>
         </div>
 
-        <section className="mt-8 border border-slate-200 bg-white p-5 shadow-sm" aria-labelledby="overall-completion">
+        <section className="mt-8 card-crisp p-5" aria-labelledby="overall-completion">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 id="overall-completion" className="text-lg font-semibold text-slate-950">
+              <h2 id="overall-completion" className="text-lg font-display font-semibold text-white">
                 Overall Completion
               </h2>
-              <p className="text-sm text-slate-600">{selectedCourse?.course_title ?? 'No course selected'}</p>
+              <p className="text-sm text-slate-400">{selectedCourse?.course_title ?? 'No course selected'}</p>
             </div>
-            <p className="text-2xl font-bold text-slate-950">{completionRate}%</p>
+            <p className="text-2xl font-bold text-amber-300">{completionRate}%</p>
           </div>
           <TremorProgressBar value={completionRate} className="mt-4" label="Course completion rate" />
         </section>
 
         <div className="mt-8 grid gap-8 xl:grid-cols-2">
           <section aria-labelledby="course-completion-chart">
-            <h2 id="course-completion-chart" className="text-lg font-semibold text-slate-950">
+            <h2 id="course-completion-chart" className="text-lg font-display font-semibold text-white">
               Course Completion
             </h2>
-            <div className="mt-3 border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mt-3 card-crisp p-4">
               <CourseCompletionChart data={completionRates} />
             </div>
           </section>
 
           <section aria-labelledby="grade-distribution-chart">
-            <h2 id="grade-distribution-chart" className="text-lg font-semibold text-slate-950">
+            <h2 id="grade-distribution-chart" className="text-lg font-display font-semibold text-white">
               Grade Distribution
             </h2>
-            <div className="mt-3 border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mt-3 card-crisp p-4">
               <GradeDistributionChart data={gradebook} />
             </div>
           </section>
         </div>
 
         <section className="mt-8" aria-labelledby="gradebook-table">
-          <h2 id="gradebook-table" className="text-lg font-semibold text-slate-950">
+          <h2 id="gradebook-table" className="text-lg font-display font-semibold text-white">
             Gradebook
           </h2>
           <div className="mt-3">

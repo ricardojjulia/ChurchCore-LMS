@@ -41,10 +41,10 @@ interface Props {
 }
 
 const STATUS_CONFIG: Record<CourseStatus, { label: string; active: string }> = {
-  draft:     { label: 'Draft',     active: 'bg-amber-50 border-amber-400 text-amber-700' },
-  published: { label: 'Published', active: 'bg-emerald-50 border-emerald-400 text-emerald-700' },
-  archived:  { label: 'Archived',  active: 'bg-slate-100 border-slate-400 text-slate-600' },
-  suspended: { label: 'Suspended', active: 'bg-rose-50 border-rose-400 text-rose-700' },
+  draft:     { label: 'Draft',     active: 'bg-amber-950/60 border-amber-800/60 text-amber-300' },
+  published: { label: 'Published', active: 'bg-emerald-950/60 border-emerald-800/60 text-emerald-300' },
+  archived:  { label: 'Archived',  active: 'bg-slate-800 border-slate-700 text-slate-300' },
+  suspended: { label: 'Suspended', active: 'bg-rose-950/60 border-rose-800/60 text-rose-300' },
 }
 
 const STATUS_DESCRIPTIONS: Record<CourseStatus, string> = {
@@ -146,7 +146,7 @@ export default function CourseForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Title */}
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1">
+        <label className="block text-sm font-semibold text-slate-200 mb-1">
           Title <span className="text-destructive">*</span>
         </label>
         <input aria-label="Title"
@@ -155,38 +155,38 @@ export default function CourseForm({
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Introduction to Biblical Studies"
           required
-          className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
+          className="w-full border border-slate-700 rounded-md px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         />
       </div>
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-1">
+        <label className="block text-sm font-semibold text-slate-200 mb-1">
           Description
-          <span className="ml-2 text-xs font-normal text-muted-foreground">(optional)</span>
+          <span className="ml-2 text-xs font-normal text-slate-400">(optional)</span>
         </label>
         <textarea aria-label="Description (optional)"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="What will students learn in this course?"
           rows={4}
-          className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition resize-none"
+          className="w-full border border-slate-700 rounded-md px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition resize-none"
         />
       </div>
 
       {/* Academic placement */}
-      <section className="border border-border rounded-xl p-5 bg-slate-50 space-y-4">
+      <section className="border border-slate-800 rounded-xl p-5 bg-slate-900/60 space-y-4">
         <div>
-          <h2 className="text-sm font-bold text-foreground">Academic Placement</h2>
-          <p className="text-xs text-muted-foreground mt-1">
+          <h2 className="text-sm font-bold text-white">Academic Placement</h2>
+          <p className="text-xs text-slate-400 mt-1">
             Courses attach to blueprints. Tracks are assigned on the blueprint; terms and sections are assigned when you create a section.
           </p>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1" htmlFor="course_blueprint">
+          <label className="block text-sm font-semibold text-slate-200 mb-1" htmlFor="course_blueprint">
             Course Blueprint
-            <span className="ml-2 text-xs font-normal text-muted-foreground">(optional)</span>
+            <span className="ml-2 text-xs font-normal text-slate-400">(optional)</span>
           </label>
           <BlueprintSelector
             id="course_blueprint"
@@ -195,7 +195,7 @@ export default function CourseForm({
             onChange={setBlueprintId}
             disabled={saving}
           />
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             Section enrollment uses this blueprint to connect students to this course.
           </p>
         </div>
@@ -203,25 +203,25 @@ export default function CourseForm({
         <div className="flex flex-wrap gap-2">
           <Link
             href="/admin/program-tracks/new"
-            className="text-xs font-semibold text-primary border border-border bg-white rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+            className="text-xs font-semibold text-amber-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
           >
             Create Program Track
           </Link>
           <Link
             href="/admin/blueprints/new"
-            className="text-xs font-semibold text-primary border border-border bg-white rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+            className="text-xs font-semibold text-amber-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
           >
             Create Blueprint
           </Link>
           <Link
             href="/admin/terms/new"
-            className="text-xs font-semibold text-primary border border-border bg-white rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+            className="text-xs font-semibold text-amber-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
           >
             Create Term
           </Link>
           <Link
             href={blueprintId ? `/admin/sections/new?blueprint=${blueprintId}` : '/admin/sections/new'}
-            className="text-xs font-semibold text-primary border border-border bg-white rounded-lg px-3 py-1.5 hover:bg-slate-50 transition-colors"
+            className="text-xs font-semibold text-amber-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
           >
             Create Section
           </Link>
@@ -231,22 +231,22 @@ export default function CourseForm({
       {/* Min Level + Prerequisite */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Minimum Level</label>
+          <label className="block text-sm font-semibold text-slate-200 mb-1">Minimum Level</label>
           <input aria-label="Minimum Level"
             type="number" min={1} max={100} value={minLevel} title="Minimum level required"
             onChange={(e) => setMinLevel(Number(e.target.value))}
-            className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
+            className="w-full border border-slate-700 rounded-md px-4 py-2.5 text-sm text-slate-100 bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           />
-          <p className="text-xs text-muted-foreground mt-1">Students must be at least this level.</p>
+          <p className="text-xs text-slate-400 mt-1">Students must be at least this level.</p>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1">Prerequisite Course</label>
+          <label className="block text-sm font-semibold text-slate-200 mb-1">Prerequisite Course</label>
           <select aria-label="Prerequisite Course"
             value={prerequisiteId}
             onChange={(e) => setPrerequisiteId(e.target.value)}
             title="Prerequisite course"
-            className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
+            className="w-full border border-slate-700 rounded-md px-4 py-2.5 text-sm text-slate-100 bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           >
             <option value="">None</option>
             {existingCourses
@@ -255,22 +255,22 @@ export default function CourseForm({
                 <option key={c.id} value={c.id}>{c.title}</option>
               ))}
           </select>
-          <p className="text-xs text-muted-foreground mt-1">Student must pass this course first (≥ 80%).</p>
+          <p className="text-xs text-slate-400 mt-1">Student must pass this course first (≥ 80%).</p>
         </div>
       </div>
 
       {/* Age Restriction */}
       <div>
-        <p className="text-sm font-semibold text-slate-700 mb-1">
+        <p className="text-sm font-semibold text-slate-200 mb-1">
           Age Restriction
-          <span className="ml-2 text-xs font-normal text-muted-foreground">(optional)</span>
+          <span className="ml-2 text-xs font-normal text-slate-400">(optional)</span>
         </p>
-        <p className="text-xs text-muted-foreground mb-3">
+        <p className="text-xs text-slate-400 mb-3">
           Students outside this age range will be blocked from enrolling. Leave blank for no restriction.
         </p>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="age_min" className="block text-sm font-medium text-slate-700 mb-1">Min Age</label>
+            <label htmlFor="age_min" className="block text-sm font-medium text-slate-200 mb-1">Min Age</label>
             <input
               id="age_min"
               type="number"
@@ -279,11 +279,11 @@ export default function CourseForm({
               value={ageMin}
               placeholder="No minimum"
               onChange={(e) => setAgeMin(e.target.value)}
-              className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
+              className="w-full border border-slate-700 rounded-md px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
           <div>
-            <label htmlFor="age_max" className="block text-sm font-medium text-slate-700 mb-1">Max Age</label>
+            <label htmlFor="age_max" className="block text-sm font-medium text-slate-200 mb-1">Max Age</label>
             <input
               id="age_max"
               type="number"
@@ -292,7 +292,7 @@ export default function CourseForm({
               value={ageMax}
               placeholder="No maximum"
               onChange={(e) => setAgeMax(e.target.value)}
-              className="w-full border border-input rounded-md px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground bg-background focus:outline-none focus:ring-2 focus:ring-ring transition"
+              className="w-full border border-slate-700 rounded-md px-4 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
           </div>
         </div>
@@ -300,7 +300,7 @@ export default function CourseForm({
 
       {/* Status */}
       <div className="space-y-2">
-        <p className="text-sm font-semibold text-slate-700">Status</p>
+        <p className="text-sm font-semibold text-slate-200">Status</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {(Object.keys(STATUS_CONFIG) as CourseStatus[]).map((s) => (
             <button
@@ -311,14 +311,14 @@ export default function CourseForm({
                 'py-2.5 px-3 rounded-lg border text-sm font-semibold transition-all',
                 status === s
                   ? STATUS_CONFIG[s].active
-                  : 'border-border text-muted-foreground hover:border-slate-300'
+                  : 'border-slate-800 text-slate-400 bg-slate-900/60 hover:border-slate-700 hover:text-slate-200'
               )}
             >
               {STATUS_CONFIG[s].label}
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">{STATUS_DESCRIPTIONS[status]}</p>
+        <p className="text-xs text-slate-400">{STATUS_DESCRIPTIONS[status]}</p>
       </div>
 
       {error && (

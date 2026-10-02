@@ -93,11 +93,11 @@ export default async function CourseAnalyticsPage({
 
   if (!data?.length) {
     return (
-      <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
         <div className="max-w-5xl mx-auto">
           <BackLink courseId={courseId} title={course.title} />
-          <div className="bg-white border border-border rounded-xl p-10 text-center">
-            <p className="text-muted-foreground italic">No students enrolled yet.</p>
+          <div className="card-crisp p-10 text-center">
+            <p className="text-slate-400 italic">No students enrolled yet.</p>
           </div>
         </div>
       </main>
@@ -148,44 +148,44 @@ export default async function CourseAnalyticsPage({
   })
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-5xl mx-auto">
         <BackLink courseId={courseId} title={course.title} />
 
         {/* Summary stats */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
-          <div className="bg-white border border-border rounded-xl px-4 py-3">
-            <span className="text-2xl font-extrabold text-foreground">{rows.length}</span>
-            <p className="text-xs text-muted-foreground">Enrolled</p>
+          <div className="card-crisp px-4 py-3">
+            <span className="text-2xl font-extrabold text-white">{rows.length}</span>
+            <p className="text-xs text-slate-400">Enrolled</p>
           </div>
-          <div className="bg-white border border-border rounded-xl px-4 py-3">
-            <span className="text-2xl font-extrabold text-foreground">{completionRate}%</span>
-            <p className="text-xs text-muted-foreground">Completion</p>
+          <div className="card-crisp px-4 py-3">
+            <span className="text-2xl font-extrabold text-amber-300">{completionRate}%</span>
+            <p className="text-xs text-slate-400">Completion</p>
           </div>
-          <div className="bg-white border border-border rounded-xl px-4 py-3">
-            <span className="text-2xl font-extrabold text-foreground">
+          <div className="card-crisp px-4 py-3">
+            <span className="text-2xl font-extrabold text-white">
               {classAvg !== null ? `${classAvg.toFixed(1)}%` : '—'}
             </span>
-            <p className="text-xs text-muted-foreground">Class Avg</p>
+            <p className="text-xs text-slate-400">Class Avg</p>
           </div>
-          <div className="bg-white border border-border rounded-xl px-4 py-3">
-            <span className="text-2xl font-extrabold text-foreground">
+          <div className="card-crisp px-4 py-3">
+            <span className="text-2xl font-extrabold text-white">
               {classGpa !== null ? classGpa.toFixed(2) : '—'}
             </span>
-            <p className="text-xs text-muted-foreground">Avg GPA</p>
+            <p className="text-xs text-slate-400">Avg GPA</p>
           </div>
-          <div className={`bg-white rounded-xl px-4 py-3 border ${atRiskRows.length > 0 ? 'border-rose-300' : 'border-border'}`}>
-            <span className={`text-2xl font-extrabold ${atRiskRows.length > 0 ? 'text-rose-600' : 'text-foreground'}`}>
+          <div className={`card-crisp px-4 py-3 ${atRiskRows.length > 0 ? 'border-rose-800/60 bg-rose-950/20' : ''}`}>
+            <span className={`text-2xl font-extrabold ${atRiskRows.length > 0 ? 'text-rose-400' : 'text-white'}`}>
               {atRiskRows.length}
             </span>
-            <p className="text-xs text-muted-foreground">At-Risk</p>
+            <p className="text-xs text-slate-400">At-Risk</p>
           </div>
         </div>
 
         {/* At-risk alert */}
         {atRiskRows.length > 0 && (
-          <div className="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3">
-            <p className="text-rose-700 font-semibold text-sm">
+          <div className="mb-6 rounded-xl border border-rose-800/60 bg-rose-950/40 px-4 py-3">
+            <p className="text-rose-300 font-semibold text-sm">
               ⚠ {atRiskRows.length} student{atRiskRows.length > 1 ? 's are' : ' is'} at risk —
               low average grade or no activity in 7+ days.
             </p>
@@ -194,71 +194,71 @@ export default async function CourseAnalyticsPage({
 
         {/* Table header + export */}
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-foreground">Student Results</h2>
+          <h2 className="text-lg font-display font-bold text-white">Student Results</h2>
           <ExportCsvButton rows={csvRows} filename={`${course.title.replace(/\s+/g, '_')}_analytics.csv`} />
         </div>
 
-        <div className="bg-white border border-border rounded-xl overflow-hidden overflow-x-auto">
+        <div className="card-crisp overflow-hidden overflow-x-auto">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="border-b border-border bg-muted/20">
-                <th className="px-5 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Student</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Progress</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Avg Grade</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">GPA</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">Sub</th>
+              <tr className="border-b border-slate-800 bg-slate-900/80">
+                <th className="px-5 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wide">Student</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wide">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wide">Progress</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wide">Avg Grade</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wide">GPA</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wide">Sub</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-slate-800">
               {rows.map((row) => {
                 const profile = profileMap[row.user_id]
                 return (
                   <tr
                     key={row.user_id}
-                    className={`hover:bg-muted/10 transition-colors ${row.is_at_risk ? 'bg-rose-50/30' : ''}`}
+                    className={`hover:bg-slate-800/40 transition-colors ${row.is_at_risk ? 'bg-rose-950/20' : ''}`}
                   >
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2">
                         {row.is_at_risk && <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />}
                         <div>
-                          <p className="font-semibold text-foreground">
+                          <p className="font-semibold text-white">
                             {profile?.display_name ?? 'Unknown'}
                           </p>
                           {profile?.email && (
-                            <p className="text-xs text-muted-foreground">{profile.email}</p>
+                            <p className="text-xs text-slate-400 font-mono">{profile.email}</p>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize
-                        ${row.enrollment_status === 'completed' ? 'bg-emerald-100 text-emerald-700'
-                        : row.enrollment_status === 'in_progress' ? 'bg-sky-100 text-sky-700'
-                        : row.enrollment_status === 'paused' ? 'bg-amber-100 text-amber-700'
-                        : 'bg-slate-100 text-slate-600'}`}
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize border
+                        ${row.enrollment_status === 'completed' ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60'
+                        : row.enrollment_status === 'in_progress' ? 'bg-sky-950/60 text-sky-300 border-sky-800/60'
+                        : row.enrollment_status === 'paused' ? 'bg-amber-950/60 text-amber-300 border-amber-800/60'
+                        : 'bg-slate-800 text-slate-400 border-slate-700'}`}
                       >
                         {row.enrollment_status.replace(/_/g, ' ')}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-16 bg-slate-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-primary rounded-full"
+                            className="h-full bg-indigo-500 rounded-full"
                             style={{ width: `${row.progress_percent}%` }}
                           />
                         </div>
-                        <span className="text-xs text-muted-foreground">{row.progress_percent}%</span>
+                        <span className="text-xs text-slate-400">{row.progress_percent}%</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
                       <GradeBar pct={row.average_grade} />
                     </td>
-                    <td className="px-4 py-3 font-semibold text-foreground">
+                    <td className="px-4 py-3 font-semibold text-white">
                       {row.gpa_points !== null ? row.gpa_points.toFixed(1) : '—'}
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    <td className="px-4 py-3 text-slate-400">
                       {row.graded_submissions}/{row.total_submissions}
                     </td>
                   </tr>
@@ -277,11 +277,11 @@ function BackLink({ courseId, title }: { courseId: string; title: string }) {
     <div className="mb-6">
       <Link
         href={`/courses/${courseId}`}
-        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="text-sm text-slate-400 hover:text-white transition-colors"
       >
         ← {title}
       </Link>
-      <h1 className="text-2xl font-extrabold text-foreground mt-1">Course Analytics</h1>
+      <h1 className="text-2xl font-display font-extrabold text-white mt-1">Course Analytics</h1>
     </div>
   )
 }

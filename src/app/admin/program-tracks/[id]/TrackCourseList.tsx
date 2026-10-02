@@ -20,9 +20,9 @@ interface Props {
 }
 
 const STATUS_CLASSES: Record<string, string> = {
-  published: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  draft:     'bg-amber-50 text-amber-700 border-amber-200',
-  archived:  'bg-slate-100 text-slate-500 border-slate-200',
+  published: 'bg-emerald-950/50 text-emerald-400 border-emerald-800',
+  draft:     'bg-amber-950/50 text-amber-400 border-amber-800',
+  archived:  'bg-slate-800 text-slate-400 border-slate-700',
 }
 
 export default function TrackCourseList({ trackId, trackCourses }: Props) {
@@ -36,8 +36,8 @@ export default function TrackCourseList({ trackId, trackCourses }: Props) {
 
   if (trackCourses.length === 0) {
     return (
-      <div className="bg-white border border-border rounded-xl p-8 text-center">
-        <p className="text-muted-foreground text-sm italic">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center">
+        <p className="text-slate-400 text-sm italic">
           No courses added to this track yet.
         </p>
       </div>
@@ -45,30 +45,30 @@ export default function TrackCourseList({ trackId, trackCourses }: Props) {
   }
 
   return (
-    <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
       <table className="w-full text-sm">
-        <thead className="bg-slate-50 border-b border-border">
+        <thead className="bg-slate-900/80 border-b border-slate-800">
           <tr>
-            <th className="text-center px-4 py-3 font-semibold text-muted-foreground w-12">#</th>
-            <th className="text-left px-6 py-3 font-semibold text-muted-foreground">Course</th>
-            <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Status</th>
-            <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Type</th>
+            <th className="text-center px-4 py-3 font-semibold text-slate-300 w-12">#</th>
+            <th className="text-left px-6 py-3 font-semibold text-slate-300">Course</th>
+            <th className="text-center px-4 py-3 font-semibold text-slate-300">Status</th>
+            <th className="text-center px-4 py-3 font-semibold text-slate-300">Type</th>
             <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-slate-800">
           {trackCourses.map((tc) => {
             const statusClass =
               STATUS_CLASSES[tc.courses?.status ?? ''] ??
-              'bg-slate-100 text-slate-500 border-slate-200'
+              'bg-slate-800 text-slate-400 border-slate-700'
 
             return (
-              <tr key={tc.course_id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-4 text-center font-mono text-muted-foreground text-xs">
+              <tr key={tc.course_id} className="hover:bg-slate-800/40 transition-colors">
+                <td className="px-4 py-4 text-center font-mono text-slate-400 text-xs">
                   {tc.sequence_order}
                 </td>
                 <td className="px-6 py-4">
-                  <p className="font-semibold text-foreground">
+                  <p className="font-semibold text-white">
                     {tc.courses?.title ?? 'Unknown course'}
                   </p>
                 </td>
@@ -84,7 +84,7 @@ export default function TrackCourseList({ trackId, trackCourses }: Props) {
                     <span
                       aria-label="Required"
                       title="Required"
-                      className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full border bg-indigo-50 text-indigo-700 border-indigo-200"
+                      className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full border bg-indigo-950/50 text-indigo-400 border-indigo-800"
                     >
                       Required
                     </span>
@@ -92,7 +92,7 @@ export default function TrackCourseList({ trackId, trackCourses }: Props) {
                     <span
                       aria-label="Optional"
                       title="Optional"
-                      className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full border bg-slate-100 text-slate-500 border-slate-200"
+                      className="inline-flex text-xs font-semibold px-2 py-0.5 rounded-full border bg-slate-800 text-slate-400 border-slate-700"
                     >
                       Optional
                     </span>
@@ -103,7 +103,7 @@ export default function TrackCourseList({ trackId, trackCourses }: Props) {
                     type="button"
                     onClick={() => handleRemove(tc.course_id)}
                     disabled={pending}
-                    className="text-xs text-rose-600 hover:text-rose-800 font-semibold disabled:opacity-40 transition-colors"
+                    className="text-xs text-rose-400 hover:text-rose-300 font-semibold disabled:opacity-40 transition-colors"
                   >
                     Remove
                   </button>

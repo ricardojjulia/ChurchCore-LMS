@@ -265,16 +265,16 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
         )}
       </div>
 
-      <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+      <div className="card-crisp overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <caption className="sr-only">Gradebook grid for {courseTitle}</caption>
             <thead>
-              <tr className="border-b border-border bg-slate-50/50">
+              <tr className="border-b border-slate-800 bg-slate-900/80">
                 {/* Sticky student column header */}
                 <th
                   scope="col"
-                  className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide sticky left-0 bg-slate-50/50 min-w-[200px]"
+                  className="text-left px-4 py-3 text-xs font-semibold text-slate-300 uppercase tracking-wider sticky left-0 bg-slate-900 min-w-[200px]"
                 >
                   Student / Avg
                 </th>
@@ -282,12 +282,12 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
                   <th
                     key={b.id}
                     scope="col"
-                    className="text-center px-3 py-3 text-xs font-semibold text-muted-foreground min-w-[130px]"
+                    className="text-center px-3 py-3 text-xs font-semibold text-slate-300 min-w-[130px]"
                   >
                     <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-foreground truncate max-w-[120px]">{b.title}</span>
+                      <span className="text-white truncate max-w-[120px]">{b.title}</span>
                       {b.max_score != null && (
-                        <span className="text-muted-foreground font-normal">{b.max_score} pts</span>
+                        <span className="text-slate-400 font-normal">{b.max_score} pts</span>
                       )}
                     </div>
                   </th>
@@ -295,12 +295,12 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-slate-800">
               {students.length === 0 && (
                 <tr>
                   <td
                     colSpan={blocks.length + 1}
-                    className="text-center py-10 text-muted-foreground text-sm italic"
+                    className="text-center py-10 text-slate-400 text-sm italic"
                   >
                     No active students enrolled.
                   </td>
@@ -311,11 +311,11 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
                 const avg = studentAverage(student.uid)
 
                 return (
-                  <tr key={student.uid} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={student.uid} className="hover:bg-slate-800/40 transition-colors">
                     {/* Sticky first column: name + running average */}
-                    <td className="px-4 py-3 sticky left-0 bg-white">
-                      <p className="font-medium text-foreground leading-snug">{student.name}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                    <td className="px-4 py-3 sticky left-0 bg-slate-900">
+                      <p className="font-medium text-white leading-snug">{student.name}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">
                         {avg.pct != null ? `${avg.pct.toFixed(1)}% · ${avg.letter}` : 'No grades yet'}
                       </p>
                       {(guardiansByStudent[student.uid] ?? []).map((g) => (
@@ -340,7 +340,7 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
                           {/* Per-cell error bubble */}
                           {err && (
                             <p
-                              className="absolute -top-8 left-1/2 -translate-x-1/2 bg-rose-600 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-10 pointer-events-none"
+                              className="absolute -top-8 left-1/2 -translate-x-1/2 bg-rose-600 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap z-10 pointer-events-none shadow"
                               role="alert"
                             >
                               {err}
@@ -358,7 +358,7 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
                                 defaultValue={cell?.score ?? ''}
                                 placeholder="—"
                                 aria-label={`Score for ${student.name} on ${block.title}`}
-                                className="w-20 text-sm text-center border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                                className="w-20 text-sm text-center border border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600"
                                 onBlur={(e) =>
                                   handleScoreBlur(student.uid, block.id, e.target.value, block.max_score)
                                 }
@@ -380,8 +380,8 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
                                 }}
                                 className={`text-xs rounded-md px-1.5 py-1.5 border transition-colors ${
                                   cell?.feedback
-                                    ? 'border-primary/40 text-primary bg-primary/5 hover:bg-primary/10'
-                                    : 'border-border text-muted-foreground hover:border-primary/30 hover:text-primary'
+                                    ? 'border-indigo-500 text-indigo-300 bg-indigo-950/60 hover:bg-indigo-900/60'
+                                    : 'border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200'
                                 }`}
                               >
                                 {/* Message-bubble icon */}
@@ -403,10 +403,10 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
 
                             {/* Feedback popover */}
                             {isFeedbackOpen && (
-                              <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-1 bg-white border border-border rounded-xl shadow-lg p-3 min-w-[220px] text-left">
+                              <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 mt-1 card-crisp shadow-2xl p-3 min-w-[220px] text-left">
                                 <label
                                   htmlFor={`fb-${key}`}
-                                  className="text-xs font-semibold text-foreground block mb-1"
+                                  className="text-xs font-semibold text-white block mb-1"
                                 >
                                   Feedback (optional)
                                 </label>
@@ -416,7 +416,7 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
                                   onChange={(e) => setFeedbackDraft(e.target.value)}
                                   rows={3}
                                   placeholder="Write feedback for the student…"
-                                  className="w-full text-sm border border-border rounded-lg px-2 py-1.5 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+                                  className="w-full text-sm border border-slate-700 rounded-lg px-2 py-1.5 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-950 text-slate-100 placeholder:text-slate-600"
                                   aria-label={`Feedback for ${student.name} on ${block.title}`}
                                   // eslint-disable-next-line jsx-a11y/no-autofocus
                                   autoFocus
@@ -425,14 +425,14 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
                                   <button
                                     type="button"
                                     onClick={() => handleFeedbackSave(student.uid, block.id)}
-                                    className="text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors"
+                                    className="text-xs font-semibold bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-500 transition-colors"
                                   >
                                     Save
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setFeedbackCell(null)}
-                                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                    className="text-xs text-slate-400 hover:text-white transition-colors"
                                   >
                                     Cancel
                                   </button>
@@ -451,7 +451,7 @@ export default function GradebookGrid({ courseId, courseTitle, initialRows, guar
         </div>
 
         {students.length > 0 && (
-          <div className="border-t border-border px-6 py-3 text-xs text-muted-foreground">
+          <div className="border-t border-slate-800 px-6 py-3 text-xs text-slate-400">
             Tab through score cells to grade quickly. Click the message icon to add per-cell feedback.
           </div>
         )}

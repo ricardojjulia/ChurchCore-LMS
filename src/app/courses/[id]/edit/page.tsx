@@ -49,25 +49,25 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
   if (!isOwnerOrAdmin && !canTogglePreview) redirect('/courses')
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-2xl mx-auto">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-          <Link href="/courses" className="hover:text-indigo-600 transition-colors font-medium">Courses</Link>
-          <span>/</span>
-          <Link href={`/courses/${id}`} className="hover:text-indigo-600 transition-colors font-medium truncate">{course.title}</Link>
-          <span>/</span>
-          <span className="text-slate-700 font-semibold">Edit</span>
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+          <Link href="/courses" className="hover:text-amber-300 transition-colors font-medium">Courses</Link>
+          <span className="text-slate-600">/</span>
+          <Link href={`/courses/${id}`} className="hover:text-amber-300 transition-colors font-medium truncate">{course.title}</Link>
+          <span className="text-slate-600">/</span>
+          <span className="text-white font-semibold">Edit</span>
         </nav>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Edit Course</h1>
-          <p className="text-slate-500 mt-1 text-sm">{course.title}</p>
+          <h1 className="text-3xl font-display font-extrabold text-white tracking-tight">Edit Course</h1>
+          <p className="text-slate-400 mt-1 text-sm">{course.title}</p>
         </div>
 
         {/* A manager reaches this page only to toggle public preview (D3) —
             never granted the general course-edit form below. */}
         {canEditCourse && isOwnerOrAdmin && (
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
+          <div className="card-crisp p-8">
             <CourseForm
               userId={profile?.uid ?? ''}
               courseId={course.id}

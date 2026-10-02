@@ -116,11 +116,11 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <p className="text-sm text-muted-foreground">{badges.length} badge{badges.length !== 1 ? 's' : ''}</p>
+        <p className="text-sm text-slate-400">{badges.length} badge{badges.length !== 1 ? 's' : ''}</p>
         <button
           type="button"
           onClick={openCreate}
-          className="px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors"
+          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition-colors"
         >
           + New Badge
         </button>
@@ -128,37 +128,37 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
 
       {/* Form panel */}
       {form && (
-        <div className="bg-white border border-border rounded-2xl p-6 mb-6 shadow-sm">
-          <h2 className="font-extrabold text-foreground mb-4">{form.id ? 'Edit Badge' : 'Create Badge'}</h2>
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6 shadow-sm">
+          <h2 className="font-extrabold text-white mb-4">{form.id ? 'Edit Badge' : 'Create Badge'}</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-foreground mb-1">Title</label>
+              <label className="block text-sm font-semibold text-slate-200 mb-1">Title</label>
               <input aria-label="Title"
                 value={form.title}
                 onChange={(e) => setForm((f) => f && { ...f, title: e.target.value })}
                 placeholder="e.g. First Steps"
-                className="input w-full"
+                className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-foreground mb-1">Description</label>
+              <label className="block text-sm font-semibold text-slate-200 mb-1">Description</label>
               <textarea aria-label="Description"
                 value={form.description}
                 onChange={(e) => setForm((f) => f && { ...f, description: e.target.value })}
                 placeholder="What this badge represents…"
                 rows={2}
-                className="input w-full resize-none"
+                className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-foreground mb-1">Auto-award Trigger</label>
+              <label className="block text-sm font-semibold text-slate-200 mb-1">Auto-award Trigger</label>
               <select aria-label="Auto-award Trigger"
                 value={form.triggerType}
                 onChange={(e) => setForm((f) => f && { ...f, triggerType: e.target.value as TriggerType, threshold: '' })}
-                className="input w-full"
+                className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 title="Trigger type"
               >
                 {(Object.keys(TRIGGER_LABELS) as TriggerType[]).map((k) => (
@@ -169,7 +169,7 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
 
             {form.triggerType !== 'none' && (
               <div>
-                <label className="block text-sm font-semibold text-foreground mb-1">
+                <label className="block text-sm font-semibold text-slate-200 mb-1">
                   Threshold ({TRIGGER_UNIT[form.triggerType]})
                 </label>
                 <input aria-label="Threshold"
@@ -178,26 +178,26 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
                   value={form.threshold}
                   onChange={(e) => setForm((f) => f && { ...f, threshold: e.target.value })}
                   placeholder={`e.g. ${form.triggerType === 'xp_threshold' ? '100' : '1'}`}
-                  className="input w-32"
+                  className="w-32 bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
                 />
               </div>
             )}
 
-            {error && <p className="text-sm text-rose-600 font-medium">{error}</p>}
+            {error && <p className="text-sm text-rose-400 font-medium">{error}</p>}
 
             <div className="flex gap-3 pt-2">
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition-colors disabled:opacity-50"
               >
                 {saving ? 'Saving…' : form.id ? 'Save Changes' : 'Create Badge'}
               </button>
               <button
                 type="button"
                 onClick={() => setForm(null)}
-                className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors"
               >
                 Cancel
               </button>
@@ -208,11 +208,11 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
 
       {/* Badge list */}
       {badges.length === 0 ? (
-        <div className="bg-white border border-border rounded-2xl p-12 text-center">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
           <p className="text-4xl mb-3">🏅</p>
-          <p className="text-muted-foreground italic mb-4">No badges yet.</p>
+          <p className="text-slate-400 italic mb-4">No badges yet.</p>
           <button type="button" onClick={openCreate}
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-5 py-2 rounded-xl text-sm hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2 rounded-xl text-sm transition-colors"
           >
             Create your first badge →
           </button>
@@ -222,31 +222,31 @@ export default function BadgesAdminClient({ initialBadges }: { initialBadges: Ba
           {badges.map((b) => {
             const { triggerType, threshold } = parseTrigger(b.trigger_condition)
             return (
-              <div key={b.id} className="bg-white border border-border rounded-xl p-5 flex items-start gap-4">
+              <div key={b.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-start gap-4">
                 <div className="text-2xl shrink-0">🏅</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-bold text-foreground">{b.title}</p>
+                    <p className="font-bold text-white">{b.title}</p>
                     {b.is_auto_awarded && (
-                      <span className="text-[10px] font-bold uppercase tracking-widest bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold uppercase tracking-widest bg-indigo-950/50 text-indigo-400 border border-indigo-800 px-2 py-0.5 rounded-full">
                         Auto
                       </span>
                     )}
                   </div>
-                  {b.description && <p className="text-sm text-muted-foreground mt-0.5">{b.description}</p>}
+                  {b.description && <p className="text-sm text-slate-400 mt-0.5">{b.description}</p>}
                   {triggerType !== 'none' && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       Trigger: {TRIGGER_LABELS[triggerType]} ≥ {threshold} {TRIGGER_UNIT[triggerType]}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button type="button" onClick={() => openEdit(b)}
-                    className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                    className="text-xs font-semibold text-slate-400 hover:text-white transition-colors">
                     Edit
                   </button>
                   <button type="button" onClick={() => handleDelete(b.id)}
-                    className="text-xs font-semibold text-rose-700 hover:text-rose-800 transition-colors">
+                    className="text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors">
                     Delete
                   </button>
                 </div>

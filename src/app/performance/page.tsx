@@ -23,33 +23,33 @@ interface PerformanceRow {
 }
 
 function GradeBar({ pct }: { pct: number | null }) {
-  if (pct === null) return <span className="text-xs text-muted-foreground">—</span>
+  if (pct === null) return <span className="text-xs text-slate-500">—</span>
   const color =
     pct >= 90 ? 'bg-emerald-500'
-    : pct >= 80 ? 'bg-sky-500'
+    : pct >= 80 ? 'bg-indigo-500'
     : pct >= 70 ? 'bg-amber-500'
     : 'bg-rose-500'
   return (
     <div className="flex items-center gap-2">
-      <div className="h-2 w-24 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-2 w-24 bg-slate-800 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-sm font-medium text-foreground">{pct}%</span>
+      <span className="text-sm font-medium text-white">{pct}%</span>
     </div>
   )
 }
 
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, string> = {
-    in_progress: 'bg-sky-100 text-sky-700',
-    completed:   'bg-emerald-100 text-emerald-700',
-    not_started: 'bg-slate-100 text-slate-600',
-    paused:      'bg-amber-100 text-amber-700',
-    dropped:     'bg-rose-100 text-rose-700',
+    in_progress: 'bg-indigo-950/80 text-indigo-300 border border-indigo-800',
+    completed:   'bg-emerald-950/80 text-emerald-300 border border-emerald-800',
+    not_started: 'bg-slate-800 text-slate-400 border border-slate-700',
+    paused:      'bg-amber-950/80 text-amber-300 border border-amber-800',
+    dropped:     'bg-rose-950/80 text-rose-300 border border-rose-800',
   }
   const label = status.replace(/_/g, ' ')
   return (
-    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${map[status] ?? 'bg-slate-100 text-slate-600'}`}>
+    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${map[status] ?? 'bg-slate-800 text-slate-400'}`}>
       {label}
     </span>
   )
@@ -75,56 +75,56 @@ export default async function PerformancePage() {
   const completedCount = rows.filter((r) => r.enrollment_status === 'completed').length
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-5xl mx-auto">
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-extrabold text-foreground">{t('performance.heading')}</h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <h1 className="text-2xl font-extrabold text-white tracking-tight font-display">{t('performance.heading')}</h1>
+          <p className="text-slate-400 text-sm mt-1">
             {t('performance.subtitle')}
           </p>
         </div>
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-          <div className="bg-white border border-border rounded-xl px-5 py-4">
-            <span className="text-3xl font-extrabold text-foreground">
+          <div className="card-crisp px-5 py-4">
+            <span className="text-3xl font-extrabold text-white">
               {overallGpa !== null ? overallGpa.toFixed(2) : '—'}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">{t('performance.gpaLabel')}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('performance.gpaLabel')}</p>
           </div>
-          <div className="bg-white border border-border rounded-xl px-5 py-4">
-            <span className="text-3xl font-extrabold text-foreground">{rows.length}</span>
-            <p className="text-xs text-muted-foreground mt-1">{t('performance.enrolledCoursesLabel')}</p>
+          <div className="card-crisp px-5 py-4">
+            <span className="text-3xl font-extrabold text-white">{rows.length}</span>
+            <p className="text-xs text-slate-400 mt-1">{t('performance.enrolledCoursesLabel')}</p>
           </div>
-          <div className="bg-white border border-emerald-200 rounded-xl px-5 py-4">
-            <span className="text-3xl font-extrabold text-emerald-700">{completedCount}</span>
-            <p className="text-xs text-muted-foreground mt-1">{t('status.completed')}</p>
+          <div className="card-crisp border-emerald-800/70 px-5 py-4">
+            <span className="text-3xl font-extrabold text-emerald-400">{completedCount}</span>
+            <p className="text-xs text-slate-400 mt-1">{t('status.completed')}</p>
           </div>
-          <div className={`bg-white rounded-xl px-5 py-4 border ${atRiskCount > 0 ? 'border-rose-200' : 'border-border'}`}>
-            <span className={`text-3xl font-extrabold ${atRiskCount > 0 ? 'text-rose-600' : 'text-foreground'}`}>
+          <div className={`card-crisp px-5 py-4 ${atRiskCount > 0 ? 'border-rose-800/70 bg-rose-950/30' : ''}`}>
+            <span className={`text-3xl font-extrabold ${atRiskCount > 0 ? 'text-rose-400' : 'text-white'}`}>
               {atRiskCount}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">{t('performance.atRiskLabel')}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('performance.atRiskLabel')}</p>
           </div>
         </div>
 
         {/* XP bar */}
         {totalXp > 0 && (
-          <div className="bg-white border border-border rounded-xl px-5 py-4 mb-8 flex items-center justify-between">
+          <div className="card-crisp px-5 py-4 mb-8 flex items-center justify-between border-indigo-800/60 bg-indigo-950/30">
             <div>
-              <p className="text-sm font-semibold text-foreground">{t('performance.totalXpLabel')}</p>
-              <p className="text-xs text-muted-foreground">{t('performance.xpSublabel')}</p>
+              <p className="text-sm font-semibold text-white">{t('performance.totalXpLabel')}</p>
+              <p className="text-xs text-slate-400">{t('performance.xpSublabel')}</p>
             </div>
-            <span className="text-2xl font-extrabold text-primary">{totalXp.toLocaleString()} XP</span>
+            <span className="text-2xl font-extrabold text-amber-300">{totalXp.toLocaleString()} XP</span>
           </div>
         )}
 
         {/* At-risk alert */}
         {atRiskCount > 0 && (
-          <div className="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3">
-            <p className="text-rose-700 font-semibold text-sm">
+          <div className="mb-6 rounded-xl border border-rose-800/70 bg-rose-950/40 px-4 py-3">
+            <p className="text-rose-300 font-semibold text-sm">
               {t('performance.atRiskAlertTemplate', { n: atRiskCount })}
             </p>
           </div>
@@ -132,28 +132,28 @@ export default async function PerformancePage() {
 
         {/* Course table */}
         {rows.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl p-10 text-center">
-            <p className="text-muted-foreground italic mb-4">{t('performance.emptyState')}</p>
-            <Link href="/courses" className="text-sm font-semibold text-primary hover:underline">
+          <div className="card-crisp p-10 text-center">
+            <p className="text-slate-400 italic mb-4">{t('performance.emptyState')}</p>
+            <Link href="/courses" className="text-sm font-semibold text-amber-300 hover:text-amber-200 transition-colors">
               {t('common.browseCoursesArrowLink')}
             </Link>
           </div>
         ) : (
-          <div className="bg-white border border-border rounded-xl overflow-hidden">
+          <div className="card-crisp overflow-hidden p-0">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted/20">
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('performance.table.courseHeader')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('performance.table.statusHeader')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('performance.table.progressHeader')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('performance.table.avgGradeHeader')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden sm:table-cell">{t('performance.table.gpaHeader')}</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden md:table-cell">{t('performance.table.submissionsHeader')}</th>
+                <tr className="border-b border-slate-800 bg-slate-900/80">
+                  <th className="px-5 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wide">{t('performance.table.courseHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wide">{t('performance.table.statusHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wide">{t('performance.table.progressHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wide">{t('performance.table.avgGradeHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wide hidden sm:table-cell">{t('performance.table.gpaHeader')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wide hidden md:table-cell">{t('performance.table.submissionsHeader')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-slate-800">
                 {rows.map((row) => (
-                  <tr key={row.course_id} className={`hover:bg-muted/10 transition-colors ${row.is_at_risk ? 'bg-rose-50/30' : ''}`}>
+                  <tr key={row.course_id} className={`hover:bg-slate-800/40 transition-colors ${row.is_at_risk ? 'bg-rose-950/20' : ''}`}>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         {row.is_at_risk && (
@@ -162,12 +162,12 @@ export default async function PerformancePage() {
                         <div>
                           <Link
                             href={`/courses/${row.course_id}`}
-                            className="font-semibold text-foreground hover:text-primary transition-colors"
+                            className="font-semibold text-white hover:text-amber-300 transition-colors"
                           >
                             {row.course_title}
                           </Link>
                           {row.total_xp_earned > 0 && (
-                            <p className="text-xs text-muted-foreground">{row.total_xp_earned} XP</p>
+                            <p className="text-xs text-slate-400">{row.total_xp_earned} XP</p>
                           )}
                         </div>
                       </div>
@@ -177,29 +177,29 @@ export default async function PerformancePage() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="h-2 w-16 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-2 w-16 bg-slate-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-primary rounded-full"
+                            className="h-full bg-indigo-500 rounded-full"
                             style={{ width: `${row.progress_percent}%` }}
                           />
                         </div>
-                        <span className="text-xs text-muted-foreground">{row.progress_percent}%</span>
+                        <span className="text-xs text-slate-400">{row.progress_percent}%</span>
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-1.5">
                         <GradeBar pct={row.average_grade} />
                         {row.average_grade !== null && (
-                          <span className="text-xs font-bold text-muted-foreground">({row.letter_grade})</span>
+                          <span className="text-xs font-bold text-slate-400">({row.letter_grade})</span>
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-4 hidden sm:table-cell">
-                      <span className="font-semibold text-foreground">
+                      <span className="font-semibold text-white">
                         {row.gpa_points !== null ? row.gpa_points.toFixed(1) : '—'}
                       </span>
                     </td>
-                    <td className="px-4 py-4 hidden md:table-cell text-muted-foreground">
+                    <td className="px-4 py-4 hidden md:table-cell text-slate-400">
                       {row.graded_submissions}/{row.total_submissions}
                     </td>
                   </tr>

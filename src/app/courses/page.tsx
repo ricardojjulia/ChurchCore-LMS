@@ -121,14 +121,14 @@ export default async function CoursesPage({
   const groups = groupByTrack(filtered)
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
+            <h1 className="text-3xl font-extrabold text-white tracking-tight font-display">
               {isStaff ? (role === 'teacher' ? t('courses.list.headingTeacher') : t('courses.list.headingStaff')) : t('courses.list.headingStudent')}
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
+            <p className="text-slate-400 mt-1 text-sm">
               {isStaff
                 ? role === 'teacher'
                   ? t('courses.list.subtitleTeacher')
@@ -139,7 +139,7 @@ export default async function CoursesPage({
             </p>
           </div>
           {['teacher', 'admin', 'manager'].includes(role) && (
-            <Button asChild>
+            <Button asChild className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold">
               <Link href="/courses/new">{t('courses.list.newCourseButton')}</Link>
             </Button>
           )}
@@ -152,8 +152,8 @@ export default async function CoursesPage({
               className={cn(
                 'text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors',
                 !activeTrack
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                  ? 'bg-indigo-600 text-white border-indigo-500 shadow-xs'
+                  : 'border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white bg-slate-900',
               )}
             >
               {t('courses.list.allTracksFilter')}
@@ -165,8 +165,8 @@ export default async function CoursesPage({
                 className={cn(
                   'text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors',
                   activeTrack === track.id
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground',
+                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-xs'
+                    : 'border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white bg-slate-900',
                 )}
               >
                 {track.name}
@@ -181,19 +181,19 @@ export default async function CoursesPage({
               <div className="mb-4 flex items-center gap-2">
                 <Link
                   href="/courses"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm text-slate-400 hover:text-white transition-colors"
                 >
                   {t('courses.list.backToTracksLink')}
                 </Link>
-                <span className="text-muted-foreground">·</span>
-                <span className="text-sm font-semibold">{activeTrackName}</span>
+                <span className="text-slate-600">·</span>
+                <span className="text-sm font-semibold text-amber-300">{activeTrackName}</span>
               </div>
             )}
 
             {groups.map((group) => (
               <section key={group.id ?? 'other'} className={groups.length > 1 ? 'mb-10' : undefined}>
                 {groups.length > 1 && (
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
                     {group.name}
                   </h2>
                 )}
@@ -204,11 +204,11 @@ export default async function CoursesPage({
 
                     const enrollmentBadge = isEnrolled ? (
                       <div className="flex flex-col gap-1 w-full">
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center justify-between text-xs text-slate-400">
                           <span className={
-                            enrollment.transit_status === 'completed' ? 'text-emerald-700 font-semibold'
-                            : enrollment.transit_status === 'in_progress' ? 'text-sky-600 font-semibold'
-                            : 'text-slate-500'
+                            enrollment.transit_status === 'completed' ? 'text-emerald-400 font-semibold'
+                            : enrollment.transit_status === 'in_progress' ? 'text-indigo-400 font-semibold'
+                            : 'text-slate-400'
                           }>
                             {enrollment.transit_status === 'completed' ? t('status.completed')
                              : enrollment.transit_status === 'in_progress' ? t('status.inProgress')
@@ -217,13 +217,13 @@ export default async function CoursesPage({
                           <span>{enrollment.progress_percent}%</span>
                         </div>
                         <div
-                          className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden"
+                          className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden"
                           style={{ '--progress-w': `${enrollment.progress_percent}%` } as React.CSSProperties}
                         >
                           <div
                             className={cn(
                               'h-full rounded-full [width:var(--progress-w)]',
-                              enrollment.transit_status === 'completed' ? 'bg-emerald-500' : 'bg-primary',
+                              enrollment.transit_status === 'completed' ? 'bg-emerald-500' : 'bg-indigo-500',
                             )}
                           />
                         </div>
@@ -234,25 +234,25 @@ export default async function CoursesPage({
                       <div className="flex gap-2 flex-wrap">
                         <Link
                           href={`/courses/${course.id}/edit`}
-                          className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                          className="text-xs font-semibold text-slate-400 hover:text-white transition-colors"
                         >
                           {t('courses.list.editAction')}
                         </Link>
                         <Link
                           href={`/courses/${course.id}/build`}
-                          className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                          className="text-xs font-semibold text-slate-400 hover:text-white transition-colors"
                         >
                           {t('courses.list.buildAction')}
                         </Link>
                         <Link
                           href={`/courses/${course.id}/analytics`}
-                          className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                          className="text-xs font-semibold text-slate-400 hover:text-white transition-colors"
                         >
                           {t('courses.list.analyticsAction')}
                         </Link>
                         <Link
                           href={`/courses/${course.id}/submissions`}
-                          className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                          className="text-xs font-semibold text-slate-400 hover:text-white transition-colors"
                         >
                           {t('courses.list.gradesAction')}
                         </Link>
@@ -278,8 +278,8 @@ export default async function CoursesPage({
             ))}
           </>
         ) : (
-          <div className="bg-white border border-border rounded-xl p-12 text-center">
-            <p className="text-muted-foreground italic mb-4">
+          <div className="card-crisp p-12 text-center">
+            <p className="text-slate-400 italic mb-4">
               {activeTrack
                 ? t('courses.list.emptyTrack')
                 : isStaff
@@ -287,7 +287,7 @@ export default async function CoursesPage({
                 : t('courses.list.emptyStudent')}
             </p>
             {isStaff && !activeTrack && (
-              <Button asChild>
+              <Button asChild className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold">
                 <Link href="/courses/new">{t('courses.list.emptyCreateCta')}</Link>
               </Button>
             )}

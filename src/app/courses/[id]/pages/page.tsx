@@ -61,22 +61,22 @@ export default async function CourseMaterialsPage({
   const materialPages = (pages ?? []) as MaterialPageItem[]
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <Link href="/courses" className="hover:text-primary transition-colors">{t('courses.detail.coursescrumb')}</Link>
+        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+          <Link href="/courses" className="hover:text-amber-300 transition-colors">{t('courses.detail.coursescrumb')}</Link>
           <span>/</span>
-          <Link href={`/courses/${courseId}`} className="hover:text-primary transition-colors truncate">
+          <Link href={`/courses/${courseId}`} className="hover:text-amber-300 transition-colors truncate">
             {course.title}
           </Link>
           <span>/</span>
-          <span className="text-foreground font-semibold">{t('courses.materials.breadcrumbCurrent')}</span>
+          <span className="text-white font-semibold">{t('courses.materials.breadcrumbCurrent')}</span>
         </nav>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-foreground">{t('courses.materials.heading')}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h1 className="text-2xl font-extrabold text-white">{t('courses.materials.heading')}</h1>
+          <p className="text-sm text-slate-400 mt-0.5">
             {t('courses.materials.subheading')}
           </p>
         </div>

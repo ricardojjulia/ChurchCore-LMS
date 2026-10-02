@@ -5,7 +5,37 @@ import { createServiceClient } from '@/utils/supabase/service'
 import { enrollCore } from '@/lib/enrollment-core'
 import { revalidatePath } from 'next/cache'
 import { isDeliverableAddress } from '@/lib/email-deliverable'
-import type { CourseBlock, BlockTypeId } from '@/types/blocks'
+import { BLOCK_TYPE_META, type CourseBlock, type BlockTypeId } from '@/types/blocks'
+
+// ── Helper: auto-register block types if missing in DB registry ──────────────
+
+async function ensureBlockTypesRegistered(
+  service: ReturnType<typeof createServiceClient>,
+  typeIds: string[]
+) {
+  try {
+    const uniqueIds = Array.from(new Set(typeIds))
+    const toUpsert = uniqueIds
+      .map((id) => {
+        const meta = BLOCK_TYPE_META[id as BlockTypeId]
+        if (!meta) return null
+        return {
+          id,
+          label: meta.label,
+          icon: meta.icon,
+          category: meta.category,
+          is_active: meta.is_active ?? true,
+        }
+      })
+      .filter(Boolean)
+
+    if (toUpsert.length > 0) {
+      await service.from('block_types').upsert(toUpsert, { onConflict: 'id' })
+    }
+  } catch (e) {
+    console.warn('Failed to ensure block types registered:', e)
+  }
+}
 
 // ── Helper: award XP via RPC ─────────────────────────────────────────────────
 // award_xp is service-role only (COUNCIL-2026-033); amounts are fixed here on
@@ -1066,7 +1096,12 @@ export async function createCourseFromOutline({
 
     // 1. Insert module headers first so parent_block_id foreign key targets exist in database
     if (moduleRows.length > 0) {
-      const { error: moduleError } = await service.from('course_blocks').insert(moduleRows)
+      let { error: moduleError } = await service.from('course_blocks').insert(moduleRows)
+      if (moduleError && (moduleError.message?.includes('course_blocks_block_type_id_fkey') || (moduleError as any).code === '23503')) {
+        await ensureBlockTypesRegistered(service, ['module_header'])
+        const retry = await service.from('course_blocks').insert(moduleRows)
+        moduleError = retry.error
+      }
       if (moduleError) {
         console.error('Failed to create module blocks:', moduleError)
         return { error: `Failed to create modules: ${moduleError.message}` }
@@ -1075,7 +1110,13 @@ export async function createCourseFromOutline({
 
     // 2. Insert child items referencing their parent module
     if (itemRows.length > 0) {
-      const { error: itemError } = await service.from('course_blocks').insert(itemRows)
+      let { error: itemError } = await service.from('course_blocks').insert(itemRows)
+      if (itemError && (itemError.message?.includes('course_blocks_block_type_id_fkey') || (itemError as any).code === '23503')) {
+        const typeIds = itemRows.map(r => r.block_type_id)
+        await ensureBlockTypesRegistered(service, typeIds)
+        const retry = await service.from('course_blocks').insert(itemRows)
+        itemError = retry.error
+      }
       if (itemError) {
         console.error('Failed to create child block items:', itemError)
         return { error: `Failed to create blocks: ${itemError.message}` }
@@ -1351,7 +1392,7 @@ export async function saveCourseBlock({
       revalidatePath(`/courses/${courseId}/build`)
       return { data: data as CourseBlock }
     } else {
-      const { data, error } = await service
+      let { data, error } = await service
         .from('course_blocks')
         .insert({
           course_id:       courseId,
@@ -1365,6 +1406,27 @@ export async function saveCourseBlock({
         })
         .select()
         .single()
+
+      if (error && (error.message?.includes('course_blocks_block_type_id_fkey') || (error as any).code === '23503')) {
+        await ensureBlockTypesRegistered(service, [blockTypeId])
+        const retry = await service
+          .from('course_blocks')
+          .insert({
+            course_id:       courseId,
+            org_id:          orgId,
+            parent_block_id: parentBlockId ?? null,
+            block_type_id:   blockTypeId,
+            title:           title.trim(),
+            content:         content ?? {},
+            gamification:    gamification ?? {},
+            sort_order:      sortOrder ?? 1000,
+          })
+          .select()
+          .single()
+
+        data = retry.data
+        error = retry.error
+      }
 
       if (error || !data) return { error: error?.message || 'Failed to create block' }
       revalidatePath(`/courses/${courseId}/build`)

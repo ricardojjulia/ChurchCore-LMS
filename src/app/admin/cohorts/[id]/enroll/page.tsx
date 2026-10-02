@@ -51,20 +51,20 @@ export default async function CohortEnrollPage({
   const memberCount  = memberCountResult.count ?? 0
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-2xl mx-auto">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-          <Link href="/admin/cohorts" className="hover:text-primary font-medium">Cohorts</Link>
-          <span>/</span>
-          <Link href={`/admin/cohorts/${cohortId}`} className="hover:text-primary font-medium">{cohort.cohort_name}</Link>
-          <span>/</span>
-          <span className="text-foreground font-semibold">Enroll in Section</span>
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+          <Link href="/admin/cohorts" className="hover:text-amber-300 font-medium">Cohorts</Link>
+          <span className="text-slate-600">/</span>
+          <Link href={`/admin/cohorts/${cohortId}`} className="hover:text-amber-300 font-medium">{cohort.cohort_name}</Link>
+          <span className="text-slate-600">/</span>
+          <span className="text-white font-semibold">Enroll in Section</span>
         </nav>
 
-        <div className="bg-white border border-border rounded-2xl p-8 shadow-sm">
-          <h1 className="text-xl font-extrabold text-foreground mb-1">Enroll Cohort in Section</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            <strong className="text-foreground">{cohort.cohort_name}</strong> — {memberCount} active member{memberCount !== 1 ? 's' : ''}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-sm">
+          <h1 className="text-xl font-extrabold text-white mb-1">Enroll Cohort in Section</h1>
+          <p className="text-sm text-slate-400 mb-6">
+            <strong className="text-white">{cohort.cohort_name}</strong> — {memberCount} active member{memberCount !== 1 ? 's' : ''}
           </p>
 
           <EnrollWizard

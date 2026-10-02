@@ -17,13 +17,13 @@ export default async function WelcomePage() {
   if (profile?.org_id) redirect('/dashboard')
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-16">
-      <div className="mx-auto max-w-md rounded-2xl border border-border bg-white p-8 text-center">
-        <h1 className="text-xl font-extrabold text-foreground">{t('title')}</h1>
-        <p className="mt-3 text-sm text-slate-700">{t('body')}</p>
+    <main className="min-h-screen bg-slate-950 px-4 py-16 text-slate-100 flex items-center justify-center">
+      <div className="mx-auto max-w-md w-full rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center shadow-sm">
+        <h1 className="text-2xl font-extrabold text-white">{t('title')}</h1>
+        <p className="mt-3 text-sm text-slate-300">{t('body')}</p>
         <div className="mt-6 flex flex-col gap-3">
-          <Link href="/start" className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500">{t('start')}</Link>
-          <a href="/auth/sign-out" className="text-sm font-semibold text-slate-700 underline">{t('signOut')}</a>
+          <Link href="/start" className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition-colors">{t('start')}</Link>
+          <a href="/auth/sign-out" className="text-sm font-semibold text-slate-400 hover:text-white underline">{t('signOut')}</a>
         </div>
       </div>
     </main>

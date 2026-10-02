@@ -57,26 +57,26 @@ export default async function MaterialViewerPage({
   const html = tiptapToHtml(page.body as object)
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <Link href="/courses" className="hover:text-primary transition-colors">Courses</Link>
+        <nav className="flex items-center gap-2 text-sm text-slate-400 mb-6">
+          <Link href="/courses" className="hover:text-amber-300 transition-colors">Courses</Link>
           <span>/</span>
-          <Link href={`/courses/${courseId}`} className="hover:text-primary transition-colors truncate max-w-[8rem]">
+          <Link href={`/courses/${courseId}`} className="hover:text-amber-300 transition-colors truncate max-w-[8rem]">
             {course?.title}
           </Link>
           <span>/</span>
-          <Link href={`/courses/${courseId}/pages`} className="hover:text-primary transition-colors">
+          <Link href={`/courses/${courseId}/pages`} className="hover:text-amber-300 transition-colors">
             Additional Materials
           </Link>
           <span>/</span>
-          <span className="text-foreground font-semibold truncate">{page.title}</span>
+          <span className="text-white font-semibold truncate">{page.title}</span>
         </nav>
 
-        <article className="bg-white border border-border rounded-2xl px-8 py-8 shadow-sm">
-          <header className="mb-6 pb-6 border-b border-border">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+        <article className="bg-slate-900 border border-slate-800 rounded-2xl px-8 py-8 shadow-sm">
+          <header className="mb-6 pb-6 border-b border-slate-800">
+            <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
               <span aria-hidden="true">📄</span>
               <span className="uppercase tracking-wide font-medium">Additional Material</span>
               {page.published_at && (
@@ -88,13 +88,13 @@ export default async function MaterialViewerPage({
                 </>
               )}
             </div>
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{page.title}</h1>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight">{page.title}</h1>
           </header>
 
-          <div className="prose prose-sm max-w-none text-foreground leading-relaxed">
+          <div className="prose prose-invert prose-sm max-w-none text-slate-200 leading-relaxed">
             {html
               ? <div dangerouslySetInnerHTML={{ __html: html }} />
-              : <p className="italic text-muted-foreground">No content.</p>
+              : <p className="italic text-slate-500">No content.</p>
             }
           </div>
         </article>
@@ -102,7 +102,7 @@ export default async function MaterialViewerPage({
         <div className="mt-6 text-center">
           <Link
             href={`/courses/${courseId}/pages`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="text-sm text-slate-400 hover:text-white transition-colors"
           >
             ← Back to Additional Materials
           </Link>

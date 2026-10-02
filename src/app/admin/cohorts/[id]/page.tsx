@@ -68,44 +68,44 @@ export default async function CohortDetailPage({
   const track = cohort.program_tracks as unknown as { name: string; code: string } | null
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500">
-          <Link href="/admin/cohorts" className="hover:text-primary font-medium">Cohorts</Link>
-          <span>/</span>
-          <span className="text-foreground font-semibold">{cohort.cohort_name}</span>
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400">
+          <Link href="/admin/cohorts" className="hover:text-amber-300 font-medium">Cohorts</Link>
+          <span className="text-slate-600">/</span>
+          <span className="text-white font-semibold">{cohort.cohort_name}</span>
         </nav>
 
         {/* Header */}
-        <div className="bg-white border border-border rounded-2xl p-8 shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-sm">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs font-bold uppercase tracking-widest ${cohort.is_active ? 'text-emerald-700' : 'text-slate-400'}`}>
+                <span className={`text-xs font-bold uppercase tracking-widest ${cohort.is_active ? 'text-emerald-400' : 'text-slate-500'}`}>
                   {cohort.is_active ? 'Active' : 'Inactive'}
                 </span>
                 {track && (
-                  <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded">
+                  <span className="text-xs font-semibold bg-indigo-950/50 text-indigo-400 border border-indigo-800 px-2 py-0.5 rounded">
                     {track.code}
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl font-extrabold text-foreground">{cohort.cohort_name}</h1>
-              <p className="text-sm font-mono text-muted-foreground mt-0.5">{cohort.cohort_code}</p>
+              <h1 className="text-2xl font-extrabold text-white">{cohort.cohort_name}</h1>
+              <p className="text-sm font-mono text-slate-400 mt-0.5">{cohort.cohort_code}</p>
               {cohort.description && (
-                <p className="text-sm text-muted-foreground mt-2">{cohort.description}</p>
+                <p className="text-sm text-slate-400 mt-2">{cohort.description}</p>
               )}
-              <div className="flex gap-6 mt-4 text-sm text-muted-foreground">
-                <span><strong className="text-foreground">{activeCount}</strong> active members</span>
+              <div className="flex gap-6 mt-4 text-sm text-slate-400">
+                <span><strong className="text-white">{activeCount}</strong> active members</span>
                 {withdrawnCount > 0 && (
-                  <span><strong className="text-foreground">{withdrawnCount}</strong> withdrawn</span>
+                  <span><strong className="text-white">{withdrawnCount}</strong> withdrawn</span>
                 )}
               </div>
             </div>
             <Link
               href={`/admin/cohorts/${cohortId}/enroll`}
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-4 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors shrink-0"
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-colors shrink-0"
             >
               Enroll in Section →
             </Link>
@@ -130,58 +130,58 @@ export default async function CohortDetailPage({
         {/* Recent enrollment jobs */}
         {jobs.length > 0 && (
           <section>
-            <h2 className="text-lg font-bold text-foreground mb-4">Recent Enrollment Jobs</h2>
-            <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+            <h2 className="text-lg font-bold text-white mb-4">Recent Enrollment Jobs</h2>
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
               <table className="w-full text-sm">
-                <thead className="bg-slate-50 border-b border-border">
+                <thead className="bg-slate-900/80 border-b border-slate-800">
                   <tr>
-                    <th className="text-left px-6 py-3 font-semibold text-muted-foreground">Section</th>
-                    <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Type</th>
-                    <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Status</th>
-                    <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Enrolled</th>
-                    <th className="text-center px-4 py-3 font-semibold text-muted-foreground">Skipped</th>
-                    <th className="text-left px-4 py-3 font-semibold text-muted-foreground">Date</th>
+                    <th className="text-left px-6 py-3 font-semibold text-slate-300">Section</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-300">Type</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-300">Status</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-300">Enrolled</th>
+                    <th className="text-center px-4 py-3 font-semibold text-slate-300">Skipped</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-300">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-slate-800">
                   {jobs.map((job) => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join types not narrowed
                     const section = job.course_sections as any
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase nested join types not narrowed
                     const blueprint = section?.course_blueprints as any
                     const statusColors: Record<string, string> = {
-                      completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                      partial:   'bg-amber-50 text-amber-700 border-amber-200',
-                      failed:    'bg-rose-50 text-rose-700 border-rose-200',
-                      dry_run:   'bg-sky-50 text-sky-700 border-sky-200',
-                      processing:'bg-indigo-50 text-indigo-700 border-indigo-200',
-                      pending:   'bg-slate-100 text-slate-500 border-slate-200',
+                      completed: 'bg-emerald-950/50 text-emerald-400 border-emerald-800',
+                      partial:   'bg-amber-950/50 text-amber-400 border-amber-800',
+                      failed:    'bg-rose-950/50 text-rose-400 border-rose-800',
+                      dry_run:   'bg-sky-950/50 text-sky-400 border-sky-800',
+                      processing:'bg-indigo-950/50 text-indigo-400 border-indigo-800',
+                      pending:   'bg-slate-800 text-slate-400 border-slate-700',
                     }
                     return (
-                      <tr key={job.id} className="hover:bg-slate-50 transition-colors">
+                      <tr key={job.id} className="hover:bg-slate-800/40 transition-colors">
                         <td className="px-6 py-3">
-                          <p className="font-medium text-foreground">{blueprint?.title ?? '—'}</p>
-                          <p className="text-xs text-muted-foreground font-mono">{section?.section_code ?? ''}</p>
+                          <p className="font-medium text-white">{blueprint?.title ?? '—'}</p>
+                          <p className="text-xs text-slate-400 font-mono">{section?.section_code ?? ''}</p>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${job.dry_run ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${job.dry_run ? 'bg-sky-950/50 text-sky-400 border-sky-800' : 'bg-slate-800 text-slate-300 border-slate-700'}`}>
                             {job.dry_run ? 'Dry run' : 'Live'}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${statusColors[job.status] ?? 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${statusColors[job.status] ?? 'bg-slate-800 text-slate-300 border-slate-700'}`}>
                             {job.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center font-semibold text-emerald-700">
+                        <td className="px-4 py-3 text-center font-semibold text-emerald-400">
                           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- result_summary is JSONB with dynamic shape */}
                           {(job.result_summary as any)?.enrolled ?? job.processed_count ?? '—'}
                         </td>
-                        <td className="px-4 py-3 text-center text-muted-foreground">
+                        <td className="px-4 py-3 text-center text-slate-400">
                           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- result_summary is JSONB with dynamic shape */}
                           {(job.result_summary as any)?.skipped ?? job.skipped_count ?? '—'}
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground text-xs">
+                        <td className="px-4 py-3 text-slate-400 text-xs">
                           {new Date(job.created_at).toLocaleDateString()}
                         </td>
                       </tr>

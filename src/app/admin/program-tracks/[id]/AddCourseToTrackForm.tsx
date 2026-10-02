@@ -50,7 +50,7 @@ export default function AddCourseToTrackForm({
 
   if (availableCourses.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground italic">
+      <p className="text-sm text-slate-400 italic">
         All org courses are already on this track.
       </p>
     )
@@ -61,7 +61,7 @@ export default function AddCourseToTrackForm({
       {error && (
         <div
           role="alert"
-          className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-sm"
+          className="bg-rose-950/50 border border-rose-800 rounded-xl p-3 text-rose-300 text-sm"
         >
           {error}
         </div>
@@ -72,16 +72,16 @@ export default function AddCourseToTrackForm({
         <div>
           <label
             htmlFor="ptc-course"
-            className="block text-xs font-semibold text-foreground mb-1.5"
+            className="block text-xs font-semibold text-slate-200 mb-1.5"
           >
-            Course <span className="text-rose-700">*</span>
+            Course <span className="text-rose-400">*</span>
           </label>
           <select
             id="ptc-course"
             value={courseId}
             onChange={(e) => setCourseId(e.target.value)}
             required
-            className="input w-full text-sm"
+            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">Select a course…</option>
             {availableCourses.map((c) => (
@@ -97,7 +97,7 @@ export default function AddCourseToTrackForm({
         <div>
           <label
             htmlFor="ptc-order"
-            className="block text-xs font-semibold text-foreground mb-1.5"
+            className="block text-xs font-semibold text-slate-200 mb-1.5"
           >
             Order
           </label>
@@ -107,7 +107,7 @@ export default function AddCourseToTrackForm({
             min={1}
             value={sequenceOrder}
             onChange={(e) => setSequenceOrder(Number(e.target.value))}
-            className="input w-20 text-sm text-center"
+            className="w-20 bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -118,9 +118,9 @@ export default function AddCourseToTrackForm({
             type="checkbox"
             checked={isRequired}
             onChange={(e) => setIsRequired(e.target.checked)}
-            className="rounded"
+            className="rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-indigo-500"
           />
-          <label htmlFor="ptc-required" className="text-sm font-semibold text-foreground whitespace-nowrap">
+          <label htmlFor="ptc-required" className="text-sm font-semibold text-slate-200 whitespace-nowrap">
             Required
           </label>
         </div>
@@ -129,7 +129,7 @@ export default function AddCourseToTrackForm({
         <button
           type="submit"
           disabled={pending}
-          className="bg-primary text-primary-foreground font-bold px-4 py-2 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+          className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors disabled:opacity-50 whitespace-nowrap"
         >
           {pending ? 'Adding…' : 'Add Course'}
         </button>

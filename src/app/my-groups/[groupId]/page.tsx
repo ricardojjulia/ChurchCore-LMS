@@ -65,24 +65,24 @@ export default async function GroupDiscussionPage({
   const blueprint = section?.course_blueprints
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto space-y-8">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-500">
-          <Link href="/my-groups" className="hover:text-primary font-medium">{t('nav.myGroups')}</Link>
-          <span>/</span>
-          <span className="text-foreground font-semibold">{group.group_name}</span>
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400">
+          <Link href="/my-groups" className="hover:text-amber-300 font-medium transition-colors">{t('nav.myGroups')}</Link>
+          <span className="text-slate-600">/</span>
+          <span className="text-white font-semibold">{group.group_name}</span>
         </nav>
 
         {/* Group header */}
-        <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+        <div className="card-crisp p-6">
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-extrabold text-foreground">{group.group_name}</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {blueprint?.title ?? '—'} · <span className="font-mono">{section?.section_code}</span>
+              <h1 className="text-xl font-display font-extrabold text-white tracking-tight">{group.group_name}</h1>
+              <p className="text-sm text-slate-400 mt-0.5">
+                {blueprint?.title ?? '—'} · <span className="font-mono text-slate-300">{section?.section_code}</span>
               </p>
               {membership && (
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-indigo-400 mt-2">
                   {t('myGroups.detail.roleNoticeTemplate', { role: membership.role })}
                 </p>
               )}

@@ -100,11 +100,11 @@ export default function GroupDiscussionBoard({
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground">{t('myGroups.discussion.heading')}</h2>
+        <h2 className="text-lg font-display font-bold text-white">{t('myGroups.discussion.heading')}</h2>
         <button
           type="button"
           onClick={() => setShowNewThread((v) => !v)}
-          className="text-sm font-semibold text-primary hover:underline"
+          className="text-sm font-semibold text-amber-300 hover:text-amber-200 hover:underline"
         >
           {showNewThread ? t('myGroups.discussion.cancelToggleButton') : t('myGroups.discussion.newThreadButton')}
         </button>
@@ -112,48 +112,48 @@ export default function GroupDiscussionBoard({
 
       {/* New thread form */}
       {showNewThread && (
-        <form onSubmit={handleCreateThread} className="bg-white border border-border rounded-xl p-4 flex gap-2">
+        <form onSubmit={handleCreateThread} className="card-crisp p-4 flex gap-2">
           <input
             aria-label="Thread title"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder={t('myGroups.discussion.threadTitlePlaceholder')}
-            className="input flex-1 min-w-0"
+            className="input flex-1 min-w-0 bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500"
             required
           />
           <button
             type="submit"
             disabled={pending || !newTitle.trim()}
-            className="bg-primary text-primary-foreground font-bold px-3 py-2 rounded-xl text-sm hover:bg-primary/90 disabled:opacity-50"
+            className="bg-indigo-600 text-white font-bold px-3 py-2 rounded-xl text-sm hover:bg-indigo-500 disabled:opacity-50 transition-colors"
           >
             {pending ? '…' : t('myGroups.discussion.startButton')}
           </button>
         </form>
       )}
-      {threadErr && <p className="text-rose-600 text-sm">{threadErr}</p>}
+      {threadErr && <p className="text-rose-400 text-sm">{threadErr}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-[240px_minmax(0,1fr)] gap-4 min-h-[480px]">
         {/* Thread list sidebar */}
-        <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm self-start">
+        <div className="card-crisp overflow-hidden self-start">
           {threads.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic p-4">{t('myGroups.discussion.emptyThreads')}</p>
+            <p className="text-sm text-slate-400 italic p-4">{t('myGroups.discussion.emptyThreads')}</p>
           ) : (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-slate-800">
               {threads.map((t) => (
                 <li key={t.id}>
                   <button
                     type="button"
                     onClick={() => setActiveThread(t.id)}
-                    className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors ${
-                      activeThread === t.id ? 'bg-primary/5 border-l-2 border-primary' : ''
+                    className={`w-full text-left px-4 py-3 hover:bg-slate-800/40 transition-colors ${
+                      activeThread === t.id ? 'bg-indigo-950/40 border-l-2 border-indigo-500' : ''
                     }`}
                   >
                     <div className="flex items-start gap-1.5">
-                      {t.is_pinned && <span className="text-amber-500 text-xs shrink-0 mt-0.5">📌</span>}
-                      {t.is_locked && <span className="text-slate-400 text-xs shrink-0 mt-0.5">🔒</span>}
-                      <p className="text-sm font-medium text-foreground leading-snug">{t.title}</p>
+                      {t.is_pinned && <span className="text-amber-400 text-xs shrink-0 mt-0.5">📌</span>}
+                      {t.is_locked && <span className="text-slate-500 text-xs shrink-0 mt-0.5">🔒</span>}
+                      <p className="text-sm font-medium text-white leading-snug">{t.title}</p>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs text-slate-400 mt-0.5">
                       {new Date(t.created_at).toLocaleDateString()}
                     </p>
                   </button>
@@ -164,40 +164,40 @@ export default function GroupDiscussionBoard({
         </div>
 
         {/* Post feed */}
-        <div className="bg-white border border-border rounded-2xl shadow-sm min-w-0 flex flex-col">
+        <div className="card-crisp min-w-0 flex flex-col">
           {!activeThread ? (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm p-8">
+            <div className="flex-1 flex items-center justify-center text-slate-400 text-sm p-8">
               {t('myGroups.discussion.selectThreadPlaceholder')}
             </div>
           ) : (
             <>
-              <div className="border-b border-border px-5 py-3">
-                <p className="font-bold text-foreground">{activeThreadData?.title}</p>
+              <div className="border-b border-slate-800 px-5 py-3">
+                <p className="font-bold text-white">{activeThreadData?.title}</p>
                 {activeThreadData?.is_locked && (
-                  <p className="text-xs text-amber-600 mt-0.5">{t('myGroups.discussion.lockedThreadNotice')}</p>
+                  <p className="text-xs text-amber-400 mt-0.5">{t('myGroups.discussion.lockedThreadNotice')}</p>
                 )}
               </div>
 
               <div className="flex-1 overflow-y-auto p-5 space-y-4 max-h-80">
                 {posts.length === 0 ? (
-                  <p className="text-sm text-muted-foreground italic text-center py-8">{t('myGroups.discussion.emptyPosts')}</p>
+                  <p className="text-sm text-slate-400 italic text-center py-8">{t('myGroups.discussion.emptyPosts')}</p>
                 ) : (
                   posts.map((p) => (
                     <div
                       key={p.post_id}
                       className={`flex gap-3 ${p.is_own ? 'flex-row-reverse' : ''}`}
                     >
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-indigo-900/60 border border-indigo-700/60 flex items-center justify-center text-indigo-300 font-bold text-xs shrink-0">
                         {p.display_name?.[0]?.toUpperCase() ?? '?'}
                       </div>
                       <div className={`max-w-[75%] ${p.is_own ? 'items-end' : 'items-start'} flex flex-col gap-0.5`}>
-                        <p className={`text-xs text-muted-foreground ${p.is_own ? 'text-right' : ''}`}>
+                        <p className={`text-xs text-slate-400 ${p.is_own ? 'text-right' : ''}`}>
                           {p.is_own ? t('myGroups.discussion.ownPostAuthorLabel') : p.display_name} · {new Date(p.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                         <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed break-words ${
                           p.is_own
-                            ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                            : 'bg-slate-100 text-foreground rounded-tl-sm'
+                            ? 'bg-indigo-600 text-white rounded-tr-sm'
+                            : 'bg-slate-800 text-slate-100 rounded-tl-sm border border-slate-700'
                         }`}>
                           {p.body}
                         </div>
@@ -206,7 +206,7 @@ export default function GroupDiscussionBoard({
                             type="button"
                             onClick={() => handleDelete(p.post_id)}
                             disabled={pending}
-                            className="text-xs text-rose-400 hover:text-rose-600 mt-0.5 disabled:opacity-40"
+                            className="text-xs text-rose-400 hover:text-rose-300 mt-0.5 disabled:opacity-40"
                           >
                             {t('common.delete')}
                           </button>
@@ -218,7 +218,7 @@ export default function GroupDiscussionBoard({
               </div>
 
               {!activeThreadData?.is_locked && (
-                <div className="border-t border-border p-4 space-y-1">
+                <div className="border-t border-slate-800 p-4 space-y-1">
                   <DiscussionEditor
                     key={activeThread}
                     placeholder={t('myGroups.discussion.replyPlaceholder')}
@@ -232,7 +232,7 @@ export default function GroupDiscussionBoard({
                       })
                     }}
                   />
-                  {postErr && <p className="text-rose-600 text-xs">{postErr}</p>}
+                  {postErr && <p className="text-rose-400 text-xs">{postErr}</p>}
                 </div>
               )}
             </>

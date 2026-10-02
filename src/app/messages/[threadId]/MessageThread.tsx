@@ -147,7 +147,7 @@ export default function MessageThread({
               {/* Avatar spacer for non-me, same group */}
               {!isMe && (
                 <div className={cn('w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold',
-                  sameGroup ? 'invisible' : 'bg-primary/10 text-primary'
+                  sameGroup ? 'invisible' : 'bg-indigo-600/20 text-indigo-400'
                 )}>
                   {!sameGroup && (msg.profiles?.display_name?.[0]?.toUpperCase() ?? '?')}
                 </div>
@@ -155,7 +155,7 @@ export default function MessageThread({
 
               <div className={cn('max-w-[72%]', isMe && 'items-end flex flex-col')}>
                 {!sameGroup && !isMe && msg.profiles && (
-                  <p className="text-xs text-muted-foreground mb-1 ml-1">
+                  <p className="text-xs text-slate-400 mb-1 ml-1">
                     {msg.profiles.display_name}
                   </p>
                 )}
@@ -163,8 +163,8 @@ export default function MessageThread({
                   <div className={cn(
                     'px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words',
                     isMe
-                      ? 'bg-primary text-primary-foreground rounded-br-sm'
-                      : 'bg-white border border-border text-foreground rounded-bl-sm shadow-sm'
+                      ? 'bg-indigo-600 text-white rounded-br-sm'
+                      : 'bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-sm shadow-sm'
                   )}>
                     {msg.body}
                   </div>
@@ -173,7 +173,7 @@ export default function MessageThread({
                   {isMe && (
                     <button
                       onClick={() => handleDelete(msg.id)}
-                      className="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive text-xs"
+                      className="absolute -left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-rose-400 text-xs"
                       title={t('messages.thread.deleteAriaLabel')}
                     >
                       ✕
@@ -181,7 +181,7 @@ export default function MessageThread({
                   )}
                 </div>
                 <p className={cn(
-                  'text-[10px] text-muted-foreground mt-0.5',
+                  'text-[10px] text-slate-500 mt-0.5',
                   isMe ? 'text-right mr-1' : 'ml-1'
                 )}>
                   {timeLabel(msg.created_at)}
@@ -194,9 +194,9 @@ export default function MessageThread({
       </div>
 
       {/* Composer */}
-      <div className="border-t border-border bg-white px-4 py-3">
+      <div className="border-t border-slate-800 bg-slate-900/90 backdrop-blur-sm px-4 py-3">
         {error && (
-          <p className="text-xs text-destructive bg-destructive/10 rounded-md px-3 py-2 mb-2">
+          <p className="text-xs text-rose-400 bg-rose-950/40 border border-rose-800 rounded-md px-3 py-2 mb-2">
             {error}
           </p>
         )}
@@ -209,7 +209,7 @@ export default function MessageThread({
             placeholder={t('messages.thread.composerPlaceholder')}
             rows={1}
             maxLength={10000}
-            className="flex-1 border border-input rounded-xl px-4 py-2.5 text-sm bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none max-h-40 overflow-y-auto"
+            className="flex-1 border border-slate-700 rounded-xl px-4 py-2.5 text-sm bg-slate-800 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none max-h-40 overflow-y-auto"
             style={{ minHeight: '42px' }}
             onInput={(e) => {
               const el = e.currentTarget
@@ -220,7 +220,7 @@ export default function MessageThread({
           <button
             type="submit"
             disabled={isPending || !body.trim()}
-            className="shrink-0 w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 disabled:opacity-40 transition-all"
+            className="shrink-0 w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-500 disabled:opacity-40 transition-all"
             aria-label="Send message"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
@@ -228,7 +228,7 @@ export default function MessageThread({
             </svg>
           </button>
         </form>
-        <p className="text-[10px] text-muted-foreground mt-1.5 ml-1">{t('messages.thread.composerHint')}</p>
+        <p className="text-[10px] text-slate-500 mt-1.5 ml-1">{t('messages.thread.composerHint')}</p>
       </div>
     </div>
   )

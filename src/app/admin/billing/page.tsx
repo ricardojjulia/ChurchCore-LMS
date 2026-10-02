@@ -29,8 +29,8 @@ export default async function AdminBillingPage() {
       console.error('[admin/billing]', error)
     }
     return (
-      <main className="min-h-screen bg-slate-50 py-10 px-4">
-        <p className="text-destructive">
+      <main className="min-h-screen bg-slate-950 py-10 px-4 text-slate-100">
+        <p className="text-rose-400">
           Failed to load billing information. Please refresh the page or contact support.
         </p>
       </main>
@@ -43,11 +43,11 @@ export default async function AdminBillingPage() {
   const starterPriceId = process.env.STRIPE_PRICE_STARTER ?? ''
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Billing</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Billing</h1>
+          <p className="text-slate-400 mt-1 text-sm">
             Manage your subscription and view plan details for {org.name}.
           </p>
         </div>

@@ -40,18 +40,18 @@ export default async function RenewPage() {
   ].filter((p) => p.priceId)
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-12">
-      <div className="mx-auto max-w-xl rounded-2xl border border-border bg-white p-8">
-        <h1 className="text-2xl font-extrabold text-foreground">
+    <main className="min-h-screen bg-slate-950 px-4 py-12 text-slate-100 flex items-center justify-center">
+      <div className="mx-auto max-w-xl w-full rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-sm">
+        <h1 className="text-2xl font-extrabold text-white">
           {expiredTrial ? t('trialEndedTitle', { name: org?.name ?? '' }) : t('pausedTitle', { name: org?.name ?? '' })}
         </h1>
         {membership.role === 'admin' && !org?.is_synthetic ? (
           <>
-            <p className="mt-3 text-slate-700">{t('adminBody')}</p>
+            <p className="mt-3 text-slate-300">{t('adminBody')}</p>
             <RenewPlans plans={plans} />
           </>
         ) : (
-          <p className="mt-3 text-slate-700">{t('memberBody')}</p>
+          <p className="mt-3 text-slate-300">{t('memberBody')}</p>
         )}
       </div>
     </main>

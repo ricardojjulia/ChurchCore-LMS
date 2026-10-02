@@ -49,28 +49,28 @@ export default async function VerifyCertificatePage({
     : null
 
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+    <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
 
         {/* Org / brand header */}
         <div className="text-center mb-8">
-          <Link href="/" className="text-indigo-600 font-semibold text-lg hover:underline">
+          <Link href="/" className="text-indigo-400 font-bold text-xl hover:text-indigo-300">
             ChurchCore LMS
           </Link>
-          <p className="text-slate-500 text-sm mt-1">Certificate Verification</p>
+          <p className="text-slate-400 text-sm mt-1">Certificate Verification</p>
         </div>
 
         {cert ? (
           /* ── VALID ── */
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
             {/* Green banner */}
-            <div className="bg-emerald-700 px-6 py-5 flex items-center gap-3">
+            <div className="bg-emerald-800 px-6 py-5 flex items-center gap-3 border-b border-emerald-700/50">
               <svg className="w-7 h-7 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
                 <p className="text-white font-bold text-lg leading-tight">Certificate Verified</p>
-                <p className="text-emerald-50 text-sm">This certificate is authentic</p>
+                <p className="text-emerald-100 text-sm">This certificate is authentic</p>
               </div>
             </div>
 
@@ -87,30 +87,30 @@ export default async function VerifyCertificatePage({
           </div>
         ) : (
           /* ── INVALID ── */
-          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-            <div className="bg-red-700 px-6 py-5 flex items-center gap-3">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+            <div className="bg-rose-900 px-6 py-5 flex items-center gap-3 border-b border-rose-800/50">
               <svg className="w-7 h-7 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
               <div>
                 <p className="text-white font-bold text-lg leading-tight">Certificate Not Found</p>
-                <p className="text-red-50 text-sm">No record matches this certificate number</p>
+                <p className="text-rose-100 text-sm">No record matches this certificate number</p>
               </div>
             </div>
             <div className="px-6 py-6">
-              <p className="text-slate-600 text-sm">
+              <p className="text-slate-300 text-sm">
                 The certificate number{' '}
-                <span className="font-mono font-semibold text-slate-800">{certNo}</span>{' '}
+                <span className="font-mono font-semibold text-amber-300">{certNo}</span>{' '}
                 does not match any issued certificate in our system.
               </p>
-              <p className="text-slate-500 text-sm mt-3">
+              <p className="text-slate-400 text-sm mt-3">
                 If you believe this is an error, please contact the organization that issued your certificate.
               </p>
             </div>
           </div>
         )}
 
-        <p className="text-center text-slate-600 text-xs mt-6">
+        <p className="text-center text-slate-500 text-xs mt-6">
           Powered by ChurchCore LMS · Certificate verification
         </p>
       </div>
@@ -128,9 +128,9 @@ function Detail({
   mono?: boolean
 }) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-3">
-      <span className="text-slate-500 text-sm w-36 flex-shrink-0">{label}</span>
-      <span className={`text-slate-800 font-medium text-sm ${mono ? 'font-mono' : ''}`}>
+    <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-3 py-1 border-b border-slate-800 last:border-0">
+      <span className="text-slate-400 text-sm w-36 flex-shrink-0">{label}</span>
+      <span className={`text-white font-medium text-sm ${mono ? 'font-mono text-indigo-300' : ''}`}>
         {value}
       </span>
     </div>

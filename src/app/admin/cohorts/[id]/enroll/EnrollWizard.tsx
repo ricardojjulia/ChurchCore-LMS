@@ -70,20 +70,20 @@ export default function EnrollWizard({ cohortId, memberCount, sections }: Props)
     return (
       <div className="space-y-6">
         {result?.error ? (
-          <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 text-rose-800">
+          <div className="bg-rose-950/50 border border-rose-800 rounded-xl p-5 text-rose-300">
             <p className="font-semibold">Enrollment failed</p>
             <p className="text-sm mt-1">{result.error}</p>
           </div>
         ) : (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-emerald-800">
+          <div className="bg-emerald-950/50 border border-emerald-800 rounded-xl p-5 text-emerald-300">
             <p className="font-semibold">Enrollment complete</p>
-            <p className="text-sm mt-1">Job ID: <span className="font-mono text-xs">{result?.jobId}</span></p>
+            <p className="text-sm mt-1">Job ID: <span className="font-mono text-xs text-white">{result?.jobId}</span></p>
             <p className="text-sm mt-1">Check the cohort page for the full result summary.</p>
           </div>
         )}
         <a
           href={`/admin/cohorts/${cohortId}`}
-          className="inline-block text-sm font-semibold text-primary hover:underline"
+          className="inline-block text-sm font-semibold text-indigo-400 hover:text-indigo-300 hover:underline"
         >
           ← Back to cohort
         </a>
@@ -94,32 +94,32 @@ export default function EnrollWizard({ cohortId, memberCount, sections }: Props)
   if (step === 'preview') {
     return (
       <div className="space-y-6">
-        <div className="bg-sky-50 border border-sky-200 rounded-xl p-5">
-          <p className="text-sm font-bold text-sky-800 mb-3">Dry-run preview — no changes have been made</p>
+        <div className="bg-sky-950/50 border border-sky-800 rounded-xl p-5">
+          <p className="text-sm font-bold text-sky-400 mb-3">Dry-run preview — no changes have been made</p>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-extrabold text-foreground">{preview?.enrolled ?? '—'}</p>
-              <p className="text-xs text-emerald-700 font-semibold mt-0.5">Will enroll</p>
+              <p className="text-2xl font-extrabold text-white">{preview?.enrolled ?? '—'}</p>
+              <p className="text-xs text-emerald-400 font-semibold mt-0.5">Will enroll</p>
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-foreground">{preview?.skipped ?? '—'}</p>
-              <p className="text-xs text-amber-600 font-semibold mt-0.5">Already enrolled</p>
+              <p className="text-2xl font-extrabold text-white">{preview?.skipped ?? '—'}</p>
+              <p className="text-xs text-amber-400 font-semibold mt-0.5">Already enrolled</p>
             </div>
             <div>
-              <p className="text-2xl font-extrabold text-foreground">{preview?.failed ?? '—'}</p>
-              <p className="text-xs text-rose-600 font-semibold mt-0.5">Would fail</p>
+              <p className="text-2xl font-extrabold text-white">{preview?.failed ?? '—'}</p>
+              <p className="text-xs text-rose-400 font-semibold mt-0.5">Would fail</p>
             </div>
           </div>
         </div>
 
-        <div className="border border-border rounded-xl p-4 text-sm text-muted-foreground">
+        <div className="border border-slate-800 rounded-xl p-4 text-sm text-slate-400">
           <p>
-            <strong className="text-foreground">Section:</strong>{' '}
+            <strong className="text-white">Section:</strong>{' '}
             {selectedSection?.course_blueprints?.title ?? '—'}{' '}
             <span className="font-mono text-xs">({selectedSection?.section_code})</span>
           </p>
           <p className="mt-1">
-            <strong className="text-foreground">Delivery:</strong>{' '}
+            <strong className="text-white">Delivery:</strong>{' '}
             {selectedSection?.delivery_format}
           </p>
         </div>
@@ -128,14 +128,14 @@ export default function EnrollWizard({ cohortId, memberCount, sections }: Props)
           <button
             onClick={handleConfirm}
             disabled={pending}
-            className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50"
           >
             {pending ? 'Enrolling…' : `Confirm — Enroll ${preview?.enrolled ?? memberCount} Students`}
           </button>
           <button
             onClick={() => setStep('select')}
             disabled={pending}
-            className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-border hover:bg-slate-50 transition-colors text-muted-foreground"
+            className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-slate-700 hover:bg-slate-800 transition-colors text-slate-300"
           >
             Back
           </button>
@@ -148,14 +148,14 @@ export default function EnrollWizard({ cohortId, memberCount, sections }: Props)
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-semibold text-foreground mb-2" htmlFor="section_id">
-          Target Section <span className="text-rose-700">*</span>
+        <label className="block text-sm font-semibold text-slate-200 mb-2" htmlFor="section_id">
+          Target Section <span className="text-rose-400">*</span>
         </label>
         <select
           id="section_id"
           value={sectionId}
           onChange={(e) => setSectionId(e.target.value)}
-          className="input w-full"
+          className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
           <option value="">— Select a section —</option>
           {sections.map((s) => {
@@ -170,12 +170,12 @@ export default function EnrollWizard({ cohortId, memberCount, sections }: Props)
       </div>
 
       {sectionId && (
-        <div className="bg-slate-50 border border-border rounded-xl p-4 text-sm text-muted-foreground">
+        <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-sm text-slate-400">
           <p>
             This will attempt to enroll{' '}
-            <strong className="text-foreground">{memberCount} active member{memberCount !== 1 ? 's' : ''}</strong>{' '}
-            into <strong className="text-foreground">{selectedSection?.course_blueprints?.title}</strong>{' '}
-            section <span className="font-mono font-semibold">{selectedSection?.section_code}</span>.
+            <strong className="text-white">{memberCount} active member{memberCount !== 1 ? 's' : ''}</strong>{' '}
+            into <strong className="text-white">{selectedSection?.course_blueprints?.title}</strong>{' '}
+            section <span className="font-mono font-semibold text-amber-300">{selectedSection?.section_code}</span>.
           </p>
           <p className="mt-1">A dry-run preview runs first — no changes are made until you confirm.</p>
         </div>
@@ -184,7 +184,7 @@ export default function EnrollWizard({ cohortId, memberCount, sections }: Props)
       <button
         onClick={handlePreview}
         disabled={!sectionId || pending}
-        className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+        className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50"
       >
         {pending ? 'Running preview…' : 'Preview Enrollment'}
       </button>

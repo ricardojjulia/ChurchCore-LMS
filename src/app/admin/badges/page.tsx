@@ -32,11 +32,11 @@ export default async function BadgesAdminPage() {
     .order('title', { ascending: true })
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-extrabold text-foreground">Badges</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">
+          <h1 className="text-2xl font-extrabold text-white">Badges</h1>
+          <p className="text-slate-400 text-sm mt-0.5">
             Create badges and configure automatic award triggers.
           </p>
         </div>

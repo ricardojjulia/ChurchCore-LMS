@@ -58,11 +58,11 @@ export default async function AdminReportsPage({
       totalEnrolled > 0 ? Math.round((totalCompleted / totalEnrolled) * 100) : 0
 
     return (
-      <main className="mx-auto max-w-7xl">
+      <main className="mx-auto max-w-7xl text-slate-100">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-950">Admin Reporting Overview</h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <h1 className="text-2xl font-display font-bold text-white">Admin Reporting Overview</h1>
+            <p className="mt-1 text-sm text-slate-400">
               Data as of{' '}
               {refreshedAt
                 ? new Date(refreshedAt).toLocaleString(undefined, {
@@ -76,14 +76,14 @@ export default async function AdminReportsPage({
 
           {completionRates.length > 0 && (
             <form className="no-print flex items-center gap-2" action="/admin/reports">
-              <label htmlFor="course" className="text-sm font-medium text-slate-700">
+              <label htmlFor="course" className="text-sm font-medium text-slate-300">
                 Course
               </label>
               <select
                 id="course"
                 name="course"
                 defaultValue={selectedCourse?.course_id}
-                className="border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950"
+                className="border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {completionRates.map((c) => (
                   <option key={c.course_id} value={c.course_id}>
@@ -93,7 +93,7 @@ export default async function AdminReportsPage({
               </select>
               <button
                 type="submit"
-                className="bg-slate-950 px-3 py-2 text-sm font-semibold text-white"
+                className="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white rounded-lg transition-colors"
               >
                 Apply
               </button>
@@ -102,33 +102,33 @@ export default async function AdminReportsPage({
         </div>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          <div className="border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-600">Courses</p>
-            <p className="mt-1 text-3xl font-bold text-slate-950">{completionRates.length}</p>
+          <div className="card-crisp p-5">
+            <p className="text-sm text-slate-400">Courses</p>
+            <p className="mt-1 text-3xl font-bold text-white">{completionRates.length}</p>
           </div>
-          <div className="border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-600">Total Enrolled</p>
-            <p className="mt-1 text-3xl font-bold text-slate-950">{totalEnrolled}</p>
+          <div className="card-crisp p-5">
+            <p className="text-sm text-slate-400">Total Enrolled</p>
+            <p className="mt-1 text-3xl font-bold text-white">{totalEnrolled}</p>
           </div>
-          <div className="border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-600">Org-wide Completion</p>
-            <p className="mt-1 text-3xl font-bold text-slate-950">{overallRate}%</p>
+          <div className="card-crisp p-5">
+            <p className="text-sm text-slate-400">Org-wide Completion</p>
+            <p className="mt-1 text-3xl font-bold text-amber-300">{overallRate}%</p>
           </div>
         </div>
 
         {selectedCourse && (
           <section
-            className="mt-8 border border-slate-200 bg-white p-5 shadow-sm"
+            className="mt-8 card-crisp p-5"
             aria-labelledby="selected-completion"
           >
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h2 id="selected-completion" className="text-lg font-semibold text-slate-950">
+                <h2 id="selected-completion" className="text-lg font-display font-semibold text-white">
                   Selected Course Completion
                 </h2>
-                <p className="text-sm text-slate-600">{selectedCourse.course_title}</p>
+                <p className="text-sm text-slate-400">{selectedCourse.course_title}</p>
               </div>
-              <p className="text-2xl font-bold text-slate-950">{completionRate}%</p>
+              <p className="text-2xl font-bold text-amber-300">{completionRate}%</p>
             </div>
             <TremorProgressBar value={completionRate} className="mt-4" label="Course completion rate" />
           </section>
@@ -136,19 +136,19 @@ export default async function AdminReportsPage({
 
         <div className="mt-8 grid gap-8 xl:grid-cols-2">
           <section aria-labelledby="course-completion-chart">
-            <h2 id="course-completion-chart" className="text-lg font-semibold text-slate-950">
+            <h2 id="course-completion-chart" className="text-lg font-display font-semibold text-white">
               Course Completion — All Courses
             </h2>
-            <div className="mt-3 border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mt-3 card-crisp p-4">
               <CourseCompletionChart data={completionRates} />
             </div>
           </section>
 
           <section aria-labelledby="grade-distribution-chart">
-            <h2 id="grade-distribution-chart" className="text-lg font-semibold text-slate-950">
+            <h2 id="grade-distribution-chart" className="text-lg font-display font-semibold text-white">
               Grade Distribution
             </h2>
-            <div className="mt-3 border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mt-3 card-crisp p-4">
               <GradeDistributionChart data={gradebook} />
             </div>
           </section>
@@ -156,7 +156,7 @@ export default async function AdminReportsPage({
 
         {gradebook.length > 0 && (
           <section className="mt-8" aria-labelledby="gradebook-table">
-            <h2 id="gradebook-table" className="text-lg font-semibold text-slate-950">
+            <h2 id="gradebook-table" className="text-lg font-display font-semibold text-white">
               Gradebook — {selectedCourse?.course_title}
             </h2>
             <div className="mt-3">
@@ -169,11 +169,11 @@ export default async function AdminReportsPage({
         )}
 
         {completionRates.length === 0 && (
-          <div className="mt-12 border border-slate-200 bg-white p-10 text-center shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-950">No report data yet</h2>
-            <p className="mt-2 text-sm text-slate-600">
+          <div className="mt-12 card-crisp p-10 text-center">
+            <h2 className="text-lg font-display font-semibold text-white">No report data yet</h2>
+            <p className="mt-2 text-sm text-slate-400">
               Enroll students in courses and wait for the hourly view refresh, or run{' '}
-              <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+              <code className="rounded bg-slate-800 px-1 py-0.5 font-mono text-xs text-amber-300">
                 SELECT refresh_report_materialized_views()
               </code>{' '}
               in the Supabase SQL editor to populate reports immediately.

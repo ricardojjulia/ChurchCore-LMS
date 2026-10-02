@@ -28,8 +28,8 @@ export default async function JoinPage({ params }: Props) {
     | undefined
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <main className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-12 text-slate-100">
+      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-xl p-8">
         {branding?.logo_url && (
           <img
             src={branding.logo_url}
@@ -37,8 +37,8 @@ export default async function JoinPage({ params }: Props) {
             className="h-12 mb-6 mx-auto object-contain"
           />
         )}
-        <h1 className="text-2xl font-bold text-center mb-2">{t('join.page.headingTemplate', { name: org.name })}</h1>
-        <p className="text-muted-foreground text-center mb-6 text-sm">
+        <h1 className="text-2xl font-extrabold text-white text-center mb-2">{t('join.page.headingTemplate', { name: org.name })}</h1>
+        <p className="text-slate-400 text-center mb-6 text-sm">
           {t('join.page.subtitle')}
         </p>
         <JoinForm

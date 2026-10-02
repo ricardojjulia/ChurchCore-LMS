@@ -107,13 +107,13 @@ export default async function MessagesPage() {
   const unreadCount = threads.filter((thread) => thread.isUnread).length
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t('messages.list.heading')}</h1>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight font-display">{t('messages.list.heading')}</h1>
             {unreadCount > 0 && (
-              <p className="text-sm text-muted-foreground mt-0.5">
+              <p className="text-sm text-slate-400 mt-0.5">
                 {t('messages.list.unreadSubtitleTemplate', { n: unreadCount })}
               </p>
             )}
@@ -122,38 +122,38 @@ export default async function MessagesPage() {
         </div>
 
         {threads.length === 0 ? (
-          <div className="bg-white border border-border rounded-2xl p-12 text-center">
-            <p className="text-muted-foreground italic mb-4">{t('messages.list.emptyState')}</p>
+          <div className="card-crisp p-12 text-center">
+            <p className="text-slate-400 italic mb-4">{t('messages.list.emptyState')}</p>
             <NewMessageButton />
           </div>
         ) : (
-          <div className="bg-white border border-border rounded-2xl overflow-hidden divide-y divide-border">
+          <div className="card-crisp overflow-hidden divide-y divide-slate-800 p-0">
             {threads.map((thread) => (
               <Link
                 key={thread.threadId}
                 href={`/messages/${thread.threadId}`}
-                className="flex items-start gap-4 px-5 py-4 hover:bg-slate-50 transition-colors group"
+                className="flex items-start gap-4 px-5 py-4 hover:bg-slate-800/40 transition-colors group"
               >
                 {/* Avatar */}
-                <div className="shrink-0 w-10 h-10 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center">
+                <div className="shrink-0 w-10 h-10 rounded-full bg-indigo-950/80 border border-indigo-800 text-amber-300 font-bold text-sm flex items-center justify-center">
                   {thread.initial}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className={`text-sm truncate ${thread.isUnread ? 'font-bold text-foreground' : 'font-medium text-foreground'}`}>
+                    <p className={`text-sm truncate ${thread.isUnread ? 'font-bold text-white' : 'font-medium text-slate-200'}`}>
                       {thread.displayName}
                     </p>
-                    <span className="text-xs text-muted-foreground shrink-0">
+                    <span className="text-xs text-slate-400 shrink-0">
                       {timeAgo(thread.lastMessageAt)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     {thread.isUnread && (
-                      <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                      <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
                     )}
-                    <p className={`text-xs truncate ${thread.isUnread ? 'text-foreground' : 'text-muted-foreground'}`}>
+                    <p className={`text-xs truncate ${thread.isUnread ? 'text-white' : 'text-slate-400'}`}>
                       {thread.preview ?? t('messages.list.threadPreviewEmpty')}
                     </p>
                   </div>

@@ -63,8 +63,8 @@ export default async function AdminUsersPage({
       console.error('[admin/users]', error)
     }
     return (
-      <main className="min-h-screen bg-slate-50 py-10 px-4">
-        <p className="text-destructive">
+      <main className="min-h-screen bg-slate-950 py-10 px-4 text-slate-100">
+        <p className="text-rose-400">
           Failed to load users. Please refresh the page or contact support.
         </p>
       </main>
@@ -105,20 +105,20 @@ export default async function AdminUsersPage({
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-extrabold text-foreground tracking-tight">User Management</h1>
-            <p className="text-muted-foreground mt-1 text-sm">
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">User Management</h1>
+            <p className="text-slate-400 mt-1 text-sm">
               Click any user to expand and edit their role or status.
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Link
               href="/admin/users/import"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-3 border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
+              className="inline-flex items-center justify-center rounded-xl text-sm font-medium h-9 px-3 border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800 transition-colors"
             >
               Import CSV
             </Link>
@@ -129,13 +129,13 @@ export default async function AdminUsersPage({
         {/* Stats bar */}
         <div className="flex flex-wrap gap-3 mb-6">
           {[
-            { label: 'Total',     value: counts.total,     className: 'bg-slate-100 text-slate-700 border-slate-200' },
-            { label: 'Admins',    value: counts.admin,     className: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
-            { label: 'Managers',  value: counts.manager,   className: 'bg-purple-100 text-purple-800 border-purple-200' },
-            { label: 'Teachers',  value: counts.teacher,   className: 'bg-sky-100 text-sky-800 border-sky-200' },
-            { label: 'Students',  value: counts.student,   className: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+            { label: 'Total',     value: counts.total,     className: 'bg-slate-800 text-slate-300 border-slate-700' },
+            { label: 'Admins',    value: counts.admin,     className: 'bg-indigo-950/50 text-indigo-400 border-indigo-800' },
+            { label: 'Managers',  value: counts.manager,   className: 'bg-purple-950/50 text-purple-400 border-purple-800' },
+            { label: 'Teachers',  value: counts.teacher,   className: 'bg-sky-950/50 text-sky-400 border-sky-800' },
+            { label: 'Students',  value: counts.student,   className: 'bg-emerald-950/50 text-emerald-400 border-emerald-800' },
             ...(counts.suspended > 0
-              ? [{ label: 'Suspended', value: counts.suspended, className: 'bg-rose-100 text-rose-800 border-rose-200' }]
+              ? [{ label: 'Suspended', value: counts.suspended, className: 'bg-rose-950/50 text-rose-400 border-rose-800' }]
               : []),
           ].map(({ label, value, className }) => (
             <div key={label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold ${className}`}>
@@ -149,7 +149,7 @@ export default async function AdminUsersPage({
 
         {/* Result info */}
         {(q || roleFilter) && (
-          <p className="text-xs text-muted-foreground mb-3">
+          <p className="text-xs text-slate-400 mb-3">
             {total} result{total !== 1 ? 's' : ''}
             {q && <> matching <strong>&ldquo;{q}&rdquo;</strong></>}
             {roleFilter && <> · role: <strong>{roleFilter}</strong></>}
@@ -158,9 +158,9 @@ export default async function AdminUsersPage({
 
         {/* User list */}
         {sorted.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl p-10 text-center">
-            <p className="text-muted-foreground italic">No users match your filters.</p>
-            <Link href="/admin/users" className="text-xs text-primary mt-2 inline-block hover:underline">
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center">
+            <p className="text-slate-400 italic">No users match your filters.</p>
+            <Link href="/admin/users" className="text-xs text-indigo-400 mt-2 inline-block hover:underline">
               Clear filters
             </Link>
           </div>
@@ -177,14 +177,14 @@ export default async function AdminUsersPage({
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-6 text-sm">
-            <span className="text-muted-foreground">
+            <span className="text-slate-400">
               Page {page} of {totalPages} · {total} users
             </span>
             <div className="flex gap-2">
               {page > 1 && (
                 <Link
                   href={buildHref({ page: page - 1 })}
-                  className="px-4 py-2 border border-border rounded-lg bg-white hover:bg-slate-50 text-foreground font-medium transition-colors"
+                  className="px-4 py-2 border border-slate-700 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 font-medium transition-colors"
                 >
                   ← Previous
                 </Link>
@@ -192,7 +192,7 @@ export default async function AdminUsersPage({
               {page < totalPages && (
                 <Link
                   href={buildHref({ page: page + 1 })}
-                  className="px-4 py-2 border border-border rounded-lg bg-white hover:bg-slate-50 text-foreground font-medium transition-colors"
+                  className="px-4 py-2 border border-slate-700 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 font-medium transition-colors"
                 >
                   Next →
                 </Link>

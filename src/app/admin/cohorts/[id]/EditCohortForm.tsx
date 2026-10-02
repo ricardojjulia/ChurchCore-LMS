@@ -29,42 +29,42 @@ export default function EditCohortForm({ cohortId, initial, tracks }: Props) {
   }
 
   return (
-    <details className="bg-white border border-border rounded-2xl p-6 shadow-sm">
-      <summary className="cursor-pointer text-sm font-bold text-foreground">Edit cohort</summary>
+    <details className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
+      <summary className="cursor-pointer text-sm font-bold text-white">Edit cohort</summary>
       <form action={submit} className="mt-4 grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label htmlFor="cohort_name" className="block text-sm font-semibold text-slate-700 mb-1">Name</label>
+          <label htmlFor="cohort_name" className="block text-sm font-semibold text-slate-300 mb-1">Name</label>
           <input id="cohort_name" name="cohort_name" defaultValue={initial.cohort_name} required
-            className="w-full border border-input rounded-md px-3 py-2 text-sm" />
+            className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
         <div className="sm:col-span-2">
-          <label htmlFor="cohort_description" className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
+          <label htmlFor="cohort_description" className="block text-sm font-semibold text-slate-300 mb-1">Description</label>
           <textarea id="cohort_description" name="description" defaultValue={initial.description ?? ''} rows={3}
-            className="w-full border border-input rounded-md px-3 py-2 text-sm" />
+            className="w-full bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
         <div>
-          <label htmlFor="cohort_track" className="block text-sm font-semibold text-slate-700 mb-1">Program track</label>
+          <label htmlFor="cohort_track" className="block text-sm font-semibold text-slate-300 mb-1">Program track</label>
           <select id="cohort_track" name="program_track_id" defaultValue={initial.program_track_id ?? ''}
-            className="w-full border border-input rounded-md px-3 py-2 text-sm">
+            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <option value="">None</option>
             {tracks.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </div>
         <div>
-          <label htmlFor="cohort_active" className="block text-sm font-semibold text-slate-700 mb-1">Status</label>
+          <label htmlFor="cohort_active" className="block text-sm font-semibold text-slate-300 mb-1">Status</label>
           <select id="cohort_active" name="is_active" defaultValue={initial.is_active ? 'true' : 'false'}
-            className="w-full border border-input rounded-md px-3 py-2 text-sm">
+            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <option value="true">Active</option>
             <option value="false">Inactive</option>
           </select>
         </div>
         <div className="sm:col-span-2 flex items-center gap-3">
           <button type="submit" disabled={pending}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+            className="rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition-colors disabled:opacity-60">
             {pending ? 'Saving…' : 'Save changes'}
           </button>
-          {saved && <p role="status" className="text-sm text-emerald-800">Saved.</p>}
-          {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
+          {saved && <p role="status" className="text-sm text-emerald-400">Saved.</p>}
+          {error && <p role="alert" className="text-sm text-rose-400">{error}</p>}
         </div>
       </form>
     </details>

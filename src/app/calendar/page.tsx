@@ -34,17 +34,17 @@ export default async function CalendarPage() {
     .order('starts_at', { ascending: true })
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t('calendar.list.heading')}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{t('calendar.list.subtitle')}</p>
+            <h1 className="text-2xl font-extrabold text-white tracking-tight font-display">{t('calendar.list.heading')}</h1>
+            <p className="text-sm text-slate-400 mt-0.5">{t('calendar.list.subtitle')}</p>
           </div>
           {isStaff && (
             <Link
               href="/calendar/new"
-              className="inline-flex items-center px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-500 transition-colors"
             >
               {t('calendar.list.addEventButton')}
             </Link>

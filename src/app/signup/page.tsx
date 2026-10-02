@@ -8,12 +8,12 @@ export const metadata: Metadata = {
 
 export default function SignupPage() {
   return (
-    <main className="min-h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950">
+    <main className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-slate-100">
       {/* Left side: Hero value prop */}
-      <div className="md:w-5/12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-8 md:p-12 flex flex-col justify-between relative overflow-hidden">
+      <div className="md:w-5/12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-8 md:p-12 flex flex-col justify-between relative overflow-hidden border-r border-slate-800">
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-8">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center font-bold text-lg text-white shadow-lg">
+            <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-lg text-white shadow-lg">
               ✝
             </div>
             <span className="text-xl font-bold tracking-tight">ChurchCore LMS</span>
@@ -71,17 +71,17 @@ export default function SignupPage() {
 
         {/* Decorative background glow */}
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
       </div>
 
       {/* Right side: Signup Form Card */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12">
-        <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 p-8 md:p-10">
+        <div className="w-full max-w-lg bg-slate-900 rounded-3xl shadow-xl border border-slate-800 p-8 md:p-10">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="text-2xl font-extrabold tracking-tight text-white">
               Create Your Learning Workspace
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               Start your 14-day free trial today. Cancel or change plans anytime.
             </p>
           </div>

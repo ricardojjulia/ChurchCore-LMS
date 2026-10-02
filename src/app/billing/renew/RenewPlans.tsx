@@ -8,7 +8,7 @@ export default function RenewPlans({ plans }: { plans: Array<{ id: string; price
   const [pending, setPending] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  if (plans.length === 0) return <p className="mt-6 text-sm text-slate-700">{t('noPlans')}</p>
+  if (plans.length === 0) return <p className="mt-6 text-sm text-slate-400">{t('noPlans')}</p>
 
   async function choose(priceId: string, id: string) {
     setError(null)
@@ -37,13 +37,13 @@ export default function RenewPlans({ plans }: { plans: Array<{ id: string; price
           type="button"
           disabled={pending !== null}
           onClick={() => choose(plan.priceId, plan.id)}
-          className="flex w-full items-center justify-between rounded-xl border border-border px-5 py-4 text-left hover:border-indigo-400 disabled:opacity-60"
+          className="flex w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-800/60 px-5 py-4 text-left hover:border-indigo-500 hover:bg-slate-800 transition-colors disabled:opacity-60"
         >
-          <span className="font-semibold text-foreground">{t(`plan.${plan.id}`)}</span>
-          <span className="text-sm font-semibold text-indigo-700">{pending === plan.id ? t('redirecting') : t('choose')}</span>
+          <span className="font-semibold text-white">{t(`plan.${plan.id}`)}</span>
+          <span className="text-sm font-semibold text-indigo-400">{pending === plan.id ? t('redirecting') : t('choose')}</span>
         </button>
       ))}
-      {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
+      {error && <p role="alert" className="text-sm text-rose-400">{error}</p>}
     </div>
   )
 }

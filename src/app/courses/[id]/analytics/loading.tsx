@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function CourseAnalyticsLoading() {
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Back link + page title */}
         <div className="mb-6">
@@ -13,7 +13,7 @@ export default function CourseAnalyticsLoading() {
         {/* 5 summary stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="bg-white border border-border rounded-xl px-4 py-3">
+            <div key={i} className="card-crisp px-4 py-3">
               <Skeleton className="h-7 w-12 mb-1.5" />
               <Skeleton className="h-3 w-16" />
             </div>
@@ -27,9 +27,9 @@ export default function CourseAnalyticsLoading() {
         </div>
 
         {/* Student results table */}
-        <div className="bg-white border border-border rounded-xl overflow-hidden">
+        <div className="card-crisp overflow-hidden">
           {/* Table header */}
-          <div className="border-b border-border bg-muted/20 px-5 py-3 flex items-center gap-4">
+          <div className="border-b border-slate-800 bg-slate-900/80 px-5 py-3 flex items-center gap-4">
             <Skeleton className="h-3 w-16" />
             <Skeleton className="h-3 w-14" />
             <Skeleton className="h-3 w-16" />
@@ -39,7 +39,7 @@ export default function CourseAnalyticsLoading() {
           </div>
           {/* Table rows */}
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="px-5 py-3 border-b border-border flex items-center gap-4">
+            <div key={i} className="px-5 py-3 border-b border-slate-800 flex items-center gap-4">
               {/* Student column */}
               <div className="flex-1 min-w-0">
                 <Skeleton className="h-4 w-36 mb-1" />

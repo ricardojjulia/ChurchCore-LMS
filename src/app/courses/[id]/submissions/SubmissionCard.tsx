@@ -29,10 +29,10 @@ function timeAgo(iso: string | null): string {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  submitted: 'bg-amber-100 text-amber-700 border-amber-200',
-  graded:    'bg-emerald-100 text-emerald-700 border-emerald-200',
-  returned:  'bg-sky-100 text-sky-700 border-sky-200',
-  draft:     'bg-slate-100 text-slate-600 border-slate-200',
+  submitted: 'bg-amber-950/60 text-amber-300 border-amber-800/60',
+  graded:    'bg-emerald-950/60 text-emerald-300 border-emerald-800/60',
+  returned:  'bg-sky-950/60 text-sky-300 border-sky-800/60',
+  draft:     'bg-slate-800 text-slate-400 border-slate-700',
 }
 
 export default function SubmissionCard({ row }: { row: SubmissionRow }) {
@@ -40,34 +40,34 @@ export default function SubmissionCard({ row }: { row: SubmissionRow }) {
   const [grading,   setGrading]   = useState(false)
   const [localDone, setLocalDone] = useState(false)
 
-  const statusClass = STATUS_STYLE[row.status] ?? 'bg-slate-100 text-slate-600 border-slate-200'
+  const statusClass = STATUS_STYLE[row.status] ?? 'bg-slate-800 text-slate-400 border-slate-700'
   const needsGrade  = row.status === 'submitted' && !localDone
-  const gradeColor  = row.grade_pct === null ? 'text-muted-foreground'
-    : row.grade_pct >= 90 ? 'text-emerald-700'
-    : row.grade_pct >= 70 ? 'text-amber-700'
-    : 'text-rose-700'
+  const gradeColor  = row.grade_pct === null ? 'text-slate-400'
+    : row.grade_pct >= 90 ? 'text-emerald-400'
+    : row.grade_pct >= 70 ? 'text-amber-400'
+    : 'text-rose-400'
 
   return (
-    <div className={`border rounded-xl overflow-hidden ${needsGrade ? 'border-amber-200' : 'border-border'}`}>
+    <div className={`card-crisp overflow-hidden ${needsGrade ? 'border-amber-500/40' : 'border-slate-800'}`}>
       {/* Header row */}
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-slate-50 transition-colors"
+        className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-slate-800/40 transition-colors"
         aria-expanded={expanded}
         aria-label={`${row.student_name ?? 'Student'} — ${row.block_title}`}
       >
         {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-          <span className="text-sm font-bold text-indigo-700">
+        <div className="w-9 h-9 rounded-full bg-indigo-900/60 border border-indigo-700/60 flex items-center justify-center shrink-0">
+          <span className="text-sm font-bold text-indigo-300">
             {(row.student_name ?? '?')[0]?.toUpperCase()}
           </span>
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground">
+          <p className="text-sm font-semibold text-white">
             {row.student_name ?? 'Unknown student'}
           </p>
-          <p className="text-xs text-muted-foreground truncate">
+          <p className="text-xs text-slate-400 truncate">
             {row.block_title} · submitted <time dateTime={row.submitted_at ?? undefined} suppressHydrationWarning>{timeAgo(row.submitted_at)}</time>
           </p>
         </div>
@@ -87,28 +87,28 @@ export default function SubmissionCard({ row }: { row: SubmissionRow }) {
 
       {/* Expanded content */}
       {expanded && (
-        <div className="px-5 pb-5 border-t border-border bg-slate-50/50">
+        <div className="px-5 pb-5 border-t border-slate-800 bg-slate-900/40">
           {row.student_email && (
-            <p className="text-xs text-muted-foreground mt-3 mb-2">{row.student_email}</p>
+            <p className="text-xs text-slate-400 mt-3 mb-2 font-mono">{row.student_email}</p>
           )}
 
           {/* Submission content */}
           {!!row.content?.text && (
-            <div className="bg-white border border-border rounded-lg p-4 mt-3">
-              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
+            <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 mt-3">
+              <p className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">
                 Submission
               </p>
-              <p className="text-sm text-foreground whitespace-pre-wrap">{row.content.text as string}</p>
+              <p className="text-sm text-slate-100 whitespace-pre-wrap">{row.content.text as string}</p>
             </div>
           )}
 
           {/* Quiz answers */}
           {!!row.content?.answers && (
-            <div className="bg-white border border-border rounded-lg p-4 mt-3">
-              <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wide">
+            <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 mt-3">
+              <p className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wide">
                 Quiz — auto-graded
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-300">
                 Score: {row.score} / {row.max_score} ({row.grade_pct}%)
               </p>
             </div>
@@ -116,9 +116,9 @@ export default function SubmissionCard({ row }: { row: SubmissionRow }) {
 
           {/* Existing feedback */}
           {row.feedback && !grading && (
-            <div className="mt-3 bg-white border border-border rounded-lg p-4">
-              <p className="text-xs font-semibold text-muted-foreground mb-1 uppercase tracking-wide">Feedback</p>
-              <p className="text-sm text-foreground italic">{row.feedback}</p>
+            <div className="mt-3 bg-slate-900 border border-slate-800 rounded-lg p-4">
+              <p className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wide">Feedback</p>
+              <p className="text-sm text-slate-200 italic">{row.feedback}</p>
             </div>
           )}
 
@@ -136,7 +136,7 @@ export default function SubmissionCard({ row }: { row: SubmissionRow }) {
               {needsGrade && (
                 <button
                   onClick={() => setGrading(true)}
-                  className="text-sm font-semibold text-white bg-primary px-4 py-1.5 rounded-lg hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="text-sm font-semibold text-white bg-indigo-600 px-4 py-1.5 rounded-lg hover:bg-indigo-500 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   Grade →
                 </button>
@@ -144,7 +144,7 @@ export default function SubmissionCard({ row }: { row: SubmissionRow }) {
               {row.status === 'graded' && !localDone && (
                 <button
                   onClick={() => setGrading(true)}
-                  className="text-sm font-semibold text-muted-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-white transition-colors"
+                  className="text-sm font-semibold text-slate-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
                 >
                   Update grade
                 </button>

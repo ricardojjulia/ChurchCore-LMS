@@ -45,16 +45,16 @@ export default function SectionForm({
   const needsWindow = format !== 'self_paced'
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-rose-800 text-sm">{error}</div>}
+    <form onSubmit={handleSubmit} className="space-y-6 text-slate-100">
+      {error && <div className="bg-rose-950/40 border border-rose-800 rounded-xl p-3 text-rose-300 text-sm">{error}</div>}
 
       {/* Blueprint + Term */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="blueprint_id">
-            Blueprint <span className="text-rose-700">*</span>
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="blueprint_id">
+            Blueprint <span className="text-rose-400">*</span>
           </label>
-          <select id="blueprint_id" name="blueprint_id" required defaultValue={initialBlueprintId} className="input w-full">
+          <select id="blueprint_id" name="blueprint_id" required defaultValue={initialBlueprintId} className="input w-full bg-slate-800 border-slate-700 text-white">
             <option value="">— Select blueprint —</option>
             {blueprints.map((b) => (
               <option key={b.id} value={b.id}>{b.title} ({b.course_code})</option>
@@ -62,10 +62,10 @@ export default function SectionForm({
           </select>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="term_id">
-            Term <span className="text-rose-700">*</span>
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="term_id">
+            Term <span className="text-rose-400">*</span>
           </label>
-          <select id="term_id" name="term_id" required className="input w-full">
+          <select id="term_id" name="term_id" required className="input w-full bg-slate-800 border-slate-700 text-white">
             <option value="">— Select term —</option>
             {terms.map((t) => (
               <option key={t.id} value={t.id}>{t.term_name} ({t.term_code})</option>
@@ -77,20 +77,20 @@ export default function SectionForm({
       {/* Section code + format */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="section_code">
-            Section Code <span className="text-rose-700">*</span>
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="section_code">
+            Section Code <span className="text-rose-400">*</span>
           </label>
           <input id="section_code" name="section_code" required
-            placeholder="e.g. 001 or A" className="input w-full font-mono uppercase" />
-          <p className="text-xs text-muted-foreground mt-1">Must be unique within this blueprint + term.</p>
+            placeholder="e.g. 001 or A" className="input w-full font-mono uppercase bg-slate-800 border-slate-700 text-white placeholder-slate-500" />
+          <p className="text-xs text-slate-400 mt-1">Must be unique within this blueprint + term.</p>
         </div>
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="delivery_format">
-            Delivery Format <span className="text-rose-700">*</span>
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="delivery_format">
+            Delivery Format <span className="text-rose-400">*</span>
           </label>
           <select id="delivery_format" name="delivery_format" required
             value={format} onChange={(e) => setFormat(e.target.value)}
-            className="input w-full">
+            className="input w-full bg-slate-800 border-slate-700 text-white">
             {FORMATS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
           </select>
         </div>
@@ -98,10 +98,10 @@ export default function SectionForm({
 
       {/* Enrollment type */}
       <div>
-        <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="enrollment_type">
-          Enrollment Type <span className="text-rose-700">*</span>
+        <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="enrollment_type">
+          Enrollment Type <span className="text-rose-400">*</span>
         </label>
-        <select id="enrollment_type" name="enrollment_type" defaultValue="open" className="input w-full">
+        <select id="enrollment_type" name="enrollment_type" defaultValue="open" className="input w-full bg-slate-800 border-slate-700 text-white">
           {ENROLLMENT_TYPES.map(({ value, label }) => (
             <option key={value} value={value}>{label}</option>
           ))}
@@ -110,69 +110,69 @@ export default function SectionForm({
 
       {/* Enrollment limits */}
       <div>
-        <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="max_enrollment">
+        <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="max_enrollment">
           Max Enrollment
         </label>
         <input id="max_enrollment" name="max_enrollment" type="number" min="1"
-          placeholder="Unlimited" className="input w-48" />
+          placeholder="Unlimited" className="input w-48 bg-slate-800 border-slate-700 text-white placeholder-slate-500" />
       </div>
 
       {/* Enrollment open/close */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="enrollment_open_date">
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="enrollment_open_date">
             Enrollment Opens
           </label>
           <input id="enrollment_open_date" name="enrollment_open_date"
-            type="datetime-local" className="input w-full" />
+            type="datetime-local" className="input w-full bg-slate-800 border-slate-700 text-white" />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-foreground mb-1.5" htmlFor="enrollment_close_date">
+          <label className="block text-sm font-semibold text-slate-200 mb-1.5" htmlFor="enrollment_close_date">
             Enrollment Closes
           </label>
           <input id="enrollment_close_date" name="enrollment_close_date"
-            type="datetime-local" className="input w-full" />
+            type="datetime-local" className="input w-full bg-slate-800 border-slate-700 text-white" />
         </div>
       </div>
 
       {/* Access window — shown for all but self_paced */}
       {needsWindow && (
-        <div className="border border-border rounded-xl p-5 space-y-4 bg-slate-50">
-          <p className="text-sm font-bold text-foreground">Access Window</p>
-          <p className="text-xs text-muted-foreground -mt-2">
+        <div className="border border-slate-800 rounded-xl p-5 space-y-4 bg-slate-800/50">
+          <p className="text-sm font-bold text-white">Access Window</p>
+          <p className="text-xs text-slate-400 -mt-2">
             Content is only accessible within this window. This is the security boundary — required for {format} delivery.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1" htmlFor="window_start">
+              <label className="block text-xs font-semibold text-slate-300 mb-1" htmlFor="window_start">
                 Window Opens
               </label>
-              <input id="window_start" name="window_start" type="datetime-local" className="input w-full" />
+              <input id="window_start" name="window_start" type="datetime-local" className="input w-full bg-slate-800 border-slate-700 text-white" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-foreground mb-1" htmlFor="window_end">
+              <label className="block text-xs font-semibold text-slate-300 mb-1" htmlFor="window_end">
                 Window Closes
               </label>
-              <input id="window_end" name="window_end" type="datetime-local" className="input w-full" />
+              <input id="window_end" name="window_end" type="datetime-local" className="input w-full bg-slate-800 border-slate-700 text-white" />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-foreground mb-1" htmlFor="grace_days">
+            <label className="block text-xs font-semibold text-slate-300 mb-1" htmlFor="grace_days">
               Grace Period (days after close)
             </label>
             <input id="grace_days" name="grace_days" type="number" min="0"
-              defaultValue="0" className="input w-24" />
+              defaultValue="0" className="input w-24 bg-slate-800 border-slate-700 text-white" />
           </div>
         </div>
       )}
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={pending}
-          className="bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-primary/90 transition-colors disabled:opacity-50">
+          className="bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-indigo-500 transition-colors disabled:opacity-50">
           {pending ? 'Creating…' : 'Create Section'}
         </button>
         <Link href="/admin/sections"
-          className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-border hover:bg-slate-50 transition-colors text-muted-foreground">
+          className="font-semibold px-5 py-2.5 rounded-xl text-sm border border-slate-700 hover:bg-slate-800 transition-colors text-slate-300">
           Cancel
         </Link>
       </div>

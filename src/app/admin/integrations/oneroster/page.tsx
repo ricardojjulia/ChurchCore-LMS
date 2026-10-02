@@ -18,13 +18,15 @@ export default async function OneRosterIntegrationPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-8 md:px-6 lg:px-8">
-      <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Integrations</p>
-        <h1 className="mt-1 text-2xl font-semibold text-foreground">OneRoster</h1>
-      </div>
+    <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-400">Integrations</p>
+          <h1 className="mt-1 text-3xl font-extrabold text-white tracking-tight">OneRoster</h1>
+        </div>
 
-      <OneRosterWorkspace />
+        <OneRosterWorkspace />
+      </div>
     </main>
   )
 }

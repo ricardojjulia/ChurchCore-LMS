@@ -37,40 +37,41 @@ export default function SignInPolicySection({
   }
 
   return (
-    <section className="bg-white rounded-xl border p-6 space-y-4">
-      <h2 className="text-base font-semibold text-foreground">Sign-in</h2>
+    <section className="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-4 shadow-sm">
+      <h2 className="text-base font-semibold text-white">Sign-in</h2>
       {!ssoAvailable && (
-        <p className="text-sm text-slate-700">
+        <p className="text-sm text-slate-300">
           Google and Microsoft sign-in aren&apos;t set up for this site yet, so only the email-domain rule is available.
         </p>
       )}
       <form onSubmit={save} className="space-y-4">
-        <label className="flex items-start gap-3 text-sm text-slate-800">
-          <input type="checkbox" className="mt-0.5 h-4 w-4" checked={requireSso} disabled={!ssoAvailable}
+        <label className="flex items-start gap-3 text-sm text-slate-200">
+          <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-800 text-indigo-500 focus:ring-indigo-400" checked={requireSso} disabled={!ssoAvailable}
             onChange={(e) => setRequireSso(e.target.checked)} />
-          <span><strong>Require Google or Microsoft sign-in for staff</strong><br />
-            <span className="text-slate-600">Admins, managers and teachers can&apos;t sign in with a password.</span></span>
+          <span><strong className="text-white">Require Google or Microsoft sign-in for staff</strong><br />
+            <span className="text-slate-400">Admins, managers and teachers can&apos;t sign in with a password.</span></span>
         </label>
-        <label className="flex items-start gap-3 text-sm text-slate-800">
-          <input type="checkbox" className="mt-0.5 h-4 w-4" checked={disablePassword} disabled={!ssoAvailable}
+        <label className="flex items-start gap-3 text-sm text-slate-200">
+          <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-800 text-indigo-500 focus:ring-indigo-400" checked={disablePassword} disabled={!ssoAvailable}
             onChange={(e) => setDisablePassword(e.target.checked)} />
-          <span><strong>Turn off password sign-in for everyone</strong></span>
+          <span><strong className="text-white">Turn off password sign-in for everyone</strong></span>
         </label>
         <div>
-          <label htmlFor="allowed-domains" className="block text-sm font-semibold text-slate-800">Allowed email domains</label>
-          <p id="allowed-domains-hint" className="text-xs text-slate-600">Leave empty to allow any address. Separate with commas, e.g. gracechurch.org</p>
+          <label htmlFor="allowed-domains" className="block text-sm font-semibold text-slate-200">Allowed email domains</label>
+          <p id="allowed-domains-hint" className="text-xs text-slate-400">Leave empty to allow any address. Separate with commas, e.g. gracechurch.org</p>
           <input id="allowed-domains" aria-describedby="allowed-domains-hint" value={domains}
             onChange={(e) => setDomains(e.target.value)}
-            className="mt-1 w-full rounded-md border border-input px-3 py-2 text-sm" />
+            placeholder="e.g. gracechurch.org"
+            className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
         <div className="flex items-center gap-3">
           <button type="submit" disabled={pending}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60">
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-60 transition-colors">
             {pending ? 'Saving…' : 'Save sign-in settings'}
           </button>
           {message && (
             <p role={message.kind === 'error' ? 'alert' : 'status'}
-              className={`text-sm ${message.kind === 'error' ? 'text-rose-700' : 'text-emerald-800'}`}>
+              className={`text-sm ${message.kind === 'error' ? 'text-rose-400' : 'text-emerald-400'}`}>
               {message.text}
             </p>
           )}

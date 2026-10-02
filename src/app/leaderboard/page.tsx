@@ -42,40 +42,40 @@ export default async function LeaderboardPage() {
   const me = rows.find((r) => r.is_current_user)
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-2xl mx-auto">
 
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">{t('leaderboard.heading')}</h1>
-          <p className="text-muted-foreground text-sm mt-1">{t('leaderboard.subtitle')}</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight font-display">{t('leaderboard.heading')}</h1>
+          <p className="text-slate-400 text-sm mt-1">{t('leaderboard.subtitle')}</p>
         </div>
 
         {/* My rank card */}
         {me && (
-          <div className="bg-white border border-primary/30 rounded-2xl px-5 py-4 mb-6 flex items-center gap-4 shadow-sm">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="text-base font-extrabold text-primary">
+          <div className="card-crisp px-5 py-4 mb-6 flex items-center gap-4 border-indigo-800/60 bg-indigo-950/40">
+            <div className="w-10 h-10 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center shrink-0">
+              <span className="text-base font-extrabold text-amber-300">
                 {me.rank > 0 ? `#${me.rank}` : '—'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-foreground">{t('leaderboard.yourStandingLabel')}</p>
+              <p className="text-sm font-bold text-white">{t('leaderboard.yourStandingLabel')}</p>
               <div className="flex items-center gap-3 mt-1">
-                <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-1.5 w-32 bg-slate-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-primary rounded-full"
+                    className="h-full bg-indigo-500 rounded-full"
                     style={{ width: `${levelProgress(me.xp_points, me.current_level).pct}%` }}
                   />
                 </div>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-slate-400">
                   {t('leaderboard.levelXpTemplate', { level: me.current_level, xp: me.xp_points.toLocaleString() })}
                 </span>
               </div>
             </div>
             <Link
               href="/performance"
-              className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors shrink-0"
+              className="text-xs font-semibold text-amber-300 hover:text-amber-200 transition-colors shrink-0"
             >
               {t('leaderboard.myGradesLink')}
             </Link>
@@ -91,25 +91,25 @@ export default async function LeaderboardPage() {
               return (
                 <div
                   key={entry.uid}
-                  className={`bg-white border rounded-2xl px-4 py-5 text-center ${
+                  className={`card-crisp px-4 py-5 text-center ${
                     actualRank === 1
-                      ? 'border-yellow-300 shadow-lg scale-105 origin-bottom'
-                      : 'border-border'
+                      ? 'border-amber-500/60 bg-slate-900/90 shadow-lg scale-105 origin-bottom'
+                      : 'border-slate-800'
                   }`}
                 >
                   <p className="text-2xl mb-1">{MEDALS[actualRank - 1]}</p>
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-2">
-                    <span className="text-sm font-extrabold text-indigo-700">
+                  <div className="w-10 h-10 rounded-full bg-indigo-950/80 border border-indigo-800 flex items-center justify-center mx-auto mb-2">
+                    <span className="text-sm font-extrabold text-amber-300">
                       {(entry.display_name ?? '?')[0]?.toUpperCase()}
                     </span>
                   </div>
-                  <p className="text-xs font-bold text-foreground truncate">
+                  <p className="text-xs font-bold text-white truncate">
                     {entry.display_name ?? t('leaderboard.anonymousFallback')}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-slate-400 mt-0.5">
                     {entry.xp_points.toLocaleString()} XP
                   </p>
-                  <p className="text-xs font-semibold text-primary mt-1">Lv {entry.current_level}</p>
+                  <p className="text-xs font-semibold text-indigo-400 mt-1">Lv {entry.current_level}</p>
                 </div>
               )
             })}
@@ -118,12 +118,12 @@ export default async function LeaderboardPage() {
 
         {/* Full table */}
         {rows.length === 0 ? (
-          <div className="bg-white border border-border rounded-xl p-10 text-center">
-            <p className="text-muted-foreground italic">{t('leaderboard.emptyState')}</p>
+          <div className="card-crisp p-10 text-center">
+            <p className="text-slate-400 italic">{t('leaderboard.emptyState')}</p>
           </div>
         ) : (
-          <div className="bg-white border border-border rounded-xl overflow-hidden">
-            <ul className="divide-y divide-border">
+          <div className="card-crisp overflow-hidden p-0">
+            <ul className="divide-y divide-slate-800">
               {rows.map((entry, idx) => {
                 const rank    = entry.rank
                 const isMe    = entry.is_current_user
@@ -132,35 +132,35 @@ export default async function LeaderboardPage() {
                 return (
                   <li
                     key={entry.uid}
-                    className={`flex items-center gap-4 px-5 py-3 ${isMe ? 'bg-primary/5' : 'hover:bg-slate-50/80'} transition-colors`}
+                    className={`flex items-center gap-4 px-5 py-3 ${isMe ? 'bg-indigo-950/40' : 'hover:bg-slate-800/50'} transition-colors`}
                   >
-                    <span className={`w-6 text-center shrink-0 ${RANK_STYLES[idx] ?? 'text-muted-foreground font-semibold text-sm'}`}>
+                    <span className={`w-6 text-center shrink-0 ${RANK_STYLES[idx] ?? 'text-slate-400 font-semibold text-sm'}`}>
                       {rank <= 3 ? MEDALS[rank - 1] : `${rank}`}
                     </span>
 
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                      <span className="text-xs font-extrabold text-indigo-700">
+                    <div className="w-8 h-8 rounded-full bg-indigo-950/80 border border-indigo-800 flex items-center justify-center shrink-0">
+                      <span className="text-xs font-extrabold text-indigo-300">
                         {(entry.display_name ?? '?')[0]?.toUpperCase()}
                       </span>
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold truncate ${isMe ? 'text-primary' : 'text-foreground'}`}>
+                      <p className={`text-sm font-semibold truncate ${isMe ? 'text-amber-300' : 'text-white'}`}>
                         {entry.display_name ?? t('leaderboard.anonymousFallback')}{isMe ? t('leaderboard.youSuffix') : ''}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <div className="h-1 w-20 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-1 w-20 bg-slate-800 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-primary rounded-full"
+                            className="h-full bg-indigo-500 rounded-full"
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="text-xs text-muted-foreground">Lv {entry.current_level}</span>
+                        <span className="text-xs text-slate-400">Lv {entry.current_level}</span>
                       </div>
                     </div>
 
-                    <span className="text-sm font-bold text-foreground shrink-0">
-                      {entry.xp_points.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">XP</span>
+                    <span className="text-sm font-bold text-white shrink-0">
+                      {entry.xp_points.toLocaleString()} <span className="text-xs font-normal text-slate-400">XP</span>
                     </span>
                   </li>
                 )

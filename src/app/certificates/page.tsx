@@ -57,30 +57,30 @@ export default async function CertificatesPage() {
   const diplomas = (diplomasResult.data ?? []) as unknown as Diploma[]
 
   return (
-    <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">{t('certificates.heading')}</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
+            <h1 className="text-2xl font-extrabold text-white tracking-tight font-display">{t('certificates.heading')}</h1>
+            <p className="text-slate-400 text-sm mt-0.5">
               {t('certificates.subtitleCertTemplate', { n: rows.length })}
               {diplomas.length > 0 && (
                 <span> · {t('certificates.subtitleDiplomaTemplate', { n: diplomas.length })}</span>
               )}
             </p>
           </div>
-          <Link href="/performance" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/performance" className="text-sm text-slate-400 hover:text-white transition-colors">
             {t('certificates.performanceLink')}
           </Link>
         </div>
 
         {rows.length === 0 ? (
-          <div className="bg-white border border-border rounded-2xl p-12 text-center">
+          <div className="card-crisp p-12 text-center">
             <p className="text-4xl mb-3">🎓</p>
-            <p className="text-muted-foreground italic mb-4">{t('certificates.emptyState')}</p>
+            <p className="text-slate-400 italic mb-4">{t('certificates.emptyState')}</p>
             <Link
               href="/courses"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-5 py-2 rounded-xl text-sm hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm hover:bg-indigo-500 transition-colors"
             >
               {t('certificates.browseCoursesLink')}
             </Link>
@@ -96,39 +96,39 @@ export default async function CertificatesPage() {
               return (
                 <div
                   key={cert.id}
-                  className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                  className="card-crisp overflow-hidden"
                 >
                   {/* Card header */}
-                  <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
-                    <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">{t('certificates.cardKicker')}</p>
+                  <div className="bg-gradient-to-r from-indigo-900 to-indigo-800 border-b border-indigo-700/50 px-6 py-4">
+                    <p className="text-indigo-300 text-[10px] font-bold uppercase tracking-widest">{t('certificates.cardKicker')}</p>
                     <p className="text-white font-bold text-sm mt-0.5 line-clamp-2">{courseTitle}</p>
                   </div>
 
                   {/* Card body */}
                   <div className="px-6 py-4">
-                    <p className="text-xs text-muted-foreground mb-3">{issuedDate}</p>
+                    <p className="text-xs text-slate-400 mb-3">{issuedDate}</p>
 
                     <div className="flex items-center gap-4">
                       {cert.final_grade !== null && (
                         <div>
-                          <p className="text-2xl font-extrabold text-foreground">{cert.letter_grade}</p>
-                          <p className="text-xs text-muted-foreground">{cert.final_grade}% avg</p>
+                          <p className="text-2xl font-extrabold text-white">{cert.letter_grade}</p>
+                          <p className="text-xs text-slate-400">{cert.final_grade}% avg</p>
                         </div>
                       )}
                       {cert.total_xp_earned > 0 && (
                         <div>
-                          <p className="text-2xl font-extrabold text-indigo-600">{cert.total_xp_earned}</p>
-                          <p className="text-xs text-muted-foreground">{t('certificates.xpEarnedLabel')}</p>
+                          <p className="text-2xl font-extrabold text-amber-300">{cert.total_xp_earned}</p>
+                          <p className="text-xs text-slate-400">{t('certificates.xpEarnedLabel')}</p>
                         </div>
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-                      <p className="text-[10px] font-mono text-muted-foreground">{cert.certificate_no}</p>
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
+                      <p className="text-[10px] font-mono text-slate-400">{cert.certificate_no}</p>
                       <div className="flex items-center gap-3">
                         <Link
                           href={`/courses/${cert.course_id}/complete`}
-                          className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+                          className="text-xs font-semibold text-amber-300 hover:text-amber-200 transition-colors"
                         >
                           {t('certificates.viewLink')}
                         </Link>
@@ -136,7 +136,7 @@ export default async function CertificatesPage() {
                         <a
                           href={`/api/certificates/${cert.id}/pdf`}
                           download
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500 transition-colors"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
                         >
                           {t('certificates.downloadPdfButton')}
                         </a>
@@ -152,10 +152,9 @@ export default async function CertificatesPage() {
         {/* Program Diplomas */}
         {diplomas.length > 0 && (
           <div className="mt-10">
-            <h2 className="text-xl font-extrabold text-foreground mb-4">{t('certificates.programDiplomasHeading')}</h2>
+            <h2 className="text-xl font-extrabold text-white mb-4">{t('certificates.programDiplomasHeading')}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {diplomas.map((diploma) => {
-                // program_tracks may arrive as object or single-element array
                 const trackData = Array.isArray(diploma.program_tracks)
                   ? diploma.program_tracks[0]
                   : diploma.program_tracks
@@ -167,13 +166,13 @@ export default async function CertificatesPage() {
                 return (
                   <div
                     key={diploma.id}
-                    className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                    className="card-crisp overflow-hidden border-amber-800/60"
                   >
                     {/* Card header */}
-                    <div className="bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-4 flex items-center gap-3">
+                    <div className="bg-gradient-to-r from-amber-950/80 to-amber-900/60 border-b border-amber-800/60 px-6 py-4 flex items-center gap-3">
                       <span className="text-2xl leading-none" role="img" aria-label={t('certificates.diplomaIconAlt')}>🎓</span>
                       <div className="min-w-0">
-                        <p className="text-amber-100 text-[10px] font-bold uppercase tracking-widest">
+                        <p className="text-amber-300 text-[10px] font-bold uppercase tracking-widest">
                           {t('certificates.programDiplomaKicker')}
                         </p>
                         <p className="text-white font-bold text-sm mt-0.5 line-clamp-2">{trackName}</p>
@@ -182,8 +181,8 @@ export default async function CertificatesPage() {
 
                     {/* Card body */}
                     <div className="px-6 py-4">
-                      <p className="text-xs text-muted-foreground mb-3">{awardedDate}</p>
-                      <p className="font-mono text-xs text-amber-700 bg-amber-100 rounded px-2 py-1 inline-block">
+                      <p className="text-xs text-slate-400 mb-3">{awardedDate}</p>
+                      <p className="font-mono text-xs text-amber-300 bg-amber-950/80 border border-amber-800/70 rounded px-2 py-1 inline-block">
                         {diploma.diploma_no}
                       </p>
                     </div>
