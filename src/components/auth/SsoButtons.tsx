@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { createClient } from '@/utils/supabase/client'
 import { configuredSsoProviders, type SsoProvider } from '@/lib/sso'
 
-// "Continue with Google / Microsoft" (COUNCIL-2026-037). `next` is where the
+// "Continue with Google / Microsoft / ChurchCore" (COUNCIL-2026-037). `next` is where the
 // callback sends the user afterwards; /callback confines it to this site.
 export default function SsoButtons({ next, dark = false }: { next: string; dark?: boolean }) {
   const t = useTranslations('auth.sso')
@@ -18,6 +18,22 @@ export default function SsoButtons({ next, dark = false }: { next: string; dark?
     setError(null)
     setPending(provider)
     const redirectTo = `${window.location.origin}/callback?next=${encodeURIComponent(next)}`
+    
+    if (provider === 'churchcore') {
+      const { error: ssoError } = await createClient().auth.signInWithOAuth({
+        provider: 'custom' as any,
+        options: {
+          redirectTo,
+          scopes: 'openid email profile',
+        },
+      })
+      if (ssoError) {
+        setError(t('error'))
+        setPending(null)
+      }
+      return
+    }
+
     const { error: oauthError } = await createClient().auth.signInWithOAuth({
       provider,
       options: { redirectTo, ...(provider === 'azure' ? { scopes: 'email' } : {}) },
@@ -33,7 +49,9 @@ export default function SsoButtons({ next, dark = false }: { next: string; dark?
       {providers.map((p) => (
         <button key={p} type="button" onClick={() => start(p)} disabled={pending !== null}
           className={`w-full rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-60 ${style}`}>
-          {pending === p ? t('redirecting') : t(p === 'google' ? 'google' : 'microsoft')}
+          {pending === p
+            ? t('redirecting')
+            : t(p === 'google' ? 'google' : p === 'azure' ? 'microsoft' : 'churchcore')}
         </button>
       ))}
       <p className={`text-center text-xs ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{t('or')}</p>

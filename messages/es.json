@@ -25,6 +25,7 @@
     "sso": {
       "google": "Continuar con Google",
       "microsoft": "Continuar con Microsoft",
+      "churchcore": "Continuar con ChurchCore",
       "or": "o usa tu correo",
       "redirecting": "Redirigiendo…",
       "error": "No se pudo iniciar sesión. Inténtalo de nuevo.",
