@@ -13,6 +13,16 @@ describe('normalizeH5PEmbedUrl', () => {
     expect(normalizeH5PEmbedUrl(rawUrl)).toBe('https://app.lumi.education/run/H5P_ID123')
   })
 
+  it('auto-converts h5p.org node URL to embed URL', () => {
+    expect(normalizeH5PEmbedUrl('https://h5p.org/node/615')).toBe('https://h5p.org/h5p/embed/615')
+    expect(normalizeH5PEmbedUrl('https://h5p.org/node/615/')).toBe('https://h5p.org/h5p/embed/615')
+  })
+
+  it('auto-converts h5p.com content URL to embed URL', () => {
+    expect(normalizeH5PEmbedUrl('https://myorg.h5p.com/content/123456')).toBe('https://myorg.h5p.com/content/123456/embed')
+    expect(normalizeH5PEmbedUrl('https://myorg.h5p.com/content/123456/embed')).toBe('https://myorg.h5p.com/content/123456/embed')
+  })
+
   it('strips surrounding quotes', () => {
     expect(normalizeH5PEmbedUrl('"https://example.com/h5p/1"')).toBe('https://example.com/h5p/1')
   })
