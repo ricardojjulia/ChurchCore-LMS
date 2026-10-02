@@ -19,20 +19,29 @@ export interface H5PParseResult {
 }
 
 /**
- * Extracts a clean embed URL from an iframe embed snippet or raw URL.
+ * Extracts a clean embed URL from an iframe embed snippet or raw URL,
+ * and normalizes common H5P URLs (like h5p.org/node/:id) to embed endpoints.
  */
 export function normalizeH5PEmbedUrl(input: string): string {
-  const trimmed = input.trim()
+  let trimmed = input.trim()
   if (!trimmed) return ''
 
   // If it's an iframe tag, extract the src attribute
   const match = trimmed.match(/<iframe[^>]+src=["']([^"']+)["']/i)
   if (match?.[1]) {
-    return match[1]
+    trimmed = match[1]
   }
 
   // Remove any surrounding quotes or spaces
-  return trimmed.replace(/^["']|["']$/g, '')
+  trimmed = trimmed.replace(/^["']|["']$/g, '').trim()
+
+  // Convert h5p.org/node/:id -> h5p.org/h5p/embed/:id
+  trimmed = trimmed.replace(/^(https?:\/\/h5p\.org)\/node\/(\d+)(\/.*)?$/i, '$1/h5p/embed/$2')
+
+  // Convert *.h5p.com/content/:id -> *.h5p.com/content/:id/embed
+  trimmed = trimmed.replace(/^(https?:\/\/[a-zA-Z0-9-]+\.h5p\.com\/content\/\d+)(?!\/embed)(\/?)$/i, '$1/embed')
+
+  return trimmed
 }
 
 /**

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
-import { Maximize2, Minimize2, RotateCcw, CheckCircle2, Award, Sparkles } from 'lucide-react'
+import { Maximize2, Minimize2, RotateCcw, CheckCircle2, Award, Sparkles, ExternalLink } from 'lucide-react'
 import { submitH5PProgress } from '@/app/actions/learning'
 import { normalizeH5PEmbedUrl } from '@/lib/h5p/parser'
 import type { CourseBlock, H5PContent } from '@/types/blocks'
@@ -201,6 +201,17 @@ export default function H5PPlayer({ block, submission, onComplete }: Props) {
 
         {/* Toolbar buttons */}
         <div className="flex items-center gap-2">
+          {activeSrc && (
+            <a
+              href={activeSrc}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open activity in new tab"
+              className="p-1.5 rounded-lg border border-slate-800 bg-slate-900 text-slate-400 hover:text-white hover:border-slate-700 transition-colors inline-flex items-center"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
           <button
             type="button"
             onClick={handleRestart}
