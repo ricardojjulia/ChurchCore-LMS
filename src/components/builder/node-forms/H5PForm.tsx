@@ -43,6 +43,7 @@ export default function H5PForm({ initial, onSave, onCancel }: Props) {
 
   // Package upload state
   const [packageFileName, setPackageFileName] = useState(initial?.package_filename ?? '')
+  const [packagePath, setPackagePath] = useState(initial?.package_path ?? '')
   const [packageUrl, setPackageUrl] = useState(initial?.package_url ?? '')
   const [packageMainLibrary, setPackageMainLibrary] = useState(initial?.package_main_library ?? '')
   const [packageError, setPackageError] = useState<string | null>(null)
@@ -78,9 +79,21 @@ export default function H5PForm({ initial, onSave, onCancel }: Props) {
         setTitle(parsed.metadata.title)
       }
 
-      // Convert to a local object URL for previewing or storage
-      const blobUrl = URL.createObjectURL(file)
-      setPackageUrl(blobUrl)
+      // Upload to server storage
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/upload/h5p', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setPackageError(data.error || 'Failed to upload .h5p package to storage.')
+      } else {
+        setPackagePath(data.path)
+      }
     } catch (err) {
       setPackageError(err instanceof Error ? err.message : 'Error reading .h5p file.')
     } finally {
@@ -106,6 +119,7 @@ export default function H5PForm({ initial, onSave, onCancel }: Props) {
     } else {
       if (!packageFileName) return
       content.package_filename = packageFileName
+      content.package_path = packagePath
       content.package_url = packageUrl
       content.package_main_library = packageMainLibrary
     }

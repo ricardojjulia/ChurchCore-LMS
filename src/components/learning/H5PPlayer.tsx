@@ -24,7 +24,8 @@ export default function H5PPlayer({ block, submission, onComplete }: Props) {
   const embedUrl = normalizeH5PEmbedUrl(content.url || content.embed_code || '')
   const packageUrl = content.package_url
 
-  const activeSrc = embedUrl || packageUrl || ''
+  const isPackage = content.embed_type === 'package' || Boolean(content.package_path)
+  const activeSrc = isPackage ? `/api/h5p/package/${block.id}/h5p.json` : embedUrl || packageUrl || ''
 
   const passingScorePct = content.passing_score_pct ?? 70
   const requirePassing = content.require_passing ?? true
@@ -32,6 +33,9 @@ export default function H5PPlayer({ block, submission, onComplete }: Props) {
 
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const standaloneRef = useRef<HTMLDivElement>(null)
+  const [standaloneError, setStandaloneError] = useState<string | null>(null)
+  const [standaloneLoading, setStandaloneLoading] = useState(isPackage)
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
@@ -54,7 +58,41 @@ export default function H5PPlayer({ block, submission, onComplete }: Props) {
   const [pending, startTransition] = useTransition()
   const [message, setMessage] = useState<string | null>(null)
 
-  // Listen for H5P xAPI statements posted via window postMessage
+  // Initialize native H5P standalone player when viewing an uploaded package
+  useEffect(() => {
+    if (!isPackage) return
+    let isMounted = true
+    setStandaloneLoading(true)
+    setStandaloneError(null)
+
+    async function initH5P() {
+      if (!standaloneRef.current) return
+      try {
+        standaloneRef.current.innerHTML = ''
+        const { H5P } = await import('h5p-standalone')
+        if (!isMounted || !standaloneRef.current) return
+
+        await new H5P(standaloneRef.current, {
+          h5pJsonPath: `/api/h5p/package/${block.id}`,
+          frameJs: '/h5p-standalone/frame.bundle.js',
+          frameCss: '/h5p-standalone/styles/h5p.css',
+        })
+        if (isMounted) setStandaloneLoading(false)
+      } catch (err: any) {
+        if (isMounted) {
+          setStandaloneError(err?.message || 'Could not load H5P package player.')
+          setStandaloneLoading(false)
+        }
+      }
+    }
+
+    initH5P()
+    return () => {
+      isMounted = false
+    }
+  }, [block.id, isPackage, iframeKey])
+
+  // Listen for H5P xAPI statements posted via window postMessage or internal dispatcher
   useEffect(() => {
     function handleMessage(event: MessageEvent) {
       if (!event.data) return
@@ -158,7 +196,7 @@ export default function H5PPlayer({ block, submission, onComplete }: Props) {
     setIframeKey((prev) => prev + 1)
   }
 
-  if (!activeSrc) {
+  if (!activeSrc && !isPackage) {
     return (
       <div className="card-crisp p-8 text-center text-slate-400">
         <Sparkles className="w-8 h-8 text-fuchsia-400 mx-auto mb-2" />
@@ -179,6 +217,11 @@ export default function H5PPlayer({ block, submission, onComplete }: Props) {
             <Sparkles className="w-3.5 h-3.5" />
             {t('learning.h5p.badge')}
           </span>
+          {content.package_filename && (
+            <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-xs font-mono">
+              {content.package_filename}
+            </span>
+          )}
           {scoreData?.gradePct !== undefined && (
             <span
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold border ${
@@ -201,7 +244,7 @@ export default function H5PPlayer({ block, submission, onComplete }: Props) {
 
         {/* Toolbar buttons */}
         <div className="flex items-center gap-2">
-          {activeSrc && (
+          {!isPackage && activeSrc && (
             <a
               href={activeSrc}
               target="_blank"
@@ -246,15 +289,32 @@ export default function H5PPlayer({ block, submission, onComplete }: Props) {
             : 'min-h-[500px]'
         }`}
       >
-        <iframe
-          key={iframeKey}
-          ref={iframeRef}
-          src={activeSrc}
-          title={block.title || 'H5P Interactive Activity'}
-          className="w-full h-full border-0 rounded-xl"
-          allow="autoplay; fullscreen; microphone; camera; midi; encrypted-media"
-          allowFullScreen
-        />
+        {isPackage ? (
+          <div className="w-full h-full overflow-y-auto p-2 bg-slate-950">
+            {standaloneLoading && (
+              <div className="flex items-center justify-center h-48 text-slate-400 text-xs gap-2">
+                <Sparkles className="w-4 h-4 text-fuchsia-400 animate-spin" />
+                <span>Loading H5P package…</span>
+              </div>
+            )}
+            {standaloneError && (
+              <div className="p-4 text-xs text-rose-400 text-center">
+                {standaloneError}
+              </div>
+            )}
+            <div key={iframeKey} ref={standaloneRef} className="w-full" />
+          </div>
+        ) : (
+          <iframe
+            key={iframeKey}
+            ref={iframeRef}
+            src={activeSrc}
+            title={block.title || 'H5P Interactive Activity'}
+            className="w-full h-full border-0 rounded-xl"
+            allow="autoplay; fullscreen; microphone; camera; midi; encrypted-media"
+            allowFullScreen
+          />
+        )}
       </div>
 
       {/* Feedback / Manual Confirmation */}
