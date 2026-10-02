@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import NotificationsClient from './NotificationsClient'
+import PushNotificationSettings from '@/components/notifications/PushNotificationSettings'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -32,8 +33,8 @@ export default async function NotificationsPage() {
 
   return (
     <main className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 text-slate-100">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-display font-extrabold text-white">{t('notifications.heading')}</h1>
             {unreadCount > 0 && (
@@ -49,6 +50,8 @@ export default async function NotificationsPage() {
             {t('notifications.backToDashboardLink')}
           </Link>
         </div>
+
+        <PushNotificationSettings />
 
         <NotificationsClient
           initialItems={notifications ?? []}

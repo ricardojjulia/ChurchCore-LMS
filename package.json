@@ -71,7 +71,8 @@
     "resend": "^6.12.4",
     "stripe": "^22.2.2",
     "tailwind-merge": "^3.6.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "web-push": "^3.6.7"
   },
   "overrides": {
     "postcss": ">=8.5.10",
@@ -88,6 +89,7 @@
     "@types/node": "^20.14.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/web-push": "^3.6.4",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.11",
     "autoprefixer": "^10.4.19",
