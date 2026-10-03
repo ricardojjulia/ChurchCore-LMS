@@ -33,9 +33,11 @@ function highlight(text: string, q: string): React.ReactNode {
 export default function GlobalSearch({
   variant  = 'navbar',
   collapsed = false,
+  isStaff   = false,
 }: {
   variant?:  'navbar' | 'sidebar'
   collapsed?: boolean
+  isStaff?:   boolean
 }) {
   const t = useTranslations()
   const [open,     setOpen]     = useState(false)
@@ -46,6 +48,8 @@ export default function GlobalSearch({
   const inputRef                = useRef<HTMLInputElement>(null)
   const debounce                = useRef<ReturnType<typeof setTimeout> | null>(null)
   const router                  = useRouter()
+
+  const isSecretHq = Boolean(isStaff && ['hq', ':hq', '/hq', 'council', 'project hq'].includes(query.trim().toLowerCase()))
 
   // cmd+K / ctrl+K to open
   useEffect(() => {
@@ -81,6 +85,7 @@ export default function GlobalSearch({
 
   // Flatten results for keyboard nav
   const allItems: { href: string; label: string }[] = [
+    ...(isSecretHq ? [{ href: '/hq', label: 'LMS Project HQ' }] : []),
     ...results.courses.map((c) => ({ href: `/courses/${c.id}`, label: c.title })),
     ...results.announcements.map((a) => ({ href: `/announcements#${a.id}`, label: a.title })),
     ...results.people.map((p) => ({ href: `/admin/users`, label: p.display_name ?? p.email ?? '' })),
@@ -97,7 +102,7 @@ export default function GlobalSearch({
 
   function go(href: string) { router.push(href); setOpen(false); setQuery(''); setResults(EMPTY) }
 
-  const hasResults = results.courses.length + results.announcements.length + results.people.length > 0
+  const hasResults = isSecretHq || (results.courses.length + results.announcements.length + results.people.length > 0)
 
   let itemIdx = 0
 
@@ -193,12 +198,29 @@ export default function GlobalSearch({
 
             {/* Results */}
             <div className="max-h-[60vh] overflow-y-auto">
-              {query.length < 2 ? (
+              {query.length < 2 && !isSecretHq ? (
                 <p className="text-xs text-muted-foreground text-center py-8">{t('globalSearch.minCharsHint')}</p>
               ) : !hasResults ? (
                 <p className="text-sm text-muted-foreground text-center py-8">{t('globalSearch.noResultsTemplate', { query })}</p>
               ) : (
                 <div className="py-2">
+                  {isSecretHq && (
+                    <ResultSection label="Staff Console (Easter Egg)">
+                      {(() => {
+                        const i = itemIdx++
+                        return (
+                          <ResultItem
+                            icon="🏛️"
+                            label="LMS Project HQ (AI Architecture Council)"
+                            sub="Secret engineering console & AI specialist workbench"
+                            selected={selected === i}
+                            onClick={() => go('/hq')}
+                          />
+                        )
+                      })()}
+                    </ResultSection>
+                  )}
+
                   {results.courses.length > 0 && (
                     <ResultSection label={t('globalSearch.coursesSectionLabel')}>
                       {results.courses.map((c) => {
