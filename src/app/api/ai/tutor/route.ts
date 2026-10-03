@@ -13,14 +13,13 @@
 import { NextRequest } from 'next/server'
 import { createClient }  from '@/utils/supabase/server'
 import { tutorLimiter, checkLimit } from '@/lib/rate-limit'
+import { fetchOpenRouterEmbeddings, getOpenRouterApiKey, resolveModelChain } from '@/lib/openrouter'
 import type { TutorQueryContextInternal, ContentChunk } from '@/types/ai'
 
 export const runtime = 'nodejs'
 
-const OPENAI_EMBED_MODEL      = 'text-embedding-3-small'
-const OPENAI_COMPLETION_MODEL = 'gpt-4o'
-const SIMILARITY_THRESHOLD    = 0.72
-const MAX_CHUNKS              = 8
+const SIMILARITY_THRESHOLD = 0.72
+const MAX_CHUNKS           = 8
 
 // ============================================================
 // Track-aware system prompt (Phase 3C)
@@ -82,20 +81,6 @@ async function sha256Hex(text: string): Promise<string> {
 }
 
 // ============================================================
-// Query embedding via OpenAI (ephemeral — never persisted)
-// ============================================================
-async function embedQuery(query: string, apiKey: string): Promise<number[]> {
-  const res = await fetch('https://api.openai.com/v1/embeddings', {
-    method:  'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ input: query, model: OPENAI_EMBED_MODEL }),
-  })
-  if (!res.ok) throw new Error(`OpenAI embedding error ${res.status}`)
-  const json = await res.json() as { data: { embedding: number[] }[] }
-  return json.data[0].embedding
-}
-
-// ============================================================
 // Assemble the prompt sent to the completion model
 // chunk_text is in delimited data blocks — never in system prompt
 // ============================================================
@@ -143,8 +128,8 @@ function sseEvent(controller: ReadableStreamDefaultController, data: unknown) {
 // ROUTE HANDLER
 // ============================================================
 export async function POST(req: NextRequest) {
-  const OPENAI_KEY = process.env.OPENAI_API_KEY
-  if (!OPENAI_KEY) {
+  const apiKey = getOpenRouterApiKey()
+  if (!apiKey) {
     return Response.json({ error: 'AI tutor not configured' }, { status: 503 })
   }
 
@@ -195,12 +180,11 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Generate query embedding (ephemeral — discard after search) ──
-  let queryVec: number[]
-  try {
-    queryVec = await embedQuery(query.trim(), OPENAI_KEY)
-  } catch {
+  const vectors = await fetchOpenRouterEmbeddings(query.trim())
+  if (!vectors || vectors.length === 0) {
     return Response.json({ error: 'Failed to generate query embedding' }, { status: 502 })
   }
+  const queryVec = vectors[0]
 
   // ── Discover all active sections for multi-section search (Phase 4) ──
   const { data: activeSections } = await supabase
@@ -296,6 +280,10 @@ export async function POST(req: NextRequest) {
     contextVersion:   dbCtx.contextVersion ?? 'v1',
   }
 
+  const modelChain = resolveModelChain('tutor')
+  const primaryModel = modelChain[0]
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://churchcore.app'
+
   // ── Stream response ───────────────────────────────────────
   const stream = new ReadableStream({
     async start(controller) {
@@ -311,12 +299,18 @@ export async function POST(req: NextRequest) {
         }))
         sseEvent(controller, { type: 'context', sources, contextVersion: ctx.contextVersion })
 
-        // Call OpenAI streaming completion
-        const completion = await fetch('https://api.openai.com/v1/chat/completions', {
+        // Call OpenRouter streaming completion with fallback model routing
+        const completion = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method:  'POST',
-          headers: { 'Authorization': `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': appUrl,
+            'X-Title': 'ChurchCore LMS AI Tutor',
+          },
           body: JSON.stringify({
-            model:       OPENAI_COMPLETION_MODEL,
+            model:       primaryModel,
+            models:      modelChain,
             stream:      true,
             temperature: 0.3,
             max_tokens:  1024,
@@ -333,7 +327,7 @@ export async function POST(req: NextRequest) {
           return
         }
 
-        // Pipe OpenAI SSE deltas to client
+        // Pipe OpenRouter SSE deltas to client
         const reader  = completion.body!.getReader()
         const decoder = new TextDecoder()
 
@@ -350,7 +344,7 @@ export async function POST(req: NextRequest) {
 
             try {
               const chunk = JSON.parse(payload)
-              const delta = chunk.choices?.[0]?.delta?.content
+              const delta = chunk.choices?.[0]?.delta?.content ?? chunk.delta?.text
               if (delta) sseEvent(controller, { type: 'delta', text: delta })
             } catch { /* malformed chunk — skip */ }
           }
@@ -369,7 +363,7 @@ export async function POST(req: NextRequest) {
             chunk_count:     contentChunks.length,
             similarity_max:  contentChunks[0]?.similarity ?? null,
             similarity_min:  contentChunks[contentChunks.length - 1]?.similarity ?? null,
-            model_used:      OPENAI_EMBED_MODEL,
+            model_used:      primaryModel,
           })
         } catch { /* logging failure must not break the response */ }
 

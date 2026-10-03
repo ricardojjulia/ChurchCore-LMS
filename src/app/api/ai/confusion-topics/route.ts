@@ -13,17 +13,17 @@
 import { NextRequest } from 'next/server'
 import { createClient }  from '@/utils/supabase/server'
 import { heavyLimiter, checkLimit } from '@/lib/rate-limit'
+import { callOpenRouter, getOpenRouterApiKey } from '@/lib/openrouter'
 
 export const runtime = 'nodejs'
 
-const OPENAI_COMPLETION_MODEL = 'gpt-4o'
 const LOW_SIMILARITY_THRESHOLD = 0.80
 const MIN_QUERIES_FOR_SIGNAL = 3
 const MAX_CONTENT_SAMPLE_CHUNKS = 15
 
 export async function POST(req: NextRequest) {
-  const OPENAI_KEY = process.env.OPENAI_API_KEY
-  if (!OPENAI_KEY) return Response.json({ error: 'AI not configured' }, { status: 503 })
+  const apiKey = getOpenRouterApiKey()
+  if (!apiKey) return Response.json({ error: 'AI not configured' }, { status: 503 })
 
   let body: { sectionId?: string }
   try { body = await req.json() } catch { return Response.json({ error: 'Invalid JSON' }, { status: 400 }) }
@@ -148,32 +148,26 @@ ${contentSample}
 Based on this content and the query statistics above, what topics are students likely
 confused about or asking questions on that this course content doesn't cover well?`
 
-  try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method:  'POST',
-      headers: { 'Authorization': `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model:       OPENAI_COMPLETION_MODEL,
-        temperature: 0.4,
-        max_tokens:  800,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user',   content: userPrompt },
-        ],
-      }),
-    })
+  const result = await callOpenRouter({
+    task: 'gapAnalysis',
+    temperature: 0.4,
+    max_tokens: 800,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user',   content: userPrompt },
+    ],
+  })
 
-    if (!res.ok) throw new Error(`OpenAI error ${res.status}`)
-    const json = await res.json() as { choices: { message: { content: string } }[] }
-    const analysis = json.choices[0]?.message?.content ?? ''
-
-    return Response.json({
-      analysis,
-      stats: { total: entries.length, lowSimilarity, zeroMatch, avgBestMatch },
-      generatedAt: new Date().toISOString(),
-    })
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'Unknown error'
-    return Response.json({ error: 'Analysis failed' }, { status: 502 })
+  if (!result.ok || !result.text) {
+    return Response.json({ error: result.error || 'Analysis failed' }, { status: result.status === 503 ? 503 : 502 })
   }
+
+  const analysis = result.text.trim()
+
+  return Response.json({
+    analysis,
+    stats: { total: entries.length, lowSimilarity, zeroMatch, avgBestMatch },
+    generatedAt: new Date().toISOString(),
+    modelUsed: result.modelUsed,
+  })
 }

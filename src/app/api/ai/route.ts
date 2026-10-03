@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
   const parsed = parseBody(raw)
   if (!parsed.ok) return Response.json({ error: 'Invalid request body.' }, { status: 400 })
 
-  const openRouterKey = process.env.OPENROUTER_API_KEY || (process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY ? process.env.OPENAI_API_KEY : null)
+  const openRouterKey = getOpenRouterApiKey()
   const anthropicKey  = process.env.ANTHROPIC_API_KEY
 
   if (!openRouterKey && !anthropicKey) {

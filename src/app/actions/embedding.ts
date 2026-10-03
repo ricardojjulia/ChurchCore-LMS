@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { createServiceClient } from '@/utils/supabase/service'
 import { tiptapToHtml } from '@/utils/tiptap'
+import { fetchOpenRouterEmbeddings, getOpenRouterApiKey } from '@/lib/openrouter'
 
 // ── Text utilities ────────────────────────────────────────────────────────────
 
@@ -27,23 +28,6 @@ function chunkText(text: string, maxChars = 800): string[] {
   return chunks
 }
 
-// ── OpenAI embeddings call ────────────────────────────────────────────────────
-
-async function fetchEmbeddings(chunks: string[]): Promise<number[][] | null> {
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey || chunks.length === 0) return null
-
-  const res = await fetch('https://api.openai.com/v1/embeddings', {
-    method:  'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ model: 'text-embedding-3-small', input: chunks }),
-  })
-
-  if (!res.ok) return null
-  const json = await res.json() as { data: Array<{ embedding: number[] }> }
-  return json.data.map((d) => d.embedding)
-}
-
 // ── Main action ───────────────────────────────────────────────────────────────
 
 export type EmbeddingResult = {
@@ -53,8 +37,9 @@ export type EmbeddingResult = {
 }
 
 export async function generatePageEmbedding(pageId: string): Promise<EmbeddingResult> {
-  if (!process.env.OPENAI_API_KEY) {
-    return { status: 'skipped', error: 'OPENAI_API_KEY not configured' }
+  const apiKey = getOpenRouterApiKey()
+  if (!apiKey) {
+    return { status: 'skipped', error: 'AI embedding not configured (missing OPENROUTER_API_KEY)' }
   }
 
   const supabase = await createClient()
@@ -97,13 +82,13 @@ export async function generatePageEmbedding(pageId: string): Promise<EmbeddingRe
     .update({ embedding_status: 'processing' })
     .eq('id', pageId)
 
-  const vectors = await fetchEmbeddings(chunks)
+  const vectors = await fetchOpenRouterEmbeddings(chunks)
   if (!vectors) {
     await service
       .from('content_pages')
       .update({ embedding_status: 'failed' })
       .eq('id', pageId)
-    return { status: 'failed', error: 'OpenAI API call failed' }
+    return { status: 'failed', error: 'AI embedding call failed' }
   }
 
   // Deactivate previous embeddings for this page

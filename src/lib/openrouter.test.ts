@@ -76,6 +76,37 @@ describe('OpenRouter Model Selection & Routing Logic', () => {
     expect(requestBody.models).toEqual(TASK_MODEL_CHAINS.outline)
   })
 
+  it('selects the cost-effective model chain for tutor task', () => {
+    const chain = resolveModelChain('tutor')
+    expect(chain[0]).toBe('google/gemini-2.0-flash-001')
+    expect(chain).toContain('openai/gpt-4o-mini')
+    expect(chain).toContain('anthropic/claude-3.5-haiku')
+  })
+
+  it('selects the cost-effective model chain for gapAnalysis task', () => {
+    const chain = resolveModelChain('gapAnalysis')
+    expect(chain[0]).toBe('google/gemini-2.0-flash-001')
+    expect(chain).toContain('deepseek/deepseek-chat')
+  })
+
+  it('generates vector embeddings via OpenRouter endpoint', async () => {
+    fetchMock.mockResolvedValue(
+      Response.json({
+        data: [{ embedding: [0.1, 0.2, 0.3] }],
+      })
+    )
+
+    const vectors = await (await import('./openrouter')).fetchOpenRouterEmbeddings('test query')
+    expect(vectors).toEqual([[0.1, 0.2, 0.3]])
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://openrouter.ai/api/v1/embeddings',
+      expect.objectContaining({
+        method: 'POST',
+      })
+    )
+  })
+
   it('returns 503 when no key is set', async () => {
     vi.stubEnv('OPENROUTER_API_KEY', '')
     vi.stubEnv('OPENAI_API_KEY', '')
@@ -91,3 +122,4 @@ describe('OpenRouter Model Selection & Routing Logic', () => {
     expect(res.error).toContain('OPENROUTER_API_KEY')
   })
 })
+
