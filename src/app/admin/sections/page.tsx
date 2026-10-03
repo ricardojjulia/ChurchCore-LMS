@@ -123,7 +123,7 @@ export default async function AdminSectionsPage() {
                       <td className="px-4 py-4 text-right">
                         <Link
                           href={`/admin/sections/${s.id}`}
-                          className="text-sm font-semibold text-amber-300 hover:text-amber-200 hover:underline"
+                          className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 hover:underline"
                         >
                           {t('viewGroups')}
                         </Link>

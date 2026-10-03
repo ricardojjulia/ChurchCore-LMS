@@ -24,7 +24,7 @@ export default async function NewSectionPage({
     <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-2xl mx-auto">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400 mb-6">
-          <Link href="/admin/sections" className="hover:text-amber-300 font-medium">Sections</Link>
+          <Link href="/admin/sections" className="hover:text-white font-medium transition-colors">Sections</Link>
           <span>/</span>
           <span className="text-white font-semibold">New</span>
         </nav>

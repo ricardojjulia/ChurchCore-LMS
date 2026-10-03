@@ -1,10 +1,12 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { createClient } from '@/utils/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminProgramTracksPage() {
+  const t = await getTranslations('adminProgramTracks')
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -27,27 +29,27 @@ export default async function AdminProgramTracksPage() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-extrabold text-white">Program Tracks</h1>
+            <h1 className="text-2xl font-extrabold text-white">{t('heading')}</h1>
             <p className="text-sm text-slate-400 mt-1">
-              Pathways used to group course blueprints and cohorts for filtering, reporting, and AI context.
+              {t('subtitle')}
             </p>
           </div>
           <Link
             href="/admin/program-tracks/new"
             className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-sm transition-colors"
           >
-            + New Track
+            {t('newTrack')}
           </Link>
         </div>
 
         {(!tracks || tracks.length === 0) ? (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
-            <p className="text-slate-400">No program tracks yet.</p>
+            <p className="text-slate-400">{t('emptyState')}</p>
             <Link
               href="/admin/program-tracks/new"
               className="mt-3 inline-block text-sm text-indigo-400 hover:underline"
             >
-              Create the first program track →
+              {t('createFirst')}
             </Link>
           </div>
         ) : (
@@ -55,9 +57,9 @@ export default async function AdminProgramTracksPage() {
             <table className="w-full text-sm">
               <thead className="bg-slate-900/80 border-b border-slate-800">
                 <tr>
-                  <th className="text-left px-6 py-3 font-semibold text-slate-300">Track</th>
-                  <th className="text-center px-4 py-3 font-semibold text-slate-300">Status</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-300">Created</th>
+                  <th className="text-left px-6 py-3 font-semibold text-slate-300">{t('tableTrack')}</th>
+                  <th className="text-center px-4 py-3 font-semibold text-slate-300">{t('tableStatus')}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-300">{t('tableCreated')}</th>
                   <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
@@ -79,7 +81,7 @@ export default async function AdminProgramTracksPage() {
                           ? 'bg-emerald-950/50 text-emerald-400 border-emerald-800'
                           : 'bg-slate-800 text-slate-400 border-slate-700'
                       }`}>
-                        {track.is_active ? 'Active' : 'Inactive'}
+                        {track.is_active ? t('statusActive') : t('statusInactive')}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-slate-400 text-xs">
@@ -90,7 +92,7 @@ export default async function AdminProgramTracksPage() {
                         href={`/admin/program-tracks/${track.id}`}
                         className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 hover:underline"
                       >
-                        Edit →
+                        {t('edit')}
                       </Link>
                     </td>
                   </tr>

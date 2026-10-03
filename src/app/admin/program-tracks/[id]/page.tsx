@@ -70,7 +70,7 @@ export default async function EditProgramTrackPage({
     <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-4xl mx-auto space-y-8">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400">
-          <Link href="/admin/program-tracks" className="hover:text-amber-300 font-medium">
+          <Link href="/admin/program-tracks" className="hover:text-white font-medium transition-colors">
             Program Tracks
           </Link>
           <span className="text-slate-600">/</span>

@@ -200,30 +200,42 @@ export default function CourseForm({
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 pt-1">
           <Link
             href="/admin/program-tracks/new"
-            className="text-xs font-semibold text-amber-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-slate-300 border border-slate-800 bg-slate-900 rounded-xl px-3 py-1.5 hover:bg-slate-800 hover:text-white transition-all shadow-sm flex items-center gap-1.5"
           >
-            Create Program Track
+            <span>Create Program Track</span>
+            <span className="text-[10px] text-slate-500" aria-hidden="true">↗</span>
           </Link>
           <Link
             href="/admin/blueprints/new"
-            className="text-xs font-semibold text-amber-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-slate-300 border border-slate-800 bg-slate-900 rounded-xl px-3 py-1.5 hover:bg-slate-800 hover:text-white transition-all shadow-sm flex items-center gap-1.5"
           >
-            Create Blueprint
+            <span>Create Blueprint</span>
+            <span className="text-[10px] text-slate-500" aria-hidden="true">↗</span>
           </Link>
           <Link
             href="/admin/terms/new"
-            className="text-xs font-semibold text-amber-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-slate-300 border border-slate-800 bg-slate-900 rounded-xl px-3 py-1.5 hover:bg-slate-800 hover:text-white transition-all shadow-sm flex items-center gap-1.5"
           >
-            Create Term
+            <span>Create Term</span>
+            <span className="text-[10px] text-slate-500" aria-hidden="true">↗</span>
           </Link>
           <Link
             href={blueprintId ? `/admin/sections/new?blueprint=${blueprintId}` : '/admin/sections/new'}
-            className="text-xs font-semibold text-amber-300 border border-slate-700 bg-slate-800 rounded-lg px-3 py-1.5 hover:bg-slate-700 hover:text-white transition-colors"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-slate-300 border border-slate-800 bg-slate-900 rounded-xl px-3 py-1.5 hover:bg-slate-800 hover:text-white transition-all shadow-sm flex items-center gap-1.5"
           >
-            Create Section
+            <span>Create Section</span>
+            <span className="text-[10px] text-slate-500" aria-hidden="true">↗</span>
           </Link>
         </div>
       </section>

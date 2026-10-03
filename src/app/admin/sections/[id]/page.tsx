@@ -92,7 +92,7 @@ export default async function SectionDetailPage({
     <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-5xl mx-auto space-y-8">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400">
-          <Link href="/admin/sections" className="hover:text-amber-300 font-medium">Sections</Link>
+          <Link href="/admin/sections" className="hover:text-white font-medium transition-colors">Sections</Link>
           <span>/</span>
           <span className="text-white font-semibold">{section.section_code}</span>
         </nav>

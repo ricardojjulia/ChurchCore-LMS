@@ -34,7 +34,7 @@ export default async function AdminBlueprintsPage() {
         {(!blueprints || blueprints.length === 0) ? (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
             <p className="text-slate-400">{t('emptyState')}</p>
-            <Link href="/admin/blueprints/new" className="mt-3 inline-block text-sm text-amber-300 hover:underline">{t('createFirst')}</Link>
+            <Link href="/admin/blueprints/new" className="mt-3 inline-block text-sm text-indigo-400 hover:underline">{t('createFirst')}</Link>
           </div>
         ) : (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
@@ -70,7 +70,7 @@ export default async function AdminBlueprintsPage() {
                         </span>
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <Link href={`/admin/blueprints/${b.id}`} className="text-sm font-semibold text-amber-300 hover:text-amber-200 hover:underline">Edit →</Link>
+                        <Link href={`/admin/blueprints/${b.id}`} className="text-sm font-semibold text-indigo-400 hover:text-indigo-300 hover:underline">Edit →</Link>
                       </td>
                     </tr>
                   )

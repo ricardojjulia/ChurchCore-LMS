@@ -20,7 +20,7 @@ export default async function NewProgramTrackPage() {
     <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
       <div className="max-w-xl mx-auto">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400 mb-6">
-          <Link href="/admin/program-tracks" className="hover:text-amber-300 font-medium">Program Tracks</Link>
+          <Link href="/admin/program-tracks" className="hover:text-white font-medium transition-colors">Program Tracks</Link>
           <span className="text-slate-600">/</span>
           <span className="text-white font-semibold">New</span>
         </nav>

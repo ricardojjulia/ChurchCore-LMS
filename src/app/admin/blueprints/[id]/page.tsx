@@ -64,7 +64,7 @@ export default async function EditBlueprintPage({ params }: { params: Promise<{ 
         {/* Breadcrumb & Header */}
         <div>
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-slate-400 mb-4">
-            <Link href="/admin/blueprints" className="hover:text-amber-300 font-medium transition-colors">Blueprints</Link>
+            <Link href="/admin/blueprints" className="hover:text-white font-medium transition-colors">Blueprints</Link>
             <span>/</span>
             <span className="text-white font-semibold">{bp.course_code}</span>
           </nav>
@@ -137,7 +137,7 @@ export default async function EditBlueprintPage({ params }: { params: Promise<{ 
               </div>
               <Link
                 href={`/courses/new?blueprint_id=${blueprintId}`}
-                className="text-xs font-semibold text-amber-300 hover:underline inline-flex items-center gap-1"
+                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:underline inline-flex items-center gap-1"
               >
                 + Add Course
               </Link>
@@ -149,7 +149,7 @@ export default async function EditBlueprintPage({ params }: { params: Promise<{ 
                 <p className="text-xs font-medium text-slate-400">No LMS courses linked yet.</p>
                 <Link
                   href={`/courses/new?blueprint_id=${blueprintId}`}
-                  className="mt-2 inline-block text-xs font-semibold text-amber-300 hover:underline"
+                  className="mt-2 inline-block text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:underline"
                 >
                   Create course from this blueprint →
                 </Link>
@@ -159,7 +159,7 @@ export default async function EditBlueprintPage({ params }: { params: Promise<{ 
                 {linkedCourses.map((c) => (
                   <div key={c.id} className="py-3 flex items-center justify-between text-sm">
                     <div className="min-w-0 pr-3">
-                      <Link href={`/courses/${c.id}`} className="font-medium text-white hover:text-amber-300 transition-colors truncate block">
+                      <Link href={`/courses/${c.id}`} className="font-medium text-white hover:text-indigo-300 transition-colors truncate block">
                         {c.title}
                       </Link>
                       <span className="text-[11px] text-slate-400">
@@ -189,7 +189,7 @@ export default async function EditBlueprintPage({ params }: { params: Promise<{ 
               </div>
               <Link
                 href={`/admin/sections/new?blueprint=${blueprintId}`}
-                className="text-xs font-semibold text-amber-300 hover:underline inline-flex items-center gap-1"
+                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:underline inline-flex items-center gap-1"
               >
                 + Schedule Section
               </Link>
@@ -201,7 +201,7 @@ export default async function EditBlueprintPage({ params }: { params: Promise<{ 
                 <p className="text-xs font-medium text-slate-400">No sections scheduled for this blueprint.</p>
                 <Link
                   href={`/admin/sections/new?blueprint=${blueprintId}`}
-                  className="mt-2 inline-block text-xs font-semibold text-amber-300 hover:underline"
+                  className="mt-2 inline-block text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:underline"
                 >
                   Schedule a term section →
                 </Link>

@@ -959,5 +959,36 @@
     "formatSelfPaced": "No próprio ritmo",
     "viewGroups": "Ver grupos →",
     "manageEnrollment": "Gerenciar matrícula →"
+  },
+  "adminTerms": {
+    "heading": "Períodos Acadêmicos",
+    "subtitle": "Períodos hierárquicos — semestres aninhados dentro de anos acadêmicos.",
+    "newTerm": "+ Novo Período",
+    "emptyState": "Ainda não há períodos.",
+    "createFirst": "Criar o primeiro período →",
+    "edit": "Editar",
+    "statusActive": "Ativo",
+    "statusInactive": "Inativo",
+    "typeAcademicYear": "Ano Acadêmico",
+    "typeSemester": "Semestre",
+    "typeTrimester": "Trimestre",
+    "typeQuarter": "Quadrimestre",
+    "typeBlock": "Bloco",
+    "typeAdHoc": "Ad Hoc",
+    "typeSelfPaced": "No próprio ritmo",
+    "typeSeries": "Série"
+  },
+  "adminProgramTracks": {
+    "heading": "Trilhas de Programa",
+    "subtitle": "Caminhos usados para agrupar planos de cursos e turmas para filtragem, relatórios e contexto de IA.",
+    "newTrack": "+ Nova Trilha",
+    "emptyState": "Ainda não há trilhas de programa.",
+    "createFirst": "Criar a primeira trilha de programa →",
+    "tableTrack": "Trilha",
+    "tableStatus": "Status",
+    "tableCreated": "Criado",
+    "statusActive": "Ativo",
+    "statusInactive": "Inativo",
+    "edit": "Editar →"
   }
 }
