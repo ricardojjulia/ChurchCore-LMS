@@ -21,12 +21,6 @@ export default async function HomePage() {
         >
           {t('common.signIn')}
         </Link>
-        <Link
-          href="/hq"
-          className="px-6 py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition-colors"
-        >
-          {t('home.projectHqLink')}
-        </Link>
       </div>
     </main>
   )

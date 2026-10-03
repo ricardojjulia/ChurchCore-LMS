@@ -44,7 +44,6 @@ const LINKS: NavLink[] = [
   { href: '/calendar',           labelKey: 'nav.calendar',           Icon: Calendar },
   { href: '/my-groups',          labelKey: 'nav.myGroups',           Icon: Users },
   { href: '/guardian',           labelKey: 'nav.guardianPortal',     Icon: Shield,         guardianOnly: true,    featureGate: 'guardian_portal' },
-  { href: '/hq',                 labelKey: 'nav.hq',                 Icon: Zap,            staffOnly: true,       featureGate: 'hq' },
   { href: '/admin/users',        labelKey: 'nav.admin.users',        Icon: UserCog,        adminOnly: true },
   { href: '/admin/cohorts',      labelKey: 'nav.admin.cohorts',      Icon: Users,          adminOnly: true },
   { href: '/admin/sections',     labelKey: 'nav.admin.sections',     Icon: Layers,         adminOnly: true },

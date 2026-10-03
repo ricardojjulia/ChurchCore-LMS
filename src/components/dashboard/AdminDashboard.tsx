@@ -130,7 +130,6 @@ export default async function AdminDashboard({
           <div className="flex flex-wrap gap-3">
             <Button asChild className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold"><Link href="/courses/new">{t('newCourseButton')}</Link></Button>
             <Button asChild variant="outline" className="border-slate-800 text-slate-300 hover:text-white hover:bg-slate-900"><Link href="/admin/users">{t('manageUsers')}</Link></Button>
-            <Button asChild variant="outline" className="border-slate-800 text-slate-300 hover:text-white hover:bg-slate-900"><Link href="/hq">{t('projectHq')}</Link></Button>
           </div>
         </section>
 
