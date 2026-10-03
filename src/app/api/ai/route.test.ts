@@ -116,8 +116,23 @@ describe('POST /api/ai', () => {
 
   it('returns 503 when no API key is configured', async () => {
     vi.stubEnv('ANTHROPIC_API_KEY', '')
+    vi.stubEnv('OPENROUTER_API_KEY', '')
     const res = await POST(req(VALID))
     expect(res.status).toBe(503)
+  })
+
+  it('forwards to OpenRouter when OPENROUTER_API_KEY is configured', async () => {
+    vi.stubEnv('OPENROUTER_API_KEY', 'sk-or-v1-test')
+    const res = await POST(req(VALID))
+    expect(res.status).toBe(200)
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://openrouter.ai/api/v1/chat/completions',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer sk-or-v1-test',
+        }),
+      })
+    )
   })
 
   it('forwards only allowlisted fields and caps max_tokens', async () => {
