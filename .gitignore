@@ -45,3 +45,8 @@ next-env.d.ts
 tests/playwright/.auth/
 playwright-report/
 test-results/
+
+# Google Drive / Cloud sync temporary artifacts
+.tmp.driveupload/
+.tmp.*
+
