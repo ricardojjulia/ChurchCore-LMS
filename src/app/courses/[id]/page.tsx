@@ -352,7 +352,13 @@ export default async function CoursePage({
                   </>
                 ) : !isStaff && user ? (
                   <>
-                    <EnrollButton courseId={courseId} locked={enrollLocked} lockReason={enrollLockReason} />
+                    <EnrollButton
+                      courseId={courseId}
+                      locked={enrollLocked}
+                      lockReason={enrollLockReason}
+                      priceCents={course.price_cents}
+                      currency={course.currency}
+                    />
                     {hasInviteOnly && (
                       <p className="text-xs text-rose-400 font-medium mt-1">
                         {t('courses.detail.inviteOnlyNotice')}

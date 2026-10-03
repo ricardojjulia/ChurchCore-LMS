@@ -30,7 +30,7 @@ export default async function PublicCourseCatalogPage({ params }: Props) {
 
   const { data: courses } = await service
     .from('courses')
-    .select('id, title, description')
+    .select('id, title, description, price_cents, currency')
     .eq('org_id', org.id)
     .eq('is_public_preview', true)
     .eq('status', 'published')

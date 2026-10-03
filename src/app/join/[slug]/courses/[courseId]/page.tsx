@@ -52,7 +52,7 @@ export default async function PublicCourseDetailPage({ params }: Props) {
 
   const { data: course } = await service
     .from('courses')
-    .select('id, title, description')
+    .select('id, title, description, price_cents, currency, seat_limit')
     .eq('id', courseId)
     .eq('org_id', org.id)
     .eq('is_public_preview', true)
@@ -60,6 +60,14 @@ export default async function PublicCourseDetailPage({ params }: Props) {
     .single()
 
   if (!course) notFound()
+
+  const isPaid = typeof course.price_cents === 'number' && course.price_cents > 0
+  const formattedPrice = isPaid
+    ? new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: (course.currency || 'usd').toUpperCase(),
+      }).format(course.price_cents! / 100)
+    : 'Free'
 
   // is_published filter matches the authenticated course detail page's
   // `is_published || isStaff` rule for every non-staff viewer — an anonymous
@@ -111,16 +119,27 @@ export default async function PublicCourseDetailPage({ params }: Props) {
               className="h-10 mb-4 object-contain"
             />
           )}
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">{course.title}</h1>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">{course.title}</h1>
+            <span
+              className={`shrink-0 self-start sm:self-auto px-3 py-1 rounded-full text-xs font-semibold ${
+                isPaid
+                  ? 'bg-amber-950/70 border border-amber-800/80 text-amber-300'
+                  : 'bg-emerald-950/70 border border-emerald-800/80 text-emerald-300'
+              }`}
+            >
+              {formattedPrice}
+            </span>
+          </div>
           {course.description && (
-            <p className="text-slate-300 mt-2 text-base leading-relaxed">{course.description}</p>
+            <p className="text-slate-300 mt-3 text-base leading-relaxed">{course.description}</p>
           )}
           <Link
             href={`/join/${slug}`}
             style={ctaStyle}
             className="inline-flex items-center gap-2 bg-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-500 transition-colors text-sm mt-6 shadow-sm"
           >
-            Sign up →
+            {isPaid ? `Sign up & Enroll — ${formattedPrice} →` : 'Sign up to Enroll →'}
           </Link>
         </div>
 
