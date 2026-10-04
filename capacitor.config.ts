@@ -1,4 +1,14 @@
-import type { CapacitorConfig } from '@capacitor/cli'
+export interface CapacitorConfig {
+  appId: string
+  appName: string
+  webDir: string
+  server?: {
+    androidScheme?: string
+    url?: string
+    cleartext?: boolean
+  }
+  plugins?: Record<string, unknown>
+}
 
 const config: CapacitorConfig = {
   appId: 'org.churchcore.lms',

@@ -48,6 +48,9 @@ vi.mock('@/lib/openrouter', () => ({
 }))
 
 import { POST } from './route'
+import { covers } from '@/tests/covers'
+
+covers('api:POST /api/ai/spiritual-formation-pulse')
 
 function makeRequest(body: unknown) {
   return new NextRequest('http://localhost/api/ai/spiritual-formation-pulse', {

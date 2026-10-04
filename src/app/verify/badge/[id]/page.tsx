@@ -73,11 +73,11 @@ export default async function VerifyBadgePage({ params }: Props) {
   const verifyUrl = `${currentOrigin}/verify/badge/${id}`
   const assertionJsonUrl = `${currentOrigin}/api/badges/assertions/${id}`
 
-  const linkedInUrl = isValid
+  const linkedInUrl = isValid && award
     ? buildLinkedInCertificationUrl({
         certificationName: badge.title,
         organizationName: orgName,
-        issueDate: award.awarded_at,
+        issueDate: award.awarded_at || new Date().toISOString(),
         certUrl: verifyUrl,
         certId: id,
       })

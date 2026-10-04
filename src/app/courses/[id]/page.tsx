@@ -20,6 +20,8 @@ type CourseRow = {
   prerequisite_course_id: string | null
   age_min: number | null
   age_max: number | null
+  price_cents?: number | null
+  currency?: string | null
   prereq: { id: string; title: string } | null
   blueprint: {
     id: string

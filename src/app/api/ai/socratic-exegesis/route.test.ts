@@ -66,6 +66,9 @@ vi.mock('@/lib/openrouter', () => ({
 }))
 
 import { POST } from './route'
+import { covers } from '@/tests/covers'
+
+covers('api:POST /api/ai/socratic-exegesis')
 
 function makeRequest(body: unknown) {
   return new NextRequest('http://localhost/api/ai/socratic-exegesis', {

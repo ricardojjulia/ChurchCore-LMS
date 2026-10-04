@@ -41,6 +41,9 @@ vi.mock('@/lib/openrouter', () => ({
 }))
 
 import { POST } from './route'
+import { covers } from '@/tests/covers'
+
+covers('api:POST /api/ai/translate-discussion')
 
 function makeRequest(body: unknown) {
   return new NextRequest('http://localhost/api/ai/translate-discussion', {

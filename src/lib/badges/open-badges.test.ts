@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { covers } from '@/tests/covers'
 import {
   hashRecipientEmail,
   buildOpenBadgeIssuer,
@@ -7,6 +8,12 @@ import {
   buildLinkedInCertificationUrl,
 } from './open-badges'
 import { generateBadgeSvg } from './svg-builder'
+
+covers(
+  'api:GET /api/badges/assertions/[id]',
+  'api:GET /api/badges/image/[id]',
+  'page:/verify/badge/[id]'
+)
 
 describe('Open Badges 2.0 & Microcredentials Specification Engine', () => {
   describe('hashRecipientEmail', () => {
