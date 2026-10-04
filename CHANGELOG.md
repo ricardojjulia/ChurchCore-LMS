@@ -11,6 +11,38 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.44.0] — 2026-10-04
+
+Enterprise capability & commerce milestone: Paid Courses Storefront (Stripe Connect), Open Badges 2.0/3.0 Microcredentials, OpenRouter AI Architecture, Curriculum Commons, and Capacitor Native Mobile App Shell.
+
+### Added
+
+- **Paid Courses & Course Storefront (COUNCIL-2026-039):**
+  - **Stripe Connect Standard:** Direct church payouts with 0% platform fee; keeps church as merchant of record.
+  - **Course Pricing Configuration:** Interactive pricing form on course edit page for setting price, currency (USD, EUR, BRL, GBP, CAD), and seat limits.
+  - **Storefront & Catalog Badges:** Public course cards and detail pages dynamically render price tags and seamless checkout/enrollment CTAs.
+  - **Automated Fulfillment:** Stripe webhook integration for `checkout.session.completed` and `charge.refunded` with automatic enrollment via `enrollCore()`.
+
+- **Open Badges 2.0 / 3.0 Standard & Verifiable Microcredentials:**
+  - **1EdTech JSON-LD Assertions:** Standard public assertion endpoint (`/api/badges/assertions/[id]`) with salted SHA-256 recipient identity hashing.
+  - **Dynamic SVG Badge Generator:** High-fidelity vector graphics with customizable frames (shield, circle, hexagon, rosette, star), metallic finishes (gold, silver, bronze, indigo, emerald, crimson), and ministry icons.
+  - **Public Verification & Social Sharing:** Verification view (`/verify/badge/[id]`) with 1-click "Add to LinkedIn Profile" integration.
+
+- **OpenRouter Unified AI Engine & Vector Embeddings:**
+  - **Multi-Model Routing & Fallbacks:** Unified LLM completions across Gemini 2.0 Flash, Claude 3.5 Sonnet/Haiku, and DeepSeek with automatic failover.
+  - **Real-Time SSE Streaming:** Low-latency token streaming for HQ Council and Student AI Tutor.
+  - **Semantic Vector Embeddings:** Automated lesson text chunking and vector embeddings via OpenRouter into PostgreSQL `pgvector`.
+
+- **Curriculum Commons & Starter Content Library (COUNCIL-2026-043):**
+  - **Template Browser (`/admin/library`):** Filter by category, audience, and language.
+  - **Starter Pack Bundles:** Instant adoption of multi-course curriculum tracks into structured Learning Paths.
+
+- **Native Mobile App Shell & Web Push (COUNCIL-2026-040):**
+  - **Capacitor Configuration:** Native iOS and Android shell (`org.churchcore.lms`) with splash screens, dark status bars, and push presentation handlers.
+  - **PII-Safe Web Push:** VAPID service worker and background push delivery for grades, announcements, and direct messages.
+
+---
+
 ## [0.43.0] — 2026-10-02
 
 Major capability release delivering SCORM interactive modules, ChurchCore ChMS bidirectional connect, H5P interactive learning runtime, complete Portuguese localization, and UI contrast polish.
