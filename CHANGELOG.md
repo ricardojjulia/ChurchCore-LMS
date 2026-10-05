@@ -11,6 +11,21 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.45.0] — 2026-10-05
+
+Flagship AI synthesis milestone: Multi-Document Course Synthesizer (COUNCIL-2026-043) ingesting Word documents, PowerPoint presentations, PDFs, and raw notes into fully articulated Christian courses.
+
+### Added
+
+- **Multi-Document Course Synthesizer (COUNCIL-2026-043):**
+  - **Multi-Format Document Parsing (`src/lib/document-parser.ts`):** Native decompression and parsing for `.docx` (XML word tree), `.pptx` (numerically sorted slide XML extraction with `### Slide N` demarcation), `.pdf`, `.txt`, and `.md`.
+  - **Batch Multi-Document Synthesis Engine (`src/lib/theology/multi-document-synthesizer.ts`):** AI synthesis prompt that de-duplicates overlapping bullet points, structures multi-week modules, writes in-depth lesson bodies with HTML markup and scripture blockquotes, and generates formative quizzes with explanations.
+  - **Synthesis Endpoint (`/api/ai/documents-to-course`):** Role-gated and rate-limited API route accepting multi-document payloads with source attribution mapping.
+  - **Interactive Drag-and-Drop Modal (`MultiDocumentCourseSynthesizerModal`):** Multi-file upload interface with live decompression status, customization parameters (audience, theological tradition, target pacing), and live course outline preview.
+  - **Full Test Surface & Council Pass:** 100% test coverage (`npm run test:surface` 306/306 covered), 93 passing test suites (738 total tests).
+
+---
+
 ## [0.44.0] — 2026-10-04
 
 Enterprise capability & commerce milestone: Paid Courses Storefront (Stripe Connect), Open Badges 2.0/3.0 Microcredentials, OpenRouter AI Architecture, Curriculum Commons, and Capacitor Native Mobile App Shell.
