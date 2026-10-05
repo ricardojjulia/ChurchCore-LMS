@@ -22,7 +22,17 @@ Flagship AI synthesis milestone: Multi-Document Course Synthesizer (COUNCIL-2026
   - **Batch Multi-Document Synthesis Engine (`src/lib/theology/multi-document-synthesizer.ts`):** AI synthesis prompt that de-duplicates overlapping bullet points, structures multi-week modules, writes in-depth lesson bodies with HTML markup and scripture blockquotes, and generates formative quizzes with explanations.
   - **Synthesis Endpoint (`/api/ai/documents-to-course`):** Role-gated and rate-limited API route accepting multi-document payloads with source attribution mapping.
   - **Interactive Drag-and-Drop Modal (`MultiDocumentCourseSynthesizerModal`):** Multi-file upload interface with live decompression status, customization parameters (audience, theological tradition, target pacing), and live course outline preview.
-  - **Full Test Surface & Council Pass:** 100% test coverage (`npm run test:surface` 306/306 covered), 93 passing test suites (738 total tests).
+- **Hosted Video Streaming Infrastructure & Must-View Heartbeat (COUNCIL-2026-041):**
+  - **Mux Direct Upload & Signed Playback (`src/lib/video/provider.ts`):** Direct upload generation, MP4 transcoded streaming via HLS (`.m3u8`), and HMAC-SHA256 signed playback tokens for strict tenant media protection.
+  - **Must-View Heartbeat & Completion Verification (`src/lib/video/heartbeat.ts`):** Periodic 5-second playback tracking in `video_playback_heartbeats`, enforcing 85% completion thresholds before granting block credit.
+  - **Custom Church Video Player (`HostedVideoPlayer`):** Multi-speed controls (0.75x to 2x), subtitle/caption track loading, volume control, and auto-completion callbacks.
+
+- **Private Discipleship Podcast Feeds (Audio-First Learning) (COUNCIL-2026-044):**
+  - **Apple Podcasts & Spotify RSS 2.0 Engine (`src/lib/podcast/podcast-feed.ts`):** Dynamic XML generation with iTunes duration, categories (`Religion & Spirituality > Christianity`), artwork, `<enclosure>` tags, and full HTML shownotes with Scripture references.
+  - **Cryptographic Feed Auth Tokens (`src/lib/podcast/feed-auth.ts`):** Signed URL-safe HMAC tokens verifying learner enrollment without exposing passwords or session cookies.
+  - **Feed Endpoint (`/api/feeds/podcast/[token]`):** Token-authenticated HTTP endpoint serving valid podcast XML with caching.
+  - **Interactive Subscription Modal (`PodcastSubscribeModal`):** 1-click subscription buttons for Apple Podcasts (`podcast://`), Overcast, Pocket Casts, and one-click private RSS URL copying.
+  - **Full Test Surface & Council Pass:** 100% test coverage (`npm run test:surface` 307/307 covered), 95 passing test suites (745 total tests).
 
 ---
 
