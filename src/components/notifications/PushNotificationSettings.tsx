@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import type { PushNotificationPrefs } from '@/lib/push'
-import { DEFAULT_PUSH_PREFS } from '@/lib/push'
+import type { PushNotificationPrefs } from '@/lib/push/types'
+import { DEFAULT_PUSH_PREFS } from '@/lib/push/types'
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
