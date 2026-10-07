@@ -11,6 +11,25 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.46.0] — 2026-10-07
+
+User Experience & Delight milestone: The Learner & Instructor Flow Engine (COUNCIL-2026-046) delivering Command Palette (`Cmd+K`), Persistent Floating Audio/Podcast Player, Focus Mode Zen Reader, Celebration Confetti Engine, and Inline AI Editor Co-Pilot.
+
+### Added
+
+- **Global Command Palette (`src/components/layout/CommandPalette.tsx`):**
+  - Instant spotlight search (`Cmd + K` / `Ctrl + K`) across courses, tools, pathways, and settings with keyboard arrow navigation and rapid shortcuts.
+- **Persistent Floating Audio Player (`src/lib/audio/AudioPlayerContext.tsx`, `FloatingAudioPlayer.tsx`):**
+  - Global audio state allowing continuous podcast lectures and devotionals to play in a sleek bottom dock while freely browsing other lessons, notes, and gradebooks.
+- **Focus Mode Zen Discipleship Reader (`src/components/learning/FocusModeReader.tsx`):**
+  - Fullscreen distraction-free reader with ambient theme switching (Parchment, Dark, Clean White, Sepia), typography scale/font selector, and auto-saving personal reflection journal margin.
+- **Milestone Celebration Delight Engine (`src/components/common/CelebrationModal.tsx`, `src/lib/confetti.ts`):**
+  - Lightweight canvas particle physics celebration with XP awards and 1-click LinkedIn profile / WhatsApp milestone sharing.
+- **Inline AI Lesson Editor Co-Pilot Bubble (`src/components/editor/EditorAiCoPilotBubble.tsx`):**
+  - Tiptap highlight selection bubble for generating instant quiz questions, finding Scripture cross-references, and translating to Spanish/Portuguese directly inside the course builder.
+
+---
+
 ## [0.45.0] — 2026-10-05
 
 Flagship AI synthesis milestone: Multi-Document Course Synthesizer (COUNCIL-2026-043) ingesting Word documents, PowerPoint presentations, PDFs, and raw notes into fully articulated Christian courses.
