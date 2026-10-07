@@ -1,44 +1,60 @@
 # ChurchCore LMS Brand Guidelines
 
-ChurchCore LMS uses a flat, modern mark built for product interfaces first. The identity combines a two-stroke open book, a weighted cross-stem, restrained growth forms, and minimal tech-node details.
+## The Visual Identity: "The Shield of Formation"
+
+The ChurchCore LMS brand mark represents a modern heraldic crest uniting:
+1. **The Shield Crest:** Institutional integrity, academic excellence, and protective theological guardianship.
+2. **The Open Scriptures:** The Word of God as the unchanging foundation of all curriculum.
+3. **The Ascending Steps:** Progressive spiritual formation, discipleship growth, and mastery pathways.
+4. **The Cross Apex:** Christological primacy anchoring all knowledge and learning.
+
+---
 
 ## Color Tokens
 
-| Token | Hex | Usage |
-|---|---:|---|
-| `PRIMARY_NAVY` | `#0B2545` | Primary mark, text, dark surfaces |
-| `SECONDARY_CREAM` | `#F9F7F1` | Soft backgrounds and dark-mode mark color |
-| `ACCENT_BLUE` | `#134074` | Hover states, secondary brand text, subtle depth |
-| `TEXT_MUTED` | `#8DA9C4` | Muted dark-mode text, borders, secondary labels |
+| Token | Hex | Name | Usage |
+|---|---:|---|---|
+| `SAPPHIRE_NAVY` | `#0E1E36` | Cathedral Midnight | Primary dark surfaces, outer crest fill, header backgrounds |
+| `SAPPHIRE_ACCENT` | `#1E3A68` | Royal Sapphire | Interactive states, secondary brand accents, card depth |
+| `CHAMPAGNE_GOLD` | `#D4AF37` | Luminous Gold | Metallic borders, cross apex, achievement highlights |
+| `GOLD_LIGHT` | `#F3E7C4` | Celestial Highlight | Gradient top stops, active text highlights |
+| `TEXT_MUTED` | `#8DA9C4` | Oxford Muted | Secondary typography, metadata labels, subtle borders |
+| `SURFACE_LIGHT` | `#F9F7F1` | Altar Cream | Warm light backgrounds, badge ribbon backgrounds |
 
-## Assets
+---
 
-| File | Use |
-|---|---|
-| `favicon.svg` | 16px and 32px micro-mark: book, cross-stem, one tech node |
-| `icon-mark.svg` | Standard standalone symbol for sidebar, avatars, and empty states |
-| `icon-mark-dark.svg` | Cream standalone symbol for navy or dark surfaces |
-| `logo-horizontal-light.svg` | Horizontal logo for white or cream backgrounds |
-| `logo-horizontal-dark.svg` | Horizontal logo for navy or dark backgrounds |
-| `app-icon.png` | 512x512 rounded squircle app icon |
+## Asset Directory (`public/assets/brand/`)
 
-## Scaling Rules
+| File | Type | Use Case |
+|---|---|---|
+| `favicon.svg` | Scalable Vector | 16px, 32px, and 48px browser tabs & bookmarks |
+| `icon-mark.svg` | Scalable Vector | Light-surface standalone heraldic emblem (sidebar, avatars, stamps) |
+| `icon-mark-dark.svg` | Scalable Vector | Dark-surface standalone heraldic emblem with metallic luminous gradients |
+| `logo-horizontal-light.svg` | Scalable Vector | Full horizontal logo for light / white / cream backgrounds |
+| `logo-horizontal-dark.svg` | Scalable Vector | Full horizontal logo for dark / navy / midnight surfaces |
+| `app-icon.png` | 1024x1024 High-Res | Native iOS & Android store icons, PWA manifests, splash screens |
 
-- Use `favicon.svg` below 32px.
-- Use `icon-mark.svg` for square placements from 32px upward.
-- Use horizontal logos in navigation, README headers, and marketing/documentation surfaces.
-- Do not use the experimental vertical wordmark as a primary asset.
-- Keep clear space around the mark equal to at least one cross-stem width.
+---
 
-## CSS Variables
+## Scaling & Clear Space Rules
 
-The app exposes these variables in `src/app/globals.css`:
+* **Minimum Size:**
+  * Do not render `icon-mark.svg` below 24px (use `favicon.svg` for micro-dimensions $\le 20\text{px}$).
+  * Do not render horizontal lockups below 120px in width.
+* **Clear Space:** Maintain a clear space around the shield equal to at least half the width of the cross apex on all sides.
+* **Contrast:** Always use `icon-mark-dark.svg` on surfaces with luminance $< 40\%$.
+
+---
+
+## Global CSS Variables
 
 ```css
 :root {
-  --church-navy: #0B2545;
+  --church-navy: #0E1E36;
+  --church-sapphire: #1E3A68;
+  --church-gold: #D4AF37;
+  --church-gold-light: #F3E7C4;
   --church-cream: #F9F7F1;
-  --church-accent: #134074;
   --church-muted: #8DA9C4;
 }
 ```
