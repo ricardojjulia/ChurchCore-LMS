@@ -1,6 +1,40 @@
 -- COUNCIL-2026-038: ChurchCore Connect — ChMS Integration
 -- Per-tenant signed bidirectional sync with ChurchCore
 
+-- Helper functions for role checks if not already present
+CREATE OR REPLACE FUNCTION public.is_org_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profile_roles
+    WHERE auth_id = auth.uid()
+    AND role = 'admin'
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_org_manager()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profile_roles
+    WHERE auth_id = auth.uid()
+    AND role = 'manager'
+  );
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.is_org_admin() FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.is_org_admin() TO authenticated, service_role;
+REVOKE EXECUTE ON FUNCTION public.is_org_manager() FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.is_org_manager() TO authenticated, service_role;
+
 -- 1. churchcore_connections
 CREATE TABLE IF NOT EXISTS public.churchcore_connections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
