@@ -1,15 +1,17 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { tutorLimiter, checkLimit } from '@/lib/rate-limit'
+import { getOpenRouterApiKey, resolveModelChain } from '@/lib/openrouter'
 
 export const runtime = 'edge'
 
-// Anthropic passthrough for HQ (staff-only). This route was previously
-// unauthenticated and forwarded any request body with the server's API key —
-// an open proxy to the account (and with Upstash unset, not even rate limited).
-// It now requires a signed-in staff user and only forwards an allowlisted
-// model, a capped max_tokens, and the fields HQ actually sends.
-const ALLOWED_MODELS = new Set(['claude-sonnet-4-6'])
+const ALLOWED_MODELS = new Set([
+  'claude-sonnet-4-6',
+  'anthropic/claude-3.5-sonnet',
+  'google/gemini-2.0-flash-001',
+  'openai/gpt-4o-mini',
+])
+
 const MAX_TOKENS_CAP = 16_000
 const MAX_SYSTEM_CHARS = 20_000
 const STAFF_ROLES = ['admin', 'manager', 'teacher']
@@ -80,14 +82,64 @@ export async function POST(request: NextRequest) {
   const parsed = parseBody(raw)
   if (!parsed.ok) return Response.json({ error: 'Invalid request body.' }, { status: 400 })
 
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) return Response.json({ error: 'AI is not configured.' }, { status: 503 })
+  const openRouterKey = getOpenRouterApiKey()
+  const anthropicKey  = process.env.ANTHROPIC_API_KEY
 
+  if (!openRouterKey && !anthropicKey) {
+    return Response.json({ error: 'AI is not configured.' }, { status: 503 })
+  }
+
+  // 1. Prefer OpenRouter when configured
+  if (openRouterKey) {
+    const modelChain = resolveModelChain('hq')
+    const primaryModel = parsed.body.model === 'claude-sonnet-4-6' ? 'anthropic/claude-3.5-sonnet' : parsed.body.model
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://churchcore.app'
+
+    const openRouterMessages = [
+      ...(parsed.body.system ? [{ role: 'system' as const, content: parsed.body.system }] : []),
+      ...parsed.body.messages,
+    ]
+
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${openRouterKey}`,
+        'HTTP-Referer': appUrl,
+        'X-Title': 'ChurchCore LMS HQ Council',
+      },
+      body: JSON.stringify({
+        model: primaryModel,
+        models: modelChain,
+        messages: openRouterMessages,
+        max_tokens: parsed.body.max_tokens,
+        stream: parsed.body.stream,
+      }),
+    })
+
+    if (!res.ok) return Response.json({ error: 'AI request failed.' }, { status: 502 })
+
+    if ((res.headers.get('content-type') ?? '').includes('text/event-stream')) {
+      return new Response(res.body, {
+        status: res.status,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'X-Accel-Buffering': 'no',
+        },
+      })
+    }
+
+    const data = await res.json()
+    return Response.json(data, { status: res.status })
+  }
+
+  // 2. Direct Anthropic fallback
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
+      'x-api-key': anthropicKey!,
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify(parsed.body),
@@ -95,9 +147,6 @@ export async function POST(request: NextRequest) {
 
   if (!res.ok) return Response.json({ error: 'AI request failed.' }, { status: 502 })
 
-  // When Anthropic returns an SSE stream, pipe it straight through.
-  // This is what eliminates the token-limit cut-off: the client receives
-  // each delta in real time instead of waiting for a buffered JSON blob.
   if ((res.headers.get('content-type') ?? '').includes('text/event-stream')) {
     return new Response(res.body, {
       status: res.status,

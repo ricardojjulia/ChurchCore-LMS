@@ -320,8 +320,12 @@ export default function HQPage() {
           if (!raw || raw === '[DONE]') continue
           try {
             const event = JSON.parse(raw)
-            if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-              streamingRef.current += event.delta.text
+            const textChunk =
+              (event.type === 'content_block_delta' && event.delta?.type === 'text_delta' ? event.delta.text : null) ??
+              event.choices?.[0]?.delta?.content ??
+              ''
+            if (textChunk) {
+              streamingRef.current += textChunk
               patch(streamingRef.current)
             }
           } catch { /* skip malformed SSE */ }

@@ -6,6 +6,7 @@ import { enrollCore } from '@/lib/enrollment-core'
 import { revalidatePath } from 'next/cache'
 import { isDeliverableAddress } from '@/lib/email-deliverable'
 import { BLOCK_TYPE_META, type CourseBlock, type BlockTypeId } from '@/types/blocks'
+import { enqueuePushNotification } from '@/lib/push'
 
 // ── Helper: auto-register block types if missing in DB registry ──────────────
 
@@ -27,7 +28,7 @@ async function ensureBlockTypesRegistered(
           is_active: meta.is_active ?? true,
         }
       })
-      .filter(Boolean)
+      .filter((item): item is NonNullable<typeof item> => item !== null)
 
     if (toUpsert.length > 0) {
       await service.from('block_types').upsert(toUpsert, { onConflict: 'id' })
@@ -575,6 +576,16 @@ export async function applyGradeSideEffects(
       link:    null,
     })
     .throwOnError()
+
+  // Web Push notification (COUNCIL-2026-040) - fire and forget
+  enqueuePushNotification(service, {
+    orgId: sub.org_id,
+    userId: sub.user_id,
+    eventType: 'grade_posted',
+    title: 'Assignment Graded',
+    body: 'Your assignment submission has been evaluated.',
+    deepLink: '/courses',
+  }).catch(() => {})
 
   // Email notification via Resend (optional — skipped if RESEND_API_KEY is not set)
   if (process.env.RESEND_API_KEY) {

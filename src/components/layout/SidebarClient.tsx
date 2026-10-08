@@ -1,7 +1,8 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, BookOpen, BarChart3, BarChart2, Award, Trophy,
   MessageCircle, Megaphone, Calendar, Users, Shield, Zap,
@@ -44,7 +45,6 @@ const LINKS: NavLink[] = [
   { href: '/calendar',           labelKey: 'nav.calendar',           Icon: Calendar },
   { href: '/my-groups',          labelKey: 'nav.myGroups',           Icon: Users },
   { href: '/guardian',           labelKey: 'nav.guardianPortal',     Icon: Shield,         guardianOnly: true,    featureGate: 'guardian_portal' },
-  { href: '/hq',                 labelKey: 'nav.hq',                 Icon: Zap,            staffOnly: true,       featureGate: 'hq' },
   { href: '/admin/users',        labelKey: 'nav.admin.users',        Icon: UserCog,        adminOnly: true },
   { href: '/admin/cohorts',      labelKey: 'nav.admin.cohorts',      Icon: Users,          adminOnly: true },
   { href: '/admin/sections',     labelKey: 'nav.admin.sections',     Icon: Layers,         adminOnly: true },
@@ -141,7 +141,39 @@ export default function SidebarClient({
 }: Props) {
   const { collapsed, toggle } = useSidebar()
   const pathname = usePathname()
+  const router = useRouter()
   const t = useTranslations()
+  const logoClicksRef = useRef<{ count: number; lastTime: number }>({ count: 0, lastTime: 0 })
+
+  // Easter Egg: Cmd+Shift+H / Ctrl+Shift+H for staff
+  useEffect(() => {
+    if (!isStaff) return
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'h') {
+        e.preventDefault()
+        router.push('/hq')
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isStaff, router])
+
+  // Easter Egg: 5 rapid clicks on logo within 2.5s for staff
+  function onLogoClick(e: React.MouseEvent) {
+    if (!isStaff) return
+    const now = Date.now()
+    if (now - logoClicksRef.current.lastTime > 2500) {
+      logoClicksRef.current = { count: 1, lastTime: now }
+    } else {
+      logoClicksRef.current.count += 1
+      logoClicksRef.current.lastTime = now
+      if (logoClicksRef.current.count >= 5) {
+        e.preventDefault()
+        logoClicksRef.current = { count: 0, lastTime: 0 }
+        router.push('/hq')
+      }
+    }
+  }
 
   const visible = (l: NavLink) => !l.featureGate || features[l.featureGate] !== false
 
@@ -171,7 +203,8 @@ export default function SidebarClient({
         {!collapsed && (
           <Link
             href="/dashboard"
-            className="flex-1 min-w-0"
+            onClick={onLogoClick}
+            className="flex-1 min-w-0 select-none"
           >
             <img
               src="/assets/brand/logo-horizontal-dark.svg"
@@ -231,7 +264,7 @@ export default function SidebarClient({
 
       {/* Bottom tray: search, notifications, profile */}
       <div className="border-t border-slate-800 px-2 py-3 space-y-1 shrink-0">
-        <GlobalSearch variant="sidebar" collapsed={collapsed} />
+        <GlobalSearch variant="sidebar" collapsed={collapsed} isStaff={isStaff} />
 
         {uid && (
           <NotificationBell userId={uid} sidebar collapsed={collapsed} />

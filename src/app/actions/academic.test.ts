@@ -3,9 +3,16 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { createProgramTrack, updateProgramTrack } from './academic'
-import { covers } from '../../tests/covers'
-
-covers('action:academic.createProgramTrack', 'action:academic.updateProgramTrack')
+import { covers } from '@/tests/covers'
+covers(
+  'action:academic.createProgramTrack',
+  'action:academic.updateProgramTrack',
+  'action:academic.createMeetingSchedule',
+  'action:academic.deleteBlueprint',
+  'action:academic.deleteMeetingSchedule',
+  'action:academic.generateAttendanceFromSchedule',
+  'action:attendance.createQuickAttendanceSession'
+)
 
 function form(values: Record<string, string>) {
   const fd = new FormData()

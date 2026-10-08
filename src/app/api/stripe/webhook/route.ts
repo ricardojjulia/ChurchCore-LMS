@@ -70,6 +70,53 @@ async function handleStripeEvent(event: Stripe.Event, svc: Svc) {
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session
+      const metaType = session.metadata?.type
+
+      // Course Storefront Purchase fulfillment (COUNCIL-2026-039)
+      if (metaType === 'course_purchase') {
+        const courseId = session.metadata?.course_id
+        const orgId = session.metadata?.org_id
+        const buyerUid = session.metadata?.buyer_uid
+        const buyerEmail = session.customer_details?.email || session.metadata?.buyer_email || ''
+
+        if (!courseId || !orgId) break
+
+        const paymentIntentId = typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent?.id || null
+
+        // Update purchase record
+        await svc
+          .from('course_purchases')
+          .update({
+            status: 'succeeded',
+            stripe_payment_intent_id: paymentIntentId,
+            amount_cents: session.amount_total || 0,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_checkout_session_id', session.id)
+
+        // Find profile auth_id to enroll
+        let targetAuthId: string | null = null
+        if (buyerUid) {
+          const { data: p } = await svc.from('profiles').select('auth_id').eq('uid', buyerUid).maybeSingle()
+          targetAuthId = p?.auth_id || null
+        } else if (buyerEmail) {
+          const { data: p } = await svc.from('profiles').select('auth_id').eq('email', buyerEmail).maybeSingle()
+          targetAuthId = p?.auth_id || null
+        }
+
+        if (targetAuthId) {
+          const { enrollCore } = await import('@/lib/enrollment-core')
+          await enrollCore({
+            supabase: svc,
+            authId: targetAuthId,
+            courseId,
+          })
+        }
+        break
+      }
+
       const orgId   = session.metadata?.org_id
       const priceId = session.metadata?.price_id
       const plan    = PRICE_TO_PLAN[priceId ?? ''] ?? 'starter'
@@ -87,11 +134,23 @@ async function handleStripeEvent(event: Stripe.Event, svc: Svc) {
         status:   'active',
         plan,
         settings: { ...currentSettings, features: PLAN_FEATURES[plan] ?? PLAN_FEATURES.starter },
-        // Safety net — create-checkout already persists this synchronously,
-        // but a checkout session created outside that path (or a
-        // pre-migration org) would otherwise permanently lack a customer id.
         ...(!org?.stripe_customer_id && customerId ? { stripe_customer_id: customerId } : {}),
       }).eq('id', orgId)
+      break
+    }
+
+    case 'charge.refunded': {
+      const charge = event.data.object as Stripe.Charge
+      const paymentIntentId = typeof charge.payment_intent === 'string' ? charge.payment_intent : null
+      if (paymentIntentId) {
+        await svc
+          .from('course_purchases')
+          .update({
+            status: 'refunded',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_payment_intent_id', paymentIntentId)
+      }
       break
     }
 

@@ -20,6 +20,8 @@ type CourseRow = {
   prerequisite_course_id: string | null
   age_min: number | null
   age_max: number | null
+  price_cents?: number | null
+  currency?: string | null
   prereq: { id: string; title: string } | null
   blueprint: {
     id: string
@@ -352,7 +354,13 @@ export default async function CoursePage({
                   </>
                 ) : !isStaff && user ? (
                   <>
-                    <EnrollButton courseId={courseId} locked={enrollLocked} lockReason={enrollLockReason} />
+                    <EnrollButton
+                      courseId={courseId}
+                      locked={enrollLocked}
+                      lockReason={enrollLockReason}
+                      priceCents={course.price_cents}
+                      currency={course.currency}
+                    />
                     {hasInviteOnly && (
                       <p className="text-xs text-rose-400 font-medium mt-1">
                         {t('courses.detail.inviteOnlyNotice')}

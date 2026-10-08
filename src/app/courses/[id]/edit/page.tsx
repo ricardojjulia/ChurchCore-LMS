@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
 import CourseForm from '@/components/courses/CourseForm'
 import PublicPreviewToggle from '@/components/courses/PublicPreviewToggle'
+import CoursePricingForm from '@/components/courses/CoursePricingForm'
 
 export default async function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -15,7 +16,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('uid, role')
+    .select('uid, role, org_id')
     .eq('auth_id', user.id)
     .single()
 
@@ -23,12 +24,13 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
   // preview, but (unlike admin) gets no general course-edit rights below.
   const canEditCourse = profile?.role === 'teacher' || profile?.role === 'admin'
   const canTogglePreview = profile?.role === 'admin' || profile?.role === 'manager'
-  if (!canEditCourse && !canTogglePreview) redirect('/dashboard')
+  const canManagePricing = profile?.role === 'admin' || profile?.role === 'manager' || profile?.role === 'teacher'
+  if (!canEditCourse && !canTogglePreview && !canManagePricing) redirect('/dashboard')
 
-  const [courseResult, allCoursesResult, blueprintsResult] = await Promise.all([
+  const [courseResult, allCoursesResult, blueprintsResult, orgResult] = await Promise.all([
     supabase
       .from('courses')
-      .select('id, title, description, status, min_required_level, prerequisite_course_id, owner_id, blueprint_id, age_min, age_max, is_public_preview')
+      .select('id, title, description, status, min_required_level, prerequisite_course_id, owner_id, blueprint_id, age_min, age_max, is_public_preview, price_cents, currency, seat_limit, org_id')
       .eq('id', id)
       .single(),
     supabase
@@ -41,12 +43,17 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
       .select('id, title, course_code, program_tracks(name, code)')
       .eq('is_active', true)
       .order('title', { ascending: true }),
+    supabase
+      .from('organizations')
+      .select('stripe_connect_status')
+      .eq('id', profile?.org_id)
+      .single(),
   ])
 
   const course = courseResult.data
   if (!course) notFound()
   const isOwnerOrAdmin = course.owner_id === profile?.uid || profile?.role === 'admin'
-  if (!isOwnerOrAdmin && !canTogglePreview) redirect('/courses')
+  if (!isOwnerOrAdmin && !canTogglePreview && !canManagePricing) redirect('/courses')
 
   return (
     <main className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8 text-slate-100">
@@ -85,6 +92,17 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
           </div>
         )}
 
+        {/* Course Pricing & Storefront Settings (COUNCIL-2026-039) */}
+        {canManagePricing && (
+          <CoursePricingForm
+            courseId={course.id}
+            initialPriceCents={course.price_cents}
+            initialCurrency={course.currency}
+            initialSeatLimit={course.seat_limit}
+            stripeConnectStatus={orgResult.data?.stripe_connect_status}
+          />
+        )}
+
         {/* COUNCIL-2026-027 D3 — public preview toggle is admin/manager only,
             never a teacher even if they own the course. */}
         {canTogglePreview && (
@@ -100,3 +118,4 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
     </main>
   )
 }
+

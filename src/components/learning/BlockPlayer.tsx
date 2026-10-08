@@ -13,6 +13,7 @@ import SurveyPlayer from './SurveyPlayer'
 import ChecklistPlayer from './ChecklistPlayer'
 import FlashcardPlayer from './FlashcardPlayer'
 import H5PPlayer from './H5PPlayer'
+import ScormPlayer from './ScormPlayer'
 import type { ChecklistContent, CourseBlock, FlashcardContent, QuizQuestion, SurveyContent } from '@/types/blocks'
 
 interface Submission {
@@ -250,6 +251,9 @@ export default function BlockPlayer({ block, orgId, submission, onComplete, view
   }
   if (block.block_type_id === 'h5p') {
     return <H5PPlayer block={block} submission={submission} onComplete={onComplete} />
+  }
+  if (block.block_type_id === 'scorm') {
+    return <ScormPlayer block={block} submission={submission} onComplete={onComplete} />
   }
 
   return (

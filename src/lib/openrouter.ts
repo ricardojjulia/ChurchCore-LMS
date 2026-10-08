@@ -9,9 +9,11 @@ export type AiTask = 'outline' | 'summary' | 'tutor' | 'hq' | 'gapAnalysis' | 'g
 export interface ModelCandidate {
   id: string
   name: string
-  inputCostPer1M: number  // USD
-  outputCostPer1M: number // USD
+  inputCostPer1M: number  // USD per 1M prompt tokens
+  outputCostPer1M: number // USD per 1M completion tokens
   usefulnessScore: number // 1 - 100 benchmark for instruction/accuracy
+  contextLength?: number
+  speedTier?: 'ultra-fast' | 'fast' | 'standard'
 }
 
 /**
@@ -24,14 +26,27 @@ export const MODEL_CATALOG: Record<string, ModelCandidate> = {
     name: 'Gemini 2.0 Flash',
     inputCostPer1M: 0.10,
     outputCostPer1M: 0.40,
-    usefulnessScore: 92,
+    usefulnessScore: 94,
+    contextLength: 1_000_000,
+    speedTier: 'ultra-fast',
   },
   'openai/gpt-4o-mini': {
     id: 'openai/gpt-4o-mini',
     name: 'GPT-4o Mini',
     inputCostPer1M: 0.15,
     outputCostPer1M: 0.60,
-    usefulnessScore: 90,
+    usefulnessScore: 91,
+    contextLength: 128_000,
+    speedTier: 'ultra-fast',
+  },
+  'deepseek/deepseek-chat': {
+    id: 'deepseek/deepseek-chat',
+    name: 'DeepSeek V3',
+    inputCostPer1M: 0.14,
+    outputCostPer1M: 0.28,
+    usefulnessScore: 93,
+    contextLength: 64_000,
+    speedTier: 'fast',
   },
   'anthropic/claude-3.5-haiku': {
     id: 'anthropic/claude-3.5-haiku',
@@ -39,13 +54,17 @@ export const MODEL_CATALOG: Record<string, ModelCandidate> = {
     inputCostPer1M: 0.80,
     outputCostPer1M: 4.00,
     usefulnessScore: 93,
+    contextLength: 200_000,
+    speedTier: 'ultra-fast',
   },
   'meta-llama/llama-3.3-70b-instruct': {
     id: 'meta-llama/llama-3.3-70b-instruct',
     name: 'Llama 3.3 70B Instruct',
     inputCostPer1M: 0.12,
     outputCostPer1M: 0.30,
-    usefulnessScore: 88,
+    usefulnessScore: 89,
+    contextLength: 128_000,
+    speedTier: 'fast',
   },
   'anthropic/claude-3.5-sonnet': {
     id: 'anthropic/claude-3.5-sonnet',
@@ -53,6 +72,8 @@ export const MODEL_CATALOG: Record<string, ModelCandidate> = {
     inputCostPer1M: 3.00,
     outputCostPer1M: 15.00,
     usefulnessScore: 98,
+    contextLength: 200_000,
+    speedTier: 'standard',
   },
 }
 
@@ -61,13 +82,14 @@ export const MODEL_CATALOG: Record<string, ModelCandidate> = {
  * OpenRouter automatically attempts fallback candidates if the primary is throttled or down.
  */
 export const TASK_MODEL_CHAINS: Record<AiTask, string[]> = {
-  // Course syllabus/curriculum requires high structured JSON fidelity & multilingual depth at low cost
+  // Course syllabus/curriculum requires high structured JSON fidelity & multilingual depth at lowest cost ($0.10/M)
   outline: [
     'google/gemini-2.0-flash-001',
     'openai/gpt-4o-mini',
+    'deepseek/deepseek-chat',
     'anthropic/claude-3.5-sonnet',
   ],
-  // Summaries are lightweight, frequent, and need quick empathetic responses
+  // Summaries are lightweight, frequent, and need ultra-fast turnaround
   summary: [
     'google/gemini-2.0-flash-001',
     'openai/gpt-4o-mini',
@@ -83,14 +105,16 @@ export const TASK_MODEL_CHAINS: Record<AiTask, string[]> = {
   // Gap analysis over student queries
   gapAnalysis: [
     'google/gemini-2.0-flash-001',
+    'deepseek/deepseek-chat',
     'openai/gpt-4o-mini',
     'meta-llama/llama-3.3-70b-instruct',
   ],
-  // HQ staff operations
+  // HQ staff operations — high reasoning with cost-effective primary and Sonnet fallback
   hq: [
     'google/gemini-2.0-flash-001',
     'anthropic/claude-3.5-sonnet',
     'openai/gpt-4o-mini',
+    'deepseek/deepseek-chat',
   ],
   general: [
     'google/gemini-2.0-flash-001',
@@ -118,7 +142,6 @@ export function getOpenRouterApiKey(): string | null {
   return (
     process.env.OPENROUTER_API_KEY ||
     process.env.OPENAI_API_KEY ||
-    process.env.ANTHROPIC_API_KEY ||
     null
   )
 }
@@ -217,5 +240,128 @@ export async function callOpenRouter(options: OpenRouterCompletionOptions): Prom
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Connection to AI provider failed'
     return { ok: false, status: 502, error: message }
+  }
+}
+
+/**
+ * Generates vector embeddings via OpenRouter (or OpenAI fallback).
+ */
+export async function fetchOpenRouterEmbeddings(
+  input: string | string[],
+  model: string = 'text-embedding-3-small'
+): Promise<number[][] | null> {
+  const apiKey = getOpenRouterApiKey()
+  if (!apiKey) return null
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://churchcore.app'
+
+  // 1. Try OpenRouter embeddings endpoint
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': appUrl,
+        'X-Title': 'ChurchCore LMS Embeddings',
+      },
+      body: JSON.stringify({
+        model: model.includes('/') ? model : (apiKey.startsWith('sk-or-') ? `openai/${model}` : model),
+        input,
+      }),
+    })
+
+    if (res.ok) {
+      const json = (await res.json()) as { data: Array<{ embedding: number[] }> }
+      if (Array.isArray(json?.data) && json.data.length > 0) {
+        return json.data.map((d) => d.embedding)
+      }
+    }
+  } catch {
+    // OpenRouter attempt failed; try fallback if direct OpenAI key exists
+  }
+
+  // 2. Direct OpenAI fallback if available
+  const openAiKey = process.env.OPENAI_API_KEY || (!apiKey.startsWith('sk-or-') ? apiKey : null)
+  if (openAiKey) {
+    try {
+      const res = await fetch('https://api.openai.com/v1/embeddings', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openAiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: model.replace(/^openai\//, ''),
+          input,
+        }),
+      })
+
+      if (res.ok) {
+        const json = (await res.json()) as { data: Array<{ embedding: number[] }> }
+        if (Array.isArray(json?.data) && json.data.length > 0) {
+          return json.data.map((d) => d.embedding)
+        }
+      }
+    } catch {
+      return null
+    }
+  }
+
+  return null
+}
+
+
+// In-memory cache for live model availability (1 hour TTL)
+let cachedLiveModels: { timestamp: number; models: Array<{ id: string; name: string; context_length: number; pricing: { prompt: number; completion: number } }> } | null = null
+
+/**
+ * Fetches live available models directly from OpenRouter API to verify real-time status and pricing.
+ */
+export async function fetchLiveOpenRouterModels(forceRefresh = false): Promise<{
+  ok: boolean
+  models: Array<{ id: string; name: string; context_length: number; pricing: { prompt: number; completion: number } }>
+  cached: boolean
+  error?: string
+}> {
+  const apiKey = getOpenRouterApiKey()
+  if (!apiKey) {
+    return { ok: false, models: [], cached: false, error: 'No OpenRouter API key found.' }
+  }
+
+  const now = Date.now()
+  if (!forceRefresh && cachedLiveModels && now - cachedLiveModels.timestamp < 3600_000) {
+    return { ok: true, models: cachedLiveModels.models, cached: true }
+  }
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://churchcore.app',
+        'X-Title': 'ChurchCore LMS Model Inspector',
+      },
+    })
+
+    if (!res.ok) {
+      return { ok: false, models: [], cached: false, error: `Failed to fetch models (${res.status})` }
+    }
+
+    const data = await res.json()
+    const rawList = Array.isArray(data?.data) ? data.data : []
+    const parsedModels = rawList.map((m: Record<string, unknown>) => ({
+      id: String(m.id ?? ''),
+      name: String(m.name ?? m.id ?? ''),
+      context_length: Number(m.context_length ?? 0),
+      pricing: {
+        prompt: Number((m.pricing as Record<string, unknown>)?.prompt ?? 0) * 1_000_000,
+        completion: Number((m.pricing as Record<string, unknown>)?.completion ?? 0) * 1_000_000,
+      },
+    })).filter((m: { id: string }) => Boolean(m.id))
+
+    cachedLiveModels = { timestamp: now, models: parsedModels }
+    return { ok: true, models: parsedModels, cached: false }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Failed to query OpenRouter model list'
+    return { ok: false, models: [], cached: false, error: msg }
   }
 }

@@ -9,18 +9,129 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+---
+
+## [0.47.0] — 2026-10-08
+
+Formative assessment & evaluation milestone: Course Feedback & Evaluation Templates Engine (COUNCIL-2026-047) providing 1-click curated survey presets and custom item builders.
+
 ### Added
-- **H5P Interactive Learning Content (COUNCIL-2026-046):** Native support for H5P interactive activities in ChurchCore LMS.
-  - **Course Builder Form (`H5PForm`):** Supports both interactive iframe embed URLs (from H5P.com, Lumi, Curriki, WordPress) and direct `.h5p` zip package uploads with client-side metadata parsing (`JSZip`).
-  - **Live Student Player (`H5PPlayer`):** Interactive viewport with customizable aspect ratios (`16:9`, `4:3`, `1:1`, `auto`), auto-resizing, and fullscreen mode.
-  - **xAPI Gradebook & XP Integration:** Intercepts H5P xAPI statements via `window.postMessage` to auto-grade passing scores, advance student course progression, record submissions in `block_submissions`, and award gamification XP.
-  - **Multilingual Support:** Fully localized H5P activity badges, completion buttons, and progress status across English, Spanish, and Portuguese.
-- **Complete Portuguese (`pt`) Localization & 3-Way i18n:** Added comprehensive Portuguese translation dictionary (`messages/pt.json`) achieving 100% key parity (780 keys) with English and Spanish. Updated `LocaleSwitcher` for seamless 3-way toggling across EN, ES, and PT.
-- **Multilingual UI Coverage:** Fully localized dashboards (`SmartSummaryCard`, `AdminDashboard`, `InstructorDashboard`, `StudentDashboard`), gamification widgets (`EngagementWidget`, `StudentXpStandingsModal`, `AiWeeklySummary`), academic management (`AdminBlueprintsPage`, `BlueprintForm`, `AdminSectionsPage`), and system transactional emails (`PasswordResetEmail`, `SignupVerifyEmail`).
-- **AI Course Builder Incremental Generation:** AI course generator now supports appending new modules and lessons to existing courses without overwriting prior content, alongside an optional full replacement workflow.
-- **Hybrid Course Attendance & Availability Tracking:** Support for course start/expiration availability windows and quick attendance roll-call tracking for scheduled hybrid classroom sessions.
-- **Modern UI & Aesthetic Alignment:** Polished card surfaces (`card-crisp`), glowing badges, dark slate / indigo theme tokens, and typography aligned with ChurchCore Orthos standards.
-- **Automated Multilingual E2E Verification:** Automated Playwright walkthrough test suite across Manager, Teacher, and Student roles in all 3 languages with automated visual verification.
+
+- **Course Evaluation & Feedback Templates Engine (COUNCIL-2026-047):**
+  - **Curated Template Library (`src/lib/feedback/templates.ts`):** 5 pre-built evaluation templates (Comprehensive Course & Faculty Evaluation, Mid-Course Pulse, Small Group Discipleship Feedback, Guest Speaker / Workshop Evaluation, and Lesson Exit Tickets).
+  - **Interactive Template Ingestion (`src/components/builder/node-forms/SurveyForm.tsx`):** 1-click preset loader with multi-format question builder (Likert 1-5 Scale, Multiple Choice, and Free Text Reflection) and anonymous/named submission toggles.
+  - **Enhanced Student Evaluation Player (`src/components/learning/SurveyPlayer.tsx`):** Touch-friendly 1-5 Likert pill buttons, choice cards, privacy shield indicator, and response confirmation.
+  - **Full Test Surface & Council Pass:** 100% test coverage (`npm run test:surface` 307/307 covered), 97 passing test suites (751 total tests).
+
+---
+
+## [0.46.0] — 2026-10-07
+
+User Experience & Delight milestone: The Learner & Instructor Flow Engine (COUNCIL-2026-046) delivering Command Palette (`Cmd+K`), Persistent Floating Audio/Podcast Player, Focus Mode Zen Reader, Celebration Confetti Engine, and Inline AI Editor Co-Pilot.
+
+### Added
+
+- **Global Command Palette (`src/components/layout/CommandPalette.tsx`):**
+  - Instant spotlight search (`Cmd + K` / `Ctrl + K`) across courses, tools, pathways, and settings with keyboard arrow navigation and rapid shortcuts.
+- **Persistent Floating Audio Player (`src/lib/audio/AudioPlayerContext.tsx`, `FloatingAudioPlayer.tsx`):**
+  - Global audio state allowing continuous podcast lectures and devotionals to play in a sleek bottom dock while freely browsing other lessons, notes, and gradebooks.
+- **Focus Mode Zen Discipleship Reader (`src/components/learning/FocusModeReader.tsx`):**
+  - Fullscreen distraction-free reader with ambient theme switching (Parchment, Dark, Clean White, Sepia), typography scale/font selector, and auto-saving personal reflection journal margin.
+- **Milestone Celebration Delight Engine (`src/components/common/CelebrationModal.tsx`, `src/lib/confetti.ts`):**
+  - Lightweight canvas particle physics celebration with XP awards and 1-click LinkedIn profile / WhatsApp milestone sharing.
+- **Inline AI Lesson Editor Co-Pilot Bubble (`src/components/editor/EditorAiCoPilotBubble.tsx`):**
+  - Tiptap highlight selection bubble for generating instant quiz questions, finding Scripture cross-references, and translating to Spanish/Portuguese directly inside the course builder.
+
+---
+
+## [0.45.0] — 2026-10-05
+
+Flagship AI synthesis milestone: Multi-Document Course Synthesizer (COUNCIL-2026-043) ingesting Word documents, PowerPoint presentations, PDFs, and raw notes into fully articulated Christian courses.
+
+### Added
+
+- **Multi-Document Course Synthesizer (COUNCIL-2026-043):**
+  - **Multi-Format Document Parsing (`src/lib/document-parser.ts`):** Native decompression and parsing for `.docx` (XML word tree), `.pptx` (numerically sorted slide XML extraction with `### Slide N` demarcation), `.pdf`, `.txt`, and `.md`.
+  - **Batch Multi-Document Synthesis Engine (`src/lib/theology/multi-document-synthesizer.ts`):** AI synthesis prompt that de-duplicates overlapping bullet points, structures multi-week modules, writes in-depth lesson bodies with HTML markup and scripture blockquotes, and generates formative quizzes with explanations.
+  - **Synthesis Endpoint (`/api/ai/documents-to-course`):** Role-gated and rate-limited API route accepting multi-document payloads with source attribution mapping.
+  - **Interactive Drag-and-Drop Modal (`MultiDocumentCourseSynthesizerModal`):** Multi-file upload interface with live decompression status, customization parameters (audience, theological tradition, target pacing), and live course outline preview.
+- **Hosted Video Streaming Infrastructure & Must-View Heartbeat (COUNCIL-2026-041):**
+  - **Mux Direct Upload & Signed Playback (`src/lib/video/provider.ts`):** Direct upload generation, MP4 transcoded streaming via HLS (`.m3u8`), and HMAC-SHA256 signed playback tokens for strict tenant media protection.
+  - **Must-View Heartbeat & Completion Verification (`src/lib/video/heartbeat.ts`):** Periodic 5-second playback tracking in `video_playback_heartbeats`, enforcing 85% completion thresholds before granting block credit.
+  - **Custom Church Video Player (`HostedVideoPlayer`):** Multi-speed controls (0.75x to 2x), subtitle/caption track loading, volume control, and auto-completion callbacks.
+
+- **Private Discipleship Podcast Feeds (Audio-First Learning) (COUNCIL-2026-044):**
+  - **Apple Podcasts & Spotify RSS 2.0 Engine (`src/lib/podcast/podcast-feed.ts`):** Dynamic XML generation with iTunes duration, categories (`Religion & Spirituality > Christianity`), artwork, `<enclosure>` tags, and full HTML shownotes with Scripture references.
+  - **Cryptographic Feed Auth Tokens (`src/lib/podcast/feed-auth.ts`):** Signed URL-safe HMAC tokens verifying learner enrollment without exposing passwords or session cookies.
+  - **Feed Endpoint (`/api/feeds/podcast/[token]`):** Token-authenticated HTTP endpoint serving valid podcast XML with caching.
+  - **Interactive Subscription Modal (`PodcastSubscribeModal`):** 1-click subscription buttons for Apple Podcasts (`podcast://`), Overcast, Pocket Casts, and one-click private RSS URL copying.
+  - **Full Test Surface & Council Pass:** 100% test coverage (`npm run test:surface` 307/307 covered), 95 passing test suites (745 total tests).
+
+---
+
+## [0.44.0] — 2026-10-04
+
+Enterprise capability & commerce milestone: Paid Courses Storefront (Stripe Connect), Open Badges 2.0/3.0 Microcredentials, OpenRouter AI Architecture, Curriculum Commons, and Capacitor Native Mobile App Shell.
+
+### Added
+
+- **Paid Courses & Course Storefront (COUNCIL-2026-039):**
+  - **Stripe Connect Standard:** Direct church payouts with 0% platform fee; keeps church as merchant of record.
+  - **Course Pricing Configuration:** Interactive pricing form on course edit page for setting price, currency (USD, EUR, BRL, GBP, CAD), and seat limits.
+  - **Storefront & Catalog Badges:** Public course cards and detail pages dynamically render price tags and seamless checkout/enrollment CTAs.
+  - **Automated Fulfillment:** Stripe webhook integration for `checkout.session.completed` and `charge.refunded` with automatic enrollment via `enrollCore()`.
+
+- **Open Badges 2.0 / 3.0 Standard & Verifiable Microcredentials:**
+  - **1EdTech JSON-LD Assertions:** Standard public assertion endpoint (`/api/badges/assertions/[id]`) with salted SHA-256 recipient identity hashing.
+  - **Dynamic SVG Badge Generator:** High-fidelity vector graphics with customizable frames (shield, circle, hexagon, rosette, star), metallic finishes (gold, silver, bronze, indigo, emerald, crimson), and ministry icons.
+  - **Public Verification & Social Sharing:** Verification view (`/verify/badge/[id]`) with 1-click "Add to LinkedIn Profile" integration.
+
+- **OpenRouter Unified AI Engine & Vector Embeddings:**
+  - **Multi-Model Routing & Fallbacks:** Unified LLM completions across Gemini 2.0 Flash, Claude 3.5 Sonnet/Haiku, and DeepSeek with automatic failover.
+  - **Real-Time SSE Streaming:** Low-latency token streaming for HQ Council and Student AI Tutor.
+  - **Semantic Vector Embeddings:** Automated lesson text chunking and vector embeddings via OpenRouter into PostgreSQL `pgvector`.
+
+- **Curriculum Commons & Starter Content Library (COUNCIL-2026-043):**
+  - **Template Browser (`/admin/library`):** Filter by category, audience, and language.
+  - **Starter Pack Bundles:** Instant adoption of multi-course curriculum tracks into structured Learning Paths.
+
+- **Native Mobile App Shell & Web Push (COUNCIL-2026-040):**
+  - **Capacitor Configuration:** Native iOS and Android shell (`org.churchcore.lms`) with splash screens, dark status bars, and push presentation handlers.
+  - **PII-Safe Web Push:** VAPID service worker and background push delivery for grades, announcements, and direct messages.
+
+---
+
+## [0.43.0] — 2026-10-02
+
+Major capability release delivering SCORM interactive modules, ChurchCore ChMS bidirectional connect, H5P interactive learning runtime, complete Portuguese localization, and UI contrast polish.
+
+### Added
+
+- **SCORM 1.2 & 2004 Runtime Engine (COUNCIL-2026-042):**
+  - **Zip Manifest Parsing:** Secure zip archive parser supporting `imsmanifest.xml` validation for SCORM 1.2 and 2004 packages with path traversal protection.
+  - **Runtime CMI Bridge:** Client-side runtime bridge (`window.API` / `window.API_1484_11`) capturing runtime commits and tracking learner progress, completion status, raw/scaled scores, session time, and suspend data.
+  - **Asset Streaming API:** High-performance package decompression route with LRU caching and runtime script injection.
+  - **Interactive Learner Player (`ScormPlayer`):** Fullscreen toggle, aspect ratio customization, score synchronization with `block_submissions`, and automated XP awarding upon completion.
+  - **Course Builder Form (`ScormForm`):** Direct `.zip` upload (up to 100MB), manifest inspection, and passing score thresholds.
+
+- **ChurchCore Connect ChMS Integration (COUNCIL-2026-038):**
+  - **Cryptographic Pairing:** Per-tenant signed handshake using Ed25519 public keys, key IDs, staleness checks, and delivery ID idempotency.
+  - **Inbound Staged Sync:** Syncs members, households (family guardian links), and small groups / ministries (as cohorts tagged `source='churchcore'`).
+  - **Data Safeguards & Minors Protection (Amendments 3 & 4):** Strict prohibition of pastoral/care fields (`pastoral_notes`, `care_assignments`, `prayer_requests`, `ai_*`). Strips minor contact details unless explicit guardian consent is flagged.
+  - **Review Queue & Diff Inspector:** Inbound deliveries staged with per-entity diff inspection (creates, updates, deactivations). Privilege elevations to admin/manager held for mandatory manual review.
+  - **Outbound Milestone Sync:** Automated dispatch of course enrollments, milestone progress (25/50/75/100%), certificates issued, and path completions to ChurchCore member records.
+  - **Integrations Hub UI:** Dedicated Admin Integrations hub (`/admin/integrations`) and ChurchCore Connect workspace (`/admin/integrations/churchcore`).
+  - **Profile Badge:** `<ManagedInChurchCoreBadge />` displayed on synced member profiles.
+
+- **H5P Interactive Content Engine (COUNCIL-2026-046):**
+  - Native standalone runtime player (`h5p-standalone`), embed URL support, direct `.h5p` zip package uploads, and xAPI gradebook integration.
+
+- **Portuguese (`pt`) 3-Way Localization:**
+  - 100% key parity (780 keys) in `messages/pt.json` alongside English and Spanish with seamless 3-way language switching.
+
+### Fixed
+
+- **Course Preview White-on-White Contrast:** Fixed foreground and background color contrast across all course builder preview viewports, interactive block players, and the student `LearningShell`.
 
 ---
 

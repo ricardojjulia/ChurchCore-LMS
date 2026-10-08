@@ -1,6 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { normalizeH5PEmbedUrl, parseH5PPackage } from '@/lib/h5p/parser'
 import JSZip from 'jszip'
+import { covers } from '@/tests/covers'
+
+covers(
+  'action:learning.submitH5PProgress',
+  'api:POST /api/upload/h5p',
+  'api:GET /api/h5p/package/[blockId]/[...file]'
+)
 
 describe('H5P Package Integration', () => {
   it('parses valid .h5p package zip buffer and metadata', async () => {

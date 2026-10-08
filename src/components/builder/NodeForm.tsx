@@ -15,6 +15,7 @@ import SurveyForm from './node-forms/SurveyForm'
 import ChecklistForm from './node-forms/ChecklistForm'
 import FlashcardForm from './node-forms/FlashcardForm'
 import H5PForm from './node-forms/H5PForm'
+import ScormForm from './node-forms/ScormForm'
 
 interface Props {
   blockTypeId: BlockTypeId
@@ -37,6 +38,7 @@ export default function NodeForm({ blockTypeId, initial, onSave, onCancel }: Pro
     case 'video_stream':  return <VideoForm {...props} />
     case 'resource_file': return <FileForm {...props} />
     case 'external_url':  return <UrlForm {...props} />
+    case 'scorm':         return <ScormForm {...props} />
     case 'assignment':    return <AssignmentForm {...props} />
     case 'quiz':          return <QuizForm {...props} />
     case 'discussion':    return <DiscussionForm {...props} />

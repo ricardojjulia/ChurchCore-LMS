@@ -25,6 +25,7 @@
     "sso": {
       "google": "Continue with Google",
       "microsoft": "Continue with Microsoft",
+      "churchcore": "Continue with ChurchCore",
       "or": "or use your email",
       "redirecting": "Redirecting…",
       "error": "Could not start sign-in. Please try again.",
@@ -958,5 +959,36 @@
     "formatSelfPaced": "Self-paced",
     "viewGroups": "View groups →",
     "manageEnrollment": "Manage enrollment →"
+  },
+  "adminTerms": {
+    "heading": "Academic Terms",
+    "subtitle": "Hierarchical terms — semesters nest inside academic years.",
+    "newTerm": "+ New Term",
+    "emptyState": "No terms yet.",
+    "createFirst": "Create the first term →",
+    "edit": "Edit",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "typeAcademicYear": "Academic Year",
+    "typeSemester": "Semester",
+    "typeTrimester": "Trimester",
+    "typeQuarter": "Quarter",
+    "typeBlock": "Block",
+    "typeAdHoc": "Ad Hoc",
+    "typeSelfPaced": "Self-paced",
+    "typeSeries": "Series"
+  },
+  "adminProgramTracks": {
+    "heading": "Program Tracks",
+    "subtitle": "Pathways used to group course blueprints and cohorts for filtering, reporting, and AI context.",
+    "newTrack": "+ New Track",
+    "emptyState": "No program tracks yet.",
+    "createFirst": "Create the first program track →",
+    "tableTrack": "Track",
+    "tableStatus": "Status",
+    "tableCreated": "Created",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "edit": "Edit →"
   }
 }

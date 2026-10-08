@@ -142,7 +142,58 @@ export function parsePdfText(buffer: ArrayBuffer | Uint8Array | Buffer): string 
 }
 
 /**
- * General document parser that handles .txt, .md, .docx, and .pdf
+ * Extracts plain text from PPTX files by reading and sorting ppt/slides/slide*.xml with JSZip.
+ */
+export async function parsePptx(buffer: ArrayBuffer | Uint8Array | Buffer): Promise<string> {
+  try {
+    const zip = await JSZip.loadAsync(buffer)
+    const slideFiles = Object.keys(zip.files).filter((f) => /^ppt\/slides\/slide\d+\.xml$/.test(f))
+
+    if (slideFiles.length === 0) {
+      throw new Error('Invalid PPTX: No slides found.')
+    }
+
+    // Sort slides by numerical index (slide1.xml, slide2.xml, ..., slide10.xml)
+    slideFiles.sort((a, b) => {
+      const numA = parseInt(a.match(/slide(\d+)\.xml/)?.[1] || '0', 10)
+      const numB = parseInt(b.match(/slide(\d+)\.xml/)?.[1] || '0', 10)
+      return numA - numB
+    })
+
+    const slideTexts: string[] = []
+
+    for (let i = 0; i < slideFiles.length; i++) {
+      const slideFile = zip.file(slideFiles[i])
+      if (!slideFile) continue
+      const xml = await slideFile.async('string')
+
+      const slideText = xml
+        .replace(/<\/a:p>/g, '\n')
+        .replace(/<a:br[^>]*\/>/g, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .join('\n')
+
+      if (slideText) {
+        slideTexts.push(`### Slide ${i + 1}\n${slideText}`)
+      }
+    }
+
+    return slideTexts.join('\n\n')
+  } catch (err: any) {
+    throw new Error(`Failed to parse PPTX: ${err?.message || 'Corrupted presentation file'}`)
+  }
+}
+
+/**
+ * General document parser that handles .txt, .md, .docx, .pptx, and .pdf
  */
 export async function parseDocumentFile(
   fileName: string,
@@ -156,12 +207,14 @@ export async function parseDocumentFile(
 
   if (lowerName.endsWith('.docx')) {
     extractedText = await parseDocx(buffer)
+  } else if (lowerName.endsWith('.pptx')) {
+    extractedText = await parsePptx(buffer)
   } else if (lowerName.endsWith('.pdf')) {
     extractedText = parsePdfText(buffer)
   } else {
     // .txt, .md, .csv, or generic text
     const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer)
-    extractedText = new TextDecoder('utf-8').decode(bytes)
+    extractedText = new TextDecoder('utf-8', { fatal: false }).decode(bytes)
   }
 
   const tiptapContent = textToTiptapDoc(extractedText)
@@ -170,5 +223,53 @@ export async function parseDocumentFile(
     title: formattedTitle || 'Imported Material',
     text: extractedText,
     tiptapContent,
+  }
+}
+
+export interface MultiDocumentBatchResult {
+  combinedText: string
+  documents: Array<{
+    fileName: string
+    title: string
+    charCount: number
+    text: string
+  }>
+}
+
+/**
+ * Parses multiple documents in batch and produces a formatted multi-source transcript
+ * ready for AI course synthesis.
+ */
+export async function parseMultipleDocuments(
+  files: Array<{ name: string; buffer: ArrayBuffer | Uint8Array | Buffer }>
+): Promise<MultiDocumentBatchResult> {
+  const parsedDocs = await Promise.all(
+    files.map(async (file) => {
+      try {
+        const parsed = await parseDocumentFile(file.name, file.buffer)
+        return {
+          fileName: file.name,
+          title: parsed.title,
+          charCount: parsed.text.length,
+          text: parsed.text,
+        }
+      } catch (err: any) {
+        return {
+          fileName: file.name,
+          title: file.name,
+          charCount: 0,
+          text: `[Error parsing ${file.name}: ${err?.message || 'Unknown error'}]`,
+        }
+      }
+    })
+  )
+
+  const combinedSections = parsedDocs.map((doc, idx) => {
+    return `=== SOURCE DOCUMENT ${idx + 1}: ${doc.fileName} (${doc.title}) ===\n\n${doc.text}\n`
+  })
+
+  return {
+    combinedText: combinedSections.join('\n\n---\n\n'),
+    documents: parsedDocs,
   }
 }
