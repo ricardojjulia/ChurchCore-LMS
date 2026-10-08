@@ -11,6 +11,20 @@ Versions use [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.47.0] — 2026-10-08
+
+Formative assessment & evaluation milestone: Course Feedback & Evaluation Templates Engine (COUNCIL-2026-047) providing 1-click curated survey presets and custom item builders.
+
+### Added
+
+- **Course Evaluation & Feedback Templates Engine (COUNCIL-2026-047):**
+  - **Curated Template Library (`src/lib/feedback/templates.ts`):** 5 pre-built evaluation templates (Comprehensive Course & Faculty Evaluation, Mid-Course Pulse, Small Group Discipleship Feedback, Guest Speaker / Workshop Evaluation, and Lesson Exit Tickets).
+  - **Interactive Template Ingestion (`src/components/builder/node-forms/SurveyForm.tsx`):** 1-click preset loader with multi-format question builder (Likert 1-5 Scale, Multiple Choice, and Free Text Reflection) and anonymous/named submission toggles.
+  - **Enhanced Student Evaluation Player (`src/components/learning/SurveyPlayer.tsx`):** Touch-friendly 1-5 Likert pill buttons, choice cards, privacy shield indicator, and response confirmation.
+  - **Full Test Surface & Council Pass:** 100% test coverage (`npm run test:surface` 307/307 covered), 97 passing test suites (751 total tests).
+
+---
+
 ## [0.46.0] — 2026-10-07
 
 User Experience & Delight milestone: The Learner & Instructor Flow Engine (COUNCIL-2026-046) delivering Command Palette (`Cmd+K`), Persistent Floating Audio/Podcast Player, Focus Mode Zen Reader, Celebration Confetti Engine, and Inline AI Editor Co-Pilot.
