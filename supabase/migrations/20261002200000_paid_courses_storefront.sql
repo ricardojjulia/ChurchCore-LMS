@@ -39,26 +39,21 @@ ALTER TABLE course_purchases ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Admins and managers can view org purchases"
   ON course_purchases FOR SELECT
   USING (
-    org_id IN (
-      SELECT org_id FROM profiles
-      WHERE auth_id = auth.uid()
-      AND role IN ('admin', 'manager', 'platform_admin')
+    org_id = public.current_user_org_id()
+    AND (
+      public.is_org_admin()
+      OR public.is_org_manager()
+      OR public.is_platform_admin()
     )
   );
 
 CREATE POLICY "Buyers can view their own purchases"
   ON course_purchases FOR SELECT
   USING (
-    buyer_uid IN (
-      SELECT uid FROM profiles WHERE auth_id = auth.uid()
-    )
+    buyer_uid = public.current_user_uid()
   );
 
 CREATE POLICY "Platform admins have full access to course purchases"
   ON course_purchases FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles
-      WHERE auth_id = auth.uid() AND role = 'platform_admin'
-    )
-  );
+  USING (public.is_platform_admin())
+  WITH CHECK (public.is_platform_admin());
