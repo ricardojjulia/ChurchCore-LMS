@@ -56,8 +56,7 @@ CREATE POLICY "Staff manage scorm packages in org"
     AND (
       EXISTS (
         SELECT 1 FROM public.profile_roles pr
-        JOIN public.profiles p ON p.uid = pr.profile_id
-        WHERE p.auth_id = auth.uid()
+        WHERE pr.auth_id = auth.uid()
         AND pr.role IN ('admin', 'manager', 'teacher', 'superadmin')
       )
     )
@@ -97,8 +96,7 @@ CREATE POLICY "Staff view scorm attempts in org"
     AND (
       EXISTS (
         SELECT 1 FROM public.profile_roles pr
-        JOIN public.profiles p ON p.uid = pr.profile_id
-        WHERE p.auth_id = auth.uid()
+        WHERE pr.auth_id = auth.uid()
         AND pr.role IN ('admin', 'manager', 'teacher', 'superadmin')
       )
     )

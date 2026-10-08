@@ -56,12 +56,12 @@ CREATE POLICY "Users can manage their own push subscriptions"
   ON public.push_subscriptions
   FOR ALL
   USING (
-    user_id = public.current_user_profile_id()
+    user_id = public.current_user_uid()
     OR public.is_org_admin()
     OR public.is_platform_admin()
   )
   WITH CHECK (
-    user_id = public.current_user_profile_id()
+    user_id = public.current_user_uid()
     OR public.is_org_admin()
     OR public.is_platform_admin()
   );
@@ -70,7 +70,7 @@ CREATE POLICY "Users can view their own push notifications queue"
   ON public.push_notification_queue
   FOR SELECT
   USING (
-    user_id = public.current_user_profile_id()
+    user_id = public.current_user_uid()
     OR public.is_org_admin()
     OR public.is_platform_admin()
   );
