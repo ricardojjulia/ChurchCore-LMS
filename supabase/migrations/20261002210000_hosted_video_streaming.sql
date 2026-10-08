@@ -46,18 +46,18 @@ ALTER TABLE video_playback_heartbeats ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view ready video assets in their org"
   ON video_assets FOR SELECT
   USING (
-    org_id IN (
-      SELECT org_id FROM profiles WHERE auth_id = auth.uid()
-    )
+    org_id = public.current_user_org_id()
   );
 
 CREATE POLICY "Instructors and admins can manage video assets in their org"
   ON video_assets FOR ALL
   USING (
-    org_id IN (
-      SELECT org_id FROM profiles
-      WHERE auth_id = auth.uid()
-      AND role IN ('admin', 'manager', 'teacher', 'platform_admin')
+    org_id = public.current_user_org_id()
+    AND (
+      public.is_org_admin()
+      OR public.is_org_manager()
+      OR public.current_user_role() = 'teacher'
+      OR public.is_platform_admin()
     )
   );
 
@@ -65,17 +65,17 @@ CREATE POLICY "Instructors and admins can manage video assets in their org"
 CREATE POLICY "Users can view and record their own heartbeats"
   ON video_playback_heartbeats FOR ALL
   USING (
-    user_uid IN (
-      SELECT uid FROM profiles WHERE auth_id = auth.uid()
-    )
+    user_uid = public.current_user_uid()
   );
 
 CREATE POLICY "Teachers and admins can view heartbeats in their org"
   ON video_playback_heartbeats FOR SELECT
   USING (
-    org_id IN (
-      SELECT org_id FROM profiles
-      WHERE auth_id = auth.uid()
-      AND role IN ('admin', 'manager', 'teacher', 'platform_admin')
+    org_id = public.current_user_org_id()
+    AND (
+      public.is_org_admin()
+      OR public.is_org_manager()
+      OR public.current_user_role() = 'teacher'
+      OR public.is_platform_admin()
     )
   );
